@@ -1,0 +1,22 @@
+{
+  "name": "bloodjourney-web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "sync": "cp ../blood-donation-tracker.jsx src/App.jsx",
+    "dev": "npm run sync && vite",
+    "build": "npm run sync && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^1.46.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+# App.jsx is generated at build/dev time from ../blood-donation-tracker.jsx
+# (the single source of truth this whole project tracks) via `npm run sync` —
+# never edit it directly here, it gets overwritten on every dev/build run.
+src/App.jsx
+.DS_Store
