@@ -1229,6 +1229,21 @@ function AppInner() {
   const load = useCallback(async () => {
     setPhase("loading");
     setError("");
+    // Reading from localStorage below is essentially instant, so without a
+    // floor here the "loading" phase (and its splash screen) would resolve
+    // and get replaced within a handful of milliseconds — long before a
+    // single frame of it actually gets painted to the screen. finishLoading
+    // tops that up to MIN_LOADING_MS so the splash is actually visible, but
+    // never adds delay on top of a load that's already slower than that.
+    const MIN_LOADING_MS = 1000;
+    const loadStartedAt = Date.now();
+    const finishLoading = async (nextPhase) => {
+      const elapsed = Date.now() - loadStartedAt;
+      if (elapsed < MIN_LOADING_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
+      }
+      setPhase(nextPhase);
+    };
     try {
       const consentRes = await storage.get("consent").catch(() => null);
       // CONSENT_VERSION exists so a future change to what's being consented
@@ -1248,7 +1263,7 @@ function AppInner() {
         }
       }
       if (!consentValid) {
-        setPhase("consent");
+        await finishLoading("consent");
         return;
       }
       const [profileRes, donationsRes, backupRes, uiRes] = await Promise.all([
@@ -1310,7 +1325,7 @@ function AppInner() {
           }
         } catch {}
       }
-      setPhase("app");
+      await finishLoading("app");
     } catch (e) {
       setPhase("error");
     }
