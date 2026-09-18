@@ -16,16 +16,49 @@ window.__bjInitialSearch = window.location.search;
 // "BloodJourney" LINE Login channel, LIFF tab.
 const LIFF_ID = "2011648974-jwXvKsIg";
 
+// Shown instead of the app when this page is opened outside of the LINE
+// app (e.g. someone pasted the raw Vercel URL into Chrome/Safari directly).
+// This is a soft, client-side check only — paired with the Edge Middleware
+// in middleware.js, which blocks most non-LINE requests even earlier, at
+// the server. Neither is real security (both can be worked around by
+// someone determined enough), which is fine here: the app has no
+// sensitive server-side data, everything is stored locally on-device.
+// The point is just to steer normal users back to opening it properly.
+function renderLineOnlyNotice() {
+  document.getElementById("root").innerHTML = `
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center;
+      font-family:'Noto Sans Thai','Inter',sans-serif; background:#FBF6F5; color:#241A18; padding:24px; text-align:center;">
+      <div style="max-width:420px;">
+        <div style="width:72px; height:72px; border-radius:20px; background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);
+          display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+          <svg width="34" height="41" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+        </div>
+        <h1 style="font-size:20px; margin:0 0 10px;">เปิดผ่านแอป LINE เท่านั้น</h1>
+        <p style="font-size:15px; color:#6B5854; line-height:1.6; margin:0 0 22px;">
+          BloodJourney ใช้งานได้เฉพาะเมื่อเปิดผ่านแอป LINE กรุณากดลิงก์จากริชเมนูหรือแชทของ LINE อีกครั้ง
+        </p>
+        <a href="https://liff.line.me/${LIFF_ID}" style="display:inline-block; background:#8A2F28; color:#FFF7F5;
+          text-decoration:none; font-weight:700; padding:14px 28px; border-radius:100px; font-size:15px;">เปิดใน LINE</a>
+      </div>
+    </div>`;
+}
+
 async function bootstrap() {
+  let initOk = false;
   try {
     await liff.init({ liffId: LIFF_ID });
+    initOk = true;
   } catch (err) {
-    // Not fatal: this lets the app keep working when opened directly in a
-    // normal browser (e.g. testing on desktop, or the Vercel preview URL
-    // outside of LINE) where LIFF context simply isn't available. The app
-    // never depends on any LINE identity data — scope is openid-only and
-    // unused — so rendering without a successful LIFF init is safe.
-    console.warn("LIFF init failed, continuing without LINE context:", err);
+    // liff.init() throwing usually means this isn't running inside LINE
+    // at all (or LINE's SDK couldn't reach its own servers). Either way,
+    // treat it the same as "not in LINE" below rather than silently
+    // rendering the app.
+    console.warn("LIFF init failed:", err);
+  }
+
+  if (!initOk || !liff.isInClient()) {
+    renderLineOnlyNotice();
+    return;
   }
 
   ReactDOM.createRoot(document.getElementById("root")).render(
