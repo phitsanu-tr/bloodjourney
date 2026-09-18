@@ -1,7 +1,23 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, Copy } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import liff from "@line/liff";
+import { Capacitor } from "@capacitor/core";
+import { Preferences } from "@capacitor/preferences";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+
+// True only when running inside the packaged iOS/Android app shell (Capacitor
+// WebView), never inside the LINE LIFF web build — used to route persistence
+// through the native Preferences API (real OS-level storage, no LINE/WebView
+// storage-eviction risk) instead of localStorage, and later to gate native
+// save/share/calendar features that don't exist in the LIFF web build.
+const isNativeApp = (() => {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch (e) {
+    return false;
+  }
+})();
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const APP_VERSION = "1.0.0";
@@ -93,37 +109,96 @@ function parseLocalDate(d) {
   if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T00:00:00`);
   return new Date(d);
 }
-// "Add to calendar" history: this used to build a .ics file and trigger it
-// via Blob + URL.createObjectURL() + <a download>.click(). That silently
-// did nothing on iOS (WebKit has never implemented the `download`
-// attribute, and every iOS browser — including LINE's in-app one — is
-// WebKit). Switching the iOS path to a `data:text/calendar` URI fixed
-// real Safari, but LINE's in-app browser blocks that same data: URI
-// approach too (confirmed by testing) — apparently a broader restriction
-// on blob/data-URI downloads and file-open handoffs inside LINE's WebView,
-// not specific to one platform. A later attempt to use it as an
-// iOS-specific "open Apple Calendar natively" path was confirmed broken
-// the same way, so don't reintroduce it without testing it actually works
-// inside LINE first.
-//
-// Google Calendar's "render" endpoint sidesteps all of that: it's a plain
-// https:// page, so opening it is just an ordinary link navigation — the
-// one thing every browser and in-app WebView (LINE on iOS and Android
-// both, confirmed) reliably supports, since it's the exact mechanism the
-// rich menu and every other in-app link already relies on. The page then
-// lets the user save the event to whichever calendar they're signed into.
+function buildIcsForReminder(date, title) {
+  const dt = new Date(date);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, "0");
+  const d = String(dt.getDate()).padStart(2, "0");
+  const dateStr = `${y}${m}${d}`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const uid = `blood-journey-${dateStr}-${Math.random().toString(36).slice(2, 10)}@bloodjourney.local`;
+  const escText = (s) => String(s).replace(/([,;])/g, "\\$1").replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Blood Journey//TH",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${dateStr}`,
+    `DTEND;VALUE=DATE:${dateStr}`,
+    `SUMMARY:${escText(title)}`,
+    `DESCRIPTION:${escText("แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง")}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-P1D",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:แจ้งเตือนวันบริจาคโลหิต",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+// Plain https:// link (no blob/data-URI/download mechanics at all) — the
+// only "add to calendar" approach confirmed, via on-device testing, to work
+// inside LINE's in-app browser on both iOS and Android. Used for the LIFF
+// web build; the native app build uses a real .ics file via the OS share
+// sheet instead (see nativeSaveAndShare).
 function buildGoogleCalendarUrl(date, title, details) {
   const dt = new Date(date);
-  const toYmd = (x) => `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, "0")}${String(x.getDate()).padStart(2, "0")}`;
-  const endDt = new Date(dt);
-  endDt.setDate(endDt.getDate() + 1); // Google's all-day "dates" range end is exclusive
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, "0");
+  const d = String(dt.getDate()).padStart(2, "0");
+  const dateStr = `${y}${m}${d}`;
+  const next = new Date(dt);
+  next.setDate(next.getDate() + 1);
+  const ny = next.getFullYear();
+  const nm = String(next.getMonth() + 1).padStart(2, "0");
+  const nd = String(next.getDate()).padStart(2, "0");
+  const nextStr = `${ny}${nm}${nd}`;
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: title,
-    dates: `${toYmd(dt)}/${toYmd(endDt)}`,
-    details,
+    dates: `${dateStr}/${nextStr}`,
+    details: details || "",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+function downloadIcsFile(icsContent, filename) {
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+// Native-only (Capacitor app shell) file save/share — writes a file into the
+// app's cache directory via the real OS filesystem, then hands it to the
+// native share sheet (Share.share). This is the one mechanism this whole
+// project confirmed *cannot* be blocked the way LINE's in-app browser blocks
+// every blob/data-URI download: it's the same OS-level share sheet every
+// other app uses, so from there the user can pick "Save Image"/"Add to
+// Calendar"/"Save to Files" etc. Only ever called when isNativeApp is true.
+async function nativeSaveAndShare({ base64Data, filename, mimeType, dialogTitle }) {
+  await Filesystem.writeFile({ path: filename, data: base64Data, directory: Directory.Cache });
+  const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache });
+  await Share.share({ url: uri, dialogTitle });
+}
+function dataUrlToBase64(dataUrl) {
+  const idx = dataUrl.indexOf(",");
+  return idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl;
+}
+function icsContentToBase64(icsContent) {
+  // btoa only handles Latin1 — the .ics body here is escaped ASCII (Thai
+  // text is only ever inside SUMMARY/DESCRIPTION, already UTF-8 bytes), so
+  // encode via TextEncoder first to survive any non-ASCII bytes safely.
+  const bytes = new TextEncoder().encode(icsContent);
+  let binary = "";
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary);
 }
 // Relative "บันทึกเมื่อ..." wording for recent timestamps (loggedAt /
 // startingCountUpdatedAt) — matches the common X/Twitter-style convention:
@@ -192,6 +267,18 @@ const LS_PREFIX = "bloodjourney:";
 let storageDegradedFlag = false;
 const storage = {
   async get(key) {
+    if (isNativeApp) {
+      try {
+        const res = await Preferences.get({ key: LS_PREFIX + key });
+        if (res && typeof res.value !== "undefined" && res.value !== null) return { value: res.value };
+      } catch (e) {}
+      // Deliberately no further fallback tiers on native: Preferences is
+      // backed by the OS (UserDefaults/EncryptedSharedPreferences) and should
+      // never realistically fail. Falling through to localStorage/memory in
+      // the packaged app would silently split data across two stores.
+      if (Object.prototype.hasOwnProperty.call(memoryStore, key)) return { value: memoryStore[key] };
+      return null;
+    }
     try {
       if (typeof window !== "undefined" && window.storage && typeof window.storage.get === "function") {
         const res = await window.storage.get(key, false);
@@ -208,6 +295,15 @@ const storage = {
     return null;
   },
   async set(key, value) {
+    if (isNativeApp) {
+      try {
+        await Preferences.set({ key: LS_PREFIX + key, value });
+        return;
+      } catch (e) {}
+      memoryStore[key] = value;
+      storageDegradedFlag = true;
+      return;
+    }
     try {
       if (typeof window !== "undefined" && window.storage && typeof window.storage.set === "function") {
         await window.storage.set(key, value, false);
@@ -227,6 +323,13 @@ const storage = {
     return storageDegradedFlag;
   },
   async delete(key) {
+    if (isNativeApp) {
+      try {
+        await Preferences.remove({ key: LS_PREFIX + key });
+      } catch (e) {}
+      delete memoryStore[key];
+      return;
+    }
     try {
       if (typeof window !== "undefined" && window.storage && typeof window.storage.delete === "function") {
         await window.storage.delete(key, false);
@@ -675,9 +778,9 @@ function drawRecordBadge(ctx, cx, cy, r, order) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#FFF7F5";
-  ctx.font = `800 ${Math.round(r * 0.62)}px 'IBM Plex Sans Thai', 'Inter', sans-serif`;
+  ctx.font = `800 ${Math.round(r * 0.62)}px 'Mitr', 'Inter', sans-serif`;
   ctx.fillText(String(order), cx, cy - r * 0.08);
-  ctx.font = `400 ${Math.round(r * 0.19)}px 'IBM Plex Sans Thai', 'Inter', sans-serif`;
+  ctx.font = `400 ${Math.round(r * 0.19)}px 'Mitr', 'Inter', sans-serif`;
   ctx.globalAlpha = 0.85;
   ctx.fillText("ครั้งที่", cx, cy + r * 0.32);
   ctx.globalAlpha = 1;
@@ -849,7 +952,7 @@ async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel,
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no 2d context");
-  const FONT = "'IBM Plex Sans Thai', 'Inter', sans-serif";
+  const FONT = "'Mitr', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
   const content = { order, dateStr, timeStr, typeLabel, location, bloodType, nickname };
@@ -877,7 +980,7 @@ async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, blo
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no 2d context");
-  const FONT = "'IBM Plex Sans Thai', 'Inter', sans-serif";
+  const FONT = "'Mitr', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
   const liters = (estVolumeMl / 1000).toFixed(estVolumeMl % 1000 === 0 ? 0 : 1);
@@ -1148,24 +1251,11 @@ function AppInner() {
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
   const canShareFiles = useMemo(() => {
+    if (isNativeApp) return true; // native share sheet via @capacitor/share, always available
     try {
       if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare) return false;
       const testFile = new File([""], "test.png", { type: "image/png" });
       return navigator.canShare({ files: [testFile] });
-    } catch {
-      return false;
-    }
-  }, []);
-  // Chromium (Android's in-app WebViews, LINE's included) has supported
-  // writing an image to the system clipboard via the async Clipboard API
-  // for a while now, even where the file-sharing and download paths above
-  // are blocked — it's a different browser permission entirely, not a
-  // download or a share-sheet invocation, so it's worth feature-detecting
-  // and offering as its own option rather than assuming it shares the same
-  // fate as everything else tried so far.
-  const canCopyImage = useMemo(() => {
-    try {
-      return typeof ClipboardItem !== "undefined" && !!(navigator.clipboard && navigator.clipboard.write);
     } catch {
       return false;
     }
@@ -2224,43 +2314,30 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showShareCard, shareData, shareRecordData, cardSizeKey]);
 
-  // Every client-side save method was tried here, in order, and each one
-  // confirmed broken by actually testing it on-device inside LINE's in-app
-  // browser: <a download> on a data: URL (silent no-op on both iOS and
-  // Android — same root cause as the earlier "เพิ่มลงปฏิทิน" bug),
-  // liff.openWindow's external:true handoff to the real Safari/Chrome (no
-  // visible effect), navigator.clipboard.write() to copy the image (no
-  // visible effect), and even the browser's own native long-press-to-save
-  // on the <img> itself — which needs no JS API at all and still didn't
-  // work. That last one is the tell: LINE's in-app browser appears to
-  // disable image saving wholesale at the WebView level, which nothing
-  // running inside that WebView (this app included) can work around.
-  //
-  // LINE's own "•••" menu → "เปิดด้วยเบราว์เซอร์อื่น" would normally be the
-  // escape hatch here (hands the page to a real, unrestricted Safari/
-  // Chrome) — but this app deliberately blocks itself outside of LINE's
-  // in-app browser (see main.jsx's liff.isInClient() check and
-  // middleware.js), which was built earlier specifically so the raw URL
-  // can't be opened elsewhere. That means "open externally" would just
-  // land on the "เปิดผ่านแอป LINE เท่านั้น" block screen instead of this
-  // share card — a real dead end, not a usable workaround, given how this
-  // app is currently locked down. So the only method left that's both
-  // guaranteed to work and doesn't fight that restriction is the phone's
-  // own screenshot function — it captures pixels straight off the screen,
-  // no web API or LINE cooperation involved at all.
-  const isLineInAppBrowser = /Line\//.test(navigator.userAgent) || /LIFF\//.test(navigator.userAgent);
-  const LINE_SAVE_GUIDANCE = "บันทึกรูปจากในนี้ไม่ได้ (LINE บล็อกการบันทึกรูปในเบราว์เซอร์ของตัวเอง) ใช้วิธีแคปหน้าจอ (สกรีนช็อต) รูปนี้แทนได้เลย — กดปุ่ม Power + ปุ่มลดเสียง (หรือปุ่มลัดที่เครื่องตั้งไว้)";
-  const downloadShareCard = () => {
-    if (isLineInAppBrowser) {
-      showToast("error", LINE_SAVE_GUIDANCE, 6000);
+  const downloadShareCard = async () => {
+    const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
+    const filePrefix = shareRecordData ? "bloodjourney-donation" : "bloodjourney-achievement";
+    const filename = `${filePrefix}-${size.key}-${todayLocalStr()}.png`;
+    if (isNativeApp) {
+      // Real OS filesystem + native share sheet — the packaged app isn't
+      // sandboxed inside LINE's WebView, so this reaches Photos/Files
+      // directly instead of needing the screenshot workaround.
+      try {
+        await nativeSaveAndShare({
+          base64Data: dataUrlToBase64(shareCardDataUrl),
+          filename,
+          mimeType: "image/png",
+          dialogTitle: "บันทึกรูปภาพ",
+        });
+      } catch (e) {
+        showToast("error", "บันทึกรูปภาพไม่สำเร็จ ลองอีกครั้ง");
+      }
       return;
     }
     try {
-      const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
-      const filePrefix = shareRecordData ? "bloodjourney-donation" : "bloodjourney-achievement";
       const a = document.createElement("a");
       a.href = shareCardDataUrl;
-      a.download = `${filePrefix}-${size.key}-${todayLocalStr()}.png`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2275,33 +2352,30 @@ function AppInner() {
   // the save-then-attach-manually step. Only wired up when the browser/device
   // actually supports sharing files (checked via canShareFiles below).
   const nativeShareCard = async () => {
+    const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
+    const filePrefix = shareRecordData ? "bloodjourney-donation" : "bloodjourney-achievement";
+    const filename = `${filePrefix}-${size.key}-${todayLocalStr()}.png`;
+    if (isNativeApp) {
+      try {
+        await nativeSaveAndShare({
+          base64Data: dataUrlToBase64(shareCardDataUrl),
+          filename,
+          mimeType: "image/png",
+          dialogTitle: "แชร์ภาพ Blood Journey",
+        });
+      } catch (e) {
+        showToast("error", "แชร์ไม่สำเร็จ ลองดาวน์โหลดรูปภาพแทนได้เลย");
+      }
+      return;
+    }
     try {
-      const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
-      const filePrefix = shareRecordData ? "bloodjourney-donation" : "bloodjourney-achievement";
       const res = await fetch(shareCardDataUrl);
       const blob = await res.blob();
-      const file = new File([blob], `${filePrefix}-${size.key}-${todayLocalStr()}.png`, { type: "image/png" });
+      const file = new File([blob], filename, { type: "image/png" });
       await navigator.share({ files: [file], title: "Blood Journey" });
     } catch (e) {
       if (e && e.name === "AbortError") return; // user cancelled the share sheet
       showToast("error", "แชร์ไม่สำเร็จ ลองดาวน์โหลดรูปภาพแทนได้เลย");
-    }
-  };
-
-  // Writes the image straight to the system clipboard so it can be pasted
-  // into a LINE chat, another app, or the gallery — a different browser
-  // permission from a file download or a share-sheet call, so it's worth
-  // offering even where those two are blocked (this is specifically what
-  // fixes the gap on Android inside LINE: no working share button there,
-  // and the download button can only fall back to long-press guidance).
-  const copyShareCardImage = async () => {
-    try {
-      const res = await fetch(shareCardDataUrl);
-      const blob = await res.blob();
-      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-      showToast("success", "คัดลอกรูปแล้ว ไปวางในแชท LINE หรือแอปอื่นได้เลย");
-    } catch (e) {
-      showToast("error", "คัดลอกรูปไม่สำเร็จ ลองกดค้างที่รูปด้านบนแทน");
     }
   };
 
@@ -2565,17 +2639,30 @@ function AppInner() {
   // Rough, clearly-labeled estimate only (350ml/donation) — not meant to be
   // precise, just to give the cumulative count some tangible meaning.
   const estLiters = Math.round(totalCount * 0.35 * 10) / 10;
-  // Tried opening Apple's native "Add Event" card on iOS via a
-  // data:text/calendar URI — confirmed to not work inside LINE's in-app
-  // browser on iOS either (same class of restriction that blocked the old
-  // blob-download approach on Android). Back to the Google Calendar link
-  // for every platform, since that's the one confirmed working everywhere
-  // it's actually been tested (LINE on both iOS and Android).
-  const handleAddToCalendar = () => {
+  const handleAddToCalendar = async () => {
     if (!nextEligible) return;
     const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
+    if (isNativeApp) {
+      // Real .ics file through the OS share sheet, where the user can pick
+      // Calendar directly — the packaged app has no LINE-WebView download
+      // restriction to work around, unlike the LIFF web build below.
+      try {
+        const ics = buildIcsForReminder(nextEligible, title);
+        await nativeSaveAndShare({
+          base64Data: icsContentToBase64(ics),
+          filename: `blood-donation-reminder-${toBuddhistDate(nextEligible).replace(/\s+/g, "-")}.ics`,
+          mimeType: "text/calendar",
+          dialogTitle: "เพิ่มลงปฏิทิน",
+        });
+      } catch (e) {
+        showToast("error", "เพิ่มลงปฏิทินไม่สำเร็จ ลองอีกครั้ง");
+      }
+      return;
+    }
+    // Plain link navigation — confirmed working in LINE's in-app browser on
+    // both iOS and Android, unlike the .ics blob-download approach above.
     const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
-    window.open(buildGoogleCalendarUrl(nextEligible, title, details), "_blank", "noopener,noreferrer");
+    window.open(buildGoogleCalendarUrl(nextEligible, title, details), "_blank");
   };
 
   const ageOutOfRange = age !== "" && (Number(age) < MIN_AGE || Number(age) > MAX_AGE);
@@ -2837,15 +2924,15 @@ function AppInner() {
               <svg width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'IBM Plex Sans Thai', 'Inter', sans-serif" }}>BloodJourney</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'IBM Plex Sans Thai', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>BloodJourney</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans Thai', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
+    <div style={{ fontFamily: "'Mitr', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
       <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: 420, maxWidth: "100%", height: "100%", zIndex: -1, overflow: "hidden", pointerEvents: "none" }}>
         <svg width="90" height="109" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", top: -20, right: -10 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
         <svg width="30" height="36" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: 40, right: 90 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -2856,7 +2943,7 @@ function AppInner() {
         <svg width="34" height="41" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", bottom: -10, right: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
       </div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
         .btn-primary:active { background: #7E2F28; }
@@ -4602,50 +4689,21 @@ function AppInner() {
                 <div style={{ color: "#FFF7F5", fontSize: 12.5, opacity: 0.8 }}>กำลังสร้างภาพ...</div>
               )}
             </div>
-            {isLineInAppBrowser ? (
-              // Download and copy-to-clipboard were both tried here and
-              // both confirmed broken inside LINE's in-app browser by
-              // actually testing on-device (see the long comment above
-              // downloadShareCard) — even the browser's native
-              // long-press-to-save didn't work, which points to LINE
-              // disabling image saving at the WebView level entirely.
-              // Rather than show buttons that look actionable but silently
-              // do nothing, this is a plain, always-visible instruction
-              // instead: the "•••" menu → "เปิดด้วยเบราว์เซอร์อื่น" is the
-              // one escape hatch that's confirmed to actually work, since
-              // it hands the page to a real, unrestricted browser.
-              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "#FDEBE6", border: "1px solid #F3C9C0", borderRadius: 12, padding: "11px 12px", fontSize: 12.5, color: "#7A2A22", lineHeight: 1.6 }}>
-                <Info size={15} style={{ flexShrink: 0, marginTop: 1 }} />
-                <span>{LINE_SAVE_GUIDANCE}</span>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-                  {canShareFiles && (
-                    <button onClick={nativeShareCard} disabled={sharingCard || !shareCardDataUrl} className="btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                      <Share2 size={16} /> แชร์
-                    </button>
-                  )}
-                  <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "" : "btn-primary"} style={{
-                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                    ...(canShareFiles
-                      ? { background: "#FFFFFF", color: "#9A3B33", border: "1.5px solid #9A3B33" }
-                      : { border: "none" }),
-                  }}>
-                    <Download size={16} /> ดาวน์โหลด
-                  </button>
-                </div>
-                {canCopyImage && (
-                  <button onClick={copyShareCardImage} disabled={sharingCard || !shareCardDataUrl} style={{
-                    width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    background: "transparent", color: "#9A3B33", border: "1px dashed #E3C8C3",
-                  }}>
-                    <Copy size={14} /> คัดลอกรูป
-                  </button>
-                )}
-              </>
-            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              {canShareFiles && (
+                <button onClick={nativeShareCard} disabled={sharingCard || !shareCardDataUrl} className="btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                  <Share2 size={16} /> แชร์
+                </button>
+              )}
+              <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "" : "btn-primary"} style={{
+                flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
+                ...(canShareFiles
+                  ? { background: "#FFFFFF", color: "#9A3B33", border: "1.5px solid #9A3B33" }
+                  : { border: "none" }),
+              }}>
+                <Download size={16} /> ดาวน์โหลด
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -4670,7 +4728,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FBF6F5", padding: 28, textAlign: "center", fontFamily: "'IBM Plex Sans Thai', 'Inter', sans-serif" }}>
+        <div style={{ minHeight: 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FBF6F5", padding: 28, textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>เกิดข้อผิดพลาดบางอย่าง</div>
           <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, marginBottom: 18 }}>
             ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้ ไม่ได้หายไปไหน ลองกดปุ่มด้านล่างเพื่อโหลดหน้านี้ใหม่อีกครั้ง
