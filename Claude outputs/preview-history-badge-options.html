@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ป้ายประเภทในประวัติ 4 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 14px 16px; border: 1px solid #EEDEDA; }
+
+  .history-item { display: flex; align-items: center; gap: 10px; padding: 11px 2px; border-bottom: 1px solid #F3E7E4; font-size: 13px; }
+  .history-item:last-child { border-bottom: none; }
+  .hi-main { flex: 1; }
+  .hi-date { font-weight: 600; }
+  .hi-loc { font-size: 11px; color: #8A7370; margin-top: 1px; }
+
+  /* A: text badge, non-default only */
+  .badge-text { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: #F6EBE9; color: #9A3B33; font-weight: 600; }
+
+  /* B: text badge on every item, muted for default */
+  .badge-default { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: #F6EBE9; color: #B39B96; }
+
+  /* C: dot indicator */
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #9A3B33; flex-shrink: 0; }
+  .dot.default { background: #E3C8C3; }
+
+  /* D: left color bar on the whole row */
+  .row-bar { display: flex; align-items: center; gap: 10px; padding: 11px 2px 11px 10px; border-bottom: 1px solid #F3E7E4; border-left: 3px solid #9A3B33; font-size: 13px; }
+  .row-bar.default { border-left-color: transparent; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ป้ายประเภทในประวัติ 4 แบบ</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ทุกแบบแสดง 3 รายการ: พลาสมา 1 รายการ, เกล็ดเลือด 1 รายการ, โลหิตรวม 1 รายการ</p>
+
+  <div class="option-label">แบบ A — badge ข้อความ เฉพาะรายการที่ไม่ใช่โลหิตรวม (ตามที่เคยเสนอ)</div>
+  <div class="option-desc">โลหิตรวม (ค่าเริ่มต้น) ไม่มีป้ายเลย ลดความรกสำหรับคนส่วนใหญ่ที่บริจาคแบบเดียว</div>
+  <div class="phone">
+    <div class="history-item"><div class="hi-main"><div class="hi-date">13 ก.ย. 2569</div><div class="hi-loc">รพ.จุฬาฯ</div></div><span class="badge-text">พลาสมา</span></div>
+    <div class="history-item"><div class="hi-main"><div class="hi-date">2 ส.ค. 2569</div><div class="hi-loc">สภากาชาดไทย</div></div><span class="badge-text">เกล็ดเลือด</span></div>
+    <div class="history-item"><div class="hi-main"><div class="hi-date">15 มิ.ย. 2569</div><div class="hi-loc">รพ.รามาฯ</div></div><span></span></div>
+  </div>
+
+  <div class="option-label">แบบ B — badge ทุกรายการ (โลหิตรวมก็มี แต่สีจาง)</div>
+  <div class="option-desc">เห็นประเภทชัดทุกแถวเท่ากัน ไม่ต้องตีความว่า "ไม่มีป้าย = โลหิตรวม" แต่รายการรกขึ้นเล็กน้อย</div>
+  <div class="phone">
+    <div class="history-item"><div class="hi-main"><div class="hi-date">13 ก.ย. 2569</div><div class="hi-loc">รพ.จุฬาฯ</div></div><span class="badge-text">พลาสมา</span></div>
+    <div class="history-item"><div class="hi-main"><div class="hi-date">2 ส.ค. 2569</div><div class="hi-loc">สภากาชาดไทย</div></div><span class="badge-text">เกล็ดเลือด</span></div>
+    <div class="history-item"><div class="hi-main"><div class="hi-date">15 มิ.ย. 2569</div><div class="hi-loc">รพ.รามาฯ</div></div><span class="badge-default">โลหิตรวม</span></div>
+  </div>
+
+  <div class="option-label">แบบ C — จุดสีเล็กๆ แทนข้อความ (กดดูรายละเอียดถึงเห็นประเภทเต็ม)</div>
+  <div class="option-desc">กะทัดรัดสุด ไม่กินพื้นที่ แต่ต้องจำเองว่าจุดสีทึบ = ไม่ใช่โลหิตรวม เหมาะกับคนคุ้นแอปแล้ว ไม่เหมาะผู้ใช้ใหม่</div>
+  <div class="phone">
+    <div class="history-item"><div class="dot"></div><div class="hi-main"><div class="hi-date">13 ก.ย. 2569</div><div class="hi-loc">รพ.จุฬาฯ · พลาสมา</div></div></div>
+    <div class="history-item"><div class="dot"></div><div class="hi-main"><div class="hi-date">2 ส.ค. 2569</div><div class="hi-loc">สภากาชาดไทย · เกล็ดเลือด</div></div></div>
+    <div class="history-item"><div class="dot default"></div><div class="hi-main"><div class="hi-date">15 มิ.ย. 2569</div><div class="hi-loc">รพ.รามาฯ</div></div></div>
+  </div>
+
+  <div class="option-label">แบบ D — แถบสีด้านซ้ายของทั้งแถว</div>
+  <div class="option-desc">มองเห็นจากมุมตาได้ไวตอนไถดูประวัติยาวๆ แต่ถ้าจอมืด/สายตาเพี้ยนสีอาจแยกยาก ควรมีข้อความกำกับด้วยเสมอ (ไม่แนะนำเดี่ยวๆ)</div>
+  <div class="phone" style="padding-left:6px; padding-right:16px;">
+    <div class="row-bar"><div class="hi-main"><div class="hi-date">13 ก.ย. 2569</div><div class="hi-loc">รพ.จุฬาฯ · พลาสมา</div></div></div>
+    <div class="row-bar"><div class="hi-main"><div class="hi-date">2 ส.ค. 2569</div><div class="hi-loc">สภากาชาดไทย · เกล็ดเลือด</div></div></div>
+    <div class="row-bar default"><div class="hi-main"><div class="hi-date">15 มิ.ย. 2569</div><div class="hi-loc">รพ.รามาฯ</div></div></div>
+  </div>
+</body>
+</html>

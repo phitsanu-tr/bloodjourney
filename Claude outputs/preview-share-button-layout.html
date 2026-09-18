@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: จัดวางปุ่มแชร์ + ดาวน์โหลด</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .modal { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .fake-preview {
+    width: 100%; aspect-ratio: 4/5; border-radius: 14px; margin-bottom: 14px;
+    background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF7F5; font-size: 12px; font-weight: 700;
+  }
+
+  .btn-primary {
+    background: #9A3B33; color: #FFF7F5; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer; padding: 12px 0;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: inherit;
+  }
+  .btn-outline {
+    background: #FFFFFF; color: #9A3B33; border: 1.5px solid #9A3B33; border-radius: 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer; padding: 12px 0;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: inherit;
+  }
+  .btn-icon-only {
+    background: #FFFFFF; color: #9A3B33; border: 1.5px solid #E3C8C3; border-radius: 12px;
+    cursor: pointer; width: 46px; height: 46px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .btn-text-link {
+    background: none; border: none; color: #9A3B33; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; text-decoration: underline; padding: 4px 0; font-family: inherit;
+    display: block; margin: 10px auto 0;
+  }
+
+  .row-2col { display: flex; gap: 10px; }
+  .row-2col > * { flex: 1; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: จัดวางปุ่มแชร์คู่กับปุ่มดาวน์โหลด</h1>
+  <p class="sub">5 แบบให้เลือก ยังไม่ได้แก้โค้ดจริง — ไอคอนเป็นอิโมจิแทน lucide-react ชั่วคราวเพื่อความรวดเร็ว</p>
+
+  <div class="option-label">แบบ 1 — 2 ปุ่มเท่ากัน เรียงข้างกัน (แชร์ | ดาวน์โหลด)</div>
+  <div class="option-desc">ทั้งสองปุ่มมีน้ำหนักเท่ากัน ให้ผู้ใช้เลือกทำอย่างใดอย่างหนึ่งตามสะดวก</div>
+  <div class="modal">
+    <div class="fake-preview">ภาพตัวอย่าง 4:5</div>
+    <div class="row-2col">
+      <button class="btn-primary">📤 แชร์</button>
+      <button class="btn-outline">⬇ ดาวน์โหลด</button>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — แชร์เป็นปุ่มหลัก ดาวน์โหลดเป็นปุ่มรอง (เน้นแชร์)</div>
+  <div class="option-desc">ปุ่มแชร์เด่นสุด (สีทึบ) เพราะเป็นทางที่สะดวกสุดสำหรับคนส่วนใหญ่ ดาวน์โหลดเป็นตัวเลือกสำรอง</div>
+  <div class="modal">
+    <div class="fake-preview">ภาพตัวอย่าง 4:5</div>
+    <button class="btn-primary" style="width:100%; margin-bottom:10px;">📤 แชร์รูปภาพ</button>
+    <button class="btn-outline" style="width:100%;">⬇ ดาวน์โหลดรูปภาพ</button>
+  </div>
+
+  <div class="option-label">แบบ 3 — ดาวน์โหลดเป็นปุ่มหลักเหมือนเดิม + ปุ่มแชร์ไอคอนเล็กข้างๆ</div>
+  <div class="option-desc">คงพฤติกรรมเดิม (ดาวน์โหลดเด่นสุด) แล้วเพิ่มไอคอนแชร์เป็นทางเลือกเสริมแบบไม่รบกวนสายตา</div>
+  <div class="modal">
+    <div class="fake-preview">ภาพตัวอย่าง 4:5</div>
+    <div class="row-2col" style="align-items:stretch;">
+      <button class="btn-primary" style="flex:1;">⬇ ดาวน์โหลดรูปภาพ</button>
+      <button class="btn-icon-only">📤</button>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — แชร์เป็นปุ่มหลักเต็มความกว้าง + ลิงก์ข้อความเล็กด้านล่างสำหรับดาวน์โหลด</div>
+  <div class="option-desc">เรียบง่ายสุด เน้นแชร์เป็นทางเลือกหลัก ส่วนดาวน์โหลดเป็นลิงก์เล็กๆ ให้กดกรณีต้องการเก็บไฟล์ไว้เอง</div>
+  <div class="modal">
+    <div class="fake-preview">ภาพตัวอย่าง 4:5</div>
+    <button class="btn-primary" style="width:100%;">📤 แชร์รูปภาพ</button>
+    <button class="btn-text-link">หรือดาวน์โหลดเก็บไว้ในเครื่อง</button>
+  </div>
+
+  <div class="option-label">แบบ 5 — สลับปุ่มอัตโนมัติ: มือถือแสดง "แชร์" / คอมพิวเตอร์แสดง "ดาวน์โหลด" (ปุ่มเดียว)</div>
+  <div class="option-desc">ใช้ navigator.canShare ตรวจสอบ ถ้าเครื่องรองรับการแชร์ (ส่วนใหญ่คือมือถือ) จะโชว์ปุ่ม "แชร์" แทนที่ปุ่มดาวน์โหลดไปเลย ไม่ต้องมี 2 ปุ่มให้เลือก ลดความสับสน</div>
+  <div class="modal">
+    <div class="fake-preview">ภาพตัวอย่าง 4:5</div>
+    <button class="btn-primary" style="width:100%;">📤 แชร์รูปภาพ</button>
+    <p style="font-size:11px; color:#8A7370; text-align:center; margin:8px 0 0;">(ตัวอย่างนี้จำลองว่าเป็นมือถือ — บนคอมพิวเตอร์ปุ่มนี้จะเปลี่ยนเป็น "⬇ ดาวน์โหลดรูปภาพ" แทน)</p>
+  </div>
+</body>
+</html>

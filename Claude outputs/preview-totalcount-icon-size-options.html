@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ขยายไอคอน badge หยดเลือด</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+
+  .card {
+    background: #9A3B33;
+    border-radius: 20px;
+    padding: 26px 22px;
+    color: #FFF7F5;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .num-row { font-size: 46px; font-weight: 700; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .unit { font-size: 18px; font-weight: 500; }
+  .badge { border-radius: 50%; background: rgba(255,247,245,0.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ขนาด badge หยดเลือด (แบบ 3)</h1>
+  <p class="sub">3 ขนาดให้เลือก ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label">เดิม — วงกลม 56px / ไอคอน 26px</div>
+  <div class="card">
+    <div>
+      <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+      <div class="num-row">6<span class="unit">ครั้ง</span></div>
+    </div>
+    <div class="badge" style="width:56px; height:56px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+  </div>
+
+  <div class="option-label">ขยายขึ้น — วงกลม 68px / ไอคอน 34px</div>
+  <div class="card">
+    <div>
+      <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+      <div class="num-row">6<span class="unit">ครั้ง</span></div>
+    </div>
+    <div class="badge" style="width:68px; height:68px;">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+  </div>
+
+  <div class="option-label">ขยายอีก — วงกลม 78px / ไอคอน 40px</div>
+  <div class="card">
+    <div>
+      <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+      <div class="num-row">6<span class="unit">ครั้ง</span></div>
+    </div>
+    <div class="badge" style="width:78px; height:78px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+  </div>
+</body>
+</html>

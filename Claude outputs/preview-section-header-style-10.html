@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สไตล์หัวข้อหมวด "เข็มที่ระลึก" / "เหรียญกาชาดสมนาคุณ"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+  .card { max-width: 380px; background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 14px; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+  .title { font-size: 13px; font-weight: 700; color: #3A2C29; }
+  .count { font-size: 11.5px; font-weight: 600; color: #9A3B33; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ach { position: relative; border-radius: 14px; padding: 14px; background: #FBF6F5; border: 1px solid #F3E7E4; box-shadow: 0 6px 14px -6px rgba(154,59,51,0.3); }
+  .ach.locked { background: #F3EAE8; border: 1px solid #EEDEDA; opacity: 0.6; box-shadow: none; }
+  .icon { width: 34px; height: 34px; border-radius: 9px; background: #F0DAD4; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 15px; }
+  .icon.lock { background: #D8C6C2; }
+  .ach-title { font-size: 13px; font-weight: 700; color: #3A2C29; margin-bottom: 3px; }
+  .ach-desc { font-size: 11px; color: #8A7370; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <h1>สไตล์หัวข้อหมวด "เข็มที่ระลึก" — เทียบ 10 แบบ</h1>
+  <p class="sub">โจทย์: หัวข้อหมวดตอนนี้ (fontSize 13 / weight 700 / สี #3A2C29) มีน้ำหนักสายตาเท่ากับชื่อการ์ดย่อยข้างใน อยากลองแยกให้ชัดขึ้นโดยไม่ดันลำดับชั้นเกินหัวข้อหน้า (16/700) — แต่ละแบบคือหัวข้อ + แถวแรกของกริดเดิม</p>
+
+  <div class="option-label" style="margin-top:0;">0. แบบปัจจุบัน (อ้างอิง)</div>
+  <div class="card">
+    <div class="row"><div class="title">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">1. เปลี่ยนสีหัวข้อเป็นสีแบรนด์ ให้จับคู่กับตัวเลข</div>
+  <div class="card">
+    <div class="row"><div class="title" style="color:#9A3B33;">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">2. ตัวพิมพ์ใหญ่ + letter-spacing (แบบ eyebrow label)</div>
+  <div class="card">
+    <div class="row"><div class="title" style="text-transform:uppercase; letter-spacing:0.6px; font-size:11.5px; color:#8A7370;">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">3. แถบสีแบรนด์เล็ก ๆ ทางซ้ายของหัวข้อ (left accent bar)</div>
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; align-items:center; gap:7px;">
+        <span style="width:4px; height:14px; border-radius:2px; background:#9A3B33; display:inline-block;"></span>
+        <div class="title">เข็มที่ระลึก</div>
+      </div>
+      <div class="count">ปลดล็อก 5/11</div>
+    </div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">4. ไอคอนหมวดข้างหน้าชื่อหัวข้อ</div>
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:14px;">🎖️</span>
+        <div class="title">เข็มที่ระลึก</div>
+      </div>
+      <div class="count">ปลดล็อก 5/11</div>
+    </div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">5. ขนาดใหญ่ขึ้นเล็กน้อย (14.5 แทน 13)</div>
+  <div class="card">
+    <div class="row"><div class="title" style="font-size:14.5px;">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">6. เส้นคั่นบาง ๆ ใต้หัวข้อ แยกจากกริดชัดเจน</div>
+  <div class="card">
+    <div class="row" style="margin-bottom:0;"><div class="title">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div style="height:1px; background:#F3E7E4; margin:8px 0 10px;"></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">7. พื้นหลังชิปอ่อน ๆ หลังคำ (แยกเป็นแท็บ/ชิป)</div>
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <span style="font-size:12.5px; font-weight:700; color:#9A3B33; background:#FBEAE7; padding:4px 10px; border-radius:8px;">เข็มที่ระลึก</span>
+      <div class="count">ปลดล็อก 5/11</div>
+    </div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">8. สีแบรนด์ + ไอคอนหมวด รวมกัน</div>
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:13px;">🎖️</span>
+        <div class="title" style="color:#9A3B33;">เข็มที่ระลึก</div>
+      </div>
+      <div class="count">ปลดล็อก 5/11</div>
+    </div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">9. ทำให้ชื่อการ์ดย่อยเบาลงแทน (ลดน้ำหนักการ์ด ไม่ใช่เพิ่มหัวข้อ)</div>
+  <div class="option-label" style="font-weight:400; color:#8A7370; margin-top:-4px; font-size:11.5px;">แนวคิดสลับด้าน: หัวข้อคงเดิม แต่ลดน้ำหนักชื่อการ์ดย่อยจาก 700→600 และสีอ่อนลงเล็กน้อย ให้หัวข้อหมวดเด่นขึ้นโดยเปรียบเทียบ</div>
+  <div class="card">
+    <div class="row"><div class="title">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title" style="font-weight:600; color:#5C4A46;">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title" style="font-weight:600; color:#5C4A46;">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">10. รวมแบบ: แถบสี + เส้นคั่นใต้หัวข้อ</div>
+  <div class="card">
+    <div class="row" style="align-items:center; margin-bottom:0;">
+      <div style="display:flex; align-items:center; gap:7px;">
+        <span style="width:4px; height:14px; border-radius:2px; background:#9A3B33; display:inline-block;"></span>
+        <div class="title">เข็มที่ระลึก</div>
+      </div>
+      <div class="count">ปลดล็อก 5/11</div>
+    </div>
+    <div style="height:1px; background:#F3E7E4; margin:8px 0 10px;"></div>
+    <div class="grid">
+      <div class="ach"><div class="icon">🎖️</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 1</div><div class="ach-desc">บริจาคโลหิตครั้งแรกของคุณ</div></div>
+      <div class="ach locked"><div class="icon lock">🔒</div><div class="ach-title">เข็มที่ระลึก ครั้งที่ 48</div><div class="ach-desc">อีก 8 ครั้งจะปลดล็อก</div></div>
+    </div>
+  </div>
+
+</body>
+</html>

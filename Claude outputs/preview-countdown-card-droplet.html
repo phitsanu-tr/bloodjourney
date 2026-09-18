@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: การ์ดวันบริจาคโลหิตครั้งถัดไป + หยดเลือด</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { border-radius: 16px; padding: 16px; max-width: 380px; position: relative; overflow: hidden; }
+  .bar { height: 6px; border-radius: 3px; background: #F3EAE8; overflow: hidden; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มไอคอนหยดเลือดในการ์ด (พื้นหลังไล่สีขาว-ชมพูอ่อน แบบที่แนะนำ)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label" style="margin-top:0;">แบบ A — หยดเลือดใหญ่จาง ๆ มุมขวาบน (watermark)</div>
+  <div class="option-desc">ไอคอนหยดเลือดขนาดใหญ่ โปร่งแสง เป็นพื้นหลังตกแต่ง ไม่รบกวนเนื้อหา</div>
+  <div class="card" style="background:linear-gradient(135deg,#FFF7F5,#F3EAE8); border:1px solid #EEDEDA;">
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="#9A3B33" style="position:absolute; right:-12px; top:-12px; opacity:0.12;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div style="position:relative; z-index:1;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:4px;">วันบริจาคโลหิตครั้งถัดไป</div>
+      <div style="font-size:12.5px; color:#5C4A46;">บริจาคได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</div>
+      <div class="bar"><div style="width:2%; height:100%; background:#9A3B33;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ B — แทนไอคอนนาฬิกาเดิมด้วยหยดเลือด</div>
+  <div class="option-desc">เปลี่ยนไอคอนหน้าหัวข้อจากนาฬิกา เป็นหยดเลือดสีแดงเข้มแทน สื่อความหมายชัดเจนขึ้นว่าเกี่ยวกับการบริจาคโลหิต</div>
+  <div class="card" style="background:linear-gradient(135deg,#FFF7F5,#F3EAE8); border:1px solid #EEDEDA; display:flex; align-items:flex-start; gap:12px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#9A3B33" style="flex-shrink:0; margin-top:1px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div style="flex:1;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:4px;">วันบริจาคโลหิตครั้งถัดไป</div>
+      <div style="font-size:12.5px; color:#5C4A46;">บริจาคได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</div>
+      <div class="bar"><div style="width:2%; height:100%; background:#9A3B33;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ C — หยดเลือดเรียงเล็ก ๆ ประกอบ progress bar</div>
+  <div class="option-desc">ไอคอนหยดเลือดเล็ก ๆ วางไว้ที่หัวแถบ progress bar แทนจุดกลม ให้ธีมหยดเลือดปรากฏตรงจุดสำคัญ</div>
+  <div class="card" style="background:linear-gradient(135deg,#FFF7F5,#F3EAE8); border:1px solid #EEDEDA;">
+    <div style="font-size:13px; font-weight:600; margin-bottom:4px;">วันบริจาคโลหิตครั้งถัดไป</div>
+    <div style="font-size:12.5px; color:#5C4A46;">บริจาคได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</div>
+    <div style="position:relative; height:6px; border-radius:3px; background:#F3EAE8; margin-top:10px;">
+      <div style="width:2%; height:100%; background:#9A3B33; border-radius:3px;"></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#9A3B33" style="position:absolute; left:2%; top:50%; transform:translate(-50%,-50%);"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ D — ไอคอนหยดเลือดในวงกลมพื้นหลัง (badge style)</div>
+  <div class="option-desc">ใส่หยดเลือดในวงกลมพื้นหลังชมพูอ่อน แทนไอคอนนาฬิกาเดิม ให้ดูเป็นสัญลักษณ์ชัดเจน มีมิติจากพื้นหลังวงกลม</div>
+  <div class="card" style="background:linear-gradient(135deg,#FFF7F5,#F3EAE8); border:1px solid #EEDEDA; display:flex; align-items:flex-start; gap:12px;">
+    <div style="width:34px; height:34px; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:4px;">วันบริจาคโลหิตครั้งถัดไป</div>
+      <div style="font-size:12.5px; color:#5C4A46;">บริจาคได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</div>
+      <div class="bar"><div style="width:2%; height:100%; background:#9A3B33;"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>

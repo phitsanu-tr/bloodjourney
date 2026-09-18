@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เพิ่มมิติให้การ์ดเข็ม/เหรียญ 10 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 380px; }
+  .card { border-radius: 14px; padding: 14px; }
+  .icon-wrap { height: 40px; display: flex; align-items: center; margin-bottom: 10px; }
+  .title { font-size: 13px; font-weight: 700; color: #3A2C29; margin-bottom: 3px; }
+  .desc { font-size: 11px; color: #8A7370; line-height: 1.5; }
+  .lock { width: 34px; height: 34px; border-radius: 9px; background: #D8C6C2; display: flex; align-items: center; justify-content: center; color: #8A7370; font-size: 14px; }
+  .badge { position: relative; }
+  .tag { position: absolute; top: -8px; left: 12px; font-size: 9.5px; font-weight: 700; color: #FFF7F5; background: #9A3B33; padding: 2px 8px; border-radius: 10px; }
+</style>
+</head>
+<body>
+  <h1>เพิ่มมิติให้การ์ดเข็มที่ระลึก / เหรียญ — 10 แบบ</h1>
+  <p class="sub">เทียบการ์ดปลดล็อกแล้ว (ซ้าย) กับการ์ดที่ใกล้ปลดล็อก/ล็อกอยู่ (ขวา, มีป้าย "ถัดไป") — ยังไม่แก้โค้ดจริง</p>
+
+  <div class="option-label" style="margin-top:0;">1. แบบปัจจุบัน (เรียบ ไม่มีเงา)</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #E3C8C3;">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">2. เงานุ่ม ๆ ใต้การ์ดที่ปลดล็อกแล้ว (drop shadow บาง)</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA; box-shadow:0 4px 10px -4px rgba(122,42,35,0.18);">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">3. เงาเข้มขึ้น ยกการ์ดให้ลอยชัดเจน (elevated card)</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA; box-shadow:0 8px 18px -6px rgba(122,42,35,0.28);">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33; box-shadow:0 8px 18px -6px rgba(154,59,51,0.22);">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">4. ไล่เฉดพื้นหลังบาง ๆ จากขาวไปครีม (subtle gradient) + เงาเบา</div>
+  <div class="grid">
+    <div class="card" style="background:linear-gradient(180deg,#FFFFFF 0%,#FCF7F5 100%); border:1px solid #EEDEDA; box-shadow:0 3px 8px -4px rgba(122,42,35,0.15);">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:linear-gradient(180deg,#FDF0EE 0%,#F8E4E1 100%); border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">5. แถบสีเน้นด้านล่างการ์ด (bottom accent bar)</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA; border-bottom:3px solid #C99B3F; position:relative;">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33; border-bottom:3px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">6. ไอคอนอยู่ในวงกลมยกนูน มีเงาเฉพาะไอคอน</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA;">
+      <div class="icon-wrap"><div style="width:38px; height:38px; border-radius:50%; background:#FFF7F0; box-shadow:0 4px 8px -2px rgba(200,150,40,0.4), inset 0 1px 0 rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-size:18px;">🌟</div></div>
+      <div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><div style="width:38px; height:38px; border-radius:50%; background:#D8C6C2; box-shadow:inset 0 2px 4px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; font-size:14px;">🔒</div></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">7. นูน-บุ๋มแบบ neumorphic (เงาคู่ สว่าง+เข้ม)</div>
+  <div class="option-desc">โทนนุ่มมาก เหมาะกับพื้นหลังสีเดียวกับการ์ด แต่ต้องระวังคอนทราสต์ให้อ่านง่าย</div>
+  <div class="grid">
+    <div class="card" style="background:#FBF6F5; border:none; box-shadow:6px 6px 12px rgba(180,140,130,0.25), -6px -6px 12px rgba(255,255,255,0.9);">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FBF6F5; border:1.5px solid #9A3B33; box-shadow:inset 3px 3px 8px rgba(180,140,130,0.2), inset -3px -3px 8px rgba(255,255,255,0.7);">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">8. กรอบไล่เฉดสี (gradient border) เฉพาะการ์ดปลดล็อกแล้ว</div>
+  <div class="grid">
+    <div style="border-radius:15px; padding:1.5px; background:linear-gradient(135deg,#E8C349,#9A3B33);">
+      <div class="card" style="background:#FFFFFF; border-radius:13.5px;">
+        <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+      </div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">9. เอฟเฟกต์ "สติกเกอร์" — เงาทึบซ้อนด้านหลังเอียงเล็กน้อย</div>
+  <div class="grid">
+    <div style="position:relative;">
+      <div style="position:absolute; inset:0; background:#E3C8C3; border-radius:14px; transform:rotate(-2deg); z-index:0;"></div>
+      <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA; position:relative; z-index:1;">
+        <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+      </div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33;">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+  <div class="option-label">10. เงาสีแบรนด์จาง ๆ (tinted shadow) แทนเงาเทาเรียบ ๆ</div>
+  <div class="option-desc">เงาอมสีแดงอ่อนแทนสีเทา ให้กลืนไปกับโทนแอปมากกว่าเงาเทาทั่วไป</div>
+  <div class="grid">
+    <div class="card" style="background:#FFFFFF; border:1px solid #EEDEDA; box-shadow:0 6px 14px -6px rgba(154,59,51,0.3);">
+      <div class="icon-wrap">🌟</div><div class="title">เข็มที่ระลึก ครั้งที่ 16</div><div class="desc">บริจาคโลหิตครบ 16 ครั้ง</div>
+    </div>
+    <div class="card badge" style="background:#FDF0EE; border:1.5px solid #9A3B33; box-shadow:0 6px 14px -6px rgba(154,59,51,0.35);">
+      <span class="tag">ถัดไป</span><div class="icon-wrap"><span class="lock">🔒</span></div><div class="title">เข็มที่ระลึก ครั้งที่ 48</div><div class="desc">อีก 8 ครั้งจะปลดล็อก</div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ไอเดีย: เพิ่มอะไรในแดชบอร์ดได้บ้าง</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; max-width: 640px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; max-width: 960px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 16px; }
+  .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #F3EAE8; color: #9A3B33; font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+  .title-row { display: flex; align-items: center; margin-bottom: 8px; }
+  .title { font-size: 13.5px; font-weight: 700; color: #3A2C29; }
+  .desc { font-size: 12px; color: #7A6360; line-height: 1.6; margin: 0 0 10px; }
+  .mini { background: #FBF6F5; border: 1px solid #F3E7E4; border-radius: 10px; padding: 10px; font-size: 11px; color: #9A3B33; }
+  .bar { display: flex; align-items: flex-end; gap: 4px; height: 40px; margin-top: 6px; }
+  .bar div { flex: 1; background: linear-gradient(180deg, #B24A40, #8A2F28); border-radius: 3px 3px 0 0; }
+  .heat { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin-top: 4px; }
+  .heat div { aspect-ratio: 1; border-radius: 3px; }
+  .pill { display: inline-block; font-size: 10px; background: #F3EAE8; color: #9A3B33; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-right: 5px; }
+</style>
+</head>
+<body>
+  <h1>ไอเดีย: หน้าแดชบอร์ดเพิ่มอะไรได้อีกบ้าง</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — เป็นไอเดียระดับแนวคิด 10 อย่างที่อาจเพิ่มในหน้าแดชบอร์ด (ตอนนี้มี: ระยะห่างเฉลี่ย, ปีที่บริจาคมากสุด, ปริมาณสะสม, กราฟรายปี) เลือกอันที่สนใจแล้วค่อยออกแบบ UI จริงต่อได้เลย</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="title-row"><span class="num">1</span><span class="title">แถบความคืบหน้าสู่เป้าหมายถัดไป</span></div>
+      <p class="desc">แสดงว่าใกล้ปลดล็อกความสำเร็จ/เหรียญถัดไปแค่ไหน เช่น "อีก 2 ครั้งถึงระดับถัดไป" พร้อมแถบ progress</p>
+      <div class="mini">🏆 นักบริจาคทองแดง → เงิน<br><div style="background:#F3EAE8; border-radius:20px; height:8px; margin-top:6px; overflow:hidden;"><div style="width:70%; height:100%; background:#9A3B33;"></div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">2</span><span class="title">ปฏิทินความสม่ำเสมอ (heatmap)</span></div>
+      <p class="desc">ตารางสีเข้ม-อ่อนตามเดือนที่มีการบริจาค คล้าย GitHub contribution graph ดูภาพรวมทั้งปีได้ในตาเดียว</p>
+      <div class="heat">
+        <div style="background:#F3EAE8"></div><div style="background:#F3EAE8"></div><div style="background:#E3C0BA"></div><div style="background:#F3EAE8"></div><div style="background:#9A3B33"></div><div style="background:#F3EAE8"></div><div style="background:#F3EAE8"></div><div style="background:#E3C0BA"></div><div style="background:#F3EAE8"></div><div style="background:#F3EAE8"></div><div style="background:#9A3B33"></div><div style="background:#F3EAE8"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">3</span><span class="title">สัดส่วนประเภทการบริจาค</span></div>
+      <p class="desc">กราฟวงกลม/แท่งเทียบ "โลหิตรวม" กับ "พลาสมา/เกล็ดเลือด" ว่าบริจาคแต่ละแบบไปกี่ครั้ง สัดส่วนเท่าไหร่</p>
+      <div class="mini"><span class="pill">◇ โลหิตรวม 4</span><span class="pill">🩸 พลาสมา 2</span></div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">4</span><span class="title">เทียบกับปีก่อนหน้า</span></div>
+      <p class="desc">"ปีนี้บริจาค 3 ครั้ง เทียบปีที่แล้ว 2 ครั้ง (+50%)" ให้เห็นแนวโน้มว่าทำได้ดีขึ้นหรือลดลง</p>
+      <div class="mini">2569: 3 ครั้ง  <span style="color:#2E7D32; font-weight:700;">▲ +1 จากปี 2568</span></div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">5</span><span class="title">สถานที่ที่บริจาคบ่อยที่สุด</span></div>
+      <p class="desc">สรุปอันดับสถานที่/หน่วยรับบริจาคที่ไปบ่อยสุด จากข้อมูลสถานที่ที่เคยกรอกไว้ในแต่ละรายการ</p>
+      <div class="mini">1. ที่ทำงาน (3 ครั้ง)<br>2. รพ.จุฬาฯ (2 ครั้ง)</div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">6</span><span class="title">ไทม์ไลน์การเดินทางบริจาค</span></div>
+      <p class="desc">เส้นเวลาแนวตั้งแสดงทุกครั้งที่บริจาคเรียงตามวันที่ พร้อมไอคอน/เหรียญรางวัลที่ปลดล็อกระหว่างทาง — ภาพรวม "การเดินทาง"</p>
+      <div class="mini">● 14 ก.ย. 69 — ครั้งที่ 9<br>│<br>● 7 ก.ย. 69 — ครั้งที่ 8 🏅 ปลดล็อกเหรียญ</div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">7</span><span class="title">จำนวนผู้ป่วยที่อาจได้รับความช่วยเหลือ</span></div>
+      <p class="desc">แปลงจำนวนครั้งบริจาคเป็นตัวเลข "ช่วยชีวิตได้ประมาณกี่คน" (เลือดบริจาค 1 ครั้งช่วยผู้ป่วยได้สูงสุดถึง 3 คน) เพิ่มความรู้สึกถึงคุณค่า</p>
+      <div class="mini">🩸 9 ครั้ง ≈ ช่วยผู้ป่วยได้ถึง 27 คน</div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">8</span><span class="title">แนวโน้มความถี่ (แผนภูมิเส้น)</span></div>
+      <p class="desc">กราฟเส้นแสดงจำนวนวันระหว่างแต่ละครั้ง ว่าถี่ขึ้น/ห่างขึ้นเรื่อย ๆ ช่วยดูพฤติกรรมระยะยาวได้ดีกว่าตัวเลขเฉลี่ยตัวเดียว</p>
+      <div class="bar"><div style="height:60%"></div><div style="height:40%"></div><div style="height:80%"></div><div style="height:30%"></div><div style="height:55%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">9</span><span class="title">สรุปภาพรวมรายปี (Year in Review)</span></div>
+      <p class="desc">การ์ดสรุปท้ายปีสไตล์ Spotify Wrapped — จำนวนครั้ง ปริมาณ สถานที่เด่น เหรียญที่ได้ในปีนั้น แชร์เป็นภาพได้เหมือนการ์ดความสำเร็จ</p>
+      <div class="mini">✨ สรุปปี 2569 ของคุณ: 3 ครั้ง • 1.05 ลิตร • 2 เหรียญใหม่</div>
+    </div>
+
+    <div class="card">
+      <div class="title-row"><span class="num">10</span><span class="title">ตารางเทียบกับค่าเฉลี่ยทั่วไป</span></div>
+      <p class="desc">เทียบสถิติของผู้ใช้กับค่าเฉลี่ย/คำแนะนำทั่วไป (เช่น ความถี่ที่แนะนำต่อปีตามเกณฑ์) ให้บริบทว่าพฤติกรรมตัวเองอยู่ระดับไหน</p>
+      <div class="mini">คุณ: ทุก 90 วัน &nbsp;|&nbsp; เกณฑ์แนะนำ: ทุก 90 วัน ✓</div>
+    </div>
+
+  </div>
+</body>
+</html>

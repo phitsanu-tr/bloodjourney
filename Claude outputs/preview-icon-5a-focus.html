@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ไอคอน 5A เทียบก่อน-หลัง</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .row { display: flex; gap: 28px; align-items: flex-start; margin-bottom: 30px; }
+  .col { text-align: center; }
+  .icon-box { width: 90px; height: 90px; border-radius: 24px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+  .label { font-size: 12.5px; font-weight: 700; color: #9A3B33; }
+  .desc { font-size: 11px; color: #8A7370; margin-top: 3px; max-width: 140px; }
+
+  .header-mock { max-width: 380px; background: #FFFFFF; border-radius: 14px; padding: 14px 16px; border: 1px solid #EEDEDA; display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+  .hicon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ไอคอน 5A (ไล่เฉดสี + เงา) เทียบก่อน-หลัง</h1>
+  <p class="sub">ขยายให้ดูชัดๆ ก่อน (ซ้าย) เทียบกับหลัง (ขวา) — ตอนนี้แอปจริงใช้แบบขวาอยู่แล้ว</p>
+
+  <div class="row">
+    <div class="col">
+      <div class="icon-box" style="background:#9A3B33;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">ก่อน (สีทึบเรียบ)</div>
+      <div class="desc">พื้นหลังสีเดียวแบนราบ #9A3B33 ไม่มีเงา</div>
+    </div>
+    <div class="col">
+      <div class="icon-box" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 10px 20px -6px rgba(122,42,35,0.55);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">หลัง (5A)</div>
+      <div class="desc">ไล่เฉดจากแดงอิฐสว่าง #B24A40 มุมบนซ้าย ไปแดงเข้ม #8A2F28 มุมล่างขวา + เงานุ่มใต้กรอบ</div>
+    </div>
+  </div>
+
+  <p class="sub" style="margin-bottom:8px;">ขนาดจริงในแอป (34px ที่หัวข้อหน้าหลัก) — เอฟเฟกต์จะสังเกตยากกว่านี้เพราะเล็กลงมาก:</p>
+  <div class="header-mock">
+    <div class="hicon" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 5px 12px -4px rgba(122,42,35,0.55);">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+    </div>
+    <div>
+      <div style="font-size:14px; font-weight:700; line-height:1.25;">Blood Journey</div>
+      <div style="font-size:10.5px; color:#8A7370; line-height:1.25;">บันทึกบริจาคโลหิต</div>
+    </div>
+  </div>
+</body>
+</html>

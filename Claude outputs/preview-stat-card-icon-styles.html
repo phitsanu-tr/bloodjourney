@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: จัดวางไอคอนการ์ดสถิติใหม่</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 420px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 14px; position: relative; overflow: hidden; }
+  .title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #3A2C29; position: relative; z-index: 1; }
+  .num { font-size: 20px; font-weight: 700; margin-top: 8px; position: relative; z-index: 1; }
+  .num span { font-size: 12px; font-weight: 500; }
+  .cap { font-size: 11.5px; color: #8A7370; margin-top: 2px; position: relative; z-index: 1; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: จัดวางไอคอนใหม่ (ระยะห่างเฉลี่ย / ปีที่บริจาคมากสุด)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — 10 แบบ ลองดูว่าอยากได้แบบไหน</p>
+
+  <!-- 1 -->
+  <div class="option-label" style="margin-top:0;">แบบ 1 — ไม่มีไอคอนเลย (เอาออกทั้งคู่)</div>
+  <div class="option-desc">เหมือนการ์ดปริมาณโลหิตสะสมด้านบน เรียบง่ายสุด</div>
+  <div class="pair">
+    <div class="card">
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="option-label">แบบ 2 — ไอคอนเล็กอยู่หน้าหัวข้อ (inline)</div>
+  <div class="option-desc">ไอคอนขนาดเล็กวางก่อนข้อความหัวข้อในบรรทัดเดียวกัน</div>
+  <div class="pair">
+    <div class="card">
+      <div class="title" style="display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        ระยะห่างเฉลี่ยระหว่างครั้ง
+      </div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <div class="title" style="display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+        ปีที่บริจาคมากสุด
+      </div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="option-label">แบบ 3 — ไอคอนอยู่ขวาบนมุมการ์ด (แทนหัวข้อ)</div>
+  <div class="option-desc">ไอคอนลอยมุมขวาบน สีจาง ๆ ไม่แข่งกับข้อความ หัวข้อชิดซ้ายตามปกติ</div>
+  <div class="pair">
+    <div class="card">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C98D85" stroke-width="2" style="position:absolute; right:14px; top:14px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C98D85" stroke-width="2" style="position:absolute; right:14px; top:14px;"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="option-label">แบบ 4 — ไอคอนในวงกลมพื้นสี (badge)</div>
+  <div class="option-desc">ไอคอนใส่ในวงกลมพื้นหลังสีอ่อน วางเหนือหัวข้อ ให้ความรู้สึกเป็นหมวดหมู่ชัดเจน</div>
+  <div class="pair">
+    <div class="card">
+      <div style="width:30px; height:30px; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </div>
+      <div class="title" style="margin-bottom:0;">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <div style="width:30px; height:30px; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+      </div>
+      <div class="title" style="margin-bottom:0;">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="option-label">แบบ 5 — ไอคอนใหญ่จาง ๆ มุมขวาล่าง (watermark ตำแหน่งใหม่)</div>
+  <div class="option-desc">คล้ายที่เคยลองกับการ์ดปริมาณโลหิต แต่วางมุมขวาล่างแทน ไม่ชนหัวข้อ/ตัวเลข</div>
+  <div class="pair">
+    <div class="card">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.5" style="position:absolute; right:-8px; bottom:-8px; opacity:0.08;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.5" style="position:absolute; right:-8px; bottom:-8px; opacity:0.08;"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="option-label">แบบ 6 — ไอคอนแทนที่ตัวเลข (วางข้างตัวเลขใหญ่)</div>
+  <div class="option-desc">ไอคอนขนาดกลางวางซ้ายของตัวเลขใหญ่ในแนวเดียวกัน คล้าย stat card ทั่วไปที่เห็นบ่อย</div>
+  <div class="pair">
+    <div class="card">
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div style="display:flex; align-items:center; gap:8px; position:relative; z-index:1;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <div class="num" style="margin-top:0;">90<span> วัน</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div style="display:flex; align-items:center; gap:8px; position:relative; z-index:1;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+        <div class="num" style="margin-top:0;">ปี 2568</div>
+      </div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="option-label">แบบ 7 — แถบสีบาง ๆ ด้านซ้ายการ์ดแทนไอคอน</div>
+  <div class="option-desc">ไม่ใช้ไอคอนเลย แต่ใส่แถบสีเข้มบาง ๆ ที่ขอบซ้ายของการ์ดแทน ให้ความรู้สึกเป็นหมวดหมู่โดยไม่ต้องมีรูป</div>
+  <div class="pair">
+    <div class="card" style="padding-left:16px; border-left:4px solid #9A3B33; border-radius:14px 8px 8px 14px;">
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card" style="padding-left:16px; border-left:4px solid #9A3B33; border-radius:14px 8px 8px 14px;">
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="option-label">แบบ 8 — ไอคอนแทนที่หัวข้อข้อความ (ไอคอน + tooltip)</div>
+  <div class="option-desc">ใช้ไอคอนแทนคำอธิบายยาว ๆ ทั้งหมด เหลือแค่ไอคอน + ตัวเลข ให้ดูสะอาดสุด (แต่ต้องรู้ความหมายไอคอนเอง)</div>
+  <div class="pair">
+    <div class="card">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2" style="margin-bottom:8px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div class="num" style="margin-top:0;">90<span> วัน</span></div>
+      <div class="cap">ระยะห่างเฉลี่ย</div>
+    </div>
+    <div class="card">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2" style="margin-bottom:8px;"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+      <div class="num" style="margin-top:0;">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="option-label">แบบ 9 — พื้นหลังไล่สีอ่อนทั้งการ์ด แทนไอคอน (เหมือนแบบ E ของการ์ดปริมาณ)</div>
+  <div class="option-desc">ไม่มีไอคอน ใช้ไล่สีมุมบนซ้ายอ่อน ๆ แทน ให้สัมผัสสีสันโดยไม่ต้องมีรูปทรง</div>
+  <div class="pair">
+    <div class="card">
+      <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(154,59,51,0.06), rgba(154,59,51,0) 60%); pointer-events:none;"></div>
+      <div class="title">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(154,59,51,0.06), rgba(154,59,51,0) 60%); pointer-events:none;"></div>
+      <div class="title">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="option-label">แบบ 10 — ไอคอนสีพื้นเต็ม (filled) มุมขวาบนแบบ badge เล็ก</div>
+  <div class="option-desc">ไอคอนพื้นสีเข้มเต็ม ขนาดเล็ก อยู่มุมขวาบนแบบ badge กลม ให้สีสันเด่นขึ้นกว่าแบบเส้น (outline)</div>
+  <div class="pair">
+    <div class="card">
+      <div style="position:absolute; right:12px; top:12px; width:26px; height:26px; border-radius:50%; background:#9A3B33; display:flex; align-items:center; justify-content:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </div>
+      <div class="title" style="max-width:75%;">ระยะห่างเฉลี่ยระหว่างครั้ง</div>
+      <div class="num">90<span> วัน</span></div>
+    </div>
+    <div class="card">
+      <div style="position:absolute; right:12px; top:12px; width:26px; height:26px; border-radius:50%; background:#9A3B33; display:flex; align-items:center; justify-content:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M12 15a4 4 0 100-8 4 4 0 000 8z"/><path d="M8.5 13.5L7 21l5-3 5 3-1.5-7.5"/></svg>
+      </div>
+      <div class="title" style="max-width:75%;">ปีที่บริจาคมากสุด</div>
+      <div class="num">ปี 2568</div>
+      <div class="cap">บริจาคมากสุด 4 ครั้ง</div>
+    </div>
+  </div>
+
+</body>
+</html>

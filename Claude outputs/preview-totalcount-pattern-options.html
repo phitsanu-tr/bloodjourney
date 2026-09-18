@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ลวดลายพื้นหลังการ์ดสะสม</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .card {
+    border-radius: 20px;
+    padding: 26px 22px;
+    color: #FFF7F5;
+    max-width: 380px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);
+    box-shadow: 0 14px 32px -8px rgba(122,42,35,0.55);
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+  .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .num-row { font-size: 46px; font-weight: 700; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .unit { font-size: 18px; font-weight: 500; }
+  .badge { width: 68px; height: 68px; border-radius: 50%; background: rgba(255,247,245,0.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .divider { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,247,245,0.25); display: flex; align-items: center; gap: 10px; font-size: 13.5px; position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มลวดลายบนการ์ด (บนฐาน gradient + เงาลอย)</h1>
+  <p class="sub">5 แบบให้เลือก ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label">แบบ A — หยดเลือดจาง ๆ กระจายหลายจุด</div>
+  <p class="option-desc">หยดเลือดขนาดต่าง ๆ โปร่งแสงมาก กระจายอยู่มุมขวาบนและล่างของการ์ด ให้ความรู้สึกมีลวดลายแต่ไม่รบกวนตัวหนังสือ</p>
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,247,245,0.08)" style="position:absolute; top:-10px; right:20px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="rgba(255,247,245,0.07)" style="position:absolute; bottom:10px; left:-6px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,247,245,0.06)" style="position:absolute; bottom:60px; right:100px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row">
+      <div><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num-row">6<span class="unit">ครั้ง</span></div></div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ B — เส้นคลื่นจาง ๆ ด้านล่างการ์ด</div>
+  <p class="option-desc">เส้นโค้งบาง ๆ คล้ายคลื่น/ระลอกเลือด พาดผ่านครึ่งล่างของการ์ด ให้ความรู้สึกลื่นไหล</p>
+  <div class="card">
+    <svg viewBox="0 0 380 120" preserveAspectRatio="none" style="position:absolute; bottom:-20px; left:0; width:100%; height:90px; opacity:0.5;">
+      <path d="M0,60 C60,90 120,20 190,50 C260,80 320,30 380,55 L380,120 L0,120 Z" fill="rgba(255,247,245,0.06)"/>
+    </svg>
+    <div class="row">
+      <div><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num-row">6<span class="unit">ครั้ง</span></div></div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ C — จุดกลมเรียงเป็น dot grid จาง ๆ</div>
+  <p class="option-desc">จุดเล็ก ๆ เรียงเป็นตารางกระจายทั่วมุมขวาบนของการ์ด ให้พื้นผิวมีเนื้อสัมผัสแบบมินิมอล</p>
+  <div class="card">
+    <svg width="140" height="100" style="position:absolute; top:0; right:0; opacity:0.5;">
+      <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="rgba(255,247,245,0.35)"/></pattern>
+      <rect width="140" height="100" fill="url(#dots)"/>
+    </svg>
+    <div class="row">
+      <div><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num-row">6<span class="unit">ครั้ง</span></div></div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ D — วงกลมเบลอใหญ่ซ้อนกัน (soft blobs) มุมขวาบน</div>
+  <p class="option-desc">วงกลมใหญ่โปร่งแสงเบลอ 2-3 วง ซ้อนกันอยู่นอกกรอบการ์ดมุมขวาบน ให้บรรยากาศนุ่มนวลแบบ gradient orb</p>
+  <div class="card">
+    <div style="position:absolute; top:-40px; right:-30px; width:140px; height:140px; border-radius:50%; background:rgba(255,247,245,0.09); filter:blur(2px);"></div>
+    <div style="position:absolute; top:-10px; right:40px; width:70px; height:70px; border-radius:50%; background:rgba(255,247,245,0.07); filter:blur(1px);"></div>
+    <div class="row">
+      <div><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num-row">6<span class="unit">ครั้ง</span></div></div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ E — เส้นทแยงมุมบาง ๆ (diagonal stripes)</div>
+  <p class="option-desc">เส้นทแยงมุมจาง ๆ ทั่วพื้นหลังการ์ด ให้ความรู้สึกมีพลัง/เคลื่อนไหว แนวสปอร์ตมากขึ้น</p>
+  <div class="card">
+    <div style="position:absolute; inset:0; background: repeating-linear-gradient(45deg, rgba(255,247,245,0.05) 0 2px, transparent 2px 14px); pointer-events:none;"></div>
+    <div class="row">
+      <div><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num-row">6<span class="unit">ครั้ง</span></div></div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+</body>
+</html>

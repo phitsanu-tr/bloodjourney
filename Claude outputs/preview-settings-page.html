@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: หน้าตั้งค่า 5 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 15.5px; font-weight: 700; }
+
+  .list-item { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid #F3E7E4; font-size: 13.5px; }
+  .list-item:last-child { border-bottom: none; }
+  .li-icon { width: 32px; height: 32px; border-radius: 9px; background: #F6EBE9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+  .li-text { flex: 1; }
+  .li-sub { font-size: 11px; color: #8A7370; margin-top: 2px; }
+  .chevron { color: #B39B96; font-size: 13px; }
+
+  .group-title { font-size: 11px; color: #9A3B33; font-weight: 700; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .group-card { background: #FBF6F5; border: 1px solid #EEDEDA; border-radius: 12px; padding: 0 12px; margin-bottom: 6px; }
+
+  .toggle { width: 34px; height: 20px; border-radius: 20px; background: #E3C8C3; position: relative; flex-shrink: 0; }
+  .toggle.on { background: #9A3B33; }
+  .toggle-dot { width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; position: absolute; top: 2px; left: 2px; }
+  .toggle.on .toggle-dot { left: 16px; }
+
+  .header-mock { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .header-left { display: flex; align-items: center; gap: 9px; }
+  .hicon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); display: flex; align-items: center; justify-content: center; color:#FFF7F5; font-size:15px; }
+  .header-right { display: flex; gap: 4px; color: #9A3B33; font-size: 17px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: หน้า/เมนู "ตั้งค่า" 5 แบบ</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — เนื้อหาในนี้เป็นตัวอย่าง (บางรายการยังไม่มีฟีเจอร์จริงรองรับ)</p>
+
+  <div class="option-label">แบบ 1 — รายการลิสต์เรียบง่าย (มีไอคอนคำอธิบายเล็กๆ)</div>
+  <div class="option-desc">แบบพื้นฐานที่สุด แต่ละรายการมีไอคอน + ข้อความบรรยายสั้นๆ ใต้หัวข้อ</div>
+  <div class="phone">
+    <div class="title-row">⚙️ ตั้งค่า</div>
+    <div class="list-item"><div class="li-icon">🔔</div><div class="li-text">การแจ้งเตือน<div class="li-sub">เตือนก่อนถึงวันครบกำหนด</div></div><div class="chevron">›</div></div>
+    <div class="list-item"><div class="li-icon">💾</div><div class="li-text">จัดการข้อมูล<div class="li-sub">สำรอง / กู้คืน / ลบข้อมูล</div></div><div class="chevron">›</div></div>
+    <div class="list-item"><div class="li-icon">🌙</div><div class="li-text">ธีม<div class="li-sub">สว่าง / มืด</div></div><div class="chevron">›</div></div>
+    <div class="list-item"><div class="li-icon">ℹ️</div><div class="li-text">เกี่ยวกับแอป<div class="li-sub">เวอร์ชัน, นโยบายความเป็นส่วนตัว</div></div><div class="chevron">›</div></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — จัดกลุ่มเป็นหมวดหมู่ (คล้ายการตั้งค่า iOS)</div>
+  <div class="option-desc">แยกเป็นกลุ่มชัดเจน มีหัวข้อกลุ่มเล็กๆ กำกับ เห็นภาพรวมง่ายเมื่อมีรายการเยอะขึ้น</div>
+  <div class="phone">
+    <div class="title-row">⚙️ ตั้งค่า</div>
+    <div class="group-title">ทั่วไป</div>
+    <div class="group-card">
+      <div class="list-item"><div class="li-text">การแจ้งเตือน</div><div class="chevron">›</div></div>
+      <div class="list-item"><div class="li-text">ธีม</div><div class="chevron">›</div></div>
+    </div>
+    <div class="group-title">ข้อมูลของฉัน</div>
+    <div class="group-card">
+      <div class="list-item"><div class="li-text">สำรอง / กู้คืนข้อมูล</div><div class="chevron">›</div></div>
+      <div class="list-item"><div class="li-text">ลบข้อมูลทั้งหมด</div><div class="chevron">›</div></div>
+    </div>
+    <div class="group-title">เกี่ยวกับ</div>
+    <div class="group-card">
+      <div class="list-item"><div class="li-text">เวอร์ชันแอป</div><div style="font-size:12px; color:#8A7370;">1.0.0</div></div>
+      <div class="list-item"><div class="li-text">ความเป็นส่วนตัว</div><div class="chevron">›</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — สลับสวิตช์ทันที (toggle) ไม่ต้องกดเข้าหน้าย่อย</div>
+  <div class="option-desc">รายการที่เปิด/ปิดได้ทำเป็นสวิตช์เลยในหน้าเดียว ลดจำนวนหน้าที่ต้องกดต่อ เหมาะกับรายการตั้งค่าที่ไม่ซับซ้อน</div>
+  <div class="phone">
+    <div class="title-row">⚙️ ตั้งค่า</div>
+    <div class="list-item"><div class="li-text">แจ้งเตือนก่อนครบกำหนด</div><div class="toggle on"><div class="toggle-dot"></div></div></div>
+    <div class="list-item"><div class="li-text">โหมดมืด</div><div class="toggle"><div class="toggle-dot"></div></div></div>
+    <div class="list-item"><div class="li-text">จัดการข้อมูล</div><div class="chevron">›</div></div>
+    <div class="list-item"><div class="li-text">เกี่ยวกับแอป</div><div class="chevron">›</div></div>
+  </div>
+
+  <div class="option-label">แบบ 4 — รวมเข้ากับหน้าโปรไฟล์เดิม (ไม่แยกหน้าใหม่)</div>
+  <div class="option-desc">ไม่ทำเป็นเมนูแยก แต่เพิ่มส่วน "การตั้งค่าแอป" ต่อท้ายในโมดัลโปรไฟล์ที่มีอยู่แล้ว ลดจำนวนจุดเข้าถึงในหัวข้อ</div>
+  <div class="phone">
+    <div class="title-row">👤 โปรไฟล์ของฉัน</div>
+    <div style="font-size:12px; color:#8A7370; margin-bottom:8px;">ชื่อเล่น, หมู่เลือด, อายุ, น้ำหนัก ฯลฯ (เหมือนเดิม)</div>
+    <div class="group-title">การตั้งค่าแอป</div>
+    <div class="group-card">
+      <div class="list-item"><div class="li-text">การแจ้งเตือน</div><div class="chevron">›</div></div>
+      <div class="list-item"><div class="li-text">ธีม</div><div class="chevron">›</div></div>
+      <div class="list-item"><div class="li-text">สำรอง/กู้คืนข้อมูล</div><div class="chevron">›</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — เปลี่ยนไอคอน i เดิมให้เป็นไอคอนเฟือง เพิ่มลิงก์ในนั้นแทน (ไม่เพิ่มไอคอนใหม่ที่หัวข้อ)</div>
+  <div class="option-desc">ใช้พื้นที่หัวข้อเท่าเดิม ไม่เพิ่มไอคอนที่ 3 — เปลี่ยนไอคอน "i" เป็นไอคอนเฟือง แล้วยัดทั้งข้อมูลความเป็นส่วนตัวเดิม + ลิงก์ตั้งค่าใหม่ไว้ในโมดัลเดียวกัน</div>
+  <div class="header-mock">
+    <div class="header-left"><div class="hicon">💧</div><div><div style="font-weight:700; font-size:14px;">Blood Journey</div><div style="font-size:10.5px; color:#8A7370;">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="header-right">👤 ⚙️</div>
+  </div>
+  <p style="font-size:11px; color:#8A7370; margin-top:6px;">(ไอคอนขวาสุดเปลี่ยนจาก ⓘ เป็น ⚙️ กดแล้วเปิดโมดัลที่มีทั้งข้อมูลความเป็นส่วนตัวเดิม + รายการตั้งค่าใหม่ต่อท้าย)</p>
+</body>
+</html>

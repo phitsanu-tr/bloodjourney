@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สวิตช์แยกทีละประเภท</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 12px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #EEDEDA; }
+  label { display: block; font-size: 12.5px; color: #5C4A46; margin-bottom: 6px; font-weight: 500; }
+  input[type=number], input[type=date], input[type=text] { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 13.5px; font-family: inherit; }
+  .row2 { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row2 > div { flex: 1; }
+
+  .type-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid #EEDEDA; border-radius: 12px; margin-bottom: 8px; }
+  .type-toggle-row.expanded { border-radius: 12px 12px 0 0; border-bottom: none; margin-bottom: 0; }
+  .type-toggle-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3A2C29; }
+  .switch { width: 38px; height: 21px; border-radius: 20px; background: #E3C8C3; position: relative; flex-shrink: 0; cursor: pointer; }
+  .switch.on { background: #9A3B33; }
+  .switch-dot { width: 15px; height: 15px; border-radius: 50%; background: #FFFFFF; position: absolute; top: 3px; left: 3px; }
+  .switch.on .switch-dot { left: 20px; }
+
+  .type-body { border: 1px solid #EEDEDA; border-top: none; border-radius: 0 0 12px 12px; padding: 12px 14px 14px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: สวิตช์แยกทีละประเภท (เปิดแยก ไม่ใช่เปิดรวม)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — แต่ละประเภทมีสวิตช์ของตัวเอง เปิดถึงจะเห็นฟอร์มของประเภทนั้น</p>
+
+  <div class="option-label">แบบ 1 — สวิตช์อยู่ในหัวข้อ ขยายเป็นการ์ดต่อท้าย (ตัวอย่าง: เปิดแค่โลหิตรวม)</div>
+  <div class="option-desc">ค่าเริ่มต้นทั้งสองสวิตช์ปิด ผู้ใช้ต้องเปิดอย่างน้อย 1 อันก่อนถึงจะกรอกได้ — คนบริจาคแบบเดียวเปิดสวิตช์เดียวก็จบ คนบริจาคทั้งคู่เปิดทั้งสอง</div>
+  <div class="phone">
+    <label style="margin-bottom:10px;">เคยบริจาคประเภทไหนบ้าง? เปิดสวิตช์ของประเภทที่เคยบริจาค</label>
+
+    <div class="type-toggle-row expanded">
+      <div class="type-toggle-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม</div>
+      <div class="switch on"><div class="switch-dot"></div></div>
+    </div>
+    <div class="type-body">
+      <label style="font-size:11.5px; font-weight:400;">จำนวนครั้งที่เคยบริจาค (โลหิตรวม)</label>
+      <input type="number" value="0" style="margin-bottom:10px;" />
+      <div class="row2"><div><label style="font-weight:400; font-size:11.5px;">วันที่ล่าสุด (ไม่บังคับ)</label><input type="date" /></div><div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div></div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label>
+      <input type="text" placeholder="เช่น สภากาชาดไทย" style="margin-bottom:10px;" />
+      <label style="font-weight:400; font-size:11.5px;">บันทึกช่วยจำ (ไม่บังคับ)</label>
+      <input type="text" placeholder="การบริจาคครั้งนี้เป็นอย่างไรบ้าง ?" />
+    </div>
+
+    <div class="type-toggle-row" style="margin-top:8px;">
+      <div class="type-toggle-label"><svg width="17" height="14" viewBox="0 0 34 24" fill="#7A6360"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75"/></svg> พลาสมา/เกล็ดเลือด</div>
+      <div class="switch"><div class="switch-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ทั้งสองประเภทเปิดพร้อมกัน (ตัวอย่าง: บริจาคทั้งคู่)</div>
+  <div class="option-desc">เมื่อเปิดทั้งสองสวิตช์ จะเห็นการ์ดกรอกข้อมูลต่อกันทั้งคู่ ไม่มีสวิตช์รวม "เคยบริจาคทั้ง 2 แบบ?" อีกต่อไป — แต่ละประเภทเป็นอิสระจากกัน</div>
+  <div class="phone">
+    <div class="type-toggle-row expanded">
+      <div class="type-toggle-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม</div>
+      <div class="switch on"><div class="switch-dot"></div></div>
+    </div>
+    <div class="type-body">
+      <label style="font-size:11.5px; font-weight:400;">จำนวนครั้งที่เคยบริจาค (โลหิตรวม)</label>
+      <input type="number" value="20" />
+    </div>
+
+    <div class="type-toggle-row expanded" style="margin-top:8px;">
+      <div class="type-toggle-label"><svg width="17" height="14" viewBox="0 0 34 24" fill="#9A3B33"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75"/></svg> พลาสมา/เกล็ดเลือด</div>
+      <div class="switch on"><div class="switch-dot"></div></div>
+    </div>
+    <div class="type-body">
+      <label style="font-size:11.5px; font-weight:400;">จำนวนครั้งที่เคยบริจาค (พลาสมา/เกล็ดเลือด)</label>
+      <input type="number" value="20" />
+    </div>
+
+    <p style="font-size:10.5px; color:#B39B96; margin-top:8px;">(แต่ละการ์ดจะมีฟิลด์ วันที่/เวลา/สถานที่/บันทึกช่วยจำ ครบเหมือนแบบ 1 ทุกอัน — ตัดออกจากตัวอย่างนี้เพื่อให้ดูภาพรวมง่ายขึ้น)</p>
+  </div>
+
+  <div class="option-label">แบบ 3 — ทั้งสองสวิตช์ปิด (สถานะเริ่มต้นตอนเข้าฟอร์มครั้งแรก)</div>
+  <div class="option-desc">ยังไม่กรอกอะไรเลย ปุ่ม "บันทึก" จะยังกดไม่ได้จนกว่าจะเปิดอย่างน้อย 1 สวิตช์และกรอกจำนวนครั้ง ≥ 1</div>
+  <div class="phone">
+    <div class="type-toggle-row">
+      <div class="type-toggle-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="#7A6360"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม</div>
+      <div class="switch"><div class="switch-dot"></div></div>
+    </div>
+    <div class="type-toggle-row" style="margin-top:8px;">
+      <div class="type-toggle-label"><svg width="17" height="14" viewBox="0 0 34 24" fill="#7A6360"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75"/></svg> พลาสมา/เกล็ดเลือด</div>
+      <div class="switch"><div class="switch-dot"></div></div>
+    </div>
+  </div>
+</body>
+</html>

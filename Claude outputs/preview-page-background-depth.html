@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: พื้นหลังหน้าแรกมีมิติ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FEFBFA; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; border-radius: 18px; padding: 18px; position: relative; overflow: hidden; }
+  .row { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; position: relative; z-index: 1; }
+  .logo { width:40px; height:40px; border-radius:11px; background:#9A3B33; display:flex; align-items:center; justify-content:center; }
+  .brand { font-size:14px; font-weight:700; margin-left:9px; }
+  .brand .sub2 { font-size:9.5px; color:#8A7370; font-weight:400; }
+  .greet { font-size:13px; font-weight:600; margin-bottom:10px; position: relative; z-index: 1; }
+  .pill { display:inline-flex; align-items:center; font-size:10px; background:rgba(255,255,255,0.7); color:#9A3B33; padding:3px 9px; border-radius:20px; font-weight:600; margin-right:5px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 18px; padding: 16px; color: #FFF7F5; margin-top:14px; position: relative; z-index: 1; }
+  .card .label { font-size: 11px; opacity: 0.85; }
+  .card .num { font-size: 28px; font-weight: 800; margin-top: 3px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มมิติให้พื้นหลังหน้าแรก</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ปัจจุบันพื้นหลังหน้าแรกเป็นสีทึบเรียบ #FBF6F5 ทั้งหน้า ลองเพิ่มมิติแบบต่าง ๆ โดยยังคงโทนสีเดิม ไม่รบกวนการอ่านเนื้อหา</p>
+
+  <div class="option-label">แบบ 1 — เกรเดียนต์อ่อน ๆ จากบนลงล่าง</div>
+  <div class="option-desc">ไล่สีจากพื้นอ่อนกว่าด้านบน (ใกล้เคียงขาว) ไปเข้มขึ้นนิดหน่อยด้านล่าง ให้ความรู้สึกมีแสงตกกระทบเบา ๆ ไม่ต้องเพิ่มลวดลายอะไร</div>
+  <div class="phone" style="background: linear-gradient(180deg, #FEFBFA 0%, #FBF6F5 40%, #F5E9E6 100%);">
+    <div class="row"><div style="display:flex; align-items:center;"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — วงกลมเบลอจาง ๆ มุมบน (soft blob)</div>
+  <div class="option-desc">วางวงกลมสีแดงอ่อนเบลอมาก ๆ ไว้มุมขวาบนคล้ายแสงไฟ ให้พื้นหลังดูมีชั้นความลึกโดยไม่แย่งซีนเนื้อหา</div>
+  <div class="phone" style="background: #FBF6F5;">
+    <div style="position:absolute; top:-60px; right:-60px; width:220px; height:220px; border-radius:50%; background: radial-gradient(circle, rgba(178,74,64,0.18) 0%, rgba(178,74,64,0) 70%); pointer-events:none;"></div>
+    <div style="position:absolute; bottom:-40px; left:-50px; width:160px; height:160px; border-radius:50%; background: radial-gradient(circle, rgba(178,74,64,0.10) 0%, rgba(178,74,64,0) 70%); pointer-events:none;"></div>
+    <div class="row"><div style="display:flex; align-items:center;"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 3 — ลายหยดเลือดจาง ๆ กระจายทั่วพื้นหลัง</div>
+  <div class="option-desc">ใส่ลายหยดเลือดโปร่งใสมาก ๆ (opacity ต่ำ) กระจายเป็นแพทเทิร์นทั่วพื้นหลัง สื่อถึงธีมแอปชัดเจน แต่ต้องจางพอไม่รบกวนตัวหนังสือ</div>
+  <div class="phone" style="background: #FBF6F5;">
+    <svg width="100%" height="100%" style="position:absolute; inset:0; opacity:0.06; pointer-events:none;" viewBox="0 0 380 500">
+      <g fill="#9A3B33">
+        <path transform="translate(20,10) scale(1.1)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+        <path transform="translate(300,60) scale(0.8)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+        <path transform="translate(330,220) scale(1.3)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+        <path transform="translate(10,300) scale(0.9)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+        <path transform="translate(280,420) scale(1.0)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+        <path transform="translate(60,440) scale(0.7)" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+      </g>
+    </svg>
+    <div class="row"><div style="display:flex; align-items:center;"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 4 — เส้นโค้งพาดมุมล่าง (wave accent)</div>
+  <div class="option-desc">เส้นโค้งบาง ๆ สีแดงอ่อนพาดผ่านมุมล่างของหน้าจอ คล้ายขอบฟ้า/สายน้ำ ให้พื้นหลังดูมีชั้นแบบนุ่มนวล ไม่เป็นรูปทรงเรขาคณิตแข็ง</div>
+  <div class="phone" style="background: #FBF6F5;">
+    <svg width="100%" height="180" style="position:absolute; bottom:0; left:0; opacity:0.10; pointer-events:none;" viewBox="0 0 380 180" preserveAspectRatio="none">
+      <path d="M0 100 C 80 40, 180 160, 260 90 C 320 40, 360 80, 380 60 L 380 180 L 0 180 Z" fill="#9A3B33"/>
+    </svg>
+    <div class="row"><div style="display:flex; align-items:center;"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 5 — จุดไข่ปลาจาง ๆ (subtle dot grid)</div>
+  <div class="option-desc">แพทเทิร์นจุดกลม ๆ เล็ก ๆ จางมากกระจายสม่ำเสมอทั่วพื้นหลัง เป็นลายมาตรฐานที่แอปสมัยใหม่ใช้ ให้พื้นผิวมีเนื้อสัมผัสโดยไม่ดึงความสนใจไปจากเนื้อหา</div>
+  <div class="phone" style="background-color: #FBF6F5; background-image: radial-gradient(#D9BDB6 1px, transparent 1px); background-size: 16px 16px; background-position: 0 0;">
+    <div style="position:absolute; inset:0; background: rgba(251,246,245,0.4); pointer-events:none;"></div>
+    <div class="row"><div style="display:flex; align-items:center;"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: วันที่บริจาคล่าสุดแยก 2 ประเภท</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 12px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #EEDEDA; }
+  label { display: block; font-size: 12.5px; color: #5C4A46; margin-bottom: 6px; font-weight: 500; }
+  input[type=number], input[type=date], input[type=text] { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 13.5px; font-family: inherit; }
+  .type-block { border: 1px solid #EEDEDA; border-radius: 12px; padding: 12px 12px 14px; margin-bottom: 10px; }
+  .type-head { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #9A3B33; margin-bottom: 10px; }
+  .row2 { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row2 > div { flex: 1; }
+  .total-line { font-size: 11.5px; color: #8A7370; margin-top: 4px; }
+  .total-line b { color: #9A3B33; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เมื่อกดสวิตช์ "เคยบริจาคทั้ง 2 แบบ" — วันที่ล่าสุดแยกตามประเภทด้วย</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — แต่ละประเภทมีวันที่/สถานที่/บันทึกของตัวเอง เพราะวันบริจาคล่าสุดของแต่ละแบบมักไม่ตรงกัน ระบบจะสร้างรายการบริจาคจริง 2 รายการ (ถ้ากรอกครบทั้งคู่)</p>
+
+  <div class="phone">
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด — โลหิตรวม</label>
+    <input type="number" value="12" style="margin-bottom:14px;" />
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด — พลาสมา/เกล็ดเลือด</label>
+    <input type="number" value="5" style="margin-bottom:16px;" />
+    <div class="total-line" style="margin-bottom:16px;">รวมทั้งหมด <b>17 ครั้ง</b></div>
+
+    <div class="type-block">
+      <div class="type-head">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+        ครั้งล่าสุด — โลหิตรวม
+      </div>
+      <div class="row2">
+        <div><label style="font-weight:400; font-size:11.5px;">วันที่</label><input type="date" value="2026-08-02" /></div>
+        <div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div>
+      </div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label>
+      <input type="text" placeholder="เช่น สภากาชาดไทย" />
+    </div>
+
+    <div class="type-block">
+      <div class="type-head">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#9A3B33"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75" transform="scale(0.55)"/></svg>
+        ครั้งล่าสุด — พลาสมา/เกล็ดเลือด
+      </div>
+      <div class="row2">
+        <div><label style="font-weight:400; font-size:11.5px;">วันที่</label><input type="date" value="2026-09-01" /></div>
+        <div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div>
+      </div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label>
+      <input type="text" placeholder="เช่น รพ.จุฬาฯ" />
+    </div>
+
+    <div style="font-size:11px; color:#8A7370; line-height:1.6;">ถ้าจำวันที่ของแบบใดแบบหนึ่งไม่ได้ เว้นว่างไว้ได้ — ระบบจะยังนับยอดรวมให้ถูกต้อง แค่จะยังไม่คำนวณวันครบกำหนดของแบบนั้นจนกว่าจะบันทึกวันที่เพิ่มทีหลัง</div>
+  </div>
+</body>
+</html>

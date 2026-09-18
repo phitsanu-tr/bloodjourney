@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ตำแหน่งข้อความ disclaimer 3 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .wrap { max-width: 380px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 20px; padding: 22px; color: #FFF7F5; position: relative; overflow: hidden; }
+  .total-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+  .total-num { font-size: 38px; font-weight: 700; line-height: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #FFF7F5; color: #9A3B33; }
+  .pill .count { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #F6EBE9; }
+  .divider { margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,247,245,0.22); }
+  .status { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; line-height: 1.5; }
+  .prompt-card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 11.5px; color: #5C4A46; }
+  .disclaimer { font-size: 11.5px; color: #8A7370; line-height: 1.6; }
+  .cta { width: 100%; padding: 13px 0; border-radius: 12px; border: none; font-size: 14.5px; font-weight: 600; background: #9A3B33; color: #FFF7F5; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ย้ายตำแหน่งข้อความ disclaimer — 3 แบบ</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ของเดิมข้อความอยู่แยกเป็นย่อหน้าล่างสุด หลังการ์ดแจ้งเตือนปฏิทิน ก่อนปุ่มบันทึก ทำให้ดูเหมือนอยู่ไกลจากเนื้อหาที่มันอธิบาย</p>
+
+  <div class="option-label" style="margin-top:0;">A. ย้ายเข้าไปเป็น caption ในการ์ดนับถอยหลังเลย (ใต้บรรทัดวันที่)</div>
+  <div class="option-desc">อยู่ติดกับข้อมูลที่มันอธิบายโดยตรง เห็นพร้อมกันในสายตาเดียว ไม่ต้องเลื่อนสายตาไปหาที่อื่น — ใช้สีขาวโปร่งแสงให้กลมกลืนกับการ์ด</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม <span class="count">40</span></div>
+    <div class="divider"><div class="status">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)<br/>
+        <span style="display:block; margin-top:6px; font-size:10.5px; color:rgba(255,247,245,0.65); line-height:1.5;">คำนวณจากเกณฑ์ 90 วันต่อครั้ง (ปรับได้ที่ตั้งค่า) เพื่อการเตือนคร่าว ๆ เท่านั้น</span>
+      </div>
+    </div></div>
+  </div>
+  <div class="prompt-card"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span style="flex:1;">อยากให้เตือนวันครบกำหนดไหม ?</span><button style="padding:5px 10px; border-radius:8px; font-size:11px; font-weight:600; border:none; background:#F3EAE8; color:#9A3B33;">เพิ่มลงปฏิทิน</button></div>
+  <button class="cta">+ บันทึกบริจาคโลหิต</button>
+  </div>
+
+  <div class="option-label">B. ย้ายขึ้นมาไว้ติดใต้การ์ดทันที (ก่อนการ์ดแจ้งเตือนปฏิทิน)</div>
+  <div class="option-desc">ยังแยกเป็นย่อหน้านอกการ์ดเหมือนเดิม แต่สลับตำแหน่งให้ชิดการ์ดนับถอยหลังมากกว่าการ์ดปฏิทิน ผู้ใช้เห็นต่อเนื่องจากการ์ดที่มันอธิบายทันที ไม่ต้องผ่านการ์ดอื่นก่อน</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม <span class="count">40</span></div>
+    <div class="divider"><div class="status">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</div>
+    </div></div>
+  </div>
+  <p class="disclaimer" style="margin:10px 0 0;">คำนวณจากเกณฑ์ 90 วันต่อครั้ง (ปรับได้ที่ตั้งค่า) เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง</p>
+  <div class="prompt-card"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span style="flex:1;">อยากให้เตือนวันครบกำหนดไหม ?</span><button style="padding:5px 10px; border-radius:8px; font-size:11px; font-weight:600; border:none; background:#F3EAE8; color:#9A3B33;">เพิ่มลงปฏิทิน</button></div>
+  <button class="cta">+ บันทึกบริจาคโลหิต</button>
+  </div>
+
+  <div class="option-label">C. ไอคอน info เล็ก ๆ ข้างข้อความวันที่ในการ์ด กดเพื่อดู disclaimer (ไม่แสดงตลอดเวลา)</div>
+  <div class="option-desc">ซ่อน disclaimer ไว้หลังไอคอน ⓘ ผู้ใช้ทั่วไปไม่ต้องเห็นข้อความยาว ๆ ทุกครั้ง แต่กดดูได้เมื่ออยากรู้ที่มาของตัวเลข — เหมาะถ้ามองว่า disclaimer เป็นข้อมูลเสริมมากกว่าสิ่งที่ต้องเห็นตลอด</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม <span class="count">40</span></div>
+    <div class="divider"><div class="status">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div style="flex:1; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 88 วัน)</span>
+        <span title="คำนวณจากเกณฑ์ 90 วันต่อครั้ง (ปรับได้ที่ตั้งค่า) เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; border:1px solid rgba(255,247,245,0.5); font-size:9.5px; font-weight:700; flex-shrink:0; opacity:0.85;">i</span>
+      </div>
+    </div></div>
+  </div>
+  <div class="prompt-card"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span style="flex:1;">อยากให้เตือนวันครบกำหนดไหม ?</span><button style="padding:5px 10px; border-radius:8px; font-size:11px; font-weight:600; border:none; background:#F3EAE8; color:#9A3B33;">เพิ่มลงปฏิทิน</button></div>
+  <button class="cta">+ บันทึกบริจาคโลหิต</button>
+  </div>
+
+</body>
+</html>

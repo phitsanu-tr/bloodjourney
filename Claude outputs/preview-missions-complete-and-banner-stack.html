@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ออกแบบ: การ์ดภารกิจครบ + จัดการแบนเนอร์ซ้อน</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Thai", -apple-system, sans-serif; background: #FBF6F5; margin: 0; padding: 20px 16px 60px; color: #3A2C29; }
+  h1 { font-size: 17px; color: #9A3B33; margin: 0 0 4px; }
+  .subtitle { font-size: 12.5px; color: #8A7370; margin: 0 0 24px; }
+  h2 { font-size: 14.5px; margin: 40px 0 4px; color: #9A3B33; border-top: 2px solid #EEDEDA; padding-top: 22px; }
+  .section-desc { font-size: 12px; color: #8A7370; margin: 0 0 16px; }
+  .frame { max-width: 340px; margin: 0 auto; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 20px 0 6px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 8px; line-height: 1.5; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 13px 15px; }
+  .btn-primary { background: #9A3B33; color: #FFF7F5; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; background: #F3EAE8; color: #9A3B33; padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>2 จุดปรับปรุงหน้าหลัก</h1>
+<p class="subtitle">ออกแบบตัวเลือกให้ดูก่อนตัดสินใจ</p>
+
+<h2>A. เมื่อปลดล็อกภารกิจครบทุกอันแล้ว</h2>
+<p class="section-desc">ตอนนี้การ์ด "ภารกิจถัดไป" จะหายไปเฉย ๆ เมื่อ stats.nextAchievement เป็น null — ลองออกแบบสถานะแทนที่ 3 แบบ</p>
+
+<div class="frame">
+
+  <div class="option-label" style="margin-top:0;">A1. การ์ดฉลองแบบเดียวกับการ์ดเดิม (คงรูปแบบ ขนาด เดิมทุกอย่าง)</div>
+  <div class="option-desc">เปลี่ยนแค่เนื้อหาเป็นข้อความฉลอง ไม่มีแถบความคืบหน้าอีกต่อไป เพราะครบแล้ว</div>
+  <div class="card" style="margin-bottom:8px; border-color:#E9D9A8; background:#FFFBF0;">
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#9A6B0B; margin-bottom:6px;">🏆 ปลดล็อกภารกิจครบแล้ว</div>
+    <div style="font-size:12.5px; color:#5C4A46;">คุณทำสำเร็จครบทุกภารกิจในตอนนี้ — เก่งมาก!</div>
+  </div>
+
+  <div class="option-label">A2. แบนเนอร์บางลง (ไม่มี padding เต็มเท่าการ์ดปกติ)</div>
+  <div class="option-desc">เบาสายตากว่า A1 เหมาะกับสถานะที่ "ไม่มีอะไรต้องทำต่อ" ไม่อยากเน้นเท่าการ์ดที่ยังมี action</div>
+  <div style="display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:12px; background:#FFFBF0; border:1px solid #E9D9A8; margin-bottom:8px; font-size:12px; color:#8A6B1D;">
+    🏆 ปลดล็อกภารกิจครบทุกอันแล้ว เก่งมาก!
+  </div>
+
+  <div class="option-label">A3. ไม่ต้องมีอะไรแทน (ลบพื้นที่ไปเลย เหมือนปัจจุบัน)</div>
+  <div class="option-desc">เว้นว่างตามเดิม — ใช้เป็นค่าเทียบเทียบกับ A1/A2 เท่านั้น ไม่มีอะไรให้ดู</div>
+  <div class="card" style="text-align:center; color:#B39B96; font-size:11.5px; padding:16px;">— ไม่มีการ์ดแสดง —</div>
+
+</div>
+
+<h2>B. แบนเนอร์เตือน 2 อันซ้อนกัน</h2>
+<p class="section-desc">ตอนนี้ถ้าเงื่อนไข "อายุ/น้ำหนักนอกเกณฑ์" และ "ยังไม่ได้สำรองข้อมูล" เป็นจริงพร้อมกัน จะเห็น 2 กล่องสีส้มซ้อนกันก่อนถึงการ์ดหลัก — ลองออกแบบ 3 แบบ</p>
+
+<div class="frame">
+
+  <div class="option-label" style="margin-top:0;">B1. ปัจจุบัน (ซ้อน 2 กล่องเต็ม)</div>
+  <div class="option-desc">ใช้เทียบกับตัวเลือกอื่น</div>
+  <div style="background:#FDF0E6; border:1px solid #F0D9BE; border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; gap:10px; align-items:flex-start;">
+    <span style="flex-shrink:0; margin-top:1px;">⚠️</span>
+    <div style="flex:1;">
+      <div style="font-size:11.5px; color:#8A6A45; line-height:1.6;">อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง</div>
+      <div style="margin-top:6px; color:#9A3B33; font-size:11.5px; font-weight:600; text-decoration:underline;">เตือนทีหลัง</div>
+    </div>
+  </div>
+  <div style="background:#FDF0E6; border:1px solid #F0D9BE; border-radius:14px; padding:12px 14px; display:flex; gap:10px; align-items:flex-start;">
+    <span style="flex-shrink:0; margin-top:1px;">⚠️</span>
+    <div style="flex:1;">
+      <div style="font-size:12.5px; font-weight:600; color:#7A4A1D;">ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
+      <div style="font-size:11.5px; color:#8A6A45; margin-top:2px; line-height:1.5;">ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น ส่งออกไฟล์ที่หน้าตั้งค่าเพื่อป้องกันข้อมูลหาย</div>
+      <div style="margin-top:6px; color:#9A3B33; font-size:11.5px; font-weight:600; text-decoration:underline;">เตือนทีหลัง</div>
+    </div>
+  </div>
+
+  <div class="option-label">B2. รวมเป็นกล่องเดียว (แสดงพร้อมกันแบบย่อ)</div>
+  <div class="option-desc">ยุบทั้งสองเป็นกล่องเดียว แต่ละเรื่องมีปุ่ม "เตือนทีหลัง" แยกของตัวเอง — ประหยัดพื้นที่แนวตั้งแต่ยังเห็นทั้งคู่ทันที</div>
+  <div style="background:#FDF0E6; border:1px solid #F0D9BE; border-radius:14px; padding:12px 14px;">
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <span style="flex-shrink:0; margin-top:1px;">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-size:11.5px; color:#8A6A45; line-height:1.6;">อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง</div>
+        <div style="margin-top:5px; color:#9A3B33; font-size:11px; font-weight:600; text-decoration:underline;">เตือนทีหลัง</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:flex-start; margin-top:10px; padding-top:10px; border-top:1px solid #F0D9BE;">
+      <span style="flex-shrink:0; margin-top:1px;">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-size:12px; font-weight:600; color:#7A4A1D;">ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
+        <div style="font-size:11px; color:#8A6A45; margin-top:2px; line-height:1.5;">ส่งออกไฟล์ที่หน้าตั้งค่าเพื่อป้องกันข้อมูลหาย</div>
+        <div style="margin-top:5px; color:#9A3B33; font-size:11px; font-weight:600; text-decoration:underline;">เตือนทีหลัง</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">B3. แสดงทีละอัน ตามลำดับความสำคัญ</div>
+  <div class="option-desc">โชว์เฉพาะเรื่องที่สำคัญกว่าก่อน (เกณฑ์อายุ/น้ำหนักมาก่อน) พอกดปิดแล้วค่อยเห็นอันถัดไป — เบาสุด แต่ผู้ใช้เห็นทีละเรื่อง ไม่เห็นพร้อมกัน</div>
+  <div style="background:#FDF0E6; border:1px solid #F0D9BE; border-radius:14px; padding:12px 14px; display:flex; gap:10px; align-items:flex-start;">
+    <span style="flex-shrink:0; margin-top:1px;">⚠️</span>
+    <div style="flex:1;">
+      <div style="font-size:11.5px; color:#8A6A45; line-height:1.6;">อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง</div>
+      <div style="margin-top:6px; color:#9A3B33; font-size:11.5px; font-weight:600; text-decoration:underline;">เตือนทีหลัง</div>
+    </div>
+  </div>
+  <div style="text-align:center; font-size:10.5px; color:#B39B96; margin-top:6px;">(เตือนสำรองข้อมูลจะแสดงหลังปิดอันนี้)</div>
+
+</div>
+
+</body>
+</html>

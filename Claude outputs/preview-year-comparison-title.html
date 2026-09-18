@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เพิ่มหัวข้อการ์ดเปรียบเทียบปีนี้/ปีก่อน</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 16px; max-width: 380px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #3A2C29; }
+  .label { font-size: 11.5px; color: #7A6360; }
+  .num { font-size: 19px; font-weight: 700; margin-top: 2px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; border-radius: 20px; padding: 4px 10px; color: #B5651D; background: #FDF0E6; }
+  .prevyear { font-size: 10.5px; color: #8A7370; margin-top: 5px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ควรเพิ่มหัวข้อการ์ด "ปี 2569 บริจาคไปแล้ว / ปีก่อน" ไหม</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ตัวอย่างสมมติ ปีนี้ 3 ครั้ง ปีก่อน 4 ครั้ง</p>
+
+  <div class="option-label" style="margin-top:0;">แบบ A — ไม่มีหัวข้อ (ของปัจจุบัน)</div>
+  <div class="option-desc">ใช้บรรทัด "ปี 2569 บริจาคไปแล้ว" ทำหน้าที่บอกความหมายอยู่แล้วในตัว ไม่ซ้ำซ้อน</div>
+  <div class="card">
+    <div>
+      <div class="label">ปี 2569 บริจาคไปแล้ว</div>
+      <div class="num">3 ครั้ง</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="badge">▼ -1 จากปี 2568</div>
+      <div class="prevyear">ปีก่อน: 4 ครั้ง</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ B — เพิ่มหัวข้อสั้น ๆ ด้านบน (เหมือนการ์ดอื่น)</div>
+  <div class="option-desc">เพิ่มหัวข้อตัวหนา fontSize 13 แบบเดียวกับการ์ดอื่น ๆ ในแดชบอร์ด เพื่อความสม่ำเสมอ</div>
+  <div class="card" style="display:block;">
+    <div class="title">เทียบปีนี้กับปีก่อน</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <div>
+        <div class="label">ปี 2569 บริจาคไปแล้ว</div>
+        <div class="num">3 ครั้ง</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="badge">▼ -1 จากปี 2568</div>
+        <div class="prevyear">ปีก่อน: 4 ครั้ง</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ C — หัวข้อคำอื่น เน้นภาพรวมความคืบหน้า</div>
+  <div class="option-desc">คำว่า "ความคืบหน้าปีนี้" สื่อโทนติดตามสถานะมากกว่าแค่ตัวเลขเทียบ</div>
+  <div class="card" style="display:block;">
+    <div class="title">ความคืบหน้าปีนี้</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <div>
+        <div class="label">ปี 2569 บริจาคไปแล้ว</div>
+        <div class="num">3 ครั้ง</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="badge">▼ -1 จากปี 2568</div>
+        <div class="prevyear">ปีก่อน: 4 ครั้ง</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สถานะยังไม่กรอกโปรไฟล์</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FBF6F5; border: 1px solid #EEDEDA; border-radius: 18px; padding: 18px; }
+  .avatar { width:44px; height:44px; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; color:#9A3B33; }
+  .badge { position:absolute; bottom:-2px; right:-2px; width:18px; height:18px; border-radius:50%; background:#9A3B33; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center; }
+  .greet { font-size:13.5px; font-weight:600; color:#3A2C29; line-height:1.4; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: หน้าแรกตอนยังไม่กรอกโปรไฟล์เลย</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ใช้คำทักทายสำรอง "สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?" ด้านล่างลองใส่ปุ่มชวนกรอกโปรไฟล์ 5 แบบ แทนที่ป้ายหมู่เลือด/อายุ/น้ำหนักที่ยังว่างอยู่</p>
+
+  <div class="option-label">แบบ 1 — ปุ่มแคปซูลขอบเส้น มีไอคอนบวก</div>
+  <div class="option-desc">ปุ่มเล็ก ขอบเส้นโปร่ง (ไม่ใช่พื้นทึบ) ให้ความรู้สึกเป็น "คำชวน" เบา ๆ ไม่ใช่คำสั่ง</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+      <div>
+        <div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?</div>
+        <div style="margin-top:8px;">
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:11.5px; background:transparent; border:1px solid #E3C8C3; color:#9A3B33; padding:5px 12px; border-radius:20px; font-weight:600;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> เพิ่มข้อมูลโปรไฟล์
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ปุ่มพื้นแดงทึบ เด่นชัด</div>
+  <div class="option-desc">ใช้สีแบรนด์พื้นทึบเหมือนปุ่มหลักอื่นในแอป (บันทึกบริจาคโลหิต) ให้ความสำคัญเทียบเท่าการกระทำหลัก</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+      <div>
+        <div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?</div>
+        <div style="margin-top:8px;">
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:11.5px; background:#9A3B33; color:#FFF7F5; padding:5px 12px; border-radius:20px; font-weight:600;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> เพิ่มข้อมูลโปรไฟล์
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — ข้อความลิงก์ธรรมดา มีลูกศร (ไม่ใช่ปุ่ม)</div>
+  <div class="option-desc">ไม่ทำเป็นปุ่มแคปซูล แต่เป็นข้อความสีแบรนด์มีลูกศรชี้ขวา ดูเบาที่สุดในบรรดาทุกตัวเลือก ไม่แย่งความสนใจจากคำทักทาย</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+      <div>
+        <div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?</div>
+        <div style="margin-top:6px; font-size:11.5px; font-weight:600; color:#9A3B33; display:flex; align-items:center; gap:3px;">
+          เพิ่มข้อมูลโปรไฟล์ <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — การ์ดชวนกรอกแยกกล่อง (ไม่ใช่แค่ป้ายเล็ก)</div>
+  <div class="option-desc">แยกเป็นกล่องเล็ก ๆ ของตัวเองใต้คำทักทาย มีไอคอนคนซ้าย + ข้อความ + ลูกศรขวา ดูมีน้ำหนักเป็นการ์ดชวนทำ (call-to-action card) มากกว่าเป็นป้ายในแถวเดียวกับหมู่เลือด/อายุ</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+      <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+      <div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?</div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; background:#FFFFFF; border:1px solid #EEDEDA; border-radius:12px; padding:10px 12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <span style="font-size:12px; color:#3A2C29; font-weight:600;">เพิ่มข้อมูลส่วนตัว เช่น หมู่เลือด อายุ น้ำหนัก</span>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — จุดไข่ปลาจาง ๆ แทนป้าย (dashed placeholder)</div>
+  <div class="option-desc">ใช้ป้ายขอบเส้นประจาง ๆ สื่อว่า "ยังไม่มีข้อมูลตรงนี้" แบบ placeholder ทั่วไป แตะแล้วเปิดหน้าโปรไฟล์ได้เหมือนกัน แต่หน้าตาเป็นกลาง ไม่ชวนเชิญเท่าแบบ 1-2</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+      <div>
+        <div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?</div>
+        <div style="margin-top:8px;">
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; background:transparent; border:1px dashed #D9BDB6; color:#B7A5A1; padding:4px 10px; border-radius:20px; font-weight:600;">
+            + เพิ่มหมู่เลือด/อายุ/น้ำหนัก
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ปิดช่อง "อยากให้เตือนวันครบกำหนดไหม ?" ได้</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: -4px 0 10px; line-height: 1.5; }
+  .frame { max-width: 360px; }
+  .row { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 12px; padding: "10px 12px"; display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+  .clock { color: #9A3B33; flex-shrink: 0; }
+  .txt { font-size: 11.5px; color: #5C4A46; flex: 1; }
+  .btn { flex-shrink: 0; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; border: none; background: #F3EAE8; color: #9A3B33; cursor: pointer; font-family: inherit; }
+  .icon-x { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: none; background: none; color: #B39B96; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .link { flex-shrink: 0; background: none; border: none; padding: 0; color: #B39B96; font-size: 10.5px; text-decoration: underline; cursor: pointer; font-family: inherit; }
+  .col { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+</style>
+</head>
+<body>
+  <h1>ปิดช่อง "อยากให้เตือนวันครบกำหนดไหม ?" ได้ — เทียบ 6 แบบ</h1>
+  <p class="sub">คล้ายรูปแบบ "เตือนทีหลัง" ที่มีอยู่แล้วในแบนเนอร์เตือนอายุ/น้ำหนักนอกเกณฑ์ และแบนเนอร์เตือนสำรองข้อมูล — เทียบดูว่าแบบไหนเหมาะกับช่องนี้ที่สุด</p>
+
+  <div class="option-label" style="margin-top:0;">0. แบบปัจจุบัน (อ้างอิง) — ปิดไม่ได้</div>
+  <div class="frame"><div class="row">
+    <span class="clock">🕐</span>
+    <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+    <button class="btn">เพิ่มลงปฏิทิน</button>
+  </div></div>
+
+  <div class="option-label">1. ปุ่ม X เล็กๆ มุมขวา (ปิดแล้วไม่ถามอีกเลยสำหรับรอบนี้)</div>
+  <div class="option-desc">กดแล้วซ่อนไปจนกว่าจะถึงรอบครบกำหนดครั้งถัดไป กระชับสุด ไม่กินพื้นที่เพิ่ม</div>
+  <div class="frame"><div class="row">
+    <span class="clock">🕐</span>
+    <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+    <button class="btn">เพิ่มลงปฏิทิน</button>
+    <button class="icon-x">✕</button>
+  </div></div>
+
+  <div class="option-label">2. ลิงก์ "ไม่ต้องเตือน" บรรทัดล่าง (แบบเดียวกับ "เตือนทีหลัง" ที่มีอยู่แล้ว)</div>
+  <div class="option-desc">ใช้ภาษา/ตำแหน่งเดียวกับแบนเนอร์เตือนอื่นๆ ในแอป ผู้ใช้คุ้นรูปแบบนี้อยู่แล้ว</div>
+  <div class="frame"><div class="row" style="align-items:flex-start;">
+    <span class="clock" style="margin-top:1px;">🕐</span>
+    <div class="col">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+        <button class="btn">เพิ่มลงปฏิทิน</button>
+      </div>
+      <button class="link" style="align-self:flex-start;">ไม่ต้องเตือน</button>
+    </div>
+  </div></div>
+
+  <div class="option-label">3. ปัดซ้ายเพื่อปิด (swipe to dismiss)</div>
+  <div class="option-desc">ไม่มีปุ่มเพิ่มเลยบนหน้าจอ ปัดนิ้วซ้ายเพื่อซ่อน — เรียบที่สุดแต่ discoverability ต่ำ ผู้ใช้อาจไม่รู้ว่าปัดได้</div>
+  <div class="frame"><div class="row" style="position:relative; overflow:hidden;">
+    <span class="clock">🕐</span>
+    <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+    <button class="btn">เพิ่มลงปฏิทิน</button>
+    <span style="position:absolute; right:0; top:0; bottom:0; width:36px; background:linear-gradient(90deg, transparent, #EEDEDA 70%); display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:10px; color:#B39B96;">←</span>
+  </div></div>
+
+  <div class="option-label">4. ปุ่ม "ไม่ต้องเตือน" คู่กับ "เพิ่มลงปฏิทิน" (2 ปุ่มเท่ากัน)</div>
+  <div class="option-desc">ให้ทางเลือกชัดเจนเท่าๆ กันตั้งแต่แรกเห็น ไม่ต้องเดาว่ากดตรงไหนเพื่อปิด</div>
+  <div class="frame"><div class="row" style="align-items:flex-start;">
+    <span class="clock" style="margin-top:1px;">🕐</span>
+    <div class="col">
+      <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+      <div style="display:flex; gap:6px;">
+        <button class="btn" style="background:#9A3B33; color:#FFF7F5;">เพิ่มลงปฏิทิน</button>
+        <button class="btn">ไม่ต้องเตือน</button>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="option-label">5. ปิดถาวร (ตั้งค่าไว้ที่หน้าตั้งค่าแทน)</div>
+  <div class="option-desc">ปุ่ม X ปิดแล้วไม่โผล่มาอีกเลยทุกรอบ (ไม่ใช่แค่รอบนี้) มีสวิตช์ "แสดงการ์ดเตือนวันครบกำหนด" ในหน้าตั้งค่าไว้เปิดกลับ เหมาะกับคนที่ตั้งเตือนในปฏิทินเองอยู่แล้วไม่อยากเห็นซ้ำ</div>
+  <div class="frame"><div class="row">
+    <span class="clock">🕐</span>
+    <span class="txt">อยากให้เตือนวันครบกำหนดไหม ?</span>
+    <button class="btn">เพิ่มลงปฏิทิน</button>
+    <button class="icon-x">✕</button>
+  </div></div>
+  <p style="font-size:10.5px; color:#B39B96; max-width:360px; margin-top:6px;">→ ตั้งค่า: ☑ แสดงการ์ดเตือนวันครบกำหนด</p>
+
+</body>
+</html>

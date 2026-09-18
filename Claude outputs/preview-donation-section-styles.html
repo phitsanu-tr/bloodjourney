@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สไตล์การ์ด "สำหรับการบริจาค"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { max-width: 380px; background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 14px; }
+  .card-h { font-size: 12.5px; font-weight: 700; color: #9A3B33; display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  label { font-size: 12.5px; color: #7A6360; display: block; margin-bottom: 8px; }
+  .pill { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #E3C8C3; background: #FFF; color: #3A2C29; }
+  .pill.active { background: #9A3B33; border-color: #9A3B33; color: #FFF7F5; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: สไตล์อื่นสำหรับการ์ด "สำหรับการบริจาค"</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ลองปรับตัวเลือกหมู่โลหิต/ประเภทผู้บริจาคให้ต่างจากปุ่มวงกลม/สี่เหลี่ยมแบบปัจจุบัน</p>
+
+  <div class="option-label">แบบ 1 — หมู่โลหิตเป็นช่องสี่เหลี่ยมจัตุรัสมุมมน แทนวงรี</div>
+  <div class="option-desc">ปุ่มหมู่โลหิตเป็นสี่เหลี่ยมจัตุรัสเท่ากันทุกปุ่ม (แทนที่จะเป็นวงรียาวไม่เท่ากันตามความกว้างตัวอักษร) ดูเป็นระเบียบเรียงกริดชัดเจน</div>
+  <div class="card">
+    <div class="card-h">🩸 สำหรับการบริจาค</div>
+    <label>หมู่โลหิต</label>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <div class="pill active" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:0;">A</div>
+      <div class="pill" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:0;">B</div>
+      <div class="pill" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:0;">AB</div>
+      <div class="pill" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:0;">O</div>
+      <div class="pill" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:0; font-size:10px;">ไม่ทราบ</div>
+    </div>
+    <label>ประเภทผู้บริจาค</label>
+    <div style="display:flex; gap:8px;">
+      <div class="pill" style="flex:1; text-align:center;">บุคคลทั่วไป</div>
+      <div class="pill active" style="flex:1; text-align:center;">พระภิกษุสงฆ์</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ดรอปดาวน์ (select) แทนปุ่มเลือกหมู่โลหิต</div>
+  <div class="option-desc">เปลี่ยนหมู่โลหิตเป็นเมนูดรอปดาวน์แบบช่องกรอกทั่วไป กินพื้นที่แนวตั้งน้อยลงมาก เหมาะถ้าอยากให้การ์ดนี้สั้นกระชับที่สุด</div>
+  <div class="card">
+    <div class="card-h">🩸 สำหรับการบริจาค</div>
+    <label>หมู่โลหิต</label>
+    <div style="padding:11px 12px; border:1px solid #E3C8C3; border-radius:10px; font-size:14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; background:#FFF;">
+      <span>A</span><span style="color:#B7A5A1;">▾</span>
+    </div>
+    <label>ประเภทผู้บริจาค</label>
+    <div style="padding:11px 12px; border:1px solid #E3C8C3; border-radius:10px; font-size:14px; display:flex; justify-content:space-between; align-items:center; background:#FFF;">
+      <span>พระภิกษุสงฆ์</span><span style="color:#B7A5A1;">▾</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — หมู่โลหิตเป็นวงกลมสีตามหมู่ (color-coded)</div>
+  <div class="option-desc">แต่ละหมู่โลหิตมีสีวงกลมต่างกันเล็กน้อย (โทนแดง/น้ำตาล/ทอง ไล่เฉด) ช่วยให้จำหมู่ตัวเองได้จากสีด้วย ไม่ใช่แค่ตัวอักษร</div>
+  <div class="card">
+    <div class="card-h">🩸 สำหรับการบริจาค</div>
+    <label>หมู่โลหิต</label>
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <div style="width:44px; height:44px; border-radius:50%; background:#9A3B33; color:#FFF7F5; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; box-shadow:0 0 0 2px #9A3B33;">A</div>
+      <div style="width:44px; height:44px; border-radius:50%; background:#FFF; color:#B5651D; border:1.5px solid #E3C8C3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;">B</div>
+      <div style="width:44px; height:44px; border-radius:50%; background:#FFF; color:#7A6360; border:1.5px solid #E3C8C3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">AB</div>
+      <div style="width:44px; height:44px; border-radius:50%; background:#FFF; color:#8A6D1F; border:1.5px solid #E3C8C3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;">O</div>
+      <div style="width:44px; height:44px; border-radius:50%; background:#FFF; color:#B7A5A1; border:1.5px solid #E3C8C3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:9px; text-align:center;">ไม่ทราบ</div>
+    </div>
+    <label>ประเภทผู้บริจาค</label>
+    <div style="display:flex; gap:8px;">
+      <div class="pill" style="flex:1; text-align:center;">บุคคลทั่วไป</div>
+      <div class="pill active" style="flex:1; text-align:center;">พระภิกษุสงฆ์</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — ประเภทผู้บริจาคเป็นสวิตช์ (toggle) แทนปุ่มคู่</div>
+  <div class="option-desc">เปลี่ยนจากปุ่ม 2 ปุ่มเป็นสวิตช์เปิด/ปิดแบบเดียว มีป้ายกำกับสถานะข้าง ๆ กระชับกว่าและสื่อว่าเป็นตัวเลือกแบบ "ใช่/ไม่ใช่" ชัดเจนกว่า</div>
+  <div class="card">
+    <div class="card-h">🩸 สำหรับการบริจาค</div>
+    <label>หมู่โลหิต</label>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <span class="pill active">A</span><span class="pill">B</span><span class="pill">AB</span><span class="pill">O</span><span class="pill">ไม่ทราบ</span>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:13px; font-weight:600;">เป็นพระภิกษุสงฆ์</div>
+        <div style="font-size:10.5px; color:#8A7370; margin-top:2px;">สำหรับเข็ม/เหรียญในหน้าภารกิจ</div>
+      </div>
+      <div style="width:44px; height:26px; border-radius:20px; background:#9A3B33; position:relative; flex-shrink:0;">
+        <div style="width:20px; height:20px; border-radius:50%; background:#FFF; position:absolute; top:3px; right:3px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — หมู่โลหิตเป็นหยดเลือดไอคอน + ตัวอักษรข้างใน</div>
+  <div class="option-desc">ใช้รูปทรงหยดเลือดแทนวงกลม/สี่เหลี่ยมเฉย ๆ ให้เข้ากับธีม "หยดเลือด" ของทั้งแอปมากขึ้น</div>
+  <div class="card">
+    <div class="card-h">🩸 สำหรับการบริจาค</div>
+    <label>หมู่โลหิต</label>
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <svg width="40" height="48" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      <svg width="40" height="48" viewBox="0 0 24 24" fill="none" stroke="#D9BDB6" stroke-width="1.5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      <svg width="40" height="48" viewBox="0 0 24 24" fill="none" stroke="#D9BDB6" stroke-width="1.5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      <svg width="40" height="48" viewBox="0 0 24 24" fill="none" stroke="#D9BDB6" stroke-width="1.5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    </div>
+    <div style="font-size:11px; color:#8A7370; margin-top:-10px; margin-bottom:14px;">(หยดที่แต้มสีคือหมู่ที่เลือก — A / B / AB / O ตามลำดับ ไม่แสดงตัวเลือก "ไม่ทราบ" ในแบบนี้)</div>
+    <label>ประเภทผู้บริจาค</label>
+    <div style="display:flex; gap:8px;">
+      <div class="pill" style="flex:1; text-align:center;">บุคคลทั่วไป</div>
+      <div class="pill active" style="flex:1; text-align:center;">พระภิกษุสงฆ์</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 6 — แยก 2 การ์ดย่อยในหมวดเดียว (แต่ละหัวข้อมีกรอบตัวเอง)</div>
+  <div class="option-desc">แยกหมู่โลหิตกับประเภทผู้บริจาคเป็นกรอบย่อยคนละกรอบภายใต้หัวข้อใหญ่เดียวกัน ให้แต่ละส่วนดูเป็นเอกเทศมากขึ้น อ่านง่ายเวลาสายตากวาดผ่าน</div>
+  <div class="card" style="background:transparent; border:none; padding:0;">
+    <div class="card-h" style="padding-left:2px;">🩸 สำหรับการบริจาค</div>
+    <div style="background:#FFF; border:1px solid #EEDEDA; border-radius:12px; padding:12px; margin-bottom:10px;">
+      <label style="margin-bottom:8px;">หมู่โลหิต</label>
+      <div style="display:flex; gap:8px;"><span class="pill active">A</span><span class="pill">B</span><span class="pill">AB</span><span class="pill">O</span><span class="pill">ไม่ทราบ</span></div>
+    </div>
+    <div style="background:#FFF; border:1px solid #EEDEDA; border-radius:12px; padding:12px;">
+      <label style="margin-bottom:8px;">ประเภทผู้บริจาค <span style="color:#B7A5A1; font-weight:400;">(สำหรับเข็ม/เหรียญในหน้าภารกิจ)</span></label>
+      <div style="display:flex; gap:8px;">
+        <div class="pill" style="flex:1; text-align:center;">บุคคลทั่วไป</div>
+        <div class="pill active" style="flex:1; text-align:center;">พระภิกษุสงฆ์</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

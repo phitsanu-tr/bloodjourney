@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ตำแหน่งปุ่มแชร์ 15 แบบ (ลอย ๆ)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .frame { max-width: 380px; background: #FBF6F5; border: 1px dashed #E3C8C3; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; }
+  .title { font-size: 16px; font-weight: 700; color: #3A2C29; margin-bottom: 4px; }
+  .subtitle { font-size: 12.5px; color: #8A7370; margin: 0 0 4px; }
+  .unlock { font-size: 11.5px; color: #9A3B33; font-weight: 600; margin: 0 0 8px; }
+  .disclaimer { font-size: 10.5px; color: #B39B96; line-height: 1.5; margin: 0 0 10px; }
+  .banner { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 14px; padding: 14px; color: #FFF7F5; position: relative; margin-top: 8px; }
+  .banner-label { font-size: 11px; opacity: 0.85; margin-bottom: 4px; }
+  .banner-title { font-size: 13px; font-weight: 600; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 600; border: 1px solid #E3C8C3; background: #FFFFFF; color: #9A3B33; cursor: pointer; white-space: nowrap; }
+  .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid #E3C8C3; background: #FFFFFF; color: #9A3B33; cursor: pointer; flex-shrink: 0; }
+  .btn-fab { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: #9A3B33; color: #FFF7F5; box-shadow: 0 8px 18px -4px rgba(122,42,35,0.5); cursor: pointer; }
+  .btn-text { font-size: 12px; color: #9A3B33; font-weight: 600; text-decoration: underline; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 12px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .end { justify-content: flex-end; }
+  .medal-mini { width: 56px; height: 56px; border-radius: 12px; background: #F3EAE8; display:flex; align-items:center; justify-content:center; font-size: 18px; position: relative; }
+  svg.icon { display: block; }
+</style>
+</head>
+<body>
+  <h1>ตำแหน่งปุ่ม "แชร์การให้ที่ยิ่งใหญ่ของคุณ" — 15 แบบ (mockup ลอย ๆ ยังไม่แก้โค้ดจริง)</h1>
+  <p class="sub">ทุกแบบใช้บริบทหน้าภารกิจเดิม (หัวข้อ / คำอธิบาย / สรุปปลดล็อก / ภารกิจถัดไป) แค่ขยับตำแหน่งปุ่มแชร์เพื่อเทียบดู</p>
+
+  <div class="option-label" style="margin-top:0;">1. แถวของตัวเอง ชิดขวา ใต้คำเตือนเกณฑ์ (แบบปัจจุบัน)</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="unlock">ปลดล็อกแล้ว 5/11 รายการ</div>
+    <div class="disclaimer">เกณฑ์เข็มที่ระลึก...อ้างอิงจากสภากาชาดไทย</div>
+    <div class="row end"><button class="btn">🔗 แชร์การให้ที่ยิ่งใหญ่ของคุณ</button></div>
+  </div>
+
+  <div class="option-label">2. Floating Action Button (FAB) มุมล่างขวา ลอยตลอดหน้า</div>
+  <div class="option-desc">วงกลมสีเข้ม ลอยอยู่มุมจอเสมอ ไม่ขยับตามสกอลล์ กดได้ทุกจุดในหน้าภารกิจ</div>
+  <div class="frame" style="height:150px;">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="unlock">ปลดล็อกแล้ว 5/11 รายการ</div>
+    <div class="btn-fab" style="position:absolute; bottom:14px; right:14px;">🔗</div>
+  </div>
+
+  <div class="option-label">3. ไอคอนกลมเล็ก ๆ มุมขวาบนของหัวข้อ (ไม่มีข้อความ)</div>
+  <div class="frame">
+    <div class="row between">
+      <div class="title" style="margin-bottom:0;">ภารกิจนักบริจาค</div>
+      <div class="btn-icon">🔗</div>
+    </div>
+    <div class="subtitle" style="margin-top:4px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+  </div>
+
+  <div class="option-label">4. ไอคอนเล็กมุมขวาบนของการ์ด "ภารกิจถัดไป" (สีแดง)</div>
+  <div class="frame">
+    <div class="banner">
+      <div style="position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:rgba(255,247,245,0.18); display:flex; align-items:center; justify-content:center; font-size:12px;">🔗</div>
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 2 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 24"</div>
+    </div>
+  </div>
+
+  <div class="option-label">5. ปุ่มเต็มความกว้าง ท้ายสุดของหน้า (ใต้รายการเหรียญทั้งหมด)</div>
+  <div class="frame">
+    <div class="card" style="margin-bottom:8px;"><div style="font-size:11.5px; color:#8A7370;">(รายการเข็ม/เหรียญ...)</div></div>
+    <button class="btn" style="width:100%; justify-content:center; padding:11px;">🔗 แชร์การให้ที่ยิ่งใหญ่ของคุณ</button>
+  </div>
+
+  <div class="option-label">6. แถบลอยติดล่างจอ (sticky bottom bar) เหนือ bottom nav</div>
+  <div class="option-desc">แถบสีขาวคงที่ ไม่เลื่อนตามเนื้อหา ให้กดแชร์ได้ตลอดเวลาที่อยู่หน้านี้</div>
+  <div class="frame" style="height:110px; padding-bottom:0;">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div style="position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-top:1px solid #EEDEDA; padding:10px 16px;">
+      <button class="btn" style="width:100%; justify-content:center;">🔗 แชร์การให้ที่ยิ่งใหญ่ของคุณ</button>
+    </div>
+  </div>
+
+  <div class="option-label">7. ลิงก์ข้อความ (ไม่มีกรอบปุ่ม) ต่อท้ายบรรทัด "ปลดล็อกแล้ว X/Y"</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="row between"><div class="unlock" style="margin:0;">ปลดล็อกแล้ว 5/11 รายการ</div><span class="btn-text">🔗 แชร์</span></div>
+  </div>
+
+  <div class="option-label">8. ชิปเล็ก ๆ แนบต่อท้าย badge "ปลดล็อกแล้ว X/Y" แถวเดียวกัน</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="row" style="gap:8px;">
+      <span class="unlock" style="margin:0;">ปลดล็อกแล้ว 5/11 รายการ</span>
+      <span class="btn-icon" style="width:22px; height:22px; font-size:10px;">🔗</span>
+    </div>
+  </div>
+
+  <div class="option-label">9. การ์ดชวนแชร์แยกต่างหาก (โทนขาว) แบบเดียวกับการ์ดชวนเพิ่มปฏิทินในหน้าหลัก</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle" style="margin-bottom:10px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="card row between">
+      <span style="font-size:11.5px; color:#5C4A46;">🔗 อยากแชร์ความสำเร็จให้เพื่อนดูไหม ?</span>
+      <button class="btn" style="padding:6px 10px; font-size:10.5px;">แชร์</button>
+    </div>
+  </div>
+
+  <div class="option-label">10. วางไว้ท้ายการ์ด "ภารกิจถัดไป" เป็นปุ่มขาวขนาดเล็กมุมล่างขวา</div>
+  <div class="frame">
+    <div class="banner" style="padding-bottom:38px;">
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 2 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 24"</div>
+      <button class="btn" style="position:absolute; bottom:10px; right:10px; background:rgba(255,247,245,0.16); border-color:transparent; color:#FFF7F5; padding:6px 10px; font-size:10.5px;">🔗 แชร์</button>
+    </div>
+  </div>
+
+  <div class="option-label">11. ไอคอนวงกลมลอยขวาบนแบบ overlap ขอบเฟรม (คล้ายปุ่มปิด modal)</div>
+  <div class="frame" style="overflow:visible;">
+    <div class="btn-icon" style="position:absolute; top:-10px; right:-10px; background:#9A3B33; color:#FFF7F5; border:none;">🔗</div>
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+  </div>
+
+  <div class="option-label">12. ไอคอนแชร์เล็ก ๆ ติดที่มุมของแต่ละตรา (แชร์รายตัว แทนที่จะแชร์ภาพรวม)</div>
+  <div class="option-desc">เปลี่ยนแนวคิด — เอาปุ่มรวมออก แต่ให้กดแชร์ได้จากแต่ละเหรียญที่ปลดล็อกแล้วโดยตรง</div>
+  <div class="frame">
+    <div class="row" style="gap:10px;">
+      <div class="medal-mini">🥇<span style="position:absolute; bottom:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#9A3B33; color:#FFF7F5; font-size:8px; display:flex; align-items:center; justify-content:center;">🔗</span></div>
+      <div class="medal-mini">🥈<span style="position:absolute; bottom:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#9A3B33; color:#FFF7F5; font-size:8px; display:flex; align-items:center; justify-content:center;">🔗</span></div>
+    </div>
+  </div>
+
+  <div class="option-label">13. แถบเครื่องมือ (action bar) แนวนอนใต้หัวข้อ มีไอคอนแชร์เป็นหนึ่งในนั้น</div>
+  <div class="option-desc">เผื่ออนาคตมีปุ่มอื่นเพิ่ม เช่น ตั้งค่าการแจ้งเตือน — จัดเป็นแถบไอคอนรวมไว้ที่เดียว</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="row" style="gap:8px; margin:8px 0;">
+      <div class="btn-icon">🔗</div>
+      <div class="btn-icon">⚙️</div>
+    </div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+  </div>
+
+  <div class="option-label">14. ปุ่มลอย (bottom sheet trigger) เหนือแถบ nav ล่างสุดเล็กน้อย ทรงพิล</div>
+  <div class="frame" style="height:140px;">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <button class="btn" style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%); background:#3A2C29; color:#FFF7F5; border:none; box-shadow:0 8px 18px -4px rgba(0,0,0,0.35);">🔗 แชร์การให้ที่ยิ่งใหญ่ของคุณ</button>
+  </div>
+
+  <div class="option-label">15. ย้ายไปอยู่ในเมนูจุดสามจุด (⋯) มุมขวาบน ซ่อนไว้ไม่ให้เด่นเกินไป</div>
+  <div class="option-desc">เผื่อกรณีอยากให้หน้าดูโล่งที่สุด โดยย้ายแชร์ไปรวมกับ action อื่น ๆ ในเมนู overflow</div>
+  <div class="frame">
+    <div class="row between">
+      <div class="title" style="margin-bottom:0;">ภารกิจนักบริจาค</div>
+      <div class="btn-icon">⋯</div>
+    </div>
+    <div class="subtitle" style="margin-top:4px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="card" style="margin-top:8px; padding:6px 10px; max-width:160px; margin-left:auto;">
+      <div style="font-size:11.5px; color:#5C4A46; padding:4px 0;">🔗 แชร์การให้ที่ยิ่งใหญ่ของคุณ</div>
+    </div>
+  </div>
+
+</body>
+</html>

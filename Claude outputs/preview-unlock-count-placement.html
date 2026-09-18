@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ตำแหน่ง "ปลดล็อกแล้ว 5/14 รายการ"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .frame { max-width: 380px; background: #FBF6F5; border: 1px dashed #E3C8C3; border-radius: 16px; padding: 16px; position: relative; }
+  .title { font-size: 16px; font-weight: 700; color: #3A2C29; margin-bottom: 4px; }
+  .subtitle { font-size: 12.5px; color: #8A7370; margin: 0 0 4px; }
+  .unlock { font-size: 11.5px; color: #9A3B33; font-weight: 600; }
+  .disclaimer { font-size: 10.5px; color: #B39B96; line-height: 1.5; margin: 0 0 10px; }
+  .banner { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 14px; padding: 14px; color: #FFF7F5; position: relative; }
+  .banner-label { font-size: 11px; opacity: 0.85; margin-bottom: 4px; }
+  .banner-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .bar { height: 7px; border-radius: 4px; background: rgba(255,247,245,0.3); overflow: hidden; }
+  .bar-fill { height: 100%; background: #FFF7F5; border-radius: 4px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #3A2C29; }
+  .grid-mini { display: flex; gap: 8px; margin-top: 8px; }
+  .medal-mini { width: 44px; height: 44px; border-radius: 10px; background: #F3EAE8; }
+  .chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 12px; font-size: 10.5px; font-weight: 700; }
+</style>
+</head>
+<body>
+  <h1>ตำแหน่ง "ปลดล็อกแล้ว 5/14 รายการ" — ตัวอย่างเทียบ</h1>
+  <p class="sub">เทียบตำแหน่งของบรรทัดสรุปนี้ในบริบทหัวหน้าภารกิจ — ยังไม่แก้โค้ดจริง</p>
+
+  <div class="option-label" style="margin-top:0;">1. ใต้คำอธิบายหัวข้อ ก่อนการ์ด "ภารกิจถัดไป" (แบบปัจจุบัน)</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="unlock" style="margin-bottom:12px; display:block;">ปลดล็อกแล้ว 5/14 รายการ</div>
+    <div class="banner">
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 8 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 48"</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">2. เป็นชิปเล็ก ๆ มุมขวาบนของการ์ด "ภารกิจถัดไป"</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle" style="margin-bottom:12px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="banner">
+      <span class="chip" style="position:absolute; top:12px; right:12px; background:rgba(255,247,245,0.18); color:#FFF7F5;">5/14</span>
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 8 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 48"</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">3. เป็นแถบความคืบหน้าภาพรวม (progress bar) แทนตัวเลขเฉย ๆ</div>
+  <div class="option-desc">เปลี่ยนจากข้อความล้วนเป็นแท่งกราฟิกสั้น ๆ ให้เห็นสัดส่วนปลดล็อกด้วยตา ไม่ต้องตีความตัวเลข</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle" style="margin-bottom:8px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <div style="flex:1; height:6px; border-radius:3px; background:#F3EAE8; overflow:hidden;"><div style="width:36%; height:100%; background:#9A3B33;"></div></div>
+      <span class="unlock" style="white-space:nowrap;">5/14</span>
+    </div>
+    <div class="banner">
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 8 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 48"</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">4. ชิปเล็กในแถวหัวข้อ (ข้าง ๆ ชื่อหน้า "ภารกิจนักบริจาค")</div>
+  <div class="frame">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+      <div class="title" style="margin-bottom:0;">ภารกิจนักบริจาค</div>
+      <span class="chip" style="background:#F3EAE8; color:#9A3B33;">5/14</span>
+    </div>
+    <div class="subtitle" style="margin-bottom:12px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="banner">
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 8 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 48"</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">5. ย้ายลงไปเป็นบรรทัดหลังการ์ด "ภารกิจถัดไป" (หลังจบ CTA หลักแล้วค่อยสรุป)</div>
+  <div class="frame">
+    <div class="title">ภารกิจนักบริจาค</div>
+    <div class="subtitle" style="margin-bottom:12px;">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="banner" style="margin-bottom:8px;">
+      <div class="banner-label">ภารกิจถัดไป</div>
+      <div class="banner-title">อีก 8 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 48"</div>
+      <div class="bar"><div class="bar-fill" style="width:40%;"></div></div>
+    </div>
+    <div class="unlock">ปลดล็อกแล้ว 5/14 รายการ</div>
+  </div>
+
+  <div class="option-label">6. แยกสรุปทีละหมวด วางไว้ที่หัวข้อ "เข็มที่ระลึก" / "เหรียญกาชาดสมนาคุณ" แต่ละหมวดแทนตัวเลขรวม</div>
+  <div class="option-desc">แทนที่จะรวม 5/14 เป็นก้อนเดียว แยกให้เห็นว่าเข็มปลดล็อก 4/11 และเหรียญ 1/3</div>
+  <div class="frame">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;">
+      <div class="section-title">เข็มที่ระลึก</div>
+      <span class="unlock" style="font-weight:600;">4/11</span>
+    </div>
+    <div class="grid-mini"><div class="medal-mini"></div><div class="medal-mini"></div><div class="medal-mini"></div><div class="medal-mini"></div></div>
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin:14px 0 8px;">
+      <div class="section-title">เหรียญกาชาดสมนาคุณ</div>
+      <span class="unlock" style="font-weight:600;">1/3</span>
+    </div>
+    <div class="grid-mini"><div class="medal-mini"></div><div class="medal-mini"></div><div class="medal-mini"></div></div>
+  </div>
+
+</body>
+</html>

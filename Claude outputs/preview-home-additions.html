@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เพิ่ม 3 ฟีเจอร์ในหน้าหลัก</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 20px; padding: 16px; border: 1px solid #EEDEDA; }
+
+  .card {
+    background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);
+    box-shadow: 0 14px 32px -8px rgba(122,42,35,0.55);
+    border-radius: 20px; padding: 22px 18px; color: #FFF7F5; margin-bottom: 14px; position: relative; overflow: hidden;
+  }
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+  .card-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+  .card-num { font-size: 38px; font-weight: 700; line-height: 1; }
+  .card-num span { font-size: 15px; font-weight: 500; }
+  .card-bottom { margin-top: 14px; padding-top: 13px; border-top: 1px solid rgba(255,247,245,0.25); display: flex; align-items: center; gap: 8px; font-size: 12.5px; position: relative; z-index: 1; }
+  .card-milestone { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,247,245,0.25); font-size: 11.5px; opacity: 0.9; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .badge-mini { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,247,245,0.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .cal-btn { background: rgba(255,247,245,0.18); border: none; color: #FFF7F5; font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .cal-link { color: #FFF7F5; font-size: 11px; text-decoration: underline; cursor: pointer; flex-shrink: 0; }
+
+  .section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .section-title { font-size: 13.5px; font-weight: 600; }
+  .icon-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #E3C8C3; background: #FFFFFF; color: #9A3B33; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
+  .search-bar { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 12.5px; color: #B39B96; margin-bottom: 10px; background: #FFFFFF; }
+
+  .history-item { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 12px; padding: 10px 12px; font-size: 12px; color: #7A6360; margin-bottom: 8px; }
+
+  .quick-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .quick-chip { flex: 1; background: #FFFFFF; border: 1px solid #E3C8C3; border-radius: 12px; padding: 9px 6px; text-align: center; font-size: 10.5px; color: #7A6360; cursor: pointer; display:flex; flex-direction:column; align-items:center; gap:4px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่ม 3 ฟีเจอร์ในหน้าหลัก (ทางลัดเป้าหมาย / ค้นหาประวัติ / เพิ่มลงปฏิทิน)</h1>
+  <p class="sub">5 แบบให้เลือก ยังไม่ได้แก้โค้ดจริง — เฉพาะส่วนการ์ดยอดสะสม + หัวข้อประวัติเท่านั้น ส่วนอื่นเหมือนเดิม</p>
+
+  <div class="option-label">แบบ 1 — แทรกทุกอย่างแบบขั้นต่ำสุด (บรรทัดเล็กใต้การ์ด + ไอคอนเล็ก)</div>
+  <div class="option-desc">ทางลัดเป้าหมายเป็นบรรทัดบางๆ ใต้การ์ด ปฏิทินเป็นไอคอนจิ๋วข้างข้อความวันครบกำหนด ค้นหาเป็นไอคอนแว่นขยายเล็กๆ ข้างหัวข้อประวัติ</div>
+  <div class="phone">
+    <div class="card">
+      <div class="card-top">
+        <div><div class="card-label">บริจาคโลหิตสะสมทั้งหมด</div><div class="card-num">6<span> ครั้ง</span></div></div>
+      </div>
+      <div class="card-bottom">
+        ⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน) <button class="cal-btn">📅</button>
+      </div>
+      <div class="card-milestone">🏅 อีก 2 ครั้งจะได้ตราถัดไป</div>
+    </div>
+    <div class="section-title-row">
+      <div class="section-title">ประวัติการบริจาคโลหิต</div>
+      <div class="icon-btn">🔍</div>
+    </div>
+    <div class="history-item">📅 8 เม.ย. 2569 — ครั้งที่ 3</div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ทางลัดเป้าหมายเด่นในการ์ด / ปฏิทินเป็นลิงก์ข้อความ / ค้นหาโชว์ตลอด</div>
+  <div class="option-desc">ทางลัดเป้าหมายมีไอคอนตราเหรียญ badge เล็กประกบ ปฏิทินเป็นลิงก์ขีดเส้นใต้ ช่องค้นหาแสดงอยู่แล้วเหนือรายการประวัติเลย</div>
+  <div class="phone">
+    <div class="card">
+      <div class="card-top">
+        <div><div class="card-label">บริจาคโลหิตสะสมทั้งหมด</div><div class="card-num">6<span> ครั้ง</span></div></div>
+        <div class="badge-mini">🏅</div>
+      </div>
+      <div class="card-bottom">
+        ⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)
+      </div>
+      <div class="card-milestone">อีก 2 ครั้งจะได้ "เข็มทองคำ" <span class="cal-link">เพิ่มลงปฏิทิน</span></div>
+    </div>
+    <div class="section-title-row"><div class="section-title">ประวัติการบริจาคโลหิต</div></div>
+    <input class="search-bar" placeholder="ค้นหาจากสถานที่หรือบันทึกช่วยจำ..." disabled />
+    <div class="history-item">📅 8 เม.ย. 2569 — ครั้งที่ 3</div>
+  </div>
+
+  <div class="option-label">แบบ 3 — แถวปุ่มลัด 3 ปุ่มแยกออกมาต่างหาก (ใต้ปุ่มบันทึกบริจาค)</div>
+  <div class="option-desc">ไม่ยัดเข้าไปในการ์ด แต่แยกเป็นแถวปุ่มลัด 3 ปุ่มชัดเจน วางไว้ใต้ปุ่ม "บันทึกบริจาคโลหิต" — เห็นง่าย กดง่าย แต่กินพื้นที่มากกว่าแบบอื่น</div>
+  <div class="phone">
+    <div class="card">
+      <div class="card-top">
+        <div><div class="card-label">บริจาคโลหิตสะสมทั้งหมด</div><div class="card-num">6<span> ครั้ง</span></div></div>
+      </div>
+      <div class="card-bottom">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</div>
+    </div>
+    <div class="quick-row">
+      <div class="quick-chip">🏅<span>อีก 2 ครั้ง<br/>ถึงตราถัดไป</span></div>
+      <div class="quick-chip">📅<span>เพิ่มลง<br/>ปฏิทิน</span></div>
+      <div class="quick-chip">🔍<span>ค้นหา<br/>ประวัติ</span></div>
+    </div>
+    <div class="section-title-row"><div class="section-title">ประวัติการบริจาคโลหิต</div></div>
+    <div class="history-item">📅 8 เม.ย. 2569 — ครั้งที่ 3</div>
+  </div>
+
+  <div class="option-label">แบบ 4 — ผูกกับข้อความเดิมให้อ่านต่อเนื่องกันเป็นประโยคเดียว</div>
+  <div class="option-desc">ปฏิทินเป็นไอคอนเล็กแนบท้ายประโยควันครบกำหนดเดิม ทางลัดเป้าหมายพ่วงท้ายเป็นประโยคเดียวกัน (อ่านลื่น ไม่เพิ่มบรรทัด) ค้นหาซ่อนอยู่ในตัวกรองปีเดิม (กดไอคอนเพื่อสลับเป็นช่องค้นหา)</div>
+  <div class="phone">
+    <div class="card">
+      <div class="card-top">
+        <div><div class="card-label">บริจาคโลหิตสะสมทั้งหมด</div><div class="card-num">6<span> ครั้ง</span></div></div>
+      </div>
+      <div class="card-bottom" style="flex-wrap:wrap;">
+        ⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน) · อีก 2 ครั้งถึงตราถัดไป <button class="cal-btn">📅</button>
+      </div>
+    </div>
+    <div class="section-title-row">
+      <div class="section-title">ประวัติการบริจาคโลหิต</div>
+      <div style="display:flex; gap:6px;">
+        <div class="icon-btn">🔍</div>
+        <select style="font-size:11px; border:1px solid #E3C8C3; border-radius:8px; padding:4px 6px; color:#5C4A46;"><option>ทุกปี</option></select>
+      </div>
+    </div>
+    <div class="history-item">📅 8 เม.ย. 2569 — ครั้งที่ 3</div>
+  </div>
+
+  <div class="option-label">แบบ 5 — เรียบง่ายสุด: มีแค่ทางลัดเป้าหมาย + ปฏิทิน ในการ์ด ส่วนค้นหาย้ายไปแท็บอื่นแทน</div>
+  <div class="option-desc">ตัดฟีเจอร์ค้นหาออกจากหน้าหลัก (เพราะประวัติส่วนใหญ่ไม่เยอะขนาดต้องค้นหา) เก็บแค่ 2 อย่างที่เป็นประโยชน์ชัดเจนกว่า ทำให้หน้าหลักไม่รกเกินไป</div>
+  <div class="phone">
+    <div class="card">
+      <div class="card-top">
+        <div><div class="card-label">บริจาคโลหิตสะสมทั้งหมด</div><div class="card-num">6<span> ครั้ง</span></div></div>
+      </div>
+      <div class="card-bottom">
+        ⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน) <button class="cal-btn">📅 เพิ่มลงปฏิทิน</button>
+      </div>
+      <div class="card-milestone">🏅 อีก 2 ครั้งจะได้ตราถัดไป</div>
+    </div>
+    <div class="section-title-row"><div class="section-title">ประวัติการบริจาคโลหิต</div></div>
+    <div class="history-item">📅 8 เม.ย. 2569 — ครั้งที่ 3</div>
+  </div>
+</body>
+</html>

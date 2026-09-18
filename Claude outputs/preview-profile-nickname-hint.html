@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: คำอธิบายชื่อเล่น (การ์ดแชร์)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #EEDEDA; }
+  label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #7A6360; margin-bottom: 6px; font-weight: 500; }
+  input[type=text] { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 14px; font-family: inherit; }
+  .icon { width: 13px; height: 13px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: บอกผู้ใช้ว่าชื่อเล่นมีผลตอนแชร์การ์ด</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ช่องยังไม่บังคับกรอกเหมือนเดิมทุกแบบ แค่ต่างวิธีสื่อสาร</p>
+
+  <div class="option-label">แบบ 1 — คำบรรยายจางใต้ช่อง</div>
+  <div class="option-desc">ตรงไปตรงมาสุด อ่านง่าย ไม่รบกวนสายตา แต่เพิ่มความสูงให้ฟอร์ม</div>
+  <div class="phone">
+    <label><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg> ชื่อเล่น</label>
+    <input type="text" placeholder="ตั้งชื่อเล่นให้ตัวเอง" />
+    <div style="font-size:11px; color:#B7A5A1; margin-top:5px; line-height:1.5;">ใช้แสดงบนการ์ดแชร์ผลงาน หากไม่ใส่จะไม่แสดงชื่อบนการ์ด</div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ไอคอนเล็กท้ายป้าย + ข้อความสั้นในวงเล็บ</div>
+  <div class="option-desc">รวมกับป้ายเดิมเลย ไม่เพิ่มบรรทัดใหม่ กระชับสุด แต่ต้องยอมให้ป้ายยาวขึ้น</div>
+  <div class="phone">
+    <label><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg> ชื่อเล่น <span style="color:#B7A5A1; font-weight:400;">(ใช้บนการ์ดแชร์)</span></label>
+    <input type="text" placeholder="ตั้งชื่อเล่นให้ตัวเอง" />
+  </div>
+
+  <div class="option-label">แบบ 3 — เปลี่ยน placeholder ให้สื่อเอง ไม่มีคำอธิบายแยก</div>
+  <div class="option-desc">ไม่เพิ่มองค์ประกอบใหม่เลย ใช้ placeholder บอกเหตุผลแทน text จะหายไปเมื่อพิมพ์ ผู้ใช้ที่พิมพ์เร็วอาจไม่ทันอ่าน</div>
+  <div class="phone">
+    <label><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg> ชื่อเล่น</label>
+    <input type="text" placeholder="ชื่อที่จะแสดงบนการ์ดแชร์ (ไม่บังคับ)" />
+  </div>
+
+  <div class="option-label">แบบ 4 — ป้ายกำกับเล็ก ๆ (badge) ต่อท้ายป้าย</div>
+  <div class="option-desc">เด่นกว่าแบบ 2 แต่ยังกระชับ เหมือนป้าย "แนะนำ" — ให้ความรู้สึกว่าควรกรอกโดยไม่บังคับ</div>
+  <div class="phone">
+    <label style="justify-content:space-between; width:100%;">
+      <span style="display:flex; align-items:center; gap:6px;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg> ชื่อเล่น</span>
+      <span style="font-size:10px; padding:2px 8px; border-radius:10px; background:#F6EBE9; color:#9A3B33; font-weight:600;">ใช้บนการ์ดแชร์</span>
+    </label>
+    <input type="text" placeholder="ตั้งชื่อเล่นให้ตัวเอง" />
+  </div>
+
+  <div class="option-label">แบบ 5 — ไอคอนรูปภาพเล็ก ๆ ข้างช่อง สื่อด้วยภาพแทนคำ</div>
+  <div class="option-desc">ใช้ไอคอนรูปการ์ด/แชร์แทนข้อความยาว ๆ ดูทันสมัย แต่ผู้ใช้บางคนอาจไม่เข้าใจไอคอนทันที ต้องแตะดูเพิ่ม</div>
+  <div class="phone">
+    <label><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg> ชื่อเล่น</label>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <input type="text" placeholder="ตั้งชื่อเล่นให้ตัวเอง" style="flex:1;" />
+      <div title="ใช้แสดงบนการ์ดแชร์ผลงาน" style="width:36px; height:36px; border-radius:10px; background:#F6EBE9; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

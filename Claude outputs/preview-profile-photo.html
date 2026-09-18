@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: อัปโหลดรูปโปรไฟล์</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FBF6F5; border-radius: 18px; padding: 16px 18px; border: 1px solid #EEDEDA; }
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .app-name { font-size: 14px; font-weight: 700; line-height: 1.25; }
+  .app-sub { font-size: 10.5px; color: #8A7370; line-height: 1.25; }
+  .pill { font-size: 11px; background: #F3EAE8; color: #9A3B33; padding: 4px 9px; border-radius: 20px; font-weight: 600; }
+  .photo-fill { background: linear-gradient(135deg, #D9A79E 0%, #C48178 100%); }
+  .sheet { background:#FFFFFF; border:1px solid #EEDEDA; border-radius:14px; padding: 10px; margin-top: 14px; }
+  .sheet-row { display:flex; align-items:center; gap:10px; padding:10px 8px; font-size:13px; color:#3A2C29; }
+  .sheet-row + .sheet-row { border-top: 1px solid #F3EAE8; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: รูปโปรไฟล์ (อัปโหลด/แสดงผล)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — โฟกัสที่วิธีแตะเพื่อเพิ่ม/แก้รูป และหน้าตาตอนมี-ไม่มีรูป</p>
+
+  <div class="option-label">แบบ 1 — วงกลมพร้อมไอคอนกล้องมุมขวาล่าง</div>
+  <div class="option-desc">รูปแบบมาตรฐานที่คุ้นเคย (เหมือนแอปทั่วไป) ไอคอนกล้องเล็ก ๆ บอกชัดว่าแตะเพื่อเปลี่ยนรูปได้ ใช้ได้ทั้งตอนมี/ไม่มีรูป</div>
+  <div class="phone">
+    <div class="header"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div><div><div class="app-name">Blood Journey</div><div class="app-sub">บันทึกบริจาคโลหิต</div></div></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+        <div class="photo-fill" style="width:100%; height:100%; border-radius:50%;"></div>
+        <div style="position:absolute; bottom:-2px; right:-2px; width:18px; height:18px; border-radius:50%; background:#9A3B33; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:600;">สวัสดี, พิษณุ ตรุษสาห 👋</div>
+        <div style="font-size:11px; color:#8A7370; margin-top:2px;">หมู่เลือด A · 33 ปี · 60 กก.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ไม่มีรูป: วงกลมเส้นประ "+เพิ่มรูป"</div>
+  <div class="option-desc">สถานะยังไม่ใส่รูป ใช้เส้นประ+เครื่องหมายบวกแทนอักษรย่อ สื่อชัดว่า "ยังว่าง กดเพื่อเพิ่ม" ต่างจากแบบ 1 ที่ใช้สีพื้นทึบเสมอ</div>
+  <div class="phone">
+    <div class="header"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div><div><div class="app-name">Blood Journey</div><div class="app-sub">บันทึกบริจาคโลหิต</div></div></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:44px; height:44px; border-radius:50%; border:1.5px dashed #D9A79E; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:600;">สวัสดี, พิษณุ ตรุษสาห 👋</div>
+        <div style="font-size:11px; color:#8A7370; margin-top:2px;">หมู่เลือด A · 33 ปี · 60 กก.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — อักษรย่อเป็นค่าเริ่มต้น รูปแทนที่เมื่อมี</div>
+  <div class="option-desc">ไม่มีรูป = วงกลมอักษรย่อสีพื้น (ต่อยอดจากแบบ 2 ที่เลือกไว้ก่อนหน้า) มีรูป = แทนที่ด้วยรูปจริงทันที ไม่ต้องมีสถานะ "ว่างเปล่า" ที่ดูแปลกตา</div>
+  <div class="phone">
+    <div class="header"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div><div><div class="app-name">Blood Journey</div><div class="app-sub">บันทึกบริจาคโลหิต</div></div></div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="text-align:center;">
+        <div style="width:40px; height:40px; border-radius:50%; background:#F3EAE8; color:#9A3B33; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; margin-bottom:4px;">พ</div>
+        <div style="font-size:9px; color:#B7A5A1;">ยังไม่มีรูป</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="photo-fill" style="width:40px; height:40px; border-radius:50%; margin-bottom:4px;"></div>
+        <div style="font-size:9px; color:#B7A5A1;">ใส่รูปแล้ว</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — แตะแล้วเปิดเมนูเลือก (ถ่าย/เลือกรูป/ลบ)</div>
+  <div class="option-desc">โฟกัสที่ตัวเมนูตอนแตะวงกลม แทนที่จะเปิด file picker ของระบบตรง ๆ ให้ตัวเลือกครบ ถ่ายรูปใหม่ / เลือกจากคลัง / ลบรูปปัจจุบัน</div>
+  <div class="phone">
+    <div class="header"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div><div><div class="app-name">Blood Journey</div><div class="app-sub">บันทึกบริจาคโลหิต</div></div></div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+      <div class="photo-fill" style="width:44px; height:44px; border-radius:50%; flex-shrink:0;"></div>
+      <div>
+        <div style="font-size:14px; font-weight:600;">สวัสดี, พิษณุ ตรุษสาห 👋</div>
+        <div style="font-size:11px; color:#8A7370; margin-top:2px;">หมู่เลือด A · 33 ปี · 60 กก.</div>
+      </div>
+    </div>
+    <div class="sheet">
+      <div class="sheet-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> ถ่ายรูปใหม่</div>
+      <div class="sheet-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg> เลือกจากคลังภาพ</div>
+      <div class="sheet-row" style="color:#B3261E;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg> ลบรูปโปรไฟล์</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — วงแหวนขอบบาง ๆ ล้อมรูป (เน้นความเรียบหรู)</div>
+  <div class="option-desc">เพิ่มวงแหวนสีแบรนด์บาง ๆ รอบรูป (คล้าย story ring) ให้รูปโดดเด่นขึ้นโดยไม่ต้องมีไอคอนกล้องทับ แตะที่ตัวรูปเพื่อแก้ไขได้เลย</div>
+  <div class="phone">
+    <div class="header"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div><div><div class="app-name">Blood Journey</div><div class="app-sub">บันทึกบริจาคโลหิต</div></div></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:48px; height:48px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); flex-shrink:0;">
+        <div class="photo-fill" style="width:100%; height:100%; border-radius:50%; border: 2px solid #FBF6F5;"></div>
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:600;">สวัสดี, พิษณุ ตรุษสาห 👋</div>
+        <div style="font-size:11px; color:#8A7370; margin-top:2px;">หมู่เลือด A · 33 ปี · 60 กก.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

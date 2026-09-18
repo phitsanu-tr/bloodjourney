@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: แสดงปริมาณโลหิตสะสม (ลิตร) 8 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .wrap { max-width: 380px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 20px; padding: 22px; color: #FFF7F5; position: relative; overflow: hidden; }
+  .total-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+  .total-num { font-size: 38px; font-weight: 700; line-height: 1; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: แสดงปริมาณโลหิตสะสม (ประมาณการ) — 8 แบบ</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — สมมติ 40 ครั้ง × 350 มล. = 14,000 มล. ≈ 14 ลิตร</p>
+
+  <div class="option-label" style="margin-top:0;">1. ต่อท้ายบรรทัด "ครั้ง" เป็นข้อความเล็ก ๆ สีจาง</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:3px;">≈ 14 ลิตร</div>
+  </div>
+
+  <div class="option-label">2. เป็น pill เล็ก ๆ ข้างตัวเลข (บรรทัดเดียวกัน)</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
+      <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+      <span style="font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:rgba(255,247,245,0.16);">≈ 14 ลิตร</span>
+    </div>
+  </div>
+
+  <div class="option-label">3. ตัวเลขคู่กัน ขนาดรองลงมา (ครั้ง / ลิตร)</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:flex-end; gap:14px;">
+      <div><div class="total-num">40</div><div style="font-size:10.5px; opacity:0.75; margin-top:2px;">ครั้ง</div></div>
+      <div style="width:1px; height:30px; background:rgba(255,247,245,0.25);"></div>
+      <div><div style="font-size:24px; font-weight:700; line-height:1;">14</div><div style="font-size:10.5px; opacity:0.75; margin-top:2px;">ลิตร (โดยประมาณ)</div></div>
+    </div>
+  </div>
+
+  <div class="option-label">4. แปลงเป็นหน่วยที่เข้าใจง่าย — "ช่วยชีวิตได้ประมาณ X คน"</div>
+  <div class="option-desc">ใช้สมมติฐานทั่วไปว่า 1 ครั้งช่วยได้ ~3 คน แทนที่จะโชว์ลิตร ให้ความรู้สึกถึงผลกระทบชัดกว่าตัวเลขมิลลิลิตร</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:3px;">ช่วยชีวิตผู้ป่วยได้ประมาณ 120 คน</div>
+  </div>
+
+  <div class="option-label">5. ไอคอนหยดเลือด + ตัวเลขลิตร วางถัดจากไอคอนตกแต่งเดิม</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="display:flex; align-items:center; gap:4px; margin-top:4px; font-size:11px; color:rgba(255,247,245,0.75);">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,247,245,0.75)"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      ประมาณ 14 ลิตร
+    </div>
+  </div>
+
+  <div class="option-label">6. ใส่ในวงเล็บต่อท้ายคำว่า "ครั้ง" เลย ไม่ขึ้นบรรทัดใหม่</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง (≈14 ลิตร)</span></div>
+  </div>
+
+  <div class="option-label">7. แสดงเป็นหน่วยมิลลิลิตรแบบละเอียด (สำหรับคนชอบตัวเลขจริง)</div>
+  <div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:3px;">รวม 14,000 มล.</div>
+  </div>
+
+  <div class="option-label">8. ไม่แสดงในการ์ดหลัก แต่ไปแสดงในการ์ด "บริจาคล่าสุด" แทน (ไม่เพิ่มความแน่นในการ์ดเข้ม)</div>
+  <div class="option-desc">เอาไปไว้เป็นบรรทัดเล็ก ๆ ในการ์ดขาวที่มีอยู่แล้ว แทนที่จะเพิ่มในการ์ดไล่สีซึ่งมีข้อมูลเยอะอยู่แล้ว</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">40<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+  </div>
+  <div style="background:#FFFFFF; border:1px solid #EEDEDA; border-radius:16px; padding:16px; margin-top:16px;">
+    <div style="font-size:13px; font-weight:600; margin-bottom:6px; color:#3A2C29;">บริจาคโลหิตครั้งล่าสุด</div>
+    <div style="font-size:20px; font-weight:700; color:#3A2C29;">13 ก.ย. 2569</div>
+    <div style="font-size:11.5px; color:#7A6360; margin-top:4px;">โลหิตรวม • รวมบริจาคแล้วประมาณ 14 ลิตร</div>
+  </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: แบบ A — แท็กประเภทการบริจาค + นับรอบแยกประเภท</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 12px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .field-label { font-size: 12.5px; color: #7A6360; display: block; margin-bottom: 6px; }
+
+  /* pills */
+  .pill-row { display: flex; gap: 8px; margin-bottom: 4px; }
+  .pill { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px; border: 1.5px solid #E3C8C3; font-size: 12.5px; color: #7A6360; }
+  .pill.active { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); color: #FFF7F5; border-color: transparent; font-weight: 600; }
+
+  /* dropdown */
+  .select-box { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 14px; color: #3A2C29; display: flex; justify-content: space-between; align-items: center; }
+
+  /* toggle switch style */
+  .switch-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; }
+  .switch-labels { display: flex; flex-direction: column; gap: 2px; }
+  .switch-labels .main { font-size: 13px; }
+  .switch-labels .sub2 { font-size: 10.5px; color: #8A7370; }
+  .switch { width: 46px; height: 26px; border-radius: 20px; background: #E3C8C3; position: relative; }
+  .switch.on { background: #9A3B33; }
+  .switch-dot { width: 20px; height: 20px; border-radius: 50%; background: #FFFFFF; position: absolute; top: 3px; left: 3px; }
+  .switch.on .switch-dot { left: 23px; }
+
+  /* home cards */
+  .cards-row { display: flex; gap: 10px; }
+  .cards-col { display: flex; flex-direction: column; gap: 10px; }
+  .count-card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 16px; padding: 16px; color: #FFF7F5; box-shadow: 0 6px 14px -4px rgba(122,42,35,0.35); }
+  .count-card.alt { background: #FFFFFF; border: 1.5px solid #E3C8C3; color: #3A2C29; box-shadow: none; }
+  .count-card .type-tag { font-size: 10.5px; opacity: 0.85; margin-bottom: 4px; }
+  .count-card .big { font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .count-card .small { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tab { padding: 6px 12px; border-radius: 20px; font-size: 12px; background: #F6EBE9; color: #8A7370; }
+  .tab.active { background: #9A3B33; color: #FFF7F5; font-weight: 600; }
+
+  .history-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #F3E7E4; font-size: 13px; }
+  .type-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: #F6EBE9; color: #9A3B33; font-weight: 600; margin-left: 6px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: แบบ A — แท็กประเภทการบริจาค + นับรอบแยกประเภท</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — เลือกรูปแบบตัวเลือกประเภทในฟอร์ม + รูปแบบการ์ดนับถอยหลังในหน้าหลัก</p>
+
+  <div class="option-label">ส่วนที่ 1: ตัวเลือก "ประเภทการบริจาค" ในฟอร์มเพิ่ม/แก้ไขรายการ</div>
+
+  <div class="option-desc">แบบ 1 — ปุ่มเลือกคู่ (pill toggle)</div>
+  <div class="phone">
+    <label class="field-label">ประเภทการบริจาค</label>
+    <div class="pill-row">
+      <div class="pill active">โลหิตรวม</div>
+      <div class="pill">พลาสมา / เกล็ดเลือด</div>
+    </div>
+  </div>
+
+  <div class="option-desc" style="margin-top:18px;">แบบ 2 — ดรอปดาวน์ (เหมือนช่องหมู่เลือดเดิม)</div>
+  <div class="phone">
+    <label class="field-label">ประเภทการบริจาค</label>
+    <div class="select-box"><span>โลหิตรวม</span><span>▾</span></div>
+  </div>
+
+  <div class="option-desc" style="margin-top:18px;">แบบ 3 — สวิตช์เปิด/ปิด (เริ่มต้นปิด = โลหิตรวม)</div>
+  <div class="phone">
+    <div class="switch-row">
+      <div class="switch-labels">
+        <div class="main">บริจาคพลาสมา / เกล็ดเลือด</div>
+        <div class="sub2">ปิดไว้ = นับเป็นโลหิตรวม (ค่าเริ่มต้น)</div>
+      </div>
+      <div class="switch"><div class="switch-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="option-label">ส่วนที่ 2: การ์ดนับถอยหลังในหน้าหลัก (กรณีมีประวัติทั้ง 2 ประเภท)</div>
+
+  <div class="option-desc">แบบ 1 — การ์ดคู่วางเรียงข้าง</div>
+  <div class="phone">
+    <div class="cards-row">
+      <div class="count-card">
+        <div class="type-tag">โลหิตรวม</div>
+        <div class="big">42 วัน</div>
+        <div class="small">ครบกำหนดถัดไป</div>
+      </div>
+      <div class="count-card alt">
+        <div class="type-tag" style="color:#9A3B33;">พลาสมา/เกล็ดเลือด</div>
+        <div class="big" style="color:#9A3B33;">พร้อมบริจาค</div>
+        <div class="small" style="color:#8A7370;">ครบกำหนดแล้ว</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-desc" style="margin-top:18px;">แบบ 2 — การ์ดเรียงซ้อนแนวตั้ง</div>
+  <div class="phone">
+    <div class="cards-col">
+      <div class="count-card">
+        <div class="type-tag">โลหิตรวม</div>
+        <div class="big">42 วัน — ครบกำหนดถัดไป</div>
+      </div>
+      <div class="count-card alt">
+        <div class="type-tag" style="color:#9A3B33;">พลาสมา/เกล็ดเลือด</div>
+        <div class="big" style="color:#9A3B33;">พร้อมบริจาคแล้ว</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-desc" style="margin-top:18px;">แบบ 3 — แท็บสลับดู (การ์ดเดียว แตะสลับประเภท)</div>
+  <div class="phone">
+    <div class="tabs">
+      <div class="tab active">โลหิตรวม</div>
+      <div class="tab">พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <div class="count-card">
+      <div class="type-tag">โลหิตรวม</div>
+      <div class="big">42 วัน</div>
+      <div class="small">ครบกำหนดถัดไป</div>
+    </div>
+  </div>
+
+  <div class="option-label">ส่วนที่ 3: ป้ายประเภทในประวัติรายการ (แสดงเฉพาะถ้ามีมากกว่า 1 ประเภทในระบบ)</div>
+  <div class="phone">
+    <div class="history-item"><span>13 ก.ย. 2569 · รพ.จุฬาฯ</span><span class="type-badge">พลาสมา</span></div>
+    <div class="history-item"><span>15 มิ.ย. 2569 · สภากาชาดไทย</span><span></span></div>
+  </div>
+  <p class="sub" style="margin-top:8px;">รายการที่เป็น "โลหิตรวม" (ค่าเริ่มต้น) จะไม่มีป้ายกำกับ เพื่อไม่ให้รกเกินไปสำหรับคนส่วนใหญ่ที่บริจาคแบบเดียว</p>
+</body>
+</html>

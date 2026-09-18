@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: แท็บ "ให้ความรู้" + เมนูด้านล่าง 4 อัน</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  .wrap { max-width: 420px; margin: 0 auto; padding: 24px 16px 90px; }
+  h1 { font-size: 15px; margin: 0 0 4px; padding: 0 16px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; padding: 0 16px; }
+
+  .page-title { font-size: 16px; font-weight: 700; color: #3A2C29; margin: 0 0 4px; }
+  .page-desc { font-size: 12.5px; color: #8A7370; margin: 0 0 18px; line-height: 1.6; }
+
+  .accordion-item {
+    background: #FFFFFF;
+    border: 1px solid #EEDEDA;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .accordion-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 15px;
+    cursor: pointer;
+  }
+  .accordion-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: #F6EBE9;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .accordion-title { font-size: 13.5px; font-weight: 600; color: #3A2C29; flex: 1; }
+  .chevron { color: #B39B96; font-size: 12px; }
+  .accordion-body {
+    padding: 0 15px 16px 59px;
+    font-size: 12.5px;
+    color: #6B5652;
+    line-height: 1.7;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    background: #FFFFFF;
+    border-top: 1px solid #EEDEDA;
+  }
+  .nav-inner { display: flex; width: 100%; max-width: 420px; }
+  .nav-btn {
+    flex: 1;
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 0 10px;
+    color: #B39B96;
+    font-family: inherit;
+  }
+  .nav-btn.active { color: #9A3B33; }
+  .nav-label { font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ตัวอย่าง: แท็บใหม่ "ให้ความรู้" + เมนูด้านล่าง 4 อัน</h1>
+    <p class="sub">โปรไฟล์ยังอยู่จุดเดิมด้านบนไม่เปลี่ยน — นี่คือหน้าตาคร่าว ๆ ของเนื้อหาในแท็บใหม่ (แบบ accordion กดขยาย/ย่อ) ยังไม่ได้แก้โค้ดจริง</p>
+
+    <div class="page-title">ให้ความรู้เรื่องการบริจาคโลหิต</div>
+    <p class="page-desc">ข้อมูลพื้นฐานที่ควรรู้ก่อนและหลังบริจาคโลหิต แตะหัวข้อเพื่อดูรายละเอียด</p>
+
+    <div class="accordion-item">
+      <div class="accordion-head">
+        <div class="accordion-icon">📋</div>
+        <div class="accordion-title">เกณฑ์คุณสมบัติผู้บริจาค</div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="accordion-body">
+        อายุ 17-70 ปี น้ำหนักไม่ต่ำกว่า 45 กก. สุขภาพแข็งแรง ไม่มีไข้/ป่วยใน 14 วันที่ผ่านมา เว้นระยะห่างจากครั้งก่อนอย่างน้อย 90 วัน และไม่มีพฤติกรรมเสี่ยงตามเกณฑ์ของสภากาชาดไทย
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-head">
+        <div class="accordion-icon">🍽️</div>
+        <div class="accordion-title">การเตรียมตัวก่อน-หลังบริจาค</div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="accordion-body">
+        นอนหลับให้เพียงพอ ดื่มน้ำมาก ๆ ก่อนบริจาค งดอาหารมัน 6 ชม.ก่อนบริจาค หลังบริจาคควรพักอย่างน้อย 10-15 นาที ดื่มน้ำเพิ่ม และงดยกของหนัก/ออกกำลังกายหนักใน 24 ชม.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-head">
+        <div class="accordion-icon">💭</div>
+        <div class="accordion-title">ความเข้าใจผิดที่พบบ่อย</div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="accordion-body">
+        เช่น "บริจาคเลือดแล้วจะอ้วน/ผอมลง" หรือ "ทำให้ร่างกายอ่อนแอถาวร" ซึ่งไม่เป็นความจริง ร่างกายสร้างเลือดทดแทนได้ภายในไม่กี่สัปดาห์
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-head">
+        <div class="accordion-icon">❤️</div>
+        <div class="accordion-title">ประโยชน์ต่อร่างกาย</div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="accordion-body">
+        กระตุ้นการสร้างเม็ดเลือดใหม่ ช่วยตรวจสุขภาพเบื้องต้นฟรีทุกครั้ง (ความดัน ฮีโมโกลบิน) และงานวิจัยบางส่วนชี้ว่าอาจช่วยลดความเสี่ยงภาวะเลือดข้น
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-head">
+        <div class="accordion-icon">📍</div>
+        <div class="accordion-title">ช่องทางติดต่อศูนย์บริจาค</div>
+        <div class="chevron">▾</div>
+      </div>
+      <div class="accordion-body">
+        ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โทร. 1666 หรือค้นหาหน่วยรับบริจาคเคลื่อนที่ใกล้บ้านผ่านเว็บไซต์/แอปของสภากาชาดไทย
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-inner">
+      <button class="nav-btn active"><span>🏠</span><span class="nav-label">หน้าแรก</span></button>
+      <button class="nav-btn"><span>📊</span><span class="nav-label">แดชบอร์ด</span></button>
+      <button class="nav-btn"><span>🏆</span><span class="nav-label">ภารกิจ</span></button>
+      <button class="nav-btn"><span>📖</span><span class="nav-label">ให้ความรู้</span></button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: กลุ่มหยดเลือดแทน badge เดี่ยว</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .card {
+    border-radius: 20px;
+    padding: 26px 22px;
+    color: #FFF7F5;
+    max-width: 380px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);
+    box-shadow: 0 14px 32px -8px rgba(122,42,35,0.55);
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; z-index: 1; }
+  .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .num-row { font-size: 46px; font-weight: 700; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .unit { font-size: 18px; font-weight: 500; }
+  .divider { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,247,245,0.25); display: flex; align-items: center; gap: 10px; font-size: 13.5px; position: relative; z-index: 1; }
+  .cluster { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เอาลวดลายหยดจาง (แบบ A) + เปลี่ยน badge เดี่ยวเป็นกลุ่มหยดแทน</h1>
+  <p class="sub">ลบวงกลม badge เดิมออก ใช้กลุ่มหยดเลือด 3 ขนาดวางซ้อนกันแทน ตรงตำแหน่งเดิม พร้อมลวดลายหยดจาง ๆ กระจายพื้นหลัง (แบบ A) ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="card">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,247,245,0.08)" style="position:absolute; top:-10px; right:120px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,247,245,0.07)" style="position:absolute; bottom:8px; left:-4px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,247,245,0.06)" style="position:absolute; bottom:55px; left:60px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="cluster">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#FFF7F5" style="position:absolute; top:6px; left:14px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,247,245,0.75)" style="position:absolute; top:34px; left:0;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,247,245,0.55)" style="position:absolute; top:0; left:0;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      </div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+</body>
+</html>

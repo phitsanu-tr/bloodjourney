@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ออกแบบ: การ์ด "ระยะห่างเฉลี่ยต่อครั้ง" กรณีหยุดแล้วกลับมาบริจาค</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Thai", -apple-system, sans-serif; background: #FBF6F5; margin: 0; padding: 20px 16px 60px; color: #3A2C29; }
+  h1 { font-size: 17px; color: #9A3B33; margin: 0 0 4px; }
+  .subtitle { font-size: 12.5px; color: #8A7370; margin: 0 0 24px; line-height: 1.6; }
+  .scenario { max-width: 340px; margin: 0 auto 28px; background: #FFF7F5; border: 1px solid #EEDEDA; border-radius: 12px; padding: 12px 14px; font-size: 11.5px; color: #7A6360; line-height: 1.7; }
+  .scenario b { color: #9A3B33; }
+  .frame { max-width: 340px; margin: 0 auto; }
+  h2 { font-size: 14.5px; margin: 40px 0 4px; color: #9A3B33; border-top: 2px solid #EEDEDA; padding-top: 22px; }
+  .section-desc { font-size: 12px; color: #8A7370; margin: 0 0 16px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 20px 0 6px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.6; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 14px; }
+</style>
+</head>
+<body>
+
+<h1>ระยะห่างเฉลี่ยต่อครั้ง — 2 ทางเลือกสำหรับกรณีหยุดแล้วกลับมาบริจาค</h1>
+<p class="subtitle">ทั้งสองแบบใช้ข้อมูลตัวอย่างเดียวกัน เพื่อให้เทียบกันได้ตรง ๆ</p>
+
+<div class="scenario">
+  ตัวอย่างข้อมูล: บริจาคทุก ๆ <b>~90 วัน</b> อยู่ 4 ครั้งติดกัน จากนั้น<b>หยุดไป 3 ปี</b> แล้วกลับมาบริจาคอีกครั้งเมื่อ <b>92 วันก่อน</b> — ตรงกับสถานการณ์ที่คุณถามถึง
+</div>
+
+<h2>ทางเลือก B. เพิ่มตัวเลข "ช่วงห่างล่าสุด" ควบคู่กัน</h2>
+<p class="section-desc">คงค่าเฉลี่ยเดิมไว้ (ยังคำนวณแบบเดิมทุกอย่าง ไม่เปลี่ยน logic) แต่เพิ่มบรรทัดเสริมบอกว่าครั้งล่าสุดห่างจากครั้งก่อนหน้าเท่าไหร่ — ให้เห็นทั้งภาพรวมและพฤติกรรมปัจจุบันพร้อมกัน ไม่ต้องเดา threshold ว่า "หยุดนานแค่ไหนถึงนับว่าหยุด"</p>
+<div class="frame">
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ระยะห่างเฉลี่ยต่อครั้ง</div>
+    <div style="font-size:20px; font-weight:700;">336<span style="font-size:12px; font-weight:500;"> วัน</span></div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">เฉลี่ย 11.2 เดือนต่อครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#5C4A46;">
+      <span style="color:#9A3B33; font-weight:600;">ครั้งล่าสุด</span> ห่างจากครั้งก่อนหน้า <b style="color:#3A2C29;">92 วัน</b>
+    </div>
+  </div>
+</div>
+<div style="max-width:340px; margin:14px auto 0; font-size:11px; color:#B39B96; line-height:1.6;">
+  หมายเหตุ: ถ้ายังมีข้อมูลไม่ถึง 2 ครั้ง แถวนี้จะไม่แสดง (เหมือนตัวเลขอื่น ๆ ในการ์ดที่ซ่อนเมื่อข้อมูลไม่พอ)
+</div>
+
+<h2>ทางเลือก C. เปลี่ยนไปใช้ค่ามัธยฐาน (median)</h2>
+<p class="section-desc">เปลี่ยนตัวเลขหลักจากค่าเฉลี่ยเลขคณิตเป็นค่ามัธยฐาน (เรียงช่วงห่างทั้งหมดจากน้อยไปมาก แล้วเอาค่ากลาง) ซึ่งช่วงพักยาวผิดปกติจะไม่ดึงตัวเลขให้เพี้ยนเหมือนค่าเฉลี่ย แต่ต้องเปลี่ยนคำที่ใช้เรียกด้วย เพื่อไม่ให้สื่อผิดว่าเป็น "ค่าเฉลี่ย" แบบเดิม</p>
+<div class="frame">
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ระยะห่างทั่วไปต่อครั้ง</div>
+    <div style="font-size:20px; font-weight:700;">90<span style="font-size:12px; font-weight:500;"> วัน</span></div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">ค่ากึ่งกลาง (median) จากประวัติทั้งหมด ≈ 3.0 เดือนต่อครั้ง</div>
+  </div>
+</div>
+<div style="max-width:340px; margin:14px auto 0; font-size:11px; color:#B39B96; line-height:1.6;">
+  หมายเหตุ: ตัวเลขเปลี่ยนจาก 336 → 90 วัน เพราะช่วงพัก 3 ปีเป็นแค่ 1 ค่าผิดปกติในกลาง ๆ ของชุดข้อมูล ไม่ถ่วงค่ากึ่งกลางให้เพี้ยนเหมือนค่าเฉลี่ย — แต่ถ้ามีข้อมูลน้อย (2-3 ครั้ง) ค่ามัธยฐานจะยังไม่ค่อยน่าเชื่อถือเท่าไหร่เช่นกัน
+</div>
+
+<h2>เทียบกันตรง ๆ</h2>
+<p class="section-desc">
+  <b>B</b>: การเปลี่ยนแปลงน้อยที่สุด ไม่กระทบความหมายของ "เฉลี่ย" เดิม แค่เพิ่มบริบท เหมาะกับคนที่อยากรู้ทั้งภาพรวมและปัจจุบัน — ข้อเสียคือการ์ดสูงขึ้นอีกนิด และถ้ามีคนหยุดพักหลายรอบ ตัวเลข "เฉลี่ยทั้งหมด" ก็ยังเพี้ยนอยู่เหมือนเดิม (แค่มีตัวเลขที่สองมาช่วยตีความ)<br/><br/>
+  <b>C</b>: แก้ปัญหาตรงจุดที่สุดในเชิงสถิติ (ทนต่อค่าผิดปกติจริง) แต่เปลี่ยนความหมายของตัวเลขหลักไปเลย ต้องอธิบายคำว่า "median" ให้เข้าใจง่ายในภาษาไทย และถ้ามีข้อมูลน้อยมาก (2-3 ครั้ง) ค่ากึ่งกลางอาจดูแปลก ๆ ได้เหมือนกัน (เช่น มี 2 ครั้ง median จะเท่ากับค่าเฉลี่ยพอดี ไม่ต่างกัน)
+</p>
+
+</body>
+</html>

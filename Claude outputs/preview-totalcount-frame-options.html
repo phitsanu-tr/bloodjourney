@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: กรอบตัวเลขบริจาคสะสม</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+
+  .card {
+    background: #9A3B33;
+    border-radius: 20px;
+    padding: 26px 22px;
+    color: #FFF7F5;
+    max-width: 380px;
+  }
+  .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .num-row { font-size: 46px; font-weight: 700; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .unit { font-size: 18px; font-weight: 500; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ใส่กรอบให้ตัวเลข "บริจาคโลหิตสะสมทั้งหมด"</h1>
+  <p class="sub">5 แบบให้เลือก ยังไม่ได้แก้โค้ดจริง — พื้นหลังการ์ด #9A3B33 ตัวหนังสือ #FFF7F5 เหมือนของจริง</p>
+
+  <div class="option-label">แบบ A — ของเดิม (ไม่มีกรอบ)</div>
+  <div class="card">
+    <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="num-row">6<span class="unit">ครั้ง</span></div>
+  </div>
+
+  <div class="option-label">แบบ B — พื้นหลังโปร่งแสงจาง ๆ ล้อมรอบตัวเลข+หน่วย (pill)</div>
+  <div class="card">
+    <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:inline-flex; align-items:baseline; gap:6px; background:rgba(255,247,245,0.14); padding:8px 18px; border-radius:16px;">
+      <span style="font-size:46px; font-weight:700; line-height:1;">6</span><span class="unit">ครั้ง</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ C — ตัวเลขในวงกลม "ครั้ง" อยู่ข้างล่าง</div>
+  <div class="card">
+    <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+      <div style="width:74px; height:74px; border-radius:50%; background:rgba(255,247,245,0.14); display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:700;">6</div>
+      <div class="unit" style="font-size:13px; opacity:0.85;">ครั้ง</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ D — กรอบเส้นขอบบาง ๆ ล้อมรอบ (outline)</div>
+  <div class="card">
+    <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:inline-flex; align-items:baseline; gap:6px; border:1.5px solid rgba(255,247,245,0.4); padding:8px 18px; border-radius:14px;">
+      <span style="font-size:46px; font-weight:700; line-height:1;">6</span><span class="unit">ครั้ง</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ E — ไม่มีกรอบเต็ม แต่มีเส้นขีดเล็ก ๆ ใต้ตัวเลข (underline accent)</div>
+  <div class="card">
+    <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="num-row">6<span class="unit">ครั้ง</span></div>
+    <div style="width:40px; height:3px; border-radius:2px; background:rgba(255,247,245,0.5); margin-top:8px;"></div>
+  </div>
+</body>
+</html>

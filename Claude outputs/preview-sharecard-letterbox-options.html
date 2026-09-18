@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: จัดการขอบดำ/การเปลี่ยนขนาด</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .modal { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill {
+    padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid #E3C8C3; background: #FFFFFF; color: #3A2C29; font-family: inherit;
+  }
+  .pill.active { border: 1px solid #9A3B33; background: #9A3B33; color: #FFF7F5; }
+
+  .fake-card {
+    width: 60%; height: 60%; border-radius: 8px;
+    background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF7F5; font-size: 11px; font-weight: 700;
+  }
+
+  .box-dark { width: 100%; height: 320px; border-radius: 14px; overflow: hidden; background: #3A2C29; display: flex; align-items: center; justify-content: center; }
+  .box-light { width: 100%; height: 320px; border-radius: 14px; overflow: hidden; background: #F3EAE8; display: flex; align-items: center; justify-content: center; border: 1px solid #EEDEDA; }
+  .box-live { width: 100%; border-radius: 14px; overflow: hidden; background: #3A2C29; display: flex; align-items: center; justify-content: center; transition: aspect-ratio 0.35s ease; }
+  .box-live img-slot { }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: 3 แนวทางจัดการขอบดำ/การเปลี่ยนขนาด</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — แบบ 3 กดปุ่มสัดส่วนด้านล่างเพื่อดูการเปลี่ยนขนาดแบบนุ่มนวลจริง ๆ ได้เลย</p>
+
+  <div class="option-label">แบบ 1 — กรอบสูงคงที่ แต่เปลี่ยนสีขอบว่างเป็นสีอ่อน (กลืนกับพื้นหลังโมดัล)</div>
+  <div class="modal">
+    <div class="box-light">
+      <div class="fake-card" style="width:35%; height:90%;">ภาพ 9:16</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — กรอบสูงคงที่ ปรับความสูงกล่องให้ใกล้เคียงสัดส่วนเริ่มต้น (4:5) ลดพื้นที่ว่างสำหรับสัดส่วนอื่น</div>
+  <div class="modal">
+    <div class="box-dark" style="height: 260px;">
+      <div class="fake-card" style="width:55%; height:95%;">ภาพ 4:5 (ค่าเริ่มต้น พอดีเกือบเต็มกรอบ)</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — กรอบปรับตามสัดส่วนจริง (ไม่มีขอบดำเลย) แต่เปลี่ยนขนาดแบบนุ่มนวลด้วย transition — ลองกดปุ่มด้านล่างดูได้เลย</div>
+  <div class="modal">
+    <div class="pill-row">
+      <button class="pill active" onclick="setRatio(this, 1, 1)">1:1</button>
+      <button class="pill" onclick="setRatio(this, 4, 5)">4:5</button>
+      <button class="pill" onclick="setRatio(this, 9, 16)">9:16</button>
+      <button class="pill" onclick="setRatio(this, 16, 9)">16:9</button>
+    </div>
+    <div class="box-live" id="liveBox" style="aspect-ratio: 1 / 1;">
+      <div class="fake-card" style="width:80%; height:80%;">ภาพตัวอย่าง</div>
+    </div>
+  </div>
+
+  <script>
+    function setRatio(btn, w, h) {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('liveBox').style.aspectRatio = w + ' / ' + h;
+    }
+  </script>
+</body>
+</html>

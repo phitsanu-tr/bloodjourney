@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: การ์ดปริมาณโลหิตสะสม — เลือกตัวเลขหลัก</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 14px; max-width: 380px; }
+  .title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #3A2C29; }
+  .num { font-size: 20px; font-weight: 700; }
+  .num span { font-size: 12px; font-weight: 500; }
+  .cap { font-size: 11.5px; color: #8A7370; margin-top: 2px; }
+  .footer { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #F3E7E4; font-size: 12px; color: #5C4A46; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: จะให้อะไรเป็น "ตัวเลขหลัก" ของการ์ดปริมาณโลหิตสะสม</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ข้อมูลตัวอย่าง: บริจาคสะสม 37 ครั้ง = 12.9 ลิตร</p>
+
+  <div class="option-label" style="margin-top:0;">แบบ A — จำนวนครั้งเป็นหลัก แตะดูลิตรได้ (สลับ)</div>
+  <div class="option-desc">ตัวเลขใหญ่คือจำนวนครั้ง เข้าใจง่ายกว่า ลิตรเป็นแค่ตัวรอง แตะสลับดูได้เหมือนเดิม</div>
+  <div class="card">
+    <div class="title">ปริมาณโลหิตสะสม</div>
+    <div class="num">37 <span>ครั้ง</span></div>
+    <div class="cap">≈ 12.9 ลิตร (แตะดูปริมาณ)</div>
+    <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+  </div>
+
+  <div class="option-label">แบบ B — ลิตรเป็นหลักเหมือนเดิม แตะดูจำนวนครั้งได้ (ของปัจจุบัน)</div>
+  <div class="option-desc">คงพฤติกรรมปัจจุบันไว้ ไม่เปลี่ยนอะไร</div>
+  <div class="card">
+    <div class="title">ปริมาณโลหิตสะสม</div>
+    <div class="num">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+    <div class="cap">คำนวณที่ 350 มล./ครั้ง (แตะดูจำนวนครั้ง)</div>
+    <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+  </div>
+
+  <div class="option-label">แบบ C — โชว์ทั้งสองพร้อมกัน ไม่ต้องแตะเลย</div>
+  <div class="option-desc">เลิก toggle ไปเลย ใส่ทั้งจำนวนครั้งและลิตรให้เห็นพร้อมกัน อ่านครบในครั้งเดียว ไม่ต้องเดาว่ากดได้</div>
+  <div class="card">
+    <div class="title">ปริมาณโลหิตสะสม</div>
+    <div style="display:flex; align-items:baseline; gap:14px;">
+      <div class="num">37 <span>ครั้ง</span></div>
+      <div style="width:1px; height:16px; background:#EEDEDA;"></div>
+      <div class="num" style="font-size:16px;">12.9 <span>ลิตร</span></div>
+    </div>
+    <div class="cap">คำนวณที่ 350 มล./ครั้ง</div>
+    <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+  </div>
+
+  <div class="option-label">แบบ D — จำนวนครั้งใหญ่สุด ลิตรเป็นบรรทัดรองแยกต่างหาก (ไม่ต้องแตะ)</div>
+  <div class="option-desc">คล้ายแบบ C แต่จัดเรียงเป็นแนวตั้งแทนแนวนอน ให้จำนวนครั้งเด่นสุด ลิตรเป็นรายละเอียดเสริมบรรทัดถัดไป</div>
+  <div class="card">
+    <div class="title">ปริมาณโลหิตสะสม</div>
+    <div class="num" style="font-size:26px;">37 <span style="font-size:13px;">ครั้ง</span></div>
+    <div class="cap">≈ 12.9 ลิตร (คำนวณที่ 350 มล./ครั้ง)</div>
+    <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+  </div>
+
+  <div class="option-label">แบบ E — จำนวนครั้งเป็นหลัก ไม่มีลิตรในการ์ดนี้เลย (ย้ายลิตรไปการ์ดอื่น/เอาออก)</div>
+  <div class="option-desc">เรียบง่ายสุด เอาปริมาณลิตรออกจากการ์ดนี้ไปเลย เหลือแค่จำนวนครั้งสะสม + จำนวนผู้ป่วยที่อาจช่วยได้ (ตัวเลขลิตรอาจย้ายไปใส่ไว้ในหน้าประวัติ/รายละเอียดแทน)</div>
+  <div class="card">
+    <div class="title">จำนวนครั้งบริจาคสะสม</div>
+    <div class="num" style="font-size:26px;">37 <span style="font-size:13px;">ครั้ง</span></div>
+    <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+  </div>
+
+</body>
+</html>

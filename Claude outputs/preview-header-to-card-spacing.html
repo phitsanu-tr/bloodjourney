@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ระยะห่างก่อนการ์ดแดง</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FBF6F5; border: 1px solid #EEDEDA; border-radius: 18px; padding: 18px; }
+  .avatar { width:44px; height:44px; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; }
+  .avatar .letter { font-size:16px; font-weight:700; color:#9A3B33; }
+  .badge { position:absolute; bottom:-2px; right:-2px; width:18px; height:18px; border-radius:50%; background:#9A3B33; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center; }
+  .greet { font-size:14px; font-weight:600; color:#3A2C29; }
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:11px; line-height:1; background:#F3EAE8; color:#9A3B33; padding:3px 10px 3px 3px; border-radius:20px; font-weight:600; }
+  .pill .circ { width:16px; height:16px; border-radius:50%; background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 20px; padding: 18px; color: #FFF7F5; }
+  .card .label { font-size: 12px; opacity: 0.85; }
+  .card .num { font-size: 34px; font-weight: 800; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ระยะห่างระหว่างส่วนหัวกับการ์ดสะสม</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ปัจจุบันระยะนี้ = 14px คงเดิมตั้งแต่ก่อนขยับระยะอื่น ๆ ในส่วนหัว</p>
+
+  <div class="option-label">แบบ 1 — 16px (ขยับน้อยที่สุด)</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+      <div class="avatar"><span class="letter">W</span><div class="badge"></div></div>
+      <div><div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <span class="pill"><span class="circ">◇</span>A</span><span class="pill"><span class="circ">🎂</span>33 ปี</span><span class="pill"><span class="circ">⚖</span>60 กก.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 <span style="font-size:16px; font-weight:600;">ครั้ง</span></div></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — 18px</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+      <div class="avatar"><span class="letter">W</span><div class="badge"></div></div>
+      <div><div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <span class="pill"><span class="circ">◇</span>A</span><span class="pill"><span class="circ">🎂</span>33 ปี</span><span class="pill"><span class="circ">⚖</span>60 กก.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 <span style="font-size:16px; font-weight:600;">ครั้ง</span></div></div>
+  </div>
+
+  <div class="option-label">แบบ 3 — 20px (ตามที่เสนอไปก่อนหน้า)</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+      <div class="avatar"><span class="letter">W</span><div class="badge"></div></div>
+      <div><div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <span class="pill"><span class="circ">◇</span>A</span><span class="pill"><span class="circ">🎂</span>33 ปี</span><span class="pill"><span class="circ">⚖</span>60 กก.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 <span style="font-size:16px; font-weight:600;">ครั้ง</span></div></div>
+  </div>
+
+  <div class="option-label">แบบ 4 — 24px</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px;">
+      <div class="avatar"><span class="letter">W</span><div class="badge"></div></div>
+      <div><div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <span class="pill"><span class="circ">◇</span>A</span><span class="pill"><span class="circ">🎂</span>33 ปี</span><span class="pill"><span class="circ">⚖</span>60 กก.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 <span style="font-size:16px; font-weight:600;">ครั้ง</span></div></div>
+  </div>
+
+  <div class="option-label">แบบ 5 — 28px (โปร่งที่สุด)</div>
+  <div class="phone">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:28px;">
+      <div class="avatar"><span class="letter">W</span><div class="badge"></div></div>
+      <div><div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <span class="pill"><span class="circ">◇</span>A</span><span class="pill"><span class="circ">🎂</span>33 ปี</span><span class="pill"><span class="circ">⚖</span>60 กก.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 <span style="font-size:16px; font-weight:600;">ครั้ง</span></div></div>
+  </div>
+</body>
+</html>

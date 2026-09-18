@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เพิ่มมิติให้การ์ดสะสม</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+
+  .card {
+    border-radius: 20px;
+    padding: 26px 22px;
+    color: #FFF7F5;
+    max-width: 380px;
+    position: relative;
+    overflow: hidden;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .num-row { font-size: 46px; font-weight: 700; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .unit { font-size: 18px; font-weight: 500; }
+  .badge { width: 68px; height: 68px; border-radius: 50%; background: rgba(255,247,245,0.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
+  .divider { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,247,245,0.25); display: flex; align-items: center; gap: 10px; font-size: 13.5px; position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มมิติให้การ์ดสะสม</h1>
+  <p class="sub">5 แนวทางให้เลือก ยังไม่ได้แก้โค้ดจริง — ลองดูทีละแบบ เลือกได้มากกว่า 1 แบบผสมกันด้วย</p>
+
+  <div class="option-label">แบบ 1 — เงาลอยใต้การ์ด (drop shadow)</div>
+  <p class="option-desc">เพิ่ม box-shadow นุ่ม ๆ ใต้การ์ด ให้รู้สึกว่าการ์ดลอยขึ้นจากพื้นหลัง ไม่ใช่แปะราบไปกับหน้าจอ</p>
+  <div class="card" style="background:#9A3B33; box-shadow: 0 14px 32px -8px rgba(122,42,35,0.55);">
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — ไล่เฉดสี (gradient) แทนสีทึบเรียบ</div>
+  <p class="option-desc">ใช้ gradient เข้มขึ้นทางมุมซ้ายล่าง อ่อนลงทางขวาบน ให้พื้นผิวดูมีมิติแทนสีแบนราบเดียว</p>
+  <div class="card" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);">
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ 3 — แสงสะท้อนบาง ๆ ที่ขอบบน (glossy highlight)</div>
+  <p class="option-desc">เพิ่มแถบไล่โทนสีอ่อนจาง ๆ พาดผ่านขอบบนของการ์ด คล้ายแสงตกกระทบผิวมัน ให้ความรู้สึกนูน/มีเนื้อผิว</p>
+  <div class="card" style="background:#9A3B33;">
+    <div style="position:absolute; top:0; left:0; right:0; height:90px; background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 100%); pointer-events:none;"></div>
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ 4 — ตัวเลขมีเงานูนขึ้นมา (text-shadow)</div>
+  <p class="option-desc">ใส่เงาบาง ๆ ใต้ตัวเลข "6" ให้ดูนูนขึ้นจากพื้นผิวการ์ด แทนที่จะแบนราบเหมือนตัวหนังสือทั่วไป</p>
+  <div class="card" style="background:#9A3B33;">
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row" style="text-shadow: 0 3px 6px rgba(0,0,0,0.35);">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+
+  <div class="option-label">แบบ 5 — รวมทุกอย่าง (gradient + เงาลอย + แสงสะท้อนบน + ตัวเลขนูน)</div>
+  <p class="option-desc">เอาทั้ง 4 แบบมารวมกันเป็นชุดเดียว ให้เห็นภาพรวมว่าถ้าใส่ทุกอย่างพร้อมกันจะดูอย่างไร</p>
+  <div class="card" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 14px 32px -8px rgba(122,42,35,0.55);">
+    <div style="position:absolute; top:0; left:0; right:0; height:90px; background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 100%); pointer-events:none;"></div>
+    <div class="row">
+      <div>
+        <div class="label">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div class="num-row" style="text-shadow: 0 3px 6px rgba(0,0,0,0.35);">6<span class="unit">ครั้ง</span></div>
+      </div>
+      <div class="badge" style="box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);"><svg width="34" height="34" viewBox="0 0 24 24" fill="#FFF7F5" stroke="none"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></div>
+    </div>
+    <div class="divider"><span>⏱</span><span>บริจาคครั้งถัดไปได้ตั้งแต่ 12 ธ.ค. 2569 (อีก 89 วัน)</span></div>
+  </div>
+</body>
+</html>

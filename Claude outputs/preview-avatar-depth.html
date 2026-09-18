@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เพิ่มมิติให้วงกลมอวาตาร์</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FBF6F5; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .row { display:flex; align-items:center; gap: 10px; }
+  .pill { font-size: 11px; background: #F3EAE8; color: #9A3B33; padding: 4px 9px; border-radius: 20px; font-weight: 600; }
+  .greet { font-size:14px; font-weight:600; margin-bottom:4px; }
+  .stats { display:flex; gap:6px; flex-wrap:wrap; margin-top: 4px; }
+  .avatar-badge { position:absolute; bottom:-2px; right:-2px; width:18px; height:18px; border-radius:50%; background:#9A3B33; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มมิติให้วงกลมอวาตาร์</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — เทียบวิธีเพิ่มเงา/มิติแบบต่าง ๆ ให้เข้าชุดกับโลโก้แอป</p>
+
+  <div class="option-label">แบบ 1 — เงานุ่มใต้วงกลม (อ้างอิงจากโลโก้แอป)</div>
+  <div class="option-desc">ใช้ box-shadow แบบเดียวกับโลโก้แอปเป๊ะ ๆ (สีแดงแบรนด์เบลอนุ่ม) ให้ทั้งสองจุดดูเป็นชุดเดียวกัน</div>
+  <div class="phone"><div class="row">
+    <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+      <div style="width:100%; height:100%; border-radius:50%; background:#F3EAE8; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#9A3B33; box-shadow: 0 5px 12px -4px rgba(122,42,35,0.35);">W</div>
+      <div class="avatar-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div><div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div><div class="stats"><span class="pill">หมู่เลือด A</span><span class="pill">33 ปี</span><span class="pill">60 กก.</span></div></div>
+  </div></div>
+
+  <div class="option-label">แบบ 2 — ไล่เฉดพื้นหลังวงกลม + เงา</div>
+  <div class="option-desc">เปลี่ยนพื้นหลังวงกลมจากสีพื้นเรียบ เป็นไล่เฉดอ่อน ๆ (ไม่เข้มเท่าโลโก้ ยังอ่านตัวอักษรออกชัด) ผสานกับเงา ให้ดูมีมิติขึ้นสองชั้น</div>
+  <div class="phone"><div class="row">
+    <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+      <div style="width:100%; height:100%; border-radius:50%; background:linear-gradient(135deg, #F6EBE9 0%, #E8CFC9 100%); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#9A3B33; box-shadow: 0 4px 10px -3px rgba(122,42,35,0.3);">W</div>
+      <div class="avatar-badge" style="box-shadow: 0 2px 5px -1px rgba(0,0,0,0.3);"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div><div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div><div class="stats"><span class="pill">หมู่เลือด A</span><span class="pill">33 ปี</span><span class="pill">60 กก.</span></div></div>
+  </div></div>
+
+  <div class="option-label">แบบ 3 — วงแหวนขอบสีแบรนด์บาง ๆ (ไม่มีเงา)</div>
+  <div class="option-desc">แทนที่จะใช้เงา ใช้เส้นขอบไล่เฉด (ring) ล้อมรอบแทน ให้ความรู้สึก "กรอบพรีเมียม" มากกว่ามิติแบบลอย</div>
+  <div class="phone"><div class="row">
+    <div style="position:relative; width:48px; height:48px; flex-shrink:0;">
+      <div style="width:100%; height:100%; border-radius:50%; padding:2.5px; background:linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);">
+        <div style="width:100%; height:100%; border-radius:50%; background:#F3EAE8; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#9A3B33;">W</div>
+      </div>
+      <div class="avatar-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div><div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div><div class="stats"><span class="pill">หมู่เลือด A</span><span class="pill">33 ปี</span><span class="pill">60 กก.</span></div></div>
+  </div></div>
+
+  <div class="option-label">แบบ 4 — เงา + วงแหวนขอบ รวมกันทั้งสองอย่าง</div>
+  <div class="option-desc">มิติเยอะสุดในบรรดาตัวเลือก ผสานทั้งเงาลอยและกรอบไล่เฉด เด่นชัดสุด แต่อาจดูหนักไปสำหรับองค์ประกอบเล็ก ๆ แค่ 44px</div>
+  <div class="phone"><div class="row">
+    <div style="position:relative; width:48px; height:48px; flex-shrink:0;">
+      <div style="width:100%; height:100%; border-radius:50%; padding:2.5px; background:linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 5px 12px -4px rgba(122,42,35,0.45);">
+        <div style="width:100%; height:100%; border-radius:50%; background:#F3EAE8; border:2px solid #FBF6F5; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#9A3B33;">W</div>
+      </div>
+      <div class="avatar-badge" style="box-shadow: 0 2px 5px -1px rgba(0,0,0,0.35);"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div><div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div><div class="stats"><span class="pill">หมู่เลือด A</span><span class="pill">33 ปี</span><span class="pill">60 กก.</span></div></div>
+  </div></div>
+
+  <div class="option-label">แบบ 5 — พื้นวงกลมเป็นไล่เฉดเข้มแบบโลโก้ + ตัวอักษรสีขาว</div>
+  <div class="option-desc">ใช้ไล่เฉดเข้มเดียวกับโลโก้แอปเป๊ะ ๆ (ไม่ใช่แค่สีอ่อน) ตัวอักษรเปลี่ยนเป็นสีขาวให้อ่านออก ดูเป็นชุดเดียวกับโลโก้มากที่สุด แต่จะแย่งความสนใจจากคำทักทายไปนิดหน่อยเพราะสีเข้มขึ้น</div>
+  <div class="phone"><div class="row">
+    <div style="position:relative; width:44px; height:44px; flex-shrink:0;">
+      <div style="width:100%; height:100%; border-radius:50%; background:linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#FFF7F5; box-shadow: 0 5px 12px -4px rgba(122,42,35,0.55);">W</div>
+      <div class="avatar-badge" style="background:#FFF7F5;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    </div>
+    <div><div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div><div class="stats"><span class="pill">หมู่เลือด A</span><span class="pill">33 ปี</span><span class="pill">60 กก.</span></div></div>
+  </div></div>
+</body>
+</html>

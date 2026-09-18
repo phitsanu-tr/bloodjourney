@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: มิติพื้นหลังด้วยลายหยดเลือด</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FEFBFA; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; border-radius: 18px; padding: 18px; position: relative; overflow: hidden; background: #FBF6F5; }
+  .row { display:flex; align-items:center; margin-bottom: 20px; position: relative; z-index: 1; }
+  .logo { width:40px; height:40px; border-radius:11px; background:#9A3B33; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .brand { font-size:14px; font-weight:700; margin-left:9px; }
+  .brand .sub2 { font-size:9.5px; color:#8A7370; font-weight:400; }
+  .greet { font-size:13px; font-weight:600; margin-bottom:20px; position: relative; z-index: 1; }
+  .pill { display:inline-flex; align-items:center; font-size:10px; background:rgba(255,255,255,0.85); color:#9A3B33; padding:3px 9px; border-radius:20px; font-weight:600; margin-right:5px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 18px; padding: 16px; color: #FFF7F5; margin-top:6px; position: relative; z-index: 1; }
+  .card .label { font-size: 11px; opacity: 0.85; }
+  .card .num { font-size: 28px; font-weight: 800; margin-top: 3px; }
+  .drop { position:absolute; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ลายหยดเลือดแต่งพื้นหลัง (โทนเดียวกับในการ์ดแดง)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ใช้ลายหยดเลือดแบบเดียวกับที่อยู่ในการ์ดสะสมด้านล่าง แต่ปรับสี/ความจางให้เข้ากับพื้นหลังสีอ่อน วางเฉพาะพื้นที่ว่างด้านบน (โซนโลโก้/ทักทาย) ไม่ทับการ์ดแดงที่มีลายอยู่แล้ว</p>
+
+  <div class="option-label">แบบ 1 — หยดเดี่ยวจาง ๆ มุมขวาบน (เรียบง่ายสุด)</div>
+  <div class="option-desc">หยดเดียวขนาดใหญ่ โปร่งแสงมาก วางลอยมุมขวาบนของพื้นที่ว่าง ให้ความรู้สึกมีของตกแต่งโดยไม่รก</div>
+  <div class="phone">
+    <svg class="drop" style="top:-10px; right:-20px; opacity:0.08;" width="140" height="170" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — กลุ่มหยดหลายขนาดกระจายมุมบน (เหมือนในการ์ดแดง)</div>
+  <div class="option-desc">จำลองคอมโพสิชันเดียวกับในการ์ดแดงเป๊ะ ๆ (หยดใหญ่ 1 + กลาง 1 + เล็ก 2) แต่ใช้สีแดงจางแทนสีขาว วางไว้แถบบนสุดของหน้า</div>
+  <div class="phone">
+    <svg class="drop" style="top:-25px; right:10px; opacity:0.07;" width="70" height="85" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:25px; right:90px; opacity:0.06;" width="26" height="32" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:60px; right:30px; opacity:0.09;" width="42" height="51" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 3 — หยดไล่หลังโลโก้ (accent เฉพาะจุด)</div>
+  <div class="option-desc">หยดใหญ่วางไว้เป็นแบ็กกราวด์เฉพาะหลังโลโก้แอป ให้โลโก้ดูมีตัวตนเด่นขึ้น เหมือนมีวงแสงรองรับ ส่วนที่เหลือของหน้ายังโล่งเรียบ</div>
+  <div class="phone">
+    <svg class="drop" style="top:-30px; left:-20px; opacity:0.10;" width="150" height="180" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row"><div class="logo" style="position:relative; z-index:2;"></div><div class="brand" style="position:relative; z-index:2;">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 4 — หยดโรยเบา ๆ ทั่วพื้นที่ว่างทั้งหมด (ไม่ใช่แค่มุมบน)</div>
+  <div class="option-desc">กระจายหยดเล็ก ๆ จาง ๆ ทั่วทั้งพื้นหลังพื้นที่ว่าง (ไม่ใช่แค่บนสุด) ให้บรรยากาศ "สายฝนเลือด" อ่อน ๆ ทั่วทั้งหน้า มิติต่อเนื่องกว่าแบบอื่น</div>
+  <div class="phone">
+    <svg class="drop" style="top:-15px; right:-15px; opacity:0.07;" width="90" height="108" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:40px; left:-10px; opacity:0.05;" width="34" height="41" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:110px; right:40px; opacity:0.06;" width="22" height="27" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:150px; left:30px; opacity:0.05;" width="18" height="22" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+
+  <div class="option-label">แบบ 5 — หยดขอบเส้น (outline) ผสมหยดทึบ</div>
+  <div class="option-desc">ผสมหยดขอบเส้นโปร่งกับหยดทึบจาง ๆ เหมือนโทนที่การ์ดแดงใช้ (มีทั้งหยดทึบขาวและหยดโปร่งแสง) ให้ลายมีมิติมากกว่าใช้หยดทึบอย่างเดียว</div>
+  <div class="phone">
+    <svg class="drop" style="top:-20px; right:0px; opacity:0.10;" width="80" height="96" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:35px; right:100px; opacity:0.35;" width="24" height="29" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg class="drop" style="top:80px; right:20px; opacity:0.30;" width="16" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <div class="row"><div class="logo"></div><div class="brand">Blood Journey<div class="sub2">บันทึกบริจาคโลหิต</div></div></div>
+    <div class="greet">สวัสดี, คุณพิษณุ ตรุษสาท<br><span class="pill">◇ A</span><span class="pill">🎂 33 ปี</span><span class="pill">⚖ 60 กก.</span></div>
+    <div class="card"><div class="label">บริจาคโลหิตสะสมทั้งหมด</div><div class="num">41 ครั้ง</div></div>
+  </div>
+</body>
+</html>

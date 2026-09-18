@@ -2724,22 +2724,8 @@ function AppInner() {
 
   if (phase === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
-        <style>{`
-          @keyframes bjSplashSpin { to { transform: rotate(360deg); } }
-        `}</style>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 26 }}>
-            <div style={{ position: "absolute", inset: 0, animation: "bjSplashSpin 1.6s linear infinite" }}>
-              <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
-            </div>
-            <div style={{ width: 92, height: 92, borderRadius: 26, background: "#FFFFFF", boxShadow: "0 14px 30px rgba(154,59,51,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
-            </div>
-          </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Noto Sans Thai', 'Inter', sans-serif" }}>BloodJourney</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Noto Sans Thai', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
-        </div>
+      <div style={{ minHeight: 500, display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
+        <div style={{ color: "#9A3B33", fontFamily: "'Noto Sans Thai', sans-serif" }}>กำลังโหลด...</div>
       </div>
     );
   }
@@ -2791,19 +2777,6 @@ function AppInner() {
             box-shadow: 0 24px 64px -20px rgba(122,42,35,0.28), 0 0 0 1px #F0DEDA;
             min-height: calc(100vh - 56px);
           }
-        }
-        /* Date + time inputs: always stack full-width instead of sitting
-           side-by-side. Reported as cramped on an iPhone 11 even after the
-           lang="en-US" fix shortened the native picker's displayed text —
-           the real constraint is the form modal's own maxWidth (380px, same
-           on phone and desktop card view, since the app stays phone-width
-           either way), not the device's screen size, so a viewport media
-           query wouldn't have helped here. Stacking removes the crowding
-           regardless of width. */
-        .date-time-row {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
         }
       `}</style>
 
@@ -4064,32 +4037,18 @@ function AppInner() {
               <div style={{ fontSize: 16, fontWeight: 700 }}>{editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"}</div>
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
             </div>
-            <div className="date-time-row" style={{ marginBottom: 6 }}>
-              <div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 6 }}>
+              <div style={{ flex: 2 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
-                {/* lang="en-US" pins iOS Safari's native date-picker display to the
-                    Gregorian calendar. Without it, a device set to Thailand region
-                    renders a broken hybrid like "18 Sep BE 2569" (English month +
-                    Buddhist year) — this only affects the native picker's own text,
-                    not any date we render ourselves (toBuddhistDateTime() etc. are
-                    unaffected). See handoff doc decision log for the report. */}
-                {/* height (instead of vertical padding) keeps this a fixed 44px
-                    regardless of platform. Native date/time controls in iOS's
-                    WKWebView (used by LINE's in-app browser) bring their own
-                    generous intrinsic content height — vertical padding stacks
-                    on TOP of that instead of being absorbed by it, which is why
-                    this looked unusually tall specifically when opened via LINE
-                    on iPhone. A fixed height + horizontal-only padding lets the
-                    native control center itself inside a box we actually control. */}
-                <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
+                <input type="date" value={form.date} max={todayLocalStr()}
                   onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                  style={{ width: "100%", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                  style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               </div>
-              <div>
+              <div style={{ flex: 1 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                <input type="time" lang="en-US" value={form.time}
+                <input type="time" value={form.time}
                   onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                  style={{ width: "100%", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                  style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               </div>
             </div>
             {sameDateConflict ? (
@@ -4194,18 +4153,18 @@ function AppInner() {
                     <input ref={countRef} type="number" min="1" max={MAX_STARTING_COUNT} step="1" value={draft} placeholder="0" autoFocus={idx === 0}
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
-                    <div className="date-time-row" style={{ marginBottom: 10 }}>
-                      <div>
+                    <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                      <div style={{ flex: 1.5, minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
-                        <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
+                        <input ref={dateRef} type="date" value={tf.date} max={todayLocalStr()}
                           onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                          style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                          style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
                       </div>
-                      <div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                        <input type="time" lang="en-US" value={tf.time}
+                        <input type="time" value={tf.time}
                           onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                          style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                          style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
                       </div>
                     </div>
                     <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>

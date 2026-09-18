@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: หยดเลือด + คำว่า "ครั้งที่"</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+
+  .card {
+    background: #FFFFFF;
+    border: 1px solid #EEDEDA;
+    border-radius: 14px;
+    padding: 13px 15px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    max-width: 420px;
+  }
+  .card-body { min-width: 0; flex: 1; }
+  .date-row { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: #3A2C29; }
+  .loc-row { display: flex; align-items: flex-start; gap: 7px; font-size: 12.5px; color: #7A6360; margin-top: 5px; }
+  .menu-dot { color: #9A3B33; font-size: 16px; flex-shrink: 0; }
+
+  .badge-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+
+  /* Sub-option A: keep drop compact (42x42), "ครั้งที่" as tiny caption BELOW the drop shape */
+  .drop-a { width: 42px; height: 42px; position: relative; }
+  .drop-a svg { position: absolute; inset: 0; }
+  .drop-a .num { position: absolute; inset: 0; top: 4px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #FFF7F5; }
+  .caption-below { font-size: 8.5px; color: #9A3B33; opacity: .8; margin-top: 3px; }
+
+  /* Sub-option B: taller drop, number + "ครั้งที่" both INSIDE the drop */
+  .drop-b { width: 46px; height: 56px; position: relative; }
+  .drop-b svg { position: absolute; inset: 0; }
+  .drop-b .inner { position: absolute; inset: 0; top: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .drop-b .num { font-size: 15px; font-weight: 800; color: #FFF7F5; line-height: 1.1; }
+  .drop-b .lbl { font-size: 7.5px; color: #FFF7F5; opacity: .85; margin-top: 1px; }
+
+  /* 3-digit variants: same shapes, smaller font-size for the number so "200" still fits */
+  .drop-a .num.small3 { font-size: 11px; letter-spacing: -0.3px; }
+  .drop-b .num.small3 { font-size: 11.5px; letter-spacing: -0.3px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: หยดเลือด (ตัวเลือก 1) + คำว่า "ครั้งที่"</h1>
+  <p class="sub">2 แบบย่อยให้เลือก ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label">แบบ A — หยดขนาดเดิม (42×42) ใส่แค่ตัวเลขข้างใน "ครั้งที่" เป็นคำเล็ก ๆ อยู่ใต้หยดแทน</div>
+  <div class="card">
+    <div class="badge-wrap">
+      <div class="drop-a">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+          <path d="M21 2 C21 2 33 18 33 27 C33 34.2 27.6 40 21 40 C14.4 40 9 34.2 9 27 C9 18 21 2 21 2 Z" fill="#9A3B33"/>
+        </svg>
+        <div class="num">1</div>
+      </div>
+      <div class="caption-below">ครั้งที่</div>
+    </div>
+    <div class="card-body">
+      <div class="date-row">📅 13 ก.ย. 2569 เวลา 02:38 น.</div>
+      <div class="loc-row">📍 ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+    <div class="menu-dot">⋮</div>
+  </div>
+
+  <div class="option-label" style="color:#B3261E;">แบบ A กับเลข 3 หลัก (ครั้งที่ 200) — ถ้าใช้ font-size เดิม (15px) จะล้นออกนอกหยด</div>
+  <div class="card">
+    <div class="badge-wrap">
+      <div class="drop-a">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+          <path d="M21 2 C21 2 33 18 33 27 C33 34.2 27.6 40 21 40 C14.4 40 9 34.2 9 27 C9 18 21 2 21 2 Z" fill="#9A3B33"/>
+        </svg>
+        <div class="num">200</div>
+      </div>
+      <div class="caption-below">ครั้งที่</div>
+    </div>
+    <div class="card-body">
+      <div class="date-row">📅 13 ก.ย. 2569 เวลา 02:38 น.</div>
+      <div class="loc-row">📍 ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+    <div class="menu-dot">⋮</div>
+  </div>
+
+  <div class="option-label" style="color:#2E7D32;">แบบ A กับเลข 3 หลัก — แก้แล้ว (ลด font-size อัตโนมัติเมื่อเป็นเลข 3 หลัก)</div>
+  <div class="card">
+    <div class="badge-wrap">
+      <div class="drop-a">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+          <path d="M21 2 C21 2 33 18 33 27 C33 34.2 27.6 40 21 40 C14.4 40 9 34.2 9 27 C9 18 21 2 21 2 Z" fill="#9A3B33"/>
+        </svg>
+        <div class="num small3">200</div>
+      </div>
+      <div class="caption-below">ครั้งที่</div>
+    </div>
+    <div class="card-body">
+      <div class="date-row">📅 13 ก.ย. 2569 เวลา 02:38 น.</div>
+      <div class="loc-row">📍 ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+    <div class="menu-dot">⋮</div>
+  </div>
+
+  <div class="option-label">แบบ B — ขยายหยดให้สูงขึ้น (46×56) ใส่ทั้งตัวเลขและ "ครั้งที่" ไว้ข้างในหยดเลย</div>
+  <div class="card">
+    <div class="badge-wrap">
+      <div class="drop-b">
+        <svg width="46" height="56" viewBox="0 0 46 56" fill="none">
+          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/>
+        </svg>
+        <div class="inner">
+          <div class="num">1</div>
+          <div class="lbl">ครั้งที่</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="date-row">📅 13 ก.ย. 2569 เวลา 02:38 น.</div>
+      <div class="loc-row">📍 ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+    <div class="menu-dot">⋮</div>
+  </div>
+
+  <div class="option-label">แบบ B กับเลข 3 หลัก (ครั้งที่ 200) — ลด font-size อัตโนมัติเช่นกัน</div>
+  <div class="card">
+    <div class="badge-wrap">
+      <div class="drop-b">
+        <svg width="46" height="56" viewBox="0 0 46 56" fill="none">
+          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/>
+        </svg>
+        <div class="inner">
+          <div class="num small3">200</div>
+          <div class="lbl">ครั้งที่</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="date-row">📅 13 ก.ย. 2569 เวลา 02:38 น.</div>
+      <div class="loc-row">📍 ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+    <div class="menu-dot">⋮</div>
+  </div>
+</body>
+</html>

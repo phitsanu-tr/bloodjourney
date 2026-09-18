@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เอาสวิตช์ "เคยบริจาคทั้ง 2 แบบ?" ออก</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 30px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 12px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #EEDEDA; }
+  label { display: block; font-size: 12.5px; color: #5C4A46; margin-bottom: 6px; font-weight: 500; }
+  input[type=number], input[type=date], input[type=text] { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #E3C8C3; font-size: 13.5px; font-family: inherit; }
+  .type-block { border: 1px solid #EEDEDA; border-radius: 12px; padding: 12px 12px 14px; margin-bottom: 10px; }
+  .type-head { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #9A3B33; margin-bottom: 10px; }
+  .row2 { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row2 > div { flex: 1; }
+  .total-line { font-size: 11.5px; color: #8A7370; margin-top: 4px; margin-bottom: 12px; }
+  .total-line b { color: #9A3B33; }
+  .pill-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .pill { flex: 1; text-align: center; padding: 9px 0; border-radius: 20px; font-size: 12.5px; border: 1.5px solid #E3C8C3; background: #FFFFFF; color: #7A6360; }
+  .pill.on { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); color: #FFF7F5; border-color: transparent; font-weight: 600; }
+  .link-btn { font-size: 12.5px; color: #9A3B33; font-weight: 600; background: #F6EBE9; border: none; border-radius: 10px; padding: 10px; width: 100%; text-align: center; margin-bottom: 4px; }
+  .infobox { background: #F7F0EE; border: 1px solid #E3C8C3; border-radius: 12px; padding: 12px 14px; font-size: 11.5px; color: #7A6360; line-height: 1.6; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เอาสวิตช์ "เคยบริจาคทั้ง 2 แบบ?" ออก</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — โครงสร้างฟอร์มลัด "เคยบริจาคเลือดมาแล้วกี่ครั้ง" แบบไม่มีสวิตช์เปิด/ปิด</p>
+
+  <div class="option-label">แบบ 1 — หน้าเดียว แสดง 2 ประเภทเสมอ (ไม่มีทางลัด)</div>
+  <div class="option-desc">ตัดการแตกแขนงทั้งหมดออก ทุกคนเห็นฟอร์มเดียวกัน กรอกที่ไม่เกี่ยวกับตัวเอง (เช่น พลาสมา) เว้นว่างไว้ได้ ง่ายต่อการเข้าใจว่า "มีแค่นี้" แต่คนบริจาคแบบเดียว (ส่วนใหญ่) ต้องเลื่อนผ่านฟิลด์ที่ไม่ใช้เสมอ</div>
+  <div class="phone">
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด (แยกตามประเภท)</label>
+    <div class="row2">
+      <div><label style="font-weight:400; font-size:11.5px;">โลหิตรวม</label><input type="number" value="0" /></div>
+      <div><label style="font-weight:400; font-size:11.5px;">พลาสมา/เกล็ดเลือด</label><input type="number" value="0" /></div>
+    </div>
+    <div class="total-line">รวมทั้งหมด <b>0 ครั้ง</b></div>
+    <div class="type-block">
+      <div class="type-head"><svg width="12" height="12" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> ครั้งล่าสุด — โลหิตรวม</div>
+      <div class="row2"><div><label style="font-weight:400; font-size:11.5px;">วันที่ (ไม่บังคับ)</label><input type="date" /></div><div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div></div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label><input type="text" placeholder="เช่น สภากาชาดไทย" />
+    </div>
+    <div class="type-block" style="margin-bottom:0;">
+      <div class="type-head"><svg width="15" height="12" viewBox="0 0 34 24" fill="#9A3B33"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75"/></svg> ครั้งล่าสุด — พลาสมา/เกล็ดเลือด</div>
+      <div class="row2"><div><label style="font-weight:400; font-size:11.5px;">วันที่ (ไม่บังคับ)</label><input type="date" /></div><div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div></div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label><input type="text" placeholder="เช่น รพ.จุฬาฯ" />
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — เลือกประเภทแบบกดได้มากกว่า 1 ป้าย (แทนสวิตช์)</div>
+  <div class="option-desc">แทนสวิตช์ด้วยปุ่มเลือกประเภทที่กดได้ทั้งคู่พร้อมกัน — กดแค่ "โลหิตรวม" ก็เห็นฟอร์มสั้นเหมือนเดิม กดทั้งคู่ถึงจะเห็น 2 บล็อก เข้าใจง่ายเพราะเป็นการ "เลือก" ไม่ใช่ "เปิด/ปิดโหมด"</div>
+  <div class="phone">
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด</label>
+    <input type="number" value="0" style="margin-bottom:14px;" />
+    <label>เคยบริจาคประเภทไหนบ้าง? (เลือกได้มากกว่า 1)</label>
+    <div class="pill-row">
+      <div class="pill on">🩸 โลหิตรวม</div>
+      <div class="pill">🩸🩸 พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <div class="type-block" style="margin-bottom:0;">
+      <div class="type-head"><svg width="12" height="12" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> ครั้งล่าสุด — โลหิตรวม</div>
+      <div class="row2"><div><label style="font-weight:400; font-size:11.5px;">วันที่</label><input type="date" /></div><div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div></div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label><input type="text" placeholder="เช่น สภากาชาดไทย" />
+    </div>
+    <p style="font-size:10.5px; color:#B39B96; margin-top:10px;">(ตัวอย่างนี้เลือกไว้แบบเดียว จึงเห็นบล็อกเดียว — ถ้ากดเลือกทั้ง 2 ป้าย จะเห็น 2 บล็อกเหมือนแบบ 1)</p>
+  </div>
+
+  <div class="option-label">แบบ 3 — ลิงก์ "+ เพิ่มอีกประเภท" แทนสวิตช์</div>
+  <div class="option-desc">ค่าเริ่มต้นสั้นเหมือนของเดิมทุกอย่าง มีลิงก์เล็กๆ ท้ายฟอร์มให้กดเพิ่มบล็อกที่ 2 เอง — เบากว่าสวิตช์ (ไม่ต้องตีความคำถาม "เคยบริจาคทั้ง 2 แบบ?") แต่ยังคงเป็น 2 ขั้นตอนเหมือนเดิม (กรอกแบบแรก แล้วกดเพิ่ม)</div>
+  <div class="phone">
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด</label>
+    <input type="number" value="0" style="margin-bottom:14px;" />
+    <div class="type-block">
+      <div class="type-head"><svg width="12" height="12" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> ครั้งล่าสุด — โลหิตรวม</div>
+      <div class="row2"><div><label style="font-weight:400; font-size:11.5px;">วันที่</label><input type="date" /></div><div><label style="font-weight:400; font-size:11.5px;">เวลา (ไม่บังคับ)</label><input type="text" placeholder="--:--" /></div></div>
+      <label style="font-weight:400; font-size:11.5px;">สถานที่ (ไม่บังคับ)</label><input type="text" placeholder="เช่น สภากาชาดไทย" />
+    </div>
+    <button class="link-btn">+ เคยบริจาคพลาสมา/เกล็ดเลือดด้วย? เพิ่มรายการ</button>
+  </div>
+
+  <div class="option-label">แบบ 4 — ตัดการกรอก 2 ประเภทออกจากฟอร์มลัดไปเลย (กลับไปแบบเดิม)</div>
+  <div class="option-desc">ฟอร์มลัดกลับไปสั้นแบบเดียวเหมือนก่อนมีฟีเจอร์นี้ — คนที่บริจาคทั้ง 2 แบบใช้วิธีกรอก 1 แล้วเพิ่มรายการที่เหลือเองจากหน้าหลักทีหลัง (ตามคำแนะนำในกล่องข้อมูล) ง่ายสุด โค้ดน้อยสุด แต่เสียความสะดวกของคนกลุ่มน้อยที่บริจาคทั้งคู่ไป</div>
+  <div class="phone">
+    <label>จำนวนครั้งที่เคยบริจาคทั้งหมด</label>
+    <input type="number" value="0" style="margin-bottom:14px;" />
+    <div class="infobox">หากบริจาคมากกว่า 1 ประเภท กรุณาใส่ 1 แล้วกรอกรายการบริจาคแรกที่จำได้ด้านล่าง จากนั้นเพิ่มรายการที่เหลือได้ทีละรายการที่หน้าหลัก</div>
+    <label>วันที่บริจาคล่าสุด</label>
+    <input type="date" value="2026-09-14" style="margin-bottom:14px;" />
+    <label>ประเภทการบริจาค</label>
+    <div class="pill-row" style="margin-bottom:14px;">
+      <div class="pill on">🩸 โลหิตรวม</div>
+      <div class="pill">🩸🩸 พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <label>สถานที่ (ไม่บังคับ)</label>
+    <input type="text" placeholder="เช่น สภากาชาดไทย" />
+  </div>
+</body>
+</html>

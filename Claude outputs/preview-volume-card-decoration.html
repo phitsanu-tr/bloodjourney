@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ตกแต่งการ์ดปริมาณโลหิตสะสม</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; max-width: 980px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 14px; position: relative; overflow: hidden; }
+  .title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #3A2C29; position: relative; z-index: 1; }
+  .num { font-size: 20px; font-weight: 700; position: relative; z-index: 1; }
+  .num span { font-size: 12px; font-weight: 500; }
+  .caption { font-size: 11.5px; color: #8A7370; margin-top: 2px; position: relative; z-index: 1; }
+  .footer { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #F3E7E4; font-size: 12; color: #5C4A46; position: relative; z-index: 1; }
+  .drop { position: absolute; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: แก้ตกแต่งการ์ด "ปริมาณโลหิตสะสม" ให้ไม่ตกเส้น</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ปัญหาเดิมคือหยดใหญ่หยดเดียวมันล้นไปทับเส้นคั่น (divider) ด้านล่าง ลอง 5 แบบที่คุมขนาด/ตำแหน่งใหม่ ไม่ให้ตกเส้น</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="option-label" style="margin-top:0;">แบบ A — หยดเดียว เล็กลง อยู่แค่มุมบนขวา</div>
+      <div class="option-desc">ลดขนาดและขยับให้อยู่เหนือเส้นคั่นเท่านั้น ไม่ล้ำลงมา</div>
+      <svg class="drop" style="right:-6px; top:-6px; opacity:0.08;" width="70" height="70" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+      <div class="title">ปริมาณโลหิตสะสม</div>
+      <div class="num">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+      <div class="caption">คำนวณที่ 350 มล./ครั้ง</div>
+      <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+    </div>
+
+    <div class="card">
+      <div class="option-label" style="margin-top:0;">แบบ B — หลายหยดกระจาย ขนาดต่างกัน</div>
+      <div class="option-desc">หยดเล็ก-กลาง-ใหญ่ กระจายอยู่มุมบนขวา ให้ความรู้สึกเหมือนหยดน้ำกระเซ็น</div>
+      <svg class="drop" style="right:8px; top:4px; opacity:0.06;" width="26" height="26" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+      <svg class="drop" style="right:-8px; top:18px; opacity:0.09;" width="42" height="42" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+      <svg class="drop" style="right:30px; top:-10px; opacity:0.05;" width="18" height="18" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+      <div class="title">ปริมาณโลหิตสะสม</div>
+      <div class="num">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+      <div class="caption">คำนวณที่ 350 มล./ครั้ง</div>
+      <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+    </div>
+
+    <div class="card">
+      <div class="option-label" style="margin-top:0;">แบบ C — หยดถูกตัดครึ่งที่ขอบการ์ด (bleed มุมขวาบน)</div>
+      <div class="option-desc">หยดใหญ่แต่ถูก clip ให้โผล่จากขอบมุมบนขวาแค่บางส่วน เหมือนเป็นลายน้ำติดขอบ ไม่กินพื้นที่กลางการ์ด</div>
+      <svg class="drop" style="right:-24px; top:-24px; opacity:0.09;" width="80" height="80" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+      <div class="title">ปริมาณโลหิตสะสม</div>
+      <div class="num">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+      <div class="caption">คำนวณที่ 350 มล./ครั้ง</div>
+      <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+    </div>
+
+    <div class="card">
+      <div class="option-label" style="margin-top:0;">แบบ D — แถวหยดเล็ก ๆ ไล่ระดับใต้ตัวเลข (แทนพื้นหลัง)</div>
+      <div class="option-desc">แทนที่จะเป็นลายน้ำมุมขวา เปลี่ยนเป็นหยดเล็ก 5 หยดไล่สีเข้ม-อ่อนเรียงแนวนอน วางไว้ข้างตัวเลขหลัก สื่อ "ปริมาณสะสม" ทีละหยด</div>
+      <div class="title">ปริมาณโลหิตสะสม</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;">
+        <div>
+          <div class="num" style="margin-bottom:0;">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+          <div class="caption">คำนวณที่ 350 มล./ครั้ง</div>
+        </div>
+        <div style="display:flex; gap:2px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#C98D85"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#E3C0BA"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#F3EAE8"><path d="M12 2C12 2 4 12.5 4 17a8 8 0 0016 0c0-4.5-8-15-8-15z"/></svg>
+        </div>
+      </div>
+      <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+    </div>
+
+    <div class="card">
+      <div class="option-label" style="margin-top:0;">แบบ E — ไม่มีลายน้ำ ใช้แถบไล่สีพื้นหลังแทน</div>
+      <div class="option-desc">เลิกใช้ไอคอนไปเลย เปลี่ยนพื้นหลังบนสุดของการ์ดเป็นไล่สีอ่อน ๆ (gradient) แทน ให้ความรู้สึกสื่อถึงของเหลวโดยไม่ต้องพึ่งไอคอน</div>
+      <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(154,59,51,0.06), rgba(154,59,51,0) 55%); pointer-events:none;"></div>
+      <div class="title">ปริมาณโลหิตสะสม</div>
+      <div class="num">12.9 <span>ลิตร (โดยประมาณ)</span></div>
+      <div class="caption">คำนวณที่ 350 มล./ครั้ง</div>
+      <div class="footer">🩷 อาจช่วยเหลือผู้ป่วยได้ถึง <b>111</b> คน</div>
+    </div>
+
+  </div>
+</body>
+</html>

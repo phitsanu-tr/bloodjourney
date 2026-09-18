@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ไอคอน + การจัดวางข้อความเกณฑ์อ้างอิง (footnote ล่างสุด)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: -4px 0 10px; line-height: 1.5; }
+  .frame { max-width: 380px; background: #FBF6F5; border: 1px dashed #E3C8C3; border-radius: 16px; padding: 16px 16px 0; }
+  .txt { font-size: 11px; color: #B39B96; line-height: 1.6; margin: 0 0 16px; }
+  .navbar { display: flex; border-top: 1px solid #EEDEDA; padding-top: 8px; }
+  .navitem { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; color: #B39B96; }
+  .navitem.active { color: #9A3B33; }
+  .icon-circle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #F0DAD4; flex-shrink: 0; font-size: 11px; }
+</style>
+</head>
+<body>
+  <h1>ไอคอน + การจัดวางข้อความ footnote — เทียบ 10 แบบ</h1>
+  <p class="sub">โจทย์: อยากรู้ว่าควรมีไอคอนนำหน้าไหม และจัดชิดขวาแทนกึ่งกลางดีไหม เทียบกับตำแหน่งจริง (เหนือแถบเมนูล่าง)</p>
+
+  <div class="option-label" style="margin-top:0;">0. กึ่งกลาง ไม่มีไอคอน (แบบปัจจุบัน)</div>
+  <div class="frame">
+    <p class="txt" style="text-align:center;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">1. ชิดขวา ไม่มีไอคอน</div>
+  <div class="frame">
+    <p class="txt" style="text-align:right;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">2. ชิดซ้าย ไม่มีไอคอน</div>
+  <div class="frame">
+    <p class="txt" style="text-align:left;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">3. ไอคอน ⓘ นำหน้า จัดกึ่งกลางเป็นกลุ่ม</div>
+  <div class="option-desc">ไอคอนอยู่ด้านซ้ายบนของกล่องข้อความ ข้อความ wrap ต่อ ใช้ flex align-items:flex-start</div>
+  <div class="frame">
+    <div style="display:flex; gap:6px; margin-bottom:16px; justify-content:center;">
+      <span style="font-size:11px; color:#B39B96; flex-shrink:0; margin-top:1px;">ⓘ</span>
+      <p class="txt" style="margin:0; text-align:left; max-width:300px;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">4. ไอคอนวงกลมสีอ่อน นำหน้า ชิดซ้าย</div>
+  <div class="frame">
+    <div style="display:flex; gap:8px; margin-bottom:16px; align-items:flex-start;">
+      <span class="icon-circle">ⓘ</span>
+      <p class="txt" style="margin:0; text-align:left;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">5. เส้นคั่นบาง ๆ ด้านบน + ข้อความกึ่งกลาง ไม่มีไอคอน</div>
+  <div class="option-desc">เพิ่มเส้นแบ่งให้รู้สึกว่าเป็นโซนแยกจากเนื้อหาหลัก ก่อนถึงแถบเมนู</div>
+  <div class="frame">
+    <div style="height:1px; background:#EEDEDA; margin-bottom:12px;"></div>
+    <p class="txt" style="text-align:center;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">6. ไอคอนหยดเลือดจาง ๆ (สื่อถึงหัวข้อ) นำหน้า กึ่งกลาง</div>
+  <div class="option-desc">ใช้ไอคอนที่มีอยู่แล้วในแอป (หยดเลือด) แทนไอคอน info ทั่วไป ให้เข้าธีม</div>
+  <div class="frame">
+    <div style="display:flex; gap:6px; margin-bottom:16px; justify-content:center;">
+      <span style="font-size:11px; color:#D8A8A2; flex-shrink:0; margin-top:1px;">💧</span>
+      <p class="txt" style="margin:0; text-align:left; max-width:300px;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">7. ชิดขวา + ไอคอน ⓘ ต่อท้ายข้อความ (ขวาสุด)</div>
+  <div class="frame">
+    <div style="display:flex; gap:6px; margin-bottom:16px; justify-content:flex-end;">
+      <p class="txt" style="margin:0; text-align:right; max-width:300px;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+      <span style="font-size:11px; color:#B39B96; flex-shrink:0; margin-top:1px;">ⓘ</span>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">8. พื้นหลังชิปจาง ๆ ครอบทั้งข้อความ กึ่งกลาง ไม่มีไอคอน</div>
+  <div class="frame">
+    <div style="background:#F3EAE8; border-radius:10px; padding:10px 14px; margin-bottom:16px;">
+      <p class="txt" style="margin:0; text-align:center;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">9. ไอคอนวงกลม นำหน้า จัดกึ่งกลางทั้งกลุ่ม (ไอคอน+ข้อความอยู่กลางจอ)</div>
+  <div class="frame">
+    <div style="display:flex; gap:8px; margin-bottom:16px; align-items:flex-start; justify-content:center;">
+      <span class="icon-circle" style="margin-top:1px;">ⓘ</span>
+      <p class="txt" style="margin:0; text-align:left; max-width:270px;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    </div>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+  <div class="option-label">10. ตัวเล็กลง + กึ่งกลาง ไม่มีไอคอน (ลดความเด่นแทนการจัดใหม่)</div>
+  <div class="option-desc">ไม่เปลี่ยนตำแหน่ง/ไอคอน แค่ลดขนาดตัวอักษรลงอีกนิด ให้รู้สึกเป็นหมายเหตุท้ายสุดจริง ๆ</div>
+  <div class="frame">
+    <p class="txt" style="text-align:center; font-size:10px;">เกณฑ์เข็มที่ระลึกและเหรียญกาชาดสมนาคุณ/พัดกาชาดอ้างอิงจากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โปรดยืนยันสิทธิ์ที่ได้รับจริงกับเจ้าหน้าที่ ณ จุดบริจาค</p>
+    <div class="navbar"><div class="navitem">🏠<span>หน้าหลัก</span></div><div class="navitem">📊<span>แดชบอร์ด</span></div><div class="navitem active">🏆<span>ภารกิจ</span></div><div class="navitem">📖<span>ให้ความรู้</span></div></div>
+  </div>
+
+</body>
+</html>

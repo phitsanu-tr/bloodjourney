@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สไตล์ป้ายหมู่เลือด/อายุ/น้ำหนัก</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FBF6F5; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+  .greet { font-size:14px; font-weight:600; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: สไตล์ป้ายหมู่เลือด/อายุ/น้ำหนัก (อีกชุด)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ต่อยอดจากแบบไอคอนที่เพิ่งใช้ไป ลองรูปแบบอื่นเพิ่มเติม</p>
+
+  <div class="option-label">แบบ 1 — ไอคอนอย่างเดียว ไม่มีคำ "หมู่เลือด" (กระชับกว่าปัจจุบัน)</div>
+  <div class="option-desc">ตัดคำว่า "หมู่เลือด" ออก เหลือแค่ไอคอน+ค่า อ่านเร็วขึ้น ป้ายสั้นลง แต่ต้องมั่นใจว่าไอคอนสื่อความหมายได้ชัดพอ</div>
+  <div class="phone">
+    <div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#F3EAE8; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">🩸 A</span>
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#F3EAE8; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">🎂 33 ปี</span>
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#F3EAE8; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">⚖️ 60 กก.</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — วงกลมไอคอนสีต่างกันแต่ละอัน</div>
+  <div class="option-desc">แต่ละป้ายมีวงกลมไอคอนพื้นสีต่างกันเล็กน้อย (แดง/น้ำตาล/ทอง) ช่วยแยกประเภทข้อมูลด้วยสีนอกจากไอคอน</div>
+  <div class="phone">
+    <div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; background:#FFFFFF; border:1px solid #EEDEDA; color:#3A2C29; padding:3px 10px 3px 3px; border-radius:20px; font-weight:600;">
+        <span style="width:18px; height:18px; border-radius:50%; background:#9A3B33; display:flex; align-items:center; justify-content:center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></span> A</span>
+      <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; background:#FFFFFF; border:1px solid #EEDEDA; color:#3A2C29; padding:3px 10px 3px 3px; border-radius:20px; font-weight:600;">
+        <span style="width:18px; height:18px; border-radius:50%; background:#B5651D; display:flex; align-items:center; justify-content:center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></span> 33 ปี</span>
+      <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; background:#FFFFFF; border:1px solid #EEDEDA; color:#3A2C29; padding:3px 10px 3px 3px; border-radius:20px; font-weight:600;">
+        <span style="width:18px; height:18px; border-radius:50%; background:#8A7370; display:flex; align-items:center; justify-content:center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.5"><path d="M12 3v3M5 7l14 0M5 7l-2 8a5 5 0 0 0 10 0L11 7M19 7l-2 8a5 5 0 0 0 10 0"/></svg></span> 60 กก.</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — การ์ดสถิติแนวตั้ง 3 ช่อง (ไม่ใช่ป้ายกลม)</div>
+  <div class="option-desc">เปลี่ยนจากป้ายแนวนอนเป็นช่องสี่เหลี่ยมมุมมน 3 ช่องเรียงกัน ตัวเลขเด่นด้านบน คำอธิบายเล็กด้านล่าง ดูเป็น "สถิติ" มากกว่า "แท็ก"</div>
+  <div class="phone">
+    <div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div>
+    <div style="display:flex; gap:8px;">
+      <div style="flex:1; background:#FFFFFF; border:1px solid #EEDEDA; border-radius:12px; padding:8px; text-align:center;">
+        <div style="font-size:15px; font-weight:700; color:#9A3B33;">A</div>
+        <div style="font-size:9.5px; color:#8A7370; margin-top:1px;">หมู่เลือด</div>
+      </div>
+      <div style="flex:1; background:#FFFFFF; border:1px solid #EEDEDA; border-radius:12px; padding:8px; text-align:center;">
+        <div style="font-size:15px; font-weight:700; color:#9A3B33;">33</div>
+        <div style="font-size:9.5px; color:#8A7370; margin-top:1px;">อายุ (ปี)</div>
+      </div>
+      <div style="flex:1; background:#FFFFFF; border:1px solid #EEDEDA; border-radius:12px; padding:8px; text-align:center;">
+        <div style="font-size:15px; font-weight:700; color:#9A3B33;">60</div>
+        <div style="font-size:9.5px; color:#8A7370; margin-top:1px;">น้ำหนัก (กก.)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — ป้ายขอบเส้น (outline) แทนพื้นสี</div>
+  <div class="option-desc">เปลี่ยนพื้นหลังป้ายจากสีชมพูอ่อนทึบ เป็นขอบเส้นโปร่งใส ให้ความรู้สึกเบาลง ไม่แย่งสายตาจากปุ่ม/การ์ดสำคัญอื่นที่ใช้สีพื้นเดียวกัน</div>
+  <div class="phone">
+    <div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:transparent; border:1px solid #E3C8C3; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">🩸 หมู่เลือด A</span>
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:transparent; border:1px solid #E3C8C3; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">🎂 33 ปี</span>
+      <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:transparent; border:1px solid #E3C8C3; color:#9A3B33; padding:4px 9px; border-radius:20px; font-weight:600;">⚖️ 60 กก.</span>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — รวมเป็นป้ายเดียว คั่นด้วยเส้นแนวตั้ง</div>
+  <div class="option-desc">รวมทั้ง 3 ค่าไว้ในกล่องเดียว มีเส้นบาง ๆ คั่นระหว่างค่า ดูเป็นกลุ่มก้อนเดียวกัน กระชับพื้นที่สุดในบรรดาตัวเลือกทั้งหมด</div>
+  <div class="phone">
+    <div class="greet">สวัสดี, พิษณุ ตรุษสาท 👋</div>
+    <div style="display:inline-flex; align-items:center; background:#F3EAE8; border-radius:20px; padding:6px 4px; font-size:11px; color:#9A3B33; font-weight:600;">
+      <span style="padding:0 9px; display:flex; align-items:center; gap:4px;">🩸 A</span>
+      <span style="width:1px; height:12px; background:#D9BDB6;"></span>
+      <span style="padding:0 9px; display:flex; align-items:center; gap:4px;">🎂 33 ปี</span>
+      <span style="width:1px; height:12px; background:#D9BDB6;"></span>
+      <span style="padding:0 9px; display:flex; align-items:center; gap:4px;">⚖️ 60 กก.</span>
+    </div>
+  </div>
+</body>
+</html>

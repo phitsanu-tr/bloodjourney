@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ไอคอนในแท็บนับถอยหลัง</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { max-width: 380px; background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 20px; padding: 22px; color: #FFF7F5; }
+  .tabs { display: flex; gap: 6px; }
+  .tab { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px; font-size: 12px; border: none; font-family: inherit; }
+  .tab.active { background: #FFF7F5; color: #9A3B33; font-weight: 600; }
+  .tab.inactive { background: rgba(255,247,245,0.18); color: #FFF7F5; }
+  .divider { height: 1px; background: rgba(255,247,245,0.25); margin-top: 18px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: เพิ่มไอคอนในแท็บนับถอยหลัง (หน้าหลัก)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ใช้ไอคอนชุดเดียวกับในประวัติ (หยดเดี่ยว/หยดคู่)</p>
+
+  <div class="option-label">ปัจจุบัน (ไม่มีไอคอน)</div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active">โลหิตรวม</div>
+      <div class="tab inactive">พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="option-label">แบบ 1 — มีไอคอนทั้งสองปุ่ม</div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active"><svg width="12" height="12" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม</div>
+      <div class="tab inactive"><svg width="15" height="12" viewBox="0 0 34 24" fill="#FFF7F5"><path d="M9 1 C9 1 2 10 2 14 C2 18 5.1 21 9 21 C12.9 21 16 18 16 14 C16 10 9 1 9 1 Z"/><path d="M25 3 C25 3 18 12 18 16 C18 20 21.1 23 25 23 C28.9 23 32 20 32 16 C32 12 25 3 25 3 Z" opacity="0.75"/></svg> พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — มีไอคอนเฉพาะปุ่มที่กำลังเลือกอยู่ (active)</div>
+  <div class="option-desc">ลดความรกของปุ่มที่ไม่ได้เลือก เห็นชัดว่าอันไหน active อยู่</div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active"><svg width="12" height="12" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg> โลหิตรวม</div>
+      <div class="tab inactive">พลาสมา/เกล็ดเลือด</div>
+    </div>
+    <div class="divider"></div>
+  </div>
+</body>
+</html>

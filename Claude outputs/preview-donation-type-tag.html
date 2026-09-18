@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: แท็กประเภทการบริจาค</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 28px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .card { max-width: 380px; background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 13px 15px; display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+  .drop { width: 46px; height: 56px; position: relative; flex-shrink: 0; }
+  .drop .num { position:absolute; inset:0; top:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .date-row { display:flex; align-items:center; gap:7px; font-size:14px; font-weight:600; color:#3A2C29; }
+  .loc-row { display:flex; align-items:flex-start; gap:7px; font-size:12.5px; color:#7A6360; margin-top:5px; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ประเภทการบริจาคเป็นแท็ก</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ลองเปลี่ยนแถว "พลาสมา/เกล็ดเลือด" จากข้อความ+ไอคอนธรรมดา ให้เป็นป้ายแท็ก 5 แบบ</p>
+
+  <div class="option-label">แบบ 1 — แท็กพื้นสีชมพูอ่อน ทรงเดียวกับป้ายหน้าแรก</div>
+  <div class="option-desc">ใช้สไตล์เดียวกับป้ายหมู่เลือด/อายุ/น้ำหนักบนหน้าแรก ให้ภาษาภาพสม่ำเสมอกันทั้งแอป</div>
+  <div class="card">
+    <div class="drop">
+      <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style="position:absolute; inset:0;"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>
+      <div class="num"><div style="font-size:15px; font-weight:800; color:#FFF7F5; line-height:1.1;">40</div><div style="font-size:7.5px; color:#FFF7F5; opacity:0.85; margin-top:1px;">ครั้งที่</div></div>
+    </div>
+    <div style="min-width:0; flex:1;">
+      <div class="date-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> 13 ก.ย. 2569</div>
+      <div style="margin-top:5px;">
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#F3EAE8; color:#9A3B33; padding:3px 9px; border-radius:20px; font-weight:600;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg> พลาสมา/เกล็ดเลือด
+        </span>
+      </div>
+      <div class="loc-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg> ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 2 — แท็กขอบเส้น (outline) สีตามประเภท</div>
+  <div class="option-desc">โลหิตรวม = ขอบแดง, พลาสมา/เกล็ดเลือด = ขอบทอง/น้ำตาล ช่วยแยกประเภทด้วยสีได้เร็วขึ้นตอนไล่สายตาดูรายการยาว ๆ</div>
+  <div class="card">
+    <div class="drop">
+      <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style="position:absolute; inset:0;"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>
+      <div class="num"><div style="font-size:15px; font-weight:800; color:#FFF7F5; line-height:1.1;">40</div><div style="font-size:7.5px; color:#FFF7F5; opacity:0.85; margin-top:1px;">ครั้งที่</div></div>
+    </div>
+    <div style="min-width:0; flex:1;">
+      <div class="date-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> 13 ก.ย. 2569</div>
+      <div style="margin-top:5px;">
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:transparent; border:1px solid #C9A24A; color:#8A6D1F; padding:3px 9px; border-radius:20px; font-weight:600;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg> พลาสมา/เกล็ดเลือด
+        </span>
+      </div>
+      <div class="loc-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg> ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — แท็กพื้นสีทึบ ตัวหนังสือขาว (เด่นสุด)</div>
+  <div class="option-desc">พื้นหลังสีเข้มเต็ม ตัวหนังสือขาว โดดเด่นเป็นจุดสนใจแรกรองจากวันที่ เหมาะถ้าต้องการให้ประเภทมองเห็นชัดที่สุดในบรรดาข้อมูลรอง</div>
+  <div class="card">
+    <div class="drop">
+      <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style="position:absolute; inset:0;"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>
+      <div class="num"><div style="font-size:15px; font-weight:800; color:#FFF7F5; line-height:1.1;">40</div><div style="font-size:7.5px; color:#FFF7F5; opacity:0.85; margin-top:1px;">ครั้งที่</div></div>
+    </div>
+    <div style="min-width:0; flex:1;">
+      <div class="date-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> 13 ก.ย. 2569</div>
+      <div style="margin-top:5px;">
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#9A3B33; color:#FFF7F5; padding:3px 9px; border-radius:20px; font-weight:600;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg> พลาสมา/เกล็ดเลือด
+        </span>
+      </div>
+      <div class="loc-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg> ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 4 — แท็กสี่เหลี่ยมมุมมนเล็ก (ไม่กลมเต็ม)</div>
+  <div class="option-desc">มุมมนน้อยกว่าป้ายกลม (8px) ให้ความรู้สึกเป็น "ป้ายกำกับ/label" มากกว่า "แท็กแบบปุ่ม" ดูเป็นทางการขึ้นเล็กน้อย</div>
+  <div class="card">
+    <div class="drop">
+      <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style="position:absolute; inset:0;"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>
+      <div class="num"><div style="font-size:15px; font-weight:800; color:#FFF7F5; line-height:1.1;">40</div><div style="font-size:7.5px; color:#FFF7F5; opacity:0.85; margin-top:1px;">ครั้งที่</div></div>
+    </div>
+    <div style="min-width:0; flex:1;">
+      <div class="date-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> 13 ก.ย. 2569</div>
+      <div style="margin-top:5px;">
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#F3EAE8; color:#9A3B33; padding:3px 9px; border-radius:8px; font-weight:600;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg> พลาสมา/เกล็ดเลือด
+        </span>
+      </div>
+      <div class="loc-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg> ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 5 — ป้ายเล็กจิ๋วติดข้างวันที่ (แถวเดียวกับวันที่)</div>
+  <div class="option-desc">ย้ายแท็กขึ้นไปอยู่แถวเดียวกับวันที่แทนที่จะมีแถวของตัวเอง ประหยัดพื้นที่แนวตั้ง เหมาะถ้าอยากให้การ์ดกระชับขึ้น</div>
+  <div class="card">
+    <div class="drop">
+      <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style="position:absolute; inset:0;"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>
+      <div class="num"><div style="font-size:15px; font-weight:800; color:#FFF7F5; line-height:1.1;">40</div><div style="font-size:7.5px; color:#FFF7F5; opacity:0.85; margin-top:1px;">ครั้งที่</div></div>
+    </div>
+    <div style="min-width:0; flex:1;">
+      <div class="date-row" style="justify-content:space-between;">
+        <span style="display:flex; align-items:center; gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> 13 ก.ย. 2569</span>
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:10px; background:#F3EAE8; color:#9A3B33; padding:2px 8px; border-radius:20px; font-weight:600;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg> พลาสมา
+        </span>
+      </div>
+      <div class="loc-row" style="margin-top:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg> ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</div>
+    </div>
+  </div>
+</body>
+</html>

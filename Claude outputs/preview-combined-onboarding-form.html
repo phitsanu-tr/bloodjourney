@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: เลือกวิธีกรอกก่อน (ทีละรายการ / รวมยอด)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .modal {
+    background: #FBF6F5;
+    border: 1px solid #EEDEDA;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 18px;
+    padding: 22px;
+    margin: 0 auto;
+  }
+  .modal-title { font-size: 15.5px; font-weight: 700; margin-bottom: 6px; }
+  .modal-desc { font-size: 12px; color: #8A7370; line-height: 1.6; margin: 0 0 16px; }
+
+  .switcher {
+    display: flex;
+    background: #F0E4E1;
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 18px;
+  }
+  .switcher button {
+    flex: 1;
+    padding: 9px 0;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #8A7370;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .switcher button.active {
+    background: #FFFFFF;
+    color: #9A3B33;
+    box-shadow: 0 1px 3px rgba(154,59,51,0.15);
+  }
+
+  label { display: block; font-size: 12.5px; color: #5C4A46; margin-bottom: 6px; font-weight: 500; }
+  .badge-optional { font-weight: 400; color: #B7A5A1; font-size: 11px; }
+  .field { margin-bottom: 14px; }
+  input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid #E3C8C3;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FFFFFF;
+  }
+  .row2 { display: flex; gap: 10px; }
+  .row2 .field { flex: 1; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .actions { display: flex; gap: 10px; margin-top: 4px; }
+  .btn { flex: 1; padding: 12px 0; border-radius: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-ghost { background: transparent; color: #9A3B33; border: 1px solid #E3C8C3; font-weight: 500; }
+  .btn-primary { background: #9A3B33; color: #FFF7F5; }
+
+  .caption { font-size: 11.5px; color: #8A7370; text-align: center; margin-top: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ให้เลือกวิธีกรอกก่อน (ทีละรายการ / รวมยอด)</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ลองกดสลับแท็บด้านบนของ modal ดูได้ (โต้ตอบได้จริงในตัวอย่างนี้)</p>
+
+  <div class="modal">
+    <div class="modal-title">เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
+    <p class="modal-desc">เลือกวิธีที่สะดวก แล้วกรอกรายละเอียดด้านล่าง</p>
+
+    <div class="switcher">
+      <button class="active" onclick="showPanel('bulk', this)">กรอกแบบรวมยอด</button>
+      <button onclick="showPanel('item', this)">กรอกทีละรายการ</button>
+    </div>
+
+    <!-- แบบรวมยอด -->
+    <div id="panel-bulk" class="panel active">
+      <div class="field">
+        <label>จำนวนครั้งที่เคยบริจาคทั้งหมด</label>
+        <input type="number" placeholder="0" value="10" />
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>วันที่บริจาคล่าสุด</label>
+          <input type="text" value="13/09/2026" />
+        </div>
+        <div class="field">
+          <label>เวลา <span class="badge-optional">(ไม่บังคับ)</span></label>
+          <input type="text" placeholder="--:--" />
+        </div>
+      </div>
+      <div class="field">
+        <label>สถานที่ <span class="badge-optional">(ไม่บังคับ)</span></label>
+        <input type="text" placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ" />
+      </div>
+      <div class="field">
+        <label>บันทึกช่วยจำ <span class="badge-optional">(ไม่บังคับ)</span></label>
+        <input type="text" placeholder="เช่น ได้รับเหรียญครั้งที่ 10" />
+      </div>
+      <p class="caption">ระบบจะเก็บ "ยอดสะสมยกมา" กับ "รายการล่าสุด" แยกให้อัตโนมัติ ไม่นับซ้ำกัน</p>
+    </div>
+
+    <!-- แบบทีละรายการ -->
+    <div id="panel-item" class="panel">
+      <div class="row2">
+        <div class="field">
+          <label>วันที่บริจาค (รายการแรกที่จำได้)</label>
+          <input type="text" value="13/09/2026" />
+        </div>
+        <div class="field">
+          <label>เวลา <span class="badge-optional">(ไม่บังคับ)</span></label>
+          <input type="text" placeholder="--:--" />
+        </div>
+      </div>
+      <div class="field">
+        <label>สถานที่ <span class="badge-optional">(ไม่บังคับ)</span></label>
+        <input type="text" placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ" />
+      </div>
+      <div class="field">
+        <label>บันทึกช่วยจำ <span class="badge-optional">(ไม่บังคับ)</span></label>
+        <input type="text" placeholder="เช่น ได้รับเหรียญครั้งที่ 10" />
+      </div>
+      <p class="caption">บันทึกรายการนี้ก่อน แล้วเพิ่มรายการที่เหลือทีละรายการได้ที่หน้าหลักด้วยปุ่ม "+ บันทึกการบริจาคใหม่"</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost">ยกเลิก</button>
+      <button class="btn btn-primary">บันทึก</button>
+    </div>
+  </div>
+
+  <script>
+    function showPanel(name, btn) {
+      document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+  </script>
+</body>
+</html>

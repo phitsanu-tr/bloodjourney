@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ออกแบบ: เติมบรรทัดเทียบปีนี้กับสถิติ ในการ์ด "ปีที่บริจาคมากที่สุด"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Thai", -apple-system, sans-serif; background: #FBF6F5; margin: 0; padding: 20px 16px 60px; color: #3A2C29; }
+  h1 { font-size: 17px; color: #9A3B33; margin: 0 0 4px; }
+  .subtitle { font-size: 12.5px; color: #8A7370; margin: 0 0 24px; line-height: 1.6; }
+  .row { display: flex; gap: 10px; max-width: 360px; margin: 0 auto; }
+  .card { flex: 1; background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 14px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 6px; max-width: 360px; margin-left: auto; margin-right: auto; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.6; max-width: 360px; margin-left: auto; margin-right: auto; }
+</style>
+</head>
+<body>
+
+<h1>เติมบรรทัดในการ์ด "ปีที่บริจาคโลหิตมากที่สุด"</h1>
+<p class="subtitle">เทียบ 2 สถานการณ์ ใช้การ์ด "ระยะห่างเฉลี่ยต่อครั้ง" ข้าง ๆ เป็นตัวอ้างอิงความสูง</p>
+
+<div class="option-label" style="margin-top:0;">สถานการณ์ A: ปีนี้ทำสถิติสูงสุดพอดี (ตรงกับข้อมูลในภาพที่ส่งมา — ปี 2567 บริจาค 4 ครั้ง)</div>
+<div class="row">
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ระยะห่างเฉลี่ยต่อครั้ง</div>
+    <div style="font-size:20px; font-weight:700;">336<span style="font-size:12px; font-weight:500;"> วัน</span></div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">เฉลี่ย 11.2 เดือนต่อครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#5C4A46;">
+      <span style="color:#9A3B33;">🕐</span>
+      <span style="color:#7A6360; font-weight:600;">ห่างจากครั้งก่อนหน้า</span> <b style="color:#3A2C29;">91 วัน</b>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ปีที่บริจาคโลหิตมากที่สุด</div>
+    <div style="font-size:20px; font-weight:700;">ปี 2567</div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">จำนวน 4 ครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#9A6B0B; font-weight:600;">
+      🏆 ปีนี้คือปีที่บริจาคมากที่สุด!
+    </div>
+  </div>
+</div>
+
+<div class="option-label">สถานการณ์ B: ปีนี้ยังไม่ใช่สถิติ (เช่น เคยทำ 4 ครั้งเมื่อปี 2565 แต่ปีนี้บริจาคไปแล้ว 2 ครั้ง)</div>
+<div class="row">
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ระยะห่างเฉลี่ยต่อครั้ง</div>
+    <div style="font-size:20px; font-weight:700;">336<span style="font-size:12px; font-weight:500;"> วัน</span></div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">เฉลี่ย 11.2 เดือนต่อครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#5C4A46;">
+      <span style="color:#9A3B33;">🕐</span>
+      <span style="color:#7A6360; font-weight:600;">ห่างจากครั้งก่อนหน้า</span> <b style="color:#3A2C29;">91 วัน</b>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ปีที่บริจาคโลหิตมากที่สุด</div>
+    <div style="font-size:20px; font-weight:700;">ปี 2565</div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">จำนวน 4 ครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#5C4A46;">
+      <span style="color:#7A6360; font-weight:600;">ปีนี้</span> <b style="color:#3A2C29;">2 ครั้ง</b> — ห่างจากสถิติ <b style="color:#3A2C29;">2 ครั้ง</b>
+    </div>
+  </div>
+</div>
+
+<div class="option-label">สถานการณ์ C: ปีนี้ยังไม่บริจาคเลย (ไม่เติมบรรทัดเพิ่ม — เหมือนพฤติกรรมเดิม)</div>
+<div class="row">
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ระยะห่างเฉลี่ยต่อครั้ง</div>
+    <div style="font-size:20px; font-weight:700;">336<span style="font-size:12px; font-weight:500;"> วัน</span></div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">เฉลี่ย 11.2 เดือนต่อครั้ง</div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #F3E7E4; display:flex; align-items:center; gap:6px; font-size:11.5px; color:#5C4A46;">
+      <span style="color:#9A3B33;">🕐</span>
+      <span style="color:#7A6360; font-weight:600;">ห่างจากครั้งก่อนหน้า</span> <b style="color:#3A2C29;">91 วัน</b>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:#3A2C29;">ปีที่บริจาคโลหิตมากที่สุด</div>
+    <div style="font-size:20px; font-weight:700;">ปี 2565</div>
+    <div style="font-size:11.5px; color:#8A7370; margin-top:2px;">จำนวน 4 ครั้ง</div>
+  </div>
+</div>
+
+<p class="option-desc" style="margin-top:26px;">หมายเหตุ: การ์ดในสถานการณ์ C จะเตี้ยกว่าการ์ดข้าง ๆ อยู่ดี (เพราะไม่มีข้อมูลปีนี้จริง ๆ ให้เทียบ) — เหมือนกับพฤติกรรมของการ์ดข้าง ๆ ตอนมีข้อมูลไม่ถึง 2 ครั้งเช่นกัน ถือว่าเป็นเรื่องปกติของดีไซน์ที่ยึดตามข้อมูลจริง ไม่ใช่บั๊ก</p>
+
+</body>
+</html>

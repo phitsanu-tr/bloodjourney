@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: จัดปุ่มขนาดเป็นกริด 2 คอลัมน์</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: #FBF6F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif;
+    color: #3A2C29;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 22px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 8px; }
+
+  .modal { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 18px; border: 1px solid #EEDEDA; }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+
+  .pill {
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #E3C8C3;
+    background: #FFFFFF;
+    color: #3A2C29;
+    text-align: center;
+    font-family: inherit;
+  }
+  .pill.active { border: 1px solid #9A3B33; background: #9A3B33; color: #FFF7F5; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: จัดปุ่มเลือกขนาดภาพเป็นกริด 2 คอลัมน์</h1>
+  <p class="sub">เทียบของเดิม (flex-wrap แบบชิป) กับแบบใหม่ (กริด 2x2 พอดี) ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label">ของเดิม — flex-wrap (ปุ่มที่ 4 ตกไปแถวเดียวโดด ๆ)</div>
+  <div class="modal">
+    <div class="chip-row">
+      <button class="pill">จัตุรัส 1:1</button>
+      <button class="pill active">แนวตั้ง 4:5</button>
+      <button class="pill">สตอรี่ 9:16</button>
+      <button class="pill">แนวนอน 16:9</button>
+    </div>
+  </div>
+
+  <div class="option-label">แบบใหม่ — กริด 2 คอลัมน์ (2x2 สมดุล)</div>
+  <div class="modal">
+    <div class="grid-2col">
+      <button class="pill">จัตุรัส 1:1</button>
+      <button class="pill active">แนวตั้ง 4:5</button>
+      <button class="pill">สตอรี่ 9:16</button>
+      <button class="pill">แนวนอน 16:9</button>
+    </div>
+  </div>
+
+  <div class="option-label">แบบ 3 — ตัดคำบรรยายออก เหลือแค่ตัวเลขสัดส่วน (แถวเดียวพอดี)</div>
+  <p class="sub" style="margin: 0 0 8px;">ปุ่มสั้นลงมาก พอดีแถวเดียวไม่ตก แต่ต้องรู้เองว่าตัวเลขไหนคือรูปแบบไหน</p>
+  <div class="modal">
+    <div class="chip-row">
+      <button class="pill">1:1</button>
+      <button class="pill active">4:5</button>
+      <button class="pill">9:16</button>
+      <button class="pill">16:9</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: สไตล์ error message</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .phone { max-width: 380px; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #EEDEDA; }
+  .fake-field { height: 40px; border: 1px solid #E3C8C3; border-radius: 10px; margin-bottom: 14px; background: #FBF6F5; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-ghost { flex: 1; padding: 11px 0; border-radius: 10px; border: 1px solid #E3C8C3; background: #FFFFFF; color: #7A6360; text-align: center; font-size: 13.5px; }
+  .btn-primary { flex: 1; padding: 11px 0; border-radius: 10px; border: none; background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); color: #FFF7F5; text-align: center; font-size: 13.5px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ปรับ error message ตอนกรอกฟอร์มลัดผิด</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="option-label">ปัจจุบัน (อ้างอิง) — ข้อความลอยสีแดง ไม่มีกรอบ</div>
+  <div class="phone">
+    <div class="fake-field"></div>
+    <div style="color:#B3261E; font-size:12.5px; margin-bottom:10px;">กรุณาเลือกวันที่บริจาคล่าสุด (พลาสมา/เกล็ดเลือด)</div>
+    <div class="btn-row"><div class="btn-ghost">ยกเลิก</div><div class="btn-primary">บันทึก</div></div>
+  </div>
+
+  <div class="option-label">แบบ 1 — กล่องพื้นแดงอ่อน มีไอคอนเตือน</div>
+  <div class="option-desc">เหมือนกล่อง info สีน้ำตาลอ่อนที่มีอยู่แล้ว แต่เปลี่ยนโทนเป็นแดง ให้ความรู้สึกเป็น "กล่องแจ้งเตือน" จริงจังขึ้น</div>
+  <div class="phone">
+    <div class="fake-field"></div>
+    <div style="display:flex; gap:8px; background:#FBEAE8; border:1px solid #F0C4BE; border-radius:12px; padding:10px 12px; margin-bottom:14px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div style="font-size:12px; color:#B3261E; line-height:1.55;">กรุณาเลือกวันที่บริจาคล่าสุด (พลาสมา/เกล็ดเลือด)</div>
+    </div>
+    <div class="btn-row"><div class="btn-ghost">ยกเลิก</div><div class="btn-primary">บันทึก</div></div>
+  </div>
+
+  <div class="option-label">แบบ 2 — แถบสีแดงด้านซ้าย (เบากว่า ไม่เต็มกล่อง)</div>
+  <div class="option-desc">มีเส้นแบ่งชัดเจนขึ้นจากข้อความลอย แต่เบากว่าแบบ 1 ไม่ใช้พื้นหลังเต็ม</div>
+  <div class="phone">
+    <div class="fake-field"></div>
+    <div style="display:flex; gap:8px; border-left:3px solid #B3261E; padding:8px 10px; margin-bottom:14px; background:#FBF6F5;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div style="font-size:12px; color:#B3261E; line-height:1.55;">กรุณาเลือกวันที่บริจาคล่าสุด (พลาสมา/เกล็ดเลือด)</div>
+    </div>
+    <div class="btn-row"><div class="btn-ghost">ยกเลิก</div><div class="btn-primary">บันทึก</div></div>
+  </div>
+
+  <div class="option-label">แบบ 3 — ไอคอนนำหน้าข้อความ ไม่มีกรอบ/พื้นหลัง</div>
+  <div class="option-desc">เบาสุด แก้แค่เพิ่มไอคอนให้จับตาได้ไวขึ้น โดยไม่เปลี่ยนโครงสร้างเดิมเลย</div>
+  <div class="phone">
+    <div class="fake-field"></div>
+    <div style="display:flex; align-items:center; gap:6px; margin-bottom:14px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2" style="flex-shrink:0;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div style="font-size:12.5px; color:#B3261E;">กรุณาเลือกวันที่บริจาคล่าสุด (พลาสมา/เกล็ดเลือด)</div>
+    </div>
+    <div class="btn-row"><div class="btn-ghost">ยกเลิก</div><div class="btn-primary">บันทึก</div></div>
+  </div>
+</body>
+</html>

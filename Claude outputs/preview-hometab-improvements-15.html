@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: 3 จุดปรับปรุงหน้าหลัก — จุดละ 5 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 17px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 34px 0 4px; color: #9A3B33; border-top: 2px solid #EEDEDA; padding-top: 20px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 22px 0 8px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: -4px 0 10px; line-height: 1.5; }
+  .frame { max-width: 360px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 14px; padding: 13px 15px; }
+  .hero-tail { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 0 0 20px 20px; padding: "0 22px 16px"; padding: 0 22px 16px; color: #FFF7F5; margin-top: -1px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; background: #F3EAE8; color: #9A3B33; padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+  .pill2 { background: #EFE3F0; color: #6B3E78; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+</style>
+</head>
+<body>
+  <h1>3 จุดปรับปรุงหน้าหลัก — เทียบจุดละ 5 แบบ</h1>
+  <p class="sub">A) การ์ดเชื่อมไปภารกิจ — B) สีป้ายประเภทในประวัติ — C) ตัวกรองประเภทในประวัติ</p>
+
+  <h2>A. การ์ดเชื่อมโยงไปภารกิจ</h2>
+
+  <div class="option-label" style="margin-top:0;">A1. แบนเนอร์บางๆ ใต้การ์ดสรุป</div>
+  <div class="option-desc">ข้อความสั้น + ลิงก์ "ดูภารกิจ" กินพื้นที่น้อยสุด</div>
+  <div class="frame"><div class="card" style="display:flex; align-items:center; gap:8px;">
+    <span>🏅</span>
+    <span style="font-size:11.5px; color:#5C4A46; flex:1;">ใกล้ปลดล็อกเข็มทองคำแล้ว อีก 3 ครั้ง</span>
+    <span style="font-size:11px; font-weight:600; color:#9A3B33;">ดูภารกิจ →</span>
+  </div></div>
+
+  <div class="option-label">A2. การ์ดมี progress bar</div>
+  <div class="option-desc">เห็นความคืบหน้าเป็นภาพ ไม่ใช่แค่ตัวเลข ดึงดูดกว่า</div>
+  <div class="frame"><div class="card">
+    <div style="display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; margin-bottom:8px;"><span>🏅</span> ภารกิจถัดไป: เข็มทองคำ</div>
+    <div style="height:6px; border-radius:3px; background:#F3EAE8; overflow:hidden;"><div style="width:75%; height:100%; background:#9A3B33; border-radius:3px;"></div></div>
+    <div style="font-size:11px; color:#8A7370; margin-top:6px;">15/18 ครั้ง — อีก 3 ครั้ง</div>
+  </div></div>
+
+  <div class="option-label">A3. ชิปแบบกะทัดรัดต่อท้ายแถวป้ายประเภท</div>
+  <div class="option-desc">แปะติดกับป้าย "โลหิตรวม/พลาสมา" ในการ์ดสรุปเดิมเลย ไม่เพิ่มการ์ดใหม่</div>
+  <div class="frame"><div class="hero-tail">
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <span class="pill" style="background:rgba(255,247,245,0.18); color:#FFF7F5;">💧 โลหิตรวม 39</span>
+      <span class="pill" style="background:#FFF7F5; color:#9A3B33;">💧💧 พลาสมา 3</span>
+      <span class="pill" style="background:rgba(255,247,245,0.28); color:#FFF7F5;">🏅 15/18</span>
+    </div>
+  </div></div>
+
+  <div class="option-label">A4. การ์ดพร้อมไอคอนเหรียญ/เข็มกราฟิก</div>
+  <div class="option-desc">เน้นภาพเหรียญ/เข็มให้รู้สึกเป็นรางวัลจริงจัง เหมาะเป็นการ์ดแยกต่างหาก</div>
+  <div class="frame"><div class="card" style="display:flex; align-items:center; gap:12px; background:#FDF6E8; border-color:#F0DFAE;">
+    <div style="width:40px; height:40px; border-radius:"50%"; border-radius:50%; background:#F5C542; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">🏅</div>
+    <div style="flex:1;">
+      <div style="font-size:12.5px; font-weight:700; color:#8A6A1D;">อีก 3 ครั้ง ปลดล็อกเข็มทองคำ</div>
+      <div style="font-size:10.5px; color:#A5884A; margin-top:2px;">แตะเพื่อดูภารกิจทั้งหมด</div>
+    </div>
+  </div></div>
+
+  <div class="option-label">A5. ไม่ต้องเพิ่ม (คงหน้าหลักโฟกัสแค่บันทึก/ประวัติ)</div>
+  <div class="option-desc">อาจดูรกขึ้นถ้าใส่ทุกอย่าง ปล่อยให้แท็บภารกิจทำหน้าที่ของมันแยกไป</div>
+  <div class="frame"><div class="card" style="text-align:center; color:#B39B96; font-size:11.5px; padding:20px;">— ไม่มีการ์ดเพิ่ม —</div></div>
+
+  <h2>B. สีป้ายประเภทในประวัติ</h2>
+
+  <div class="option-label" style="margin-top:0;">B1. สีพื้นหลังต่างกันตามประเภท (แดงอ่อน / ม่วงอ่อน)</div>
+  <div class="option-desc">แยกชัดสุดตาแรกเห็น ไม่ต้องอ่านไอคอน/ข้อความ</div>
+  <div class="frame">
+    <div class="card" style="margin-bottom:8px;"><span class="pill">💧 โลหิตรวม</span></div>
+    <div class="card"><span class="pill pill2">💧💧 พลาสมา/เกล็ดเลือด</span></div>
+  </div>
+
+  <div class="option-label">B2. คงสีเดิม แต่เพิ่มแถบสีข้างการ์ด (left border accent)</div>
+  <div class="option-desc">ละมุนกว่า B1 ไม่เปลี่ยนโทนสีป้าย แค่เพิ่มเส้นบอกประเภทที่ขอบการ์ด</div>
+  <div class="frame">
+    <div class="card" style="border-left:4px solid #9A3B33; margin-bottom:8px;"><span class="pill">💧 โลหิตรวม</span></div>
+    <div class="card" style="border-left:4px solid #6B3E78;"><span class="pill">💧💧 พลาสมา/เกล็ดเลือด</span></div>
+  </div>
+
+  <div class="option-label">B3. วงกลมไอคอนหมายเลขครั้งเปลี่ยนสีตามประเภท</div>
+  <div class="option-desc">ใช้พื้นที่วงรีหมายเลข "ครั้งที่" ที่มีอยู่แล้วสื่อสีแทน ไม่เพิ่มองค์ประกอบใหม่</div>
+  <div class="frame" style="display:flex; gap:10px;">
+    <svg width="40" height="48" viewBox="0 0 46 56"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" /></svg>
+    <svg width="40" height="48" viewBox="0 0 46 56"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#6B3E78" /></svg>
+  </div>
+
+  <div class="option-label">B4. จุดสีเล็กๆ หน้าป้าย แทนที่จะเปลี่ยนทั้งป้าย</div>
+  <div class="option-desc">เพิ่มแค่จุดสี ไม่รบกวนดีไซน์ป้ายเดิมเลย เปลี่ยนแปลงน้อยสุด</div>
+  <div class="frame">
+    <div class="card" style="margin-bottom:8px; display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#9A3B33; display:inline-block;"></span><span class="pill">💧 โลหิตรวม</span></div>
+    <div class="card" style="display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#6B3E78; display:inline-block;"></span><span class="pill">💧💧 พลาสมา/เกล็ดเลือด</span></div>
+  </div>
+
+  <div class="option-label">B5. ไม่ต้องเพิ่มสี (คงไอคอนแยกอย่างเดียวเหมือนเดิม)</div>
+  <div class="option-desc">ผู้ใช้ส่วนใหญ่ไม่ได้สแกนประวัติถี่ๆ ไอคอนต่างกันอาจเพียงพออยู่แล้ว</div>
+  <div class="frame"><div class="card"><span class="pill">💧 โลหิตรวม</span></div></div>
+
+  <h2>C. ตัวกรองประเภทในประวัติ</h2>
+
+  <div class="option-label" style="margin-top:0;">C1. ชิปกรองแบบ segmented ต่อแถวจากตัวกรองปี</div>
+  <div class="option-desc">ทั้งหมด / โลหิตรวม / พลาสมา — แตะเปลี่ยนได้ทันที ไม่ต้องเปิดเมนู</div>
+  <div class="frame">
+    <div style="display:flex; gap:6px;">
+      <span style="font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; background:#9A3B33; color:#FFF7F5;">ทั้งหมด</span>
+      <span style="font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; background:#F3EAE8; color:#9A3B33;">💧 โลหิตรวม</span>
+      <span style="font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; background:#F3EAE8; color:#9A3B33;">💧💧 พลาสมา</span>
+    </div>
+  </div>
+
+  <div class="option-label">C2. เพิ่ม select ประเภท คู่กับ select ปีเดิม</div>
+  <div class="option-desc">ใช้ UI แบบเดียวกับตัวกรองปีที่มีอยู่แล้ว เข้ากันได้ทันที ไม่ต้องเรียนรู้ใหม่</div>
+  <div class="frame" style="display:flex; gap:8px; justify-content:flex-end;">
+    <select style="font-size:12px; border:1px solid #E3C8C3; border-radius:8px; padding:5px 8px; color:#5C4A46; background:#fff;"><option>ทุกประเภท</option></select>
+    <select style="font-size:12px; border:1px solid #E3C8C3; border-radius:8px; padding:5px 8px; color:#5C4A46; background:#fff;"><option>ทุกปี</option></select>
+  </div>
+
+  <div class="option-label">C3. รวมเป็น select เดียว (ปี + ประเภท)</div>
+  <div class="option-desc">ประหยัดพื้นที่สุด แต่รายการตัวเลือกจะยาวขึ้นถ้ามีหลายปี</div>
+  <div class="frame" style="display:flex; justify-content:flex-end;">
+    <select style="font-size:12px; border:1px solid #E3C8C3; border-radius:8px; padding:5px 8px; color:#5C4A46; background:#fff;"><option>ทุกปี · ทุกประเภท</option><option>2569 · โลหิตรวม</option></select>
+  </div>
+
+  <div class="option-label">C4. ปุ่มไอคอนตัวกรอง เปิด popover เลือกได้หลายเงื่อนไข</div>
+  <div class="option-desc">รองรับกรองซ้อนได้มากขึ้นในอนาคต (เช่น สถานที่) แต่ต้องกดเพิ่ม 1 ขั้น</div>
+  <div class="frame" style="display:flex; justify-content:flex-end;">
+    <button style="width:32px; height:32px; border-radius:8px; border:1px solid #E3C8C3; background:#fff; color:#9A3B33; font-size:14px;">⚙︎</button>
+  </div>
+
+  <div class="option-label">C5. ไม่ต้องเพิ่มตัวกรอง (ใช้ปีอย่างเดียวพอ)</div>
+  <div class="option-desc">คนส่วนใหญ่มีประวัติไม่เยอะพอจะต้องกรองประเภทซ้อนปี อาจไม่คุ้มความซับซ้อนที่เพิ่ม</div>
+  <div class="frame"><div style="text-align:center; color:#B39B96; font-size:11.5px; padding:10px;">— ตัวกรองปีอย่างเดียว —</div></div>
+
+</body>
+</html>

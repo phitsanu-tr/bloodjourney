@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ข้อความกำกับตัวเลข "5/11"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 22px 0 4px; }
+  .frame { max-width: 380px; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #3A2C29; }
+  .count { font-size: 11.5px; font-weight: 600; color: #9A3B33; display: flex; align-items: center; gap: 3px; }
+  .bar { height: 5px; border-radius: 3px; background: #F3EAE8; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: #9A3B33; width: 45%; }
+  .chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #F3EAE8; color: #9A3B33; }
+</style>
+</head>
+<body>
+  <h1>ข้อความกำกับตัวเลข "5/11" ข้างหัวข้อหมวด — ตัวอย่าง</h1>
+  <p class="sub">ตอนนี้แสดงแค่ตัวเลขเปล่า ๆ เทียบดูว่าควรมีคำอธิบายกำกับไหม</p>
+
+  <div class="option-label" style="margin-top:0;">1. ตัวเลขเปล่า ๆ (แบบปัจจุบัน)</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">5/11</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">2. "ปลดล็อก 5/11"</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">ปลดล็อก 5/11</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">3. "5/11 รายการ"</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">5/11 รายการ</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">4. "ได้แล้ว 5 จาก 11"</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">ได้แล้ว 5 จาก 11</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">5. เป็นชิปพื้นหลัง แทนตัวหนังสือลอย</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><span class="chip">5/11</span></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">6. เปอร์เซ็นต์แทนเศษส่วน "45%"</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">45%</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div class="option-label">7. ไอคอนเช็ค + ตัวเลข</div>
+  <div class="frame">
+    <div class="row"><div class="section-title">เข็มที่ระลึก</div><div class="count">✓ 5/11</div></div>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+</body>
+</html>

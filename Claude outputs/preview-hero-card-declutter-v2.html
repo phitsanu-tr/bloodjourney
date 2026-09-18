@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ลดความเยอะของการ์ดนับถอยหลัง 10 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 20px; line-height: 1.6; max-width: 640px; }
+  .option-label { font-size: 13px; font-weight: 700; color: #9A3B33; margin: 26px 0 4px; }
+  .option-desc { font-size: 11.5px; color: #8A7370; margin: 0 0 10px; line-height: 1.5; }
+  .wrap { max-width: 380px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 20px; padding: 22px; color: #FFF7F5; position: relative; overflow: hidden; }
+  .total-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+  .total-num { font-size: 46px; font-weight: 700; line-height: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #FFF7F5; color: #9A3B33; }
+  .pill .count { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #F6EBE9; }
+  .divider { margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,247,245,0.22); }
+  .status { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ลดความเยอะของสถิติในการ์ดนับถอยหลัง — 10 แบบ</h1>
+  <p class="sub">ยังไม่ได้แก้โค้ดจริง — ตอนนี้การ์ดมี 5 บล็อกซ้อนกัน (ตัวเลข+pill ลิตร, บรรทัดช่วยเหลือผู้ป่วย, pill ประเภทบริจาค, เส้นคั่น, บรรทัดวันครบกำหนด) ลองแบบต่าง ๆ ที่ตัด/รวมให้เหลือน้อยลง</p>
+
+  <div class="option-label" style="margin-top:0;">1. ตัดบรรทัด "ช่วยเหลือผู้ป่วย" ออก เหลือแค่ตัวเลข+ลิตร (กลับไปแบบก่อนหน้า)</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;"><div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div><span style="font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:rgba(255,247,245,0.16);">≈ 42 ลิตร</span></div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">2. รวมลิตร+ช่วยเหลือผู้ป่วยเป็นบรรทัดเดียว คั่นด้วยจุด</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:4px;">≈ 42 ลิตร · ช่วยเหลือผู้ป่วยได้ถึง 360 คน</div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">3. ย้ายลิตร+ช่วยเหลือผู้ป่วยออกจากการ์ดเข้ม ไปเป็นการ์ดขาวเล็กต่อท้าย (นอกการ์ด)</div>
+  <div class="option-desc">การ์ดเข้มกลับไปมีแค่ตัวเลข+pill ประเภท+วันครบกำหนด เหมือนก่อนเพิ่มฟีเจอร์นี้เป๊ะ สถิติลิตร/ผู้ป่วยไปอยู่การ์ดแยก</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div>
+  <div style="background:#FFFFFF; border:1px solid #EEDEDA; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:8px; margin-top:12px;">
+    <span style="font-size:11.5px; color:#5C4A46;">💧 ≈ 42 ลิตร &nbsp;·&nbsp; ❤️ ช่วยเหลือผู้ป่วยได้ถึง 360 คน</span>
+  </div>
+  </div>
+
+  <div class="option-label">4. ตัดไอคอนหัวใจออก เอาแค่ตัวหนังสือเรียบ ๆ (ลดองค์ประกอบภาพ)</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;"><div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div><span style="font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:rgba(255,247,245,0.16);">≈ 42 ลิตร</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:4px;">อาจช่วยเหลือผู้ป่วยได้ถึง 360 คน</div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">5. ทำให้กดดูได้ (แตะที่ pill ลิตรเพื่อดูรายละเอียด/ผู้ป่วย) ซ่อนไว้เป็นค่าเริ่มต้น</div>
+  <div class="option-desc">ค่าเริ่มต้นโชว์แค่ตัวเลขครั้ง ไม่มี pill ไม่มีบรรทัดช่วยเหลือผู้ป่วย ผู้ใช้ที่อยากรู้กดดูเองได้</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">6. รวม pill ประเภทบริจาค 2 อันให้เหลือ 1 บรรทัดข้อความแทน (ไม่ใช้ pill คู่)</div>
+  <div class="option-desc">แทนที่ pill 2 อัน ด้วยข้อความสั้น ๆ บรรทัดเดียว "โลหิตรวม 100 · พลาสมา/เกล็ดเลือด 20 ครั้ง" ลดจำนวนกล่อง/พื้นหลังซ้อนกัน</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;"><div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div><span style="font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:rgba(255,247,245,0.16);">≈ 42 ลิตร</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.75); margin-top:8px;">โลหิตรวม 100 · พลาสมา/เกล็ดเลือด 20 ครั้ง</div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">7. เก็บทุกอย่างไว้ แต่ลดขนาดตัวอักษร/ระยะห่างให้แน่นขึ้นแบบมีระเบียบ (compact)</div>
+  <div class="option-desc">ไม่ตัดอะไรออก แต่บีบให้กระชับที่สุดเท่าที่ยังอ่านง่าย ให้ความรู้สึก "ครบแต่ไม่ล้น" แทนที่จะตัดข้อมูล</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label" style="margin-bottom:2px;">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;"><div class="total-num" style="font-size:38px;">120<span style="font-size:14px; font-weight:500;"> ครั้ง</span></div><span style="font-size:9.5px; font-weight:600; padding:2px 8px; border-radius:20px; background:rgba(255,247,245,0.16);">≈42L</span><span style="font-size:9.5px; color:rgba(255,247,245,0.65);">· ช่วยได้ 360 คน</span></div>
+    <div style="display:flex; gap:5px; margin-top:8px;"><div class="pill" style="padding:4px 10px; font-size:10px;">โลหิตรวม <span class="count">100</span></div><div class="pill" style="padding:4px 10px; font-size:10px;">พลาสมา <span class="count">20</span></div></div>
+    <div class="divider" style="margin-top:8px; padding-top:10px;"><div class="status" style="font-size:11px;">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">8. ทำเป็น 2 คอลัมน์ — ซ้ายตัวเลขหลัก ขวาสถิติเสริม (ลิตร/ผู้ป่วย) แนวตั้งเล็ก ๆ</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+      <div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+      <div style="text-align:right; font-size:10.5px; color:rgba(255,247,245,0.75); line-height:1.6;">≈ 42 ลิตร<br/>ช่วยได้ 360 คน</div>
+    </div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">9. ตัด pill ประเภทบริจาคออกจากตรงนี้ (ย้ายไปโชว์แค่ตอนมี 2 ประเภทจริง ๆ ในรูปแท็บสลับเท่านั้น)</div>
+  <div class="option-desc">คนที่มีบริจาคประเภทเดียว จะไม่เห็น pill เลย ลดสิ่งที่ต้องมองในการ์ด</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;"><div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div><span style="font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:rgba(255,247,245,0.16);">≈ 42 ลิตร</span></div>
+    <div style="font-size:11px; color:rgba(255,247,245,0.7); margin-top:4px;">อาจช่วยเหลือผู้ป่วยได้ถึง 360 คน</div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+  <div class="option-label">10. คืนกลับเป็นแบบดั้งเดิมทั้งหมด (ไม่มีลิตร ไม่มีช่วยเหลือผู้ป่วยเลย) — baseline ก่อนเพิ่มฟีเจอร์นี้</div>
+  <div class="wrap"><div class="card">
+    <div class="total-label">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="total-num">120<span style="font-size:16px; font-weight:500;"> ครั้ง</span></div>
+    <div style="display:flex; gap:6px; margin-top:10px;"><div class="pill">โลหิตรวม <span class="count">100</span></div><div class="pill">พลาสมา/เกล็ดเลือด <span class="count">20</span></div></div>
+    <div class="divider"><div class="status">⏱ บริจาคครั้งถัดไปได้ตั้งแต่ 30 พ.ย. 2569 (อีก 76 วัน)</div></div>
+  </div></div>
+
+</body>
+</html>

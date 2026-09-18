@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>ตัวอย่าง: ไอคอนไล่เฉดสีมีมิติ 5 แบบ</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 60px; background: #FBF6F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; color: #3A2C29; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #7A6360; margin: 0 0 24px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
+  .card { background: #FFFFFF; border: 1px solid #EEDEDA; border-radius: 16px; padding: 22px 14px 18px; text-align: center; }
+  .icon-box { width: 56px; height: 56px; border-radius: 15px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .label { font-size: 12px; font-weight: 700; color: #9A3B33; margin-bottom: 3px; }
+  .desc { font-size: 10.5px; color: #8A7370; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง: ไอคอนไล่เฉดสี (แบบ 5) แบบมีมิติ 5 แบบย่อย</h1>
+  <p class="sub">ต่อยอดจากแบบ 5 เดิม เพิ่มเงา/แสงให้ดูมีมิติ ยังไม่ได้แก้โค้ดจริง</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="icon-box" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 6px 14px -4px rgba(122,42,35,0.55);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">5A — เงาตกกระทบ</div>
+      <div class="desc">ไล่เฉดสีเดิม เพิ่มเงานุ่มๆ ใต้กรอบ ให้รู้สึกลอยขึ้นจากพื้นหลังนิดหน่อย</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-box" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%);">
+        <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 55%);"></div>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5" style="position:relative;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">5B — แสงมันวาว</div>
+      <div class="desc">เพิ่มแสงสะท้อนทแยงมุมบนซ้าย ให้ผิวดูมันวาวเหมือนกระจก/เคลือบเงา</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-box" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.25);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">5C — ขอบนูน (bevel)</div>
+      <div class="desc">เส้นสว่างบางๆ ขอบบน + เงาเข้มขอบล่าง จำลองผิวนูนแบบปุ่มกดจริง</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-box" style="background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 6px 14px -4px rgba(122,42,35,0.55);">
+        <div style="position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);"></div>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5" style="position:relative;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">5D — เงา + แสงวาว รวมกัน</div>
+      <div class="desc">รวมเงาตกกระทบ (5A) กับแสงมันวาว (5B) เข้าด้วยกัน มิติเด่นชัดสุดในกลุ่มนี้</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-box" style="background: radial-gradient(circle at 30% 25%, #C85C4F 0%, #8A2F28 70%); box-shadow: 0 6px 14px -4px rgba(122,42,35,0.5);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FFF7F5"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+      </div>
+      <div class="label">5E — แสงจุดกลม + เงา</div>
+      <div class="desc">ใช้ไล่เฉดวงกลม (radial) แทนเฉดเส้นตรง จุดสว่างเยื้องบนซ้าย ให้ความรู้สึกทรงกลม/นูนตามธรรมชาติ</div>
+    </div>
+
+  </div>
+</body>
+</html>
