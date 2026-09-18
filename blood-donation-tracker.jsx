@@ -92,64 +92,34 @@ function parseLocalDate(d) {
   if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T00:00:00`);
   return new Date(d);
 }
-function buildIcsForReminder(date, title) {
+// "Add to calendar" history: this used to build a .ics file and trigger it
+// via Blob + URL.createObjectURL() + <a download>.click(). That silently
+// did nothing on iOS (WebKit has never implemented the `download`
+// attribute, and every iOS browser — including LINE's in-app one — is
+// WebKit). Switching the iOS path to a `data:text/calendar` URI fixed
+// Safari, but LINE's in-app browsers on BOTH iOS and Android turned out to
+// still block it entirely (embedded in-app WebViews routinely restrict
+// blob/data-URI downloads and file-open handoffs, LINE's included) — so
+// the button kept doing nothing when opened from inside LINE either way.
+//
+// Google Calendar's "render" endpoint sidesteps all of that: it's a plain
+// https:// page, so opening it is just an ordinary link navigation — the
+// one thing every browser and in-app WebView (LINE on iOS and Android
+// both) reliably supports, since it's the exact mechanism the rich menu
+// and every other in-app link already relies on. The page then lets the
+// user save the event to whichever calendar they're signed into.
+function buildGoogleCalendarUrl(date, title, details) {
   const dt = new Date(date);
-  const y = dt.getFullYear();
-  const m = String(dt.getMonth() + 1).padStart(2, "0");
-  const d = String(dt.getDate()).padStart(2, "0");
-  const dateStr = `${y}${m}${d}`;
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-  const uid = `blood-journey-${dateStr}-${Math.random().toString(36).slice(2, 10)}@bloodjourney.local`;
-  const escText = (s) => String(s).replace(/([,;])/g, "\\$1").replace(/\n/g, "\\n");
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Blood Journey//TH",
-    "CALSCALE:GREGORIAN",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${dateStr}`,
-    `DTEND;VALUE=DATE:${dateStr}`,
-    `SUMMARY:${escText(title)}`,
-    `DESCRIPTION:${escText("แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง")}`,
-    "BEGIN:VALARM",
-    "TRIGGER:-P1D",
-    "ACTION:DISPLAY",
-    "DESCRIPTION:แจ้งเตือนวันบริจาคโลหิต",
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
-}
-function downloadIcsFile(icsContent, filename) {
-  // iOS WebKit (Safari AND every iOS in-app browser built on it, including
-  // LINE's — they all share the same engine) has never supported the
-  // `download` attribute on <a>: clicking a blob: URL link there does
-  // nothing at all, silently — no error, no file, no calendar prompt. That
-  // silent failure is exactly "กดแล้วไม่มีอะไรเกิดขึ้น" reported on iPhone.
-  // Android's in-app WebViews (including LINE's) don't have this problem —
-  // the blob+download approach works there, so it's kept as the path for
-  // everything that isn't iOS.
-  //
-  // The reliable fix on iOS is to navigate directly to a data: URI instead
-  // of trying to force a download: WebKit recognizes the text/calendar
-  // MIME type and opens its native "Add Event" card itself.
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS reports as "MacIntel"
-  if (isIOS) {
-    window.location.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
-    return;
-  }
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const toYmd = (x) => `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, "0")}${String(x.getDate()).padStart(2, "0")}`;
+  const endDt = new Date(dt);
+  endDt.setDate(endDt.getDate() + 1); // Google's all-day "dates" range end is exclusive
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${toYmd(dt)}/${toYmd(endDt)}`,
+    details,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 // Relative "บันทึกเมื่อ..." wording for recent timestamps (loggedAt /
 // startingCountUpdatedAt) — matches the common X/Twitter-style convention:
@@ -2533,8 +2503,8 @@ function AppInner() {
   const handleAddToCalendar = () => {
     if (!nextEligible) return;
     const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
-    const ics = buildIcsForReminder(nextEligible, title);
-    downloadIcsFile(ics, `blood-donation-reminder-${toBuddhistDate(nextEligible).replace(/\s+/g, "-")}.ics`);
+    const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
+    window.open(buildGoogleCalendarUrl(nextEligible, title, details), "_blank", "noopener,noreferrer");
   };
 
   const ageOutOfRange = age !== "" && (Number(age) < MIN_AGE || Number(age) > MAX_AGE);
