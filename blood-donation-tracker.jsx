@@ -683,9 +683,9 @@ function drawRecordBadge(ctx, cx, cy, r, order) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#FFF7F5";
-  ctx.font = `800 ${Math.round(r * 0.62)}px 'Noto Sans Thai', 'Inter', sans-serif`;
+  ctx.font = `800 ${Math.round(r * 0.62)}px 'Bai Jamjuree', 'Inter', sans-serif`;
   ctx.fillText(String(order), cx, cy - r * 0.08);
-  ctx.font = `400 ${Math.round(r * 0.19)}px 'Noto Sans Thai', 'Inter', sans-serif`;
+  ctx.font = `400 ${Math.round(r * 0.19)}px 'Bai Jamjuree', 'Inter', sans-serif`;
   ctx.globalAlpha = 0.85;
   ctx.fillText("ครั้งที่", cx, cy + r * 0.32);
   ctx.globalAlpha = 1;
@@ -857,7 +857,7 @@ async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel,
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no 2d context");
-  const FONT = "'Noto Sans Thai', 'Inter', sans-serif";
+  const FONT = "'Bai Jamjuree', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
   const content = { order, dateStr, timeStr, typeLabel, location, bloodType, nickname };
@@ -885,7 +885,7 @@ async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, blo
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no 2d context");
-  const FONT = "'Noto Sans Thai', 'Inter', sans-serif";
+  const FONT = "'Bai Jamjuree', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
   const liters = (estVolumeMl / 1000).toFixed(estVolumeMl % 1000 === 0 ? 0 : 1);
@@ -2778,15 +2778,15 @@ function AppInner() {
               <svg width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Noto Sans Thai', 'Inter', sans-serif" }}>BloodJourney</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Noto Sans Thai', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Bai Jamjuree', 'Inter', sans-serif" }}>BloodJourney</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Bai Jamjuree', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: "'Noto Sans Thai', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
+    <div style={{ fontFamily: "'Bai Jamjuree', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
       <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: 420, maxWidth: "100%", height: "100%", zIndex: -1, overflow: "hidden", pointerEvents: "none" }}>
         <svg width="90" height="109" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", top: -20, right: -10 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
         <svg width="30" height="36" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: 40, right: 90 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -2797,7 +2797,7 @@ function AppInner() {
         <svg width="34" height="41" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", bottom: -10, right: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
       </div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
         .btn-primary:active { background: #7E2F28; }
@@ -4582,7 +4582,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FBF6F5", padding: 28, textAlign: "center", fontFamily: "'Noto Sans Thai', 'Inter', sans-serif" }}>
+        <div style={{ minHeight: 400, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#FBF6F5", padding: 28, textAlign: "center", fontFamily: "'Bai Jamjuree', 'Inter', sans-serif" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>เกิดข้อผิดพลาดบางอย่าง</div>
           <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, marginBottom: 18 }}>
             ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้ ไม่ได้หายไปไหน ลองกดปุ่มด้านล่างเพื่อโหลดหน้านี้ใหม่อีกครั้ง
