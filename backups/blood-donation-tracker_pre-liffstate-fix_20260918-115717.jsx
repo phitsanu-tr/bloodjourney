@@ -970,31 +970,16 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
 
 // Lets a rich-menu button (or any external link) deep-link straight into a
 // specific tab via ?tab=dashboard etc., instead of always landing on หน้าหลัก.
-//
-// This is NOT as simple as reading window.location.search: when LINE opens
-// a liff.line.me URL that has extra query params, it doesn't forward them
-// as-is — it wraps the whole original query (and path) into a single
-// `liff.state` param on the endpoint URL, e.g. requesting
-// `.../?tab=dashboard` actually arrives here as
-// `...?liff.state=%2F%3Ftab%3Ddashboard`. liff.init() does not reliably
-// unwrap that back into a plain `?tab=dashboard` on window.location before
-// we read it, so we have to unwrap `liff.state` ourselves. main.jsx
-// snapshots the raw query string into window.__bjInitialSearch *before*
-// calling liff.init() (in case init() rewrites/clears the address bar) —
-// read once, lazily, from AppInner's useState initializer so this runs on
-// first render rather than at module-eval time.
+// Read once at module load rather than per-render — the value can't change
+// without a full page reload anyway (LIFF navigates by reloading the page,
+// it doesn't do in-app client-side routing), and reading it eagerly here
+// means it's available before AppInner's first render, matching how
+// liff.init() in main.jsx already restores the real query string (from its
+// liff.state redirect) before this file's module code runs.
 const VALID_TABS = ["home", "dashboard", "missions", "knowledge"];
 function initialTabFromUrl() {
   try {
-    const raw = typeof window.__bjInitialSearch === "string" ? window.__bjInitialSearch : window.location.search;
-    let params = new URLSearchParams(raw);
-    const liffState = params.get("liff.state");
-    if (liffState) {
-      const decoded = decodeURIComponent(liffState);
-      const qIndex = decoded.indexOf("?");
-      if (qIndex !== -1) params = new URLSearchParams(decoded.slice(qIndex + 1));
-    }
-    const t = params.get("tab");
+    const t = new URLSearchParams(window.location.search).get("tab");
     return VALID_TABS.includes(t) ? t : "home";
   } catch (e) {
     return "home";
