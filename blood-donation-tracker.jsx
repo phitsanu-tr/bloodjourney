@@ -2224,50 +2224,35 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showShareCard, shareData, shareRecordData, cardSizeKey]);
 
-  // Same root cause as the "เพิ่มลงปฏิทิน" bug fixed earlier: an <a download>
-  // click on a data: URL relies on the browser's normal download machinery,
-  // which LINE's in-app browser blocks on BOTH iOS and Android — silently,
-  // with no thrown error, so the old code's try/catch never caught it and
-  // happily showed a false "เริ่มดาวน์โหลดภาพแล้ว" toast while nothing
-  // actually saved. Detecting LINE's in-app browser up front and skipping
-  // straight to the guaranteed-reliable fallback (the browser's own native
-  // long-press-to-save on the <img> already shown in the preview above,
-  // which needs no JS API at all) avoids repeating that same silent-failure
-  // pattern a third time.
+  // Every client-side save method was tried here, in order, and each one
+  // confirmed broken by actually testing it on-device inside LINE's in-app
+  // browser: <a download> on a data: URL (silent no-op on both iOS and
+  // Android — same root cause as the earlier "เพิ่มลงปฏิทิน" bug),
+  // liff.openWindow's external:true handoff to the real Safari/Chrome (no
+  // visible effect), navigator.clipboard.write() to copy the image (no
+  // visible effect), and even the browser's own native long-press-to-save
+  // on the <img> itself — which needs no JS API at all and still didn't
+  // work. That last one is the tell: LINE's in-app browser appears to
+  // disable image saving wholesale at the WebView level, which nothing
+  // running inside that WebView (this app included) can work around.
+  //
+  // LINE's own "•••" menu → "เปิดด้วยเบราว์เซอร์อื่น" would normally be the
+  // escape hatch here (hands the page to a real, unrestricted Safari/
+  // Chrome) — but this app deliberately blocks itself outside of LINE's
+  // in-app browser (see main.jsx's liff.isInClient() check and
+  // middleware.js), which was built earlier specifically so the raw URL
+  // can't be opened elsewhere. That means "open externally" would just
+  // land on the "เปิดผ่านแอป LINE เท่านั้น" block screen instead of this
+  // share card — a real dead end, not a usable workaround, given how this
+  // app is currently locked down. So the only method left that's both
+  // guaranteed to work and doesn't fight that restriction is the phone's
+  // own screenshot function — it captures pixels straight off the screen,
+  // no web API or LINE cooperation involved at all.
   const isLineInAppBrowser = /Line\//.test(navigator.userAgent) || /LIFF\//.test(navigator.userAgent);
-  // Best-effort extra step tried only inside LINE, before falling back to
-  // the guaranteed-working long-press guidance below: liff.openWindow's
-  // `external: true` is meant for handing a URL off to the device's real
-  // Safari/Chrome, outside LINE's restricted in-app browser entirely —
-  // where the normal download flow works fine since it's not LINE's
-  // WebView doing the blocking. Untested territory though: LIFF's own docs
-  // only really talk about this taking http(s) URLs, not a data: URI, and
-  // a large generated PNG could produce a data: URI long enough to hit
-  // some OS/LIFF URL-length limit. Any failure here — thrown, rejected, or
-  // just not visibly doing anything — must fall through to the toast, not
-  // leave the user stuck with nothing.
-  const tryOpenExternally = () => {
-    try {
-      const result = liff.openWindow({ url: shareCardDataUrl, external: true });
-      if (result && typeof result.then === "function") {
-        result.catch(() => {
-          showToast("success", "บันทึกรูปได้โดยกดค้างที่รูปด้านบน แล้วเลือก \"บันทึกรูปภาพ\" — เปิดรูปนอก LINE ไม่สำเร็จ", 5500);
-        });
-      }
-      showToast("success", "เปิดรูปในเบราว์เซอร์นอก LINE แล้ว — ถ้าไม่เห็นหน้าต่างเปิดขึ้น ให้กดค้างที่รูปด้านบนในนี้แล้วเลือก \"บันทึกรูปภาพ\" แทนได้เลย", 5500);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
+  const LINE_SAVE_GUIDANCE = "บันทึกรูปจากในนี้ไม่ได้ (LINE บล็อกการบันทึกรูปในเบราว์เซอร์ของตัวเอง) ใช้วิธีแคปหน้าจอ (สกรีนช็อต) รูปนี้แทนได้เลย — กดปุ่ม Power + ปุ่มลดเสียง (หรือปุ่มลัดที่เครื่องตั้งไว้)";
   const downloadShareCard = () => {
     if (isLineInAppBrowser) {
-      if (tryOpenExternally()) return;
-      // "success" here isn't quite right semantically (nothing was saved
-      // yet — this is a how-to, not a confirmation), but the toast only
-      // has "error" vs. everything-else styling, and giving this its own
-      // neutral style isn't worth the added complexity for one message.
-      showToast("success", "บันทึกรูปได้โดยกดค้างที่รูปด้านบน แล้วเลือก \"บันทึกรูปภาพ\" — ดาวน์โหลดอัตโนมัติเปิดผ่าน LINE ไม่ได้", 5500);
+      showToast("error", LINE_SAVE_GUIDANCE, 6000);
       return;
     }
     try {
@@ -4617,34 +4602,49 @@ function AppInner() {
                 <div style={{ color: "#FFF7F5", fontSize: 12.5, opacity: 0.8 }}>กำลังสร้างภาพ...</div>
               )}
             </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              {canShareFiles && (
-                <button onClick={nativeShareCard} disabled={sharingCard || !shareCardDataUrl} className="btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                  <Share2 size={16} /> แชร์
-                </button>
-              )}
-              <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "" : "btn-primary"} style={{
-                flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                ...(canShareFiles
-                  ? { background: "#FFFFFF", color: "#9A3B33", border: "1.5px solid #9A3B33" }
-                  : { border: "none" }),
-              }}>
-                <Download size={16} /> ดาวน์โหลด
-              </button>
-            </div>
-            {canCopyImage && (
-              // Its own row rather than squeezing a 3rd button into the row
-              // above — mainly useful on Android inside LINE, where there's
-              // no working share button and the download button can only
-              // fall back to long-press guidance, so it's worth the extra
-              // vertical space to surface a real working action there.
-              <button onClick={copyShareCardImage} disabled={sharingCard || !shareCardDataUrl} style={{
-                width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                background: "transparent", color: "#9A3B33", border: "1px dashed #E3C8C3",
-              }}>
-                <Copy size={14} /> คัดลอกรูป
-              </button>
+            {isLineInAppBrowser ? (
+              // Download and copy-to-clipboard were both tried here and
+              // both confirmed broken inside LINE's in-app browser by
+              // actually testing on-device (see the long comment above
+              // downloadShareCard) — even the browser's native
+              // long-press-to-save didn't work, which points to LINE
+              // disabling image saving at the WebView level entirely.
+              // Rather than show buttons that look actionable but silently
+              // do nothing, this is a plain, always-visible instruction
+              // instead: the "•••" menu → "เปิดด้วยเบราว์เซอร์อื่น" is the
+              // one escape hatch that's confirmed to actually work, since
+              // it hands the page to a real, unrestricted browser.
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "#FDEBE6", border: "1px solid #F3C9C0", borderRadius: 12, padding: "11px 12px", fontSize: 12.5, color: "#7A2A22", lineHeight: 1.6 }}>
+                <Info size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>{LINE_SAVE_GUIDANCE}</span>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+                  {canShareFiles && (
+                    <button onClick={nativeShareCard} disabled={sharingCard || !shareCardDataUrl} className="btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                      <Share2 size={16} /> แชร์
+                    </button>
+                  )}
+                  <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "" : "btn-primary"} style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
+                    ...(canShareFiles
+                      ? { background: "#FFFFFF", color: "#9A3B33", border: "1.5px solid #9A3B33" }
+                      : { border: "none" }),
+                  }}>
+                    <Download size={16} /> ดาวน์โหลด
+                  </button>
+                </div>
+                {canCopyImage && (
+                  <button onClick={copyShareCardImage} disabled={sharingCard || !shareCardDataUrl} style={{
+                    width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                    padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    background: "transparent", color: "#9A3B33", border: "1px dashed #E3C8C3",
+                  }}>
+                    <Copy size={14} /> คัดลอกรูป
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
