@@ -123,6 +123,24 @@ function buildIcsForReminder(date, title) {
   ].join("\r\n");
 }
 function downloadIcsFile(icsContent, filename) {
+  // iOS WebKit (Safari AND every iOS in-app browser built on it, including
+  // LINE's — they all share the same engine) has never supported the
+  // `download` attribute on <a>: clicking a blob: URL link there does
+  // nothing at all, silently — no error, no file, no calendar prompt. That
+  // silent failure is exactly "กดแล้วไม่มีอะไรเกิดขึ้น" reported on iPhone.
+  // Android's in-app WebViews (including LINE's) don't have this problem —
+  // the blob+download approach works there, so it's kept as the path for
+  // everything that isn't iOS.
+  //
+  // The reliable fix on iOS is to navigate directly to a data: URI instead
+  // of trying to force a download: WebKit recognizes the text/calendar
+  // MIME type and opens its native "Add Event" card itself.
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS reports as "MacIntel"
+  if (isIOS) {
+    window.location.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
+    return;
+  }
   const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
