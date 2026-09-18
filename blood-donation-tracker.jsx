@@ -1235,7 +1235,7 @@ function AppInner() {
     // single frame of it actually gets painted to the screen. finishLoading
     // tops that up to MIN_LOADING_MS so the splash is actually visible, but
     // never adds delay on top of a load that's already slower than that.
-    const MIN_LOADING_MS = 1600; // matches the orbit spin animation's 1.6s duration, so it completes exactly one full rotation
+    const MIN_LOADING_MS = 2000; // 1 full rotation of the 2s orbit spin animation
     const loadStartedAt = Date.now();
     const finishLoading = async (nextPhase) => {
       const elapsed = Date.now() - loadStartedAt;
@@ -1244,6 +1244,23 @@ function AppInner() {
       }
       setPhase(nextPhase);
     };
+    // Safety net: storage.get()/set() already catch their own errors and
+    // fall back to an in-memory store as a last resort, so nothing below is
+    // expected to hang forever. But if something ever did stall (e.g. a
+    // future native storage bridge that never calls back), the loading
+    // screen would otherwise be stuck on-screen indefinitely with no way
+    // out. LOAD_TIMEOUT_MS caps that wait: if the real load hasn't finished
+    // within 8s, give up and show the existing error screen (which already
+    // has a "ลองใหม่อีกครั้ง" retry button) instead of a spinner forever.
+    // The `settled` flag stops this timer and the normal success/failure
+    // paths below from ever fighting over which phase should win.
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setError("ใช้เวลาโหลดนานผิดปกติ ลองใหม่อีกครั้ง");
+      setPhase("error");
+    }, 8000);
     try {
       const consentRes = await storage.get("consent").catch(() => null);
       // CONSENT_VERSION exists so a future change to what's being consented
@@ -1263,6 +1280,9 @@ function AppInner() {
         }
       }
       if (!consentValid) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
         await finishLoading("consent");
         return;
       }
@@ -1325,8 +1345,14 @@ function AppInner() {
           }
         } catch {}
       }
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
       await finishLoading("app");
     } catch (e) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
       setPhase("error");
     }
   }, []);
@@ -2745,7 +2771,7 @@ function AppInner() {
         `}</style>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 26 }}>
-            <div style={{ position: "absolute", inset: 0, animation: "bjSplashSpin 1.6s linear infinite" }}>
+            <div style={{ position: "absolute", inset: 0, animation: "bjSplashSpin 2s linear infinite" }}>
               <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
             </div>
             <div style={{ width: 92, height: 92, borderRadius: 26, background: "#FFFFFF", boxShadow: "0 14px 30px rgba(154,59,51,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -2827,7 +2853,7 @@ function AppInner() {
           <AlertTriangle size={28} color="#B3261E" />
           <div style={{ fontSize: 15.5, fontWeight: 700, margin: "14px 0 8px" }}>โหลดข้อมูลไม่สำเร็จ</div>
           <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 22px" }}>
-            ไม่ต้องกังวล ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้เหมือนเดิม ลองโหลดใหม่อีกครั้ง
+            {error || "ไม่ต้องกังวล ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้เหมือนเดิม ลองโหลดใหม่อีกครั้ง"}
           </p>
           <button onClick={load} className="btn-primary" style={{ padding: "12px 26px", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
             ลองใหม่อีกครั้ง
