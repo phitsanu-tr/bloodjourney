@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, Copy } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import liff from "@line/liff";
 
@@ -1156,6 +1156,20 @@ function AppInner() {
       return false;
     }
   }, []);
+  // Chromium (Android's in-app WebViews, LINE's included) has supported
+  // writing an image to the system clipboard via the async Clipboard API
+  // for a while now, even where the file-sharing and download paths above
+  // are blocked — it's a different browser permission entirely, not a
+  // download or a share-sheet invocation, so it's worth feature-detecting
+  // and offering as its own option rather than assuming it shares the same
+  // fate as everything else tried so far.
+  const canCopyImage = useMemo(() => {
+    try {
+      return typeof ClipboardItem !== "undefined" && !!(navigator.clipboard && navigator.clipboard.write);
+    } catch {
+      return false;
+    }
+  }, []);
   const [sharingCard, setSharingCard] = useState(false);
   const [shareData, setShareData] = useState(null);
   // When set, the share-card modal is generating/showing a single donation
@@ -2286,6 +2300,23 @@ function AppInner() {
     } catch (e) {
       if (e && e.name === "AbortError") return; // user cancelled the share sheet
       showToast("error", "แชร์ไม่สำเร็จ ลองดาวน์โหลดรูปภาพแทนได้เลย");
+    }
+  };
+
+  // Writes the image straight to the system clipboard so it can be pasted
+  // into a LINE chat, another app, or the gallery — a different browser
+  // permission from a file download or a share-sheet call, so it's worth
+  // offering even where those two are blocked (this is specifically what
+  // fixes the gap on Android inside LINE: no working share button there,
+  // and the download button can only fall back to long-press guidance).
+  const copyShareCardImage = async () => {
+    try {
+      const res = await fetch(shareCardDataUrl);
+      const blob = await res.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      showToast("success", "คัดลอกรูปแล้ว ไปวางในแชท LINE หรือแอปอื่นได้เลย");
+    } catch (e) {
+      showToast("error", "คัดลอกรูปไม่สำเร็จ ลองกดค้างที่รูปด้านบนแทน");
     }
   };
 
@@ -4601,6 +4632,20 @@ function AppInner() {
                 <Download size={16} /> ดาวน์โหลด
               </button>
             </div>
+            {canCopyImage && (
+              // Its own row rather than squeezing a 3rd button into the row
+              // above — mainly useful on Android inside LINE, where there's
+              // no working share button and the download button can only
+              // fall back to long-press guidance, so it's worth the extra
+              // vertical space to surface a real working action there.
+              <button onClick={copyShareCardImage} disabled={sharingCard || !shareCardDataUrl} style={{
+                width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                background: "transparent", color: "#9A3B33", border: "1px dashed #E3C8C3",
+              }}>
+                <Copy size={14} /> คัดลอกรูป
+              </button>
+            )}
           </div>
         </div>
       )}
