@@ -1235,7 +1235,7 @@ function AppInner() {
     // single frame of it actually gets painted to the screen. finishLoading
     // tops that up to MIN_LOADING_MS so the splash is actually visible, but
     // never adds delay on top of a load that's already slower than that.
-    const MIN_LOADING_MS = 1000;
+    const MIN_LOADING_MS = 1600; // matches the orbit spin animation's 1.6s duration, so it completes exactly one full rotation
     const loadStartedAt = Date.now();
     const finishLoading = async (nextPhase) => {
       const elapsed = Date.now() - loadStartedAt;
