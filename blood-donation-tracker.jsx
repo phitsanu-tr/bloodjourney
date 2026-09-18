@@ -97,52 +97,20 @@ function parseLocalDate(d) {
 // did nothing on iOS (WebKit has never implemented the `download`
 // attribute, and every iOS browser — including LINE's in-app one — is
 // WebKit). Switching the iOS path to a `data:text/calendar` URI fixed
-// Safari, but at the time LINE's in-app browser on Android was *also*
-// silently failing with the old blob approach, so everything moved to a
-// Google Calendar link — a plain https:// page, which is just an ordinary
-// link navigation and reliably works in any in-app WebView (LINE's
-// included), no blob/download/file-open mechanics involved.
+// real Safari, but LINE's in-app browser blocks that same data: URI
+// approach too (confirmed by testing) — apparently a broader restriction
+// on blob/data-URI downloads and file-open handoffs inside LINE's WebView,
+// not specific to one platform. A later attempt to use it as an
+// iOS-specific "open Apple Calendar natively" path was confirmed broken
+// the same way, so don't reintroduce it without testing it actually works
+// inside LINE first.
 //
-// That Google Calendar link is now confirmed working in LINE on iOS too —
-// but most iPhone users actually live in Apple's own Calendar app, not
-// Google Calendar, so buildIcsAddEventUrl() below is used on iOS instead
-// to open Apple's native "Add Event" card directly via a data: URI, which
-// WebKit (Safari and every iOS in-app browser, LINE included) recognizes
-// by its text/calendar MIME type. If this ever turns out to silently fail
-// again in some future LINE version, switch iOS back to
-// buildGoogleCalendarUrl() in handleAddToCalendar() below — it's kept
-// around specifically as that fallback, not dead code.
-function buildIcsAddEventUrl(date, title, details) {
-  const dt = new Date(date);
-  const y = dt.getFullYear();
-  const m = String(dt.getMonth() + 1).padStart(2, "0");
-  const d = String(dt.getDate()).padStart(2, "0");
-  const dateStr = `${y}${m}${d}`;
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-  const uid = `blood-journey-${dateStr}-${Math.random().toString(36).slice(2, 10)}@bloodjourney.local`;
-  const escText = (s) => String(s).replace(/([,;])/g, "\\$1").replace(/\n/g, "\\n");
-  const ics = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Blood Journey//TH",
-    "CALSCALE:GREGORIAN",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${dateStr}`,
-    `DTEND;VALUE=DATE:${dateStr}`,
-    `SUMMARY:${escText(title)}`,
-    `DESCRIPTION:${escText(details)}`,
-    "BEGIN:VALARM",
-    "TRIGGER:-P1D",
-    "ACTION:DISPLAY",
-    "DESCRIPTION:แจ้งเตือนวันบริจาคโลหิต",
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
-  return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
-}
+// Google Calendar's "render" endpoint sidesteps all of that: it's a plain
+// https:// page, so opening it is just an ordinary link navigation — the
+// one thing every browser and in-app WebView (LINE on iOS and Android
+// both, confirmed) reliably supports, since it's the exact mechanism the
+// rich menu and every other in-app link already relies on. The page then
+// lets the user save the event to whichever calendar they're signed into.
 function buildGoogleCalendarUrl(date, title, details) {
   const dt = new Date(date);
   const toYmd = (x) => `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, "0")}${String(x.getDate()).padStart(2, "0")}`;
@@ -2241,7 +2209,26 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showShareCard, shareData, shareRecordData, cardSizeKey]);
 
+  // Same root cause as the "เพิ่มลงปฏิทิน" bug fixed earlier: an <a download>
+  // click on a data: URL relies on the browser's normal download machinery,
+  // which LINE's in-app browser blocks on BOTH iOS and Android — silently,
+  // with no thrown error, so the old code's try/catch never caught it and
+  // happily showed a false "เริ่มดาวน์โหลดภาพแล้ว" toast while nothing
+  // actually saved. Detecting LINE's in-app browser up front and skipping
+  // straight to the guaranteed-reliable fallback (the browser's own native
+  // long-press-to-save on the <img> already shown in the preview above,
+  // which needs no JS API at all) avoids repeating that same silent-failure
+  // pattern a third time.
+  const isLineInAppBrowser = /Line\//.test(navigator.userAgent) || /LIFF\//.test(navigator.userAgent);
   const downloadShareCard = () => {
+    if (isLineInAppBrowser) {
+      // "success" here isn't quite right semantically (nothing was saved
+      // yet — this is a how-to, not a confirmation), but the toast only
+      // has "error" vs. everything-else styling, and giving this its own
+      // neutral style isn't worth the added complexity for one message.
+      showToast("success", "บันทึกรูปได้โดยกดค้างที่รูปด้านบน แล้วเลือก \"บันทึกรูปภาพ\" — ดาวน์โหลดอัตโนมัติเปิดผ่าน LINE ไม่ได้", 5500);
+      return;
+    }
     try {
       const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
       const filePrefix = shareRecordData ? "bloodjourney-donation" : "bloodjourney-achievement";
@@ -2535,16 +2522,16 @@ function AppInner() {
   // Rough, clearly-labeled estimate only (350ml/donation) — not meant to be
   // precise, just to give the cumulative count some tangible meaning.
   const estLiters = Math.round(totalCount * 0.35 * 10) / 10;
+  // Tried opening Apple's native "Add Event" card on iOS via a
+  // data:text/calendar URI — confirmed to not work inside LINE's in-app
+  // browser on iOS either (same class of restriction that blocked the old
+  // blob-download approach on Android). Back to the Google Calendar link
+  // for every platform, since that's the one confirmed working everywhere
+  // it's actually been tested (LINE on both iOS and Android).
   const handleAddToCalendar = () => {
     if (!nextEligible) return;
     const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
     const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS reports as "MacIntel"
-    if (isIOS) {
-      window.location.href = buildIcsAddEventUrl(nextEligible, title, details);
-      return;
-    }
     window.open(buildGoogleCalendarUrl(nextEligible, title, details), "_blank", "noopener,noreferrer");
   };
 
