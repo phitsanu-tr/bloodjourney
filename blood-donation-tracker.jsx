@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import liff from "@line/liff";
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const APP_VERSION = "1.0.0";
@@ -2220,8 +2221,34 @@ function AppInner() {
   // which needs no JS API at all) avoids repeating that same silent-failure
   // pattern a third time.
   const isLineInAppBrowser = /Line\//.test(navigator.userAgent) || /LIFF\//.test(navigator.userAgent);
+  // Best-effort extra step tried only inside LINE, before falling back to
+  // the guaranteed-working long-press guidance below: liff.openWindow's
+  // `external: true` is meant for handing a URL off to the device's real
+  // Safari/Chrome, outside LINE's restricted in-app browser entirely —
+  // where the normal download flow works fine since it's not LINE's
+  // WebView doing the blocking. Untested territory though: LIFF's own docs
+  // only really talk about this taking http(s) URLs, not a data: URI, and
+  // a large generated PNG could produce a data: URI long enough to hit
+  // some OS/LIFF URL-length limit. Any failure here — thrown, rejected, or
+  // just not visibly doing anything — must fall through to the toast, not
+  // leave the user stuck with nothing.
+  const tryOpenExternally = () => {
+    try {
+      const result = liff.openWindow({ url: shareCardDataUrl, external: true });
+      if (result && typeof result.then === "function") {
+        result.catch(() => {
+          showToast("success", "บันทึกรูปได้โดยกดค้างที่รูปด้านบน แล้วเลือก \"บันทึกรูปภาพ\" — เปิดรูปนอก LINE ไม่สำเร็จ", 5500);
+        });
+      }
+      showToast("success", "เปิดรูปในเบราว์เซอร์นอก LINE แล้ว — ถ้าไม่เห็นหน้าต่างเปิดขึ้น ให้กดค้างที่รูปด้านบนในนี้แล้วเลือก \"บันทึกรูปภาพ\" แทนได้เลย", 5500);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
   const downloadShareCard = () => {
     if (isLineInAppBrowser) {
+      if (tryOpenExternally()) return;
       // "success" here isn't quite right semantically (nothing was saved
       // yet — this is a how-to, not a confirmation), but the toast only
       // has "error" vs. everything-else styling, and giving this its own
