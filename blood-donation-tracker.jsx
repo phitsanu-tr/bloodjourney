@@ -4059,15 +4059,23 @@ function AppInner() {
                     Buddhist year) — this only affects the native picker's own text,
                     not any date we render ourselves (toBuddhistDateTime() etc. are
                     unaffected). See handoff doc decision log for the report. */}
+                {/* height (instead of vertical padding) keeps this a fixed 44px
+                    regardless of platform. Native date/time controls in iOS's
+                    WKWebView (used by LINE's in-app browser) bring their own
+                    generous intrinsic content height — vertical padding stacks
+                    on TOP of that instead of being absorbed by it, which is why
+                    this looked unusually tall specifically when opened via LINE
+                    on iPhone. A fixed height + horizontal-only padding lets the
+                    native control center itself inside a box we actually control. */}
                 <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
                   onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                  style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                  style={{ width: "100%", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               </div>
               <div>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                 <input type="time" lang="en-US" value={form.time}
                   onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                  style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                  style={{ width: "100%", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               </div>
             </div>
             {sameDateConflict ? (
@@ -4177,13 +4185,13 @@ function AppInner() {
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
                         <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
                           onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                          style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
                       </div>
                       <div>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                         <input type="time" lang="en-US" value={tf.time}
                           onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                          style={{ width: "100%", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
                       </div>
                     </div>
                     <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
