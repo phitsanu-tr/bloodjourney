@@ -3877,8 +3877,21 @@ function AppInner() {
               still guaranteeing 60px (13+34+13, matching the 34px logo)
               when there's no notch to clear. Keep this in sync with the
               app-shell's compensating top padding above if it changes. */}
-          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", position: "relative", overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
+            {/* The app's decorative droplet watermark (drawn once, fixed to
+                the viewport, at zIndex:-1) used to be visible right through
+                the header back when the header had no background of its own
+                and simply scrolled away as normal content. Now that the
+                header is its own solid, opaque, position:fixed bar (needed
+                so scrolled-past content doesn't show through it illegibly),
+                it sits ABOVE that watermark layer and blocks it in this one
+                spot. Redrawing the same two top-corner droplets here,
+                confined to the header's own box via overflow:hidden,
+                restores the original look without giving up the opaque
+                background scrolled content needs. */}
+            <svg width="90" height="109" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", top: -20, right: -10, pointerEvents: "none" }} aria-hidden="true"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+            <svg width="30" height="36" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: 40, right: 90, pointerEvents: "none" }} aria-hidden="true"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, position: "relative" }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
               </div>
@@ -3887,7 +3900,7 @@ function AppInner() {
                 <div style={{ fontSize: 10.5, color: "#8A7370", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
               <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 6 }}>
                 <User size={19} color="#9A3B33" />
               </button>
