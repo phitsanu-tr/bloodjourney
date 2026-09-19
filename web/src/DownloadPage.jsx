@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { buildShareCardDataUrl, buildRecordShareCardDataUrl, CARD_SIZES, DEFAULT_CARD_SIZE } from "./App.jsx";
+import { buildShareCardDataUrl, buildRecordShareCardDataUrl, CARD_SIZES, DEFAULT_CARD_SIZE, verifyShareParams } from "./App.jsx";
 
 // Standalone "download landing page" — opened via liff.openWindow({external:
 // true}) from inside the main app's share-card modal, specifically to escape
@@ -58,7 +58,7 @@ function readParams() {
 
 export default function DownloadPage() {
   const [dataUrl, setDataUrl] = useState("");
-  const [status, setStatus] = useState("generating"); // generating | ready | error
+  const [status, setStatus] = useState("generating"); // generating | ready | error | invalid
   const autoTriggeredRef = useRef(false);
   const parsed = useRef(readParams()).current;
 
@@ -68,16 +68,26 @@ export default function DownloadPage() {
       return;
     }
     let cancelled = false;
-    const build = parsed.kind === "record" ? buildRecordShareCardDataUrl : buildShareCardDataUrl;
-    build(parsed.data)
-      .then((url) => {
-        if (cancelled) return;
-        setDataUrl(url);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
+    // Only render a card built from a link this app's own share flow
+    // actually signed (see signShareParams/verifyShareParams) — otherwise
+    // anyone could hand-craft this URL with fabricated numbers.
+    verifyShareParams(new URLSearchParams(window.location.search)).then((ok) => {
+      if (cancelled) return;
+      if (!ok) {
+        setStatus("invalid");
+        return;
+      }
+      const build = parsed.kind === "record" ? buildRecordShareCardDataUrl : buildShareCardDataUrl;
+      build(parsed.data)
+        .then((url) => {
+          if (cancelled) return;
+          setDataUrl(url);
+          setStatus("ready");
+        })
+        .catch(() => {
+          if (!cancelled) setStatus("error");
+        });
+    });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -136,6 +146,14 @@ export default function DownloadPage() {
           <h1 style={{ fontSize: 18, margin: "0 0 10px" }}>สร้างภาพไม่สำเร็จ</h1>
           <p style={{ fontSize: 14, color: "#6B5854", lineHeight: 1.6 }}>
             ลิงก์นี้อาจไม่สมบูรณ์ — กลับไปที่แอปแล้วลองกดใหม่อีกครั้ง
+          </p>
+        </div>
+      )}
+      {status === "invalid" && (
+        <div style={{ maxWidth: 360 }}>
+          <h1 style={{ fontSize: 18, margin: "0 0 10px" }}>ลิงก์นี้ใช้ไม่ได้แล้ว</h1>
+          <p style={{ fontSize: 14, color: "#6B5854", lineHeight: 1.6 }}>
+            ลิงก์อาจหมดอายุหรือไม่ได้มาจากแอป Blood Journey โดยตรง — กลับไปที่แอปแล้วกดปุ่มแชร์ใหม่อีกครั้ง
           </p>
         </div>
       )}

@@ -490,6 +490,64 @@ export const CARD_SIZES = {
 };
 export const DEFAULT_CARD_SIZE = "portrait45";
 
+// --- Share-link signing -----------------------------------------------
+// The external-browser download page (?dl=1&...) rebuilds the share card
+// purely from URL params, since LINE's embedded WebView and the external
+// browser it opens are separate browser contexts with no shared storage —
+// there's no way to hand off the already-generated image directly, only
+// small params. Left unchecked, that means anyone could hand-type a URL
+// with fabricated numbers (donation count, badge tier, monk status) and
+// get a "real-looking" card. This signs every link with an HMAC so a page
+// only renders when the params came from this app's own share flow, and
+// makes the link expire after a few minutes so a copied/leaked link can't
+// be replayed later.
+//
+// Caveat (by design, not an oversight): this secret ships inside the
+// client JS bundle, same as any purely client-side app with no backend.
+// Anyone willing to open dev tools and read the minified bundle can
+// extract it and forge a signature too. This raises the bar against
+// casual URL-guessing/editing — it does not, and architecturally cannot,
+// provide airtight protection without a server that independently knows
+// the real donation data, which this local-storage-only app deliberately
+// doesn't have.
+const SHARE_LINK_SECRET = "bj-share-2c6f4e91a8d3";
+const SHARE_LINK_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function canonicalizeShareParams(params) {
+  const entries = [];
+  for (const [k, v] of params.entries()) {
+    if (k === "sig") continue;
+    entries.push([k, v]);
+  }
+  entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  return entries.map(([k, v]) => `${k}=${v}`).join("&");
+}
+
+async function computeHmacHex(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  return Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export async function signShareParams(params) {
+  return computeHmacHex(SHARE_LINK_SECRET, canonicalizeShareParams(params));
+}
+
+export async function verifyShareParams(params) {
+  try {
+    const sig = params.get("sig");
+    const ts = Number(params.get("ts"));
+    if (!sig || !ts) return false;
+    const age = Date.now() - ts;
+    if (age > SHARE_LINK_TTL_MS || age < -60 * 1000) return false; // expired, or timestamp from the future beyond clock skew
+    const expected = await signShareParams(params);
+    return expected === sig;
+  } catch (e) {
+    return false;
+  }
+}
+
 function wrapCanvasText(ctx, text, maxWidth, maxLines) {
   const words = text.split(" ");
   const lines = [];
@@ -2396,7 +2454,7 @@ function AppInner() {
   // card from URL params and auto-triggers the save there. Only offered
   // inside LINE — regular browser tabs already have working download/share
   // buttons and don't need this detour.
-  const openShareCardInExternalBrowser = () => {
+  const openShareCardInExternalBrowser = async () => {
     try {
       const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
       const params = new URLSearchParams();
@@ -2425,6 +2483,11 @@ function AppInner() {
       } else {
         return;
       }
+      // Sign + timestamp the link so the download page only renders it when
+      // it genuinely came from this share flow (see verifyShareParams).
+      params.set("ts", String(Date.now()));
+      const sig = await signShareParams(params);
+      params.set("sig", sig);
       const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
       liff.openWindow({ url, external: true });
     } catch (e) {
