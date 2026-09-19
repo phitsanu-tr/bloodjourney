@@ -532,6 +532,13 @@ export const DEFAULT_CARD_SIZE = "portrait45";
 // the real donation data, which this local-storage-only app deliberately
 // doesn't have.
 const SHARE_LINK_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const SHARE_LINK_TAG_BITS = 64; // AES-GCM default is 128; halving the auth
+// tag halves its fixed per-token overhead. Forgery odds without the key go
+// from ~1-in-2^128 to ~1-in-2^64 — astronomically still safe against
+// someone editing a URL by hand, which is the actual threat model here.
+const SHARE_LINK_EPOCH_MS = Date.UTC(2025, 0, 1); // reference point for the
+// compact timestamp/date fields below, so they can be small integers
+// instead of full millisecond-since-1970 values.
 
 // The key seed isn't a plain string constant on purpose — a literal like
 // `"bj-share-..."` sitting next to `crypto.subtle` / `"AES-GCM"` is exactly
@@ -580,41 +587,129 @@ function base64UrlToBytes(str) {
   return bytes;
 }
 
-// Encrypts `payloadArray` (a plain array — see openShareCardInExternalBrowser
-// for the field order) plus a fresh timestamp into one opaque, URL-safe
-// token — this is what goes in the `d` param. Deliberately a positional
-// array rather than a {field: value} object: JSON field names ("totalCount",
-// "estVolumeMl", ...) cost real bytes that then get encrypted and
-// base64-inflated right along with the actual data, so dropping them cuts
-// the finished token noticeably — the trade is that encode/decode must
-// agree on field order, which is why both live in this file (and its
-// DownloadPage.jsx mirror) with the order spelled out in a comment.
-export async function encodeShareToken(payloadArray) {
+// --- Compact binary payload -------------------------------------------
+// A JSON array (even the field-name-free version this replaces) still has
+// syntax overhead — digits for a 13-digit millisecond timestamp, comma/
+// quote characters — that costs real bytes once encrypted+base64'd.
+// Packing the payload into a small byte buffer with fixed-width integers
+// and bit-flags removes that overhead outright; nickname/location are the
+// only genuinely variable-length parts left, since they're real user text
+// with no formula to shrink them by.
+//
+// Byte layout (see openShareCardInExternalBrowser for how it's built):
+//   [0]     flags — bit0 kind (0=record,1=achievement) | bits1-2 sizeIdx
+//           | bit3 type/akind (0=whole|pin, 1=component|medal)
+//           | bit4 isMonk | bits5-7 bloodType (0=A,1=B,2=AB,3=O,4=other)
+//   [1..3]  minutes since SHARE_LINK_EPOCH_MS, uint24 big-endian (the
+//           link's own timestamp, used for the expiry check)
+//   achievement: [4..5] totalCount uint16 | [6] tier | [7] threshold
+//                | [8..] nickname: 1-byte length + UTF-8 bytes
+//   record:      [4..5] order uint16 | [6..7] days-since-epoch uint16
+//                | [8..9] minutes-since-midnight uint16 (0xFFFF = none)
+//                | [..]  location: 1-byte length + UTF-8 bytes
+//                | [..]  nickname: 1-byte length + UTF-8 bytes
+const BLOOD_TYPE_CODES = { A: 0, B: 1, AB: 2, O: 3 };
+const BLOOD_TYPE_FROM_CODE = ["A", "B", "AB", "O", ""];
+
+function pushLenStr(out, str) {
+  let bytes = Array.from(new TextEncoder().encode(str || ""));
+  if (bytes.length > 255) bytes = bytes.slice(0, 255); // realistically only a pasted-in location could hit this
+  out.push(bytes.length, ...bytes);
+}
+function readLenStr(bytes, offset) {
+  const len = bytes[offset];
+  const str = new TextDecoder().decode(bytes.slice(offset + 1, offset + 1 + len));
+  return [str, offset + 1 + len];
+}
+
+function encodeSharePayload(payload) {
+  const out = [];
+  const sizeIdx = payload.sizeIdx & 0b11;
+  const bloodCode = BLOOD_TYPE_CODES[payload.bloodType] ?? 4;
+  const isAchievement = payload.kind === "a";
+  const flagBit3 = isAchievement ? (payload.akind === "m" ? 1 : 0) : (payload.type === "c" ? 1 : 0);
+  const flags = (isAchievement ? 1 : 0) | (sizeIdx << 1) | (flagBit3 << 3)
+    | ((isAchievement && payload.isMonk ? 1 : 0) << 4) | (bloodCode << 5);
+  out.push(flags & 0xff);
+
+  const minutes = Math.max(0, Math.min(0xffffff, Math.round((Date.now() - SHARE_LINK_EPOCH_MS) / 60000)));
+  out.push((minutes >> 16) & 0xff, (minutes >> 8) & 0xff, minutes & 0xff);
+
+  if (isAchievement) {
+    const totalCount = Number(payload.totalCount) || 0;
+    out.push((totalCount >> 8) & 0xff, totalCount & 0xff, (Number(payload.tier) || 0) & 0xff, (Number(payload.threshold) || 0) & 0xff);
+    pushLenStr(out, payload.nickname);
+  } else {
+    const order = Number(payload.order) || 0;
+    out.push((order >> 8) & 0xff, order & 0xff);
+    const dateMs = payload.date ? parseLocalDate(payload.date).getTime() : NaN;
+    const days = Number.isFinite(dateMs) ? Math.max(0, Math.min(0xffff, Math.round((dateMs - SHARE_LINK_EPOCH_MS) / 86400000))) : 0;
+    out.push((days >> 8) & 0xff, days & 0xff);
+    let mins = 0xffff;
+    if (payload.timeStr && /^\d{1,2}:\d{2}$/.test(payload.timeStr)) {
+      const [h, m] = payload.timeStr.split(":").map(Number);
+      mins = (h * 60 + m) & 0xffff;
+    }
+    out.push((mins >> 8) & 0xff, mins & 0xff);
+    pushLenStr(out, payload.location);
+    pushLenStr(out, payload.nickname);
+  }
+  return new Uint8Array(out);
+}
+
+function decodeSharePayload(bytes) {
+  const flags = bytes[0];
+  const kind = flags & 1 ? "a" : "r";
+  const sizeIdx = (flags >> 1) & 0b11;
+  const flagBit3 = (flags >> 3) & 1;
+  const isMonk = !!((flags >> 4) & 1);
+  const bloodType = BLOOD_TYPE_FROM_CODE[(flags >> 5) & 0b111] || "";
+  const minutes = (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+  const ts = SHARE_LINK_EPOCH_MS + minutes * 60000;
+
+  if (kind === "a") {
+    const totalCount = (bytes[4] << 8) | bytes[5];
+    const [nickname] = readLenStr(bytes, 8);
+    return { kind, sizeIdx, totalCount, tier: bytes[6], threshold: bytes[7], akind: flagBit3 ? "m" : "p", isMonk, bloodType, nickname, ts };
+  }
+  const order = (bytes[4] << 8) | bytes[5];
+  const days = (bytes[6] << 8) | bytes[7];
+  const minsOfDay = (bytes[8] << 8) | bytes[9];
+  const [location, off] = readLenStr(bytes, 10);
+  const [nickname] = readLenStr(bytes, off);
+  const dateObj = new Date(SHARE_LINK_EPOCH_MS + days * 86400000);
+  const timeStr = minsOfDay === 0xffff ? "" : `${String(Math.floor(minsOfDay / 60)).padStart(2, "0")}:${String(minsOfDay % 60).padStart(2, "0")}`;
+  return { kind, sizeIdx, order, dateObj, timeStr, type: flagBit3 ? "c" : "w", location, bloodType, nickname, ts };
+}
+
+// Packs `payload` (see openShareCardInExternalBrowser for its shape) into
+// the compact binary layout above, then AES-GCM encrypts it into one
+// opaque, URL-safe token — this is what goes in the `d` param.
+export async function encodeShareToken(payload) {
   const key = await getShareLinkKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const plaintext = new TextEncoder().encode(JSON.stringify([...payloadArray, Date.now()]));
-  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const plaintext = encodeSharePayload(payload);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv, tagLength: SHARE_LINK_TAG_BITS }, key, plaintext);
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(ciphertext), iv.length);
   return bytesToBase64Url(combined);
 }
 
-// Reverses encodeShareToken(): returns the original payload array (with the
-// trailing timestamp stripped off) if the token decrypts cleanly and isn't
-// expired, or null if it's tampered, malformed, or too old to trust.
+// Reverses encodeShareToken(): returns the decoded payload object if the
+// token decrypts cleanly and isn't expired, or null if it's tampered,
+// malformed, or too old to trust.
 export async function decodeShareToken(token) {
   try {
     const key = await getShareLinkKey();
     const combined = base64UrlToBytes(token);
     const iv = combined.slice(0, 12);
     const ciphertext = combined.slice(12);
-    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
-    const arr = JSON.parse(new TextDecoder().decode(plainBuf));
-    const ts = arr[arr.length - 1];
-    const age = Date.now() - (ts || 0);
+    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv, tagLength: SHARE_LINK_TAG_BITS }, key, ciphertext);
+    const payload = decodeSharePayload(new Uint8Array(plainBuf));
+    const age = Date.now() - payload.ts;
     if (age > SHARE_LINK_TTL_MS || age < -60 * 1000) return null; // expired, or timestamp from the future beyond clock skew
-    return arr.slice(0, -1);
+    return payload;
   } catch (e) {
     return null; // wrong key, tampered ciphertext, or malformed token
   }
@@ -2535,35 +2630,34 @@ function AppInner() {
       const sizeIdx = Object.keys(CARD_SIZES).indexOf(size.key);
       let payload;
       if (shareRecordData) {
-        // Positional array, single-char/numeric codes where possible (see
-        // encodeShareToken for why) — DownloadPage.jsx's buildParsedFromPayload
-        // must read this back in the exact same order:
-        // [kind, sizeIdx, order, date, timeStr, type, location, bloodType, nickname]
-        payload = [
-          "r",
+        // Field shape consumed by encodeSharePayload — see its comment for
+        // the exact byte layout this gets packed into.
+        payload = {
+          kind: "r",
           sizeIdx,
-          shareRecordData.order ?? "",
-          shareRecordData.date || "",
-          shareRecordData.timeStr || "",
-          shareRecordData.type === "component" ? "c" : "w",
-          shareRecordData.location || "",
-          shareRecordData.bloodType || "",
-          shareRecordData.nickname || "",
-        ];
+          order: shareRecordData.order ?? 0,
+          date: shareRecordData.date || "",
+          timeStr: shareRecordData.timeStr || "",
+          type: shareRecordData.type === "component" ? "c" : "w",
+          location: shareRecordData.location || "",
+          bloodType: shareRecordData.bloodType || "",
+          nickname: shareRecordData.nickname || "",
+        };
       } else if (shareData) {
-        // [kind, sizeIdx, totalCount, estVolumeMl, akind, tier, threshold, isMonk, bloodType, nickname]
-        payload = [
-          "a",
+        // estVolumeMl isn't included — it's always totalCount*350 (see
+        // openShareCard), so DownloadPage.jsx recomputes it instead of
+        // carrying a redundant field.
+        payload = {
+          kind: "a",
           sizeIdx,
-          shareData.totalCount ?? 0,
-          shareData.estVolumeMl ?? 0,
-          shareData.achievement?.kind === "medal" ? "m" : "p",
-          shareData.achievement?.tier ?? 0,
-          shareData.achievement?.threshold ?? 0,
-          shareData.achievement?.isMonk ? 1 : 0,
-          shareData.bloodType || "",
-          shareData.nickname || "",
-        ];
+          totalCount: shareData.totalCount ?? 0,
+          akind: shareData.achievement?.kind === "medal" ? "m" : "p",
+          tier: shareData.achievement?.tier ?? 0,
+          threshold: shareData.achievement?.threshold ?? 0,
+          isMonk: !!shareData.achievement?.isMonk,
+          bloodType: shareData.bloodType || "",
+          nickname: shareData.nickname || "",
+        };
       } else {
         return;
       }
