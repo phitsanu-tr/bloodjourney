@@ -3764,20 +3764,26 @@ function AppInner() {
           to { opacity: 1; }
         }
         /* On a viewport wider than a phone (desktop browser, dev server,
-           etc.) the 420px-wide content column used to just float in the
-           middle of a mostly-empty page — with only the column itself
-           visible in a cropped screenshot, that reads as "the text is
-           centered" even though every line inside is left-aligned as
-           normal. Framing it as a card on wide screens makes it obvious
-           it's a phone-width app sitting on a page background, not
-           centered text. Below this width (actual phones) nothing changes. */
+           etc.) the 420px-wide content column sits on a page background
+           that's visible on the left and right (there's nowhere else for
+           the extra width to go — the app is phone-width by design). It
+           used to also float as a card with margin above and below,
+           looking like a shrunk phone screenshot pasted onto the page. On
+           request, this now stretches to the FULL viewport height instead
+           (no top/bottom margin, no rounded top/bottom corners) so it
+           reads as a real full-height app column, not a floating card —
+           the pink page background only ever shows on the sides now,
+           never above or below. The soft blur-only box-shadow (no offset)
+           still shows on the visible left/right edges for a bit of depth,
+           and naturally falls outside the viewport at the now-flush top
+           and bottom, so it doesn't need to be conditioned separately.
+           Below this width (actual phones) nothing changes. */
         @media (min-width: 480px) {
           .app-shell {
-            margin: 28px auto !important;
+            margin: 0 auto !important;
             background: #FFFFFF;
-            border-radius: 28px;
-            box-shadow: 0 24px 64px -20px rgba(122,42,35,0.28), 0 0 0 1px #F0DEDA;
-            min-height: calc(100vh - 56px);
+            box-shadow: 0 0 40px rgba(122,42,35,0.14), 0 0 0 1px #F0DEDA;
+            min-height: 100vh;
           }
         }
         /* Date + time inputs: always stack full-width instead of sitting
