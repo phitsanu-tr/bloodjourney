@@ -143,7 +143,7 @@ const MIN_CYCLE_DAYS = 7;
 const MAX_CYCLE_DAYS = 365;
 const MIN_AGE = 17;
 const MAX_AGE = 70;
-const MIN_WEIGHT = 50;
+const MIN_WEIGHT = 45; // matches ELIGIBILITY_CRITERIA text and the locked criteria in the handoff doc (was inconsistently 50 here)
 const MAX_STARTING_COUNT = 999;
 const BLOOD_TYPES = ["A", "B", "AB", "O", "ไม่ทราบ"];
 // Thai consonants/vowels/tone marks (U+0E01–U+0E3A, U+0E40–U+0E4E) — this
@@ -571,6 +571,27 @@ function AchievementIcon({ achievement, isMonk, size = 22 }) {
   return <MedalIcon tier={achievement.tier} size={size} />;
 }
 
+// One row of the auto-checked criteria list on the "เช็คคุณสมบัติก่อนบริจาค"
+// page — pass (green check) / fail (red x) / unknown (gray, missing profile
+// data) share the same layout, so this is just the status → color/icon map.
+function EligibilityCheckRow({ label, status, detail }) {
+  const cfg = status === "pass"
+    ? { Icon: CheckCircle2, color: "#3A7D5C" }
+    : status === "fail"
+      ? { Icon: AlertTriangle, color: "#B3261E" }
+      : { Icon: Info, color: "#B39B96" };
+  const { Icon, color } = cfg;
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0" }}>
+      <Icon size={17} color={color} style={{ marginTop: 1, flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 12, color: "#8A7370", lineHeight: 1.5 }}>{detail}</div>
+      </div>
+    </div>
+  );
+}
+
 const PRE_DONATION_TIPS = [
   { icon: Moon, text: "นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 6 ชั่วโมงก่อนวันบริจาค" },
   { icon: Utensils, text: "ทานอาหารมาก่อน ห้ามบริจาคขณะท้องว่าง" },
@@ -604,6 +625,53 @@ const DONATION_BENEFITS = [
   { icon: HeartPulse, text: "กระตุ้นการสร้างเม็ดเลือดใหม่ในร่างกาย" },
   { icon: Gauge, text: "ได้ตรวจสุขภาพเบื้องต้นฟรีทุกครั้ง (ความดัน ชีพจร ฮีโมโกลบิน)" },
   { icon: Sparkles, text: "ช่วยเหลือผู้ป่วยที่ต้องการโลหิตในการรักษา" },
+];
+
+// FAQ content is specifically about using THIS APP (data/privacy, LINE
+// quirks, how features work) — general blood-donation knowledge already has
+// its own place in the "ให้ความรู้" (knowledge) tab, so this list
+// deliberately doesn't duplicate that.
+const APP_FAQ_ITEMS = [
+  {
+    q: "ข้อมูลที่ฉันกรอกไว้เก็บอยู่ที่ไหน ปลอดภัยแค่ไหน",
+    a: "เก็บอยู่ในเครื่อง/เบราว์เซอร์ของคุณเท่านั้น ไม่มีเซิร์ฟเวอร์กลางเก็บข้อมูลผู้ใช้ และผู้พัฒนาแอปเข้าถึงข้อมูลของคุณไม่ได้เลย ดูรายละเอียดเพิ่มเติมได้ที่นโยบายความเป็นส่วนตัว (ตั้งค่า → ความเป็นส่วนตัว)",
+  },
+  {
+    q: "แอปนี้เชื่อมต่อหรือดึงข้อมูลจากระบบของสภากาชาดไทยหรือไม่",
+    a: "ไม่เชื่อมต่อ แอปนี้พัฒนาโดยอิสระ ข้อมูลทั้งหมดมาจากที่คุณกรอกเองเท่านั้น ไม่ได้ดึงหรือส่งข้อมูลไปยังระบบของสภากาชาดไทยหรือหน่วยงานใด",
+  },
+  {
+    q: "ถ้าเปลี่ยนเครื่อง ลง LINE ใหม่ หรือล้างแคช ข้อมูลจะหายไหม",
+    a: "มีความเสี่ยงที่ข้อมูลจะหาย เพราะข้อมูลอยู่ในเครื่องเดิมเท่านั้นและไม่มีการซิงก์อัตโนมัติ แนะนำให้กด \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเก็บเป็นไฟล์สำรองไว้เป็นระยะ แล้วนำเข้าใหม่ได้เมื่อเปลี่ยนเครื่อง",
+  },
+  {
+    q: "ทำไมเปิดลิงก์แอปผ่าน Chrome/Safari ตรง ๆ (ไม่ผ่าน LINE) ไม่ได้",
+    a: "แอปนี้ตั้งใจให้เปิดผ่าน LINE เท่านั้น เพื่อให้ผู้ใช้เข้าถึงจากช่องทางเดียวที่ชัดเจน หากต้องการใช้งาน ให้เปิดผ่านริชเมนูหรือลิงก์ในแชทของ LINE Official Account",
+  },
+  {
+    q: "เข็มที่ระลึกและเหรียญกาชาดสมนาคุณนับจากอะไร",
+    a: "นับจากจำนวนครั้งสะสมที่คุณบันทึกไว้ในแอป อ้างอิงเกณฑ์จากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย แต่สิทธิ์ที่ได้รับจริงควรยืนยันกับเจ้าหน้าที่ ณ จุดบริจาคอีกครั้ง เพราะแอปไม่มีการเชื่อมต่อกับระบบของสภากาชาดไทย",
+  },
+  {
+    q: "ลืมบันทึกบางครั้งไปแล้ว ย้อนกลับมาเพิ่มทีหลังได้ไหม",
+    a: "ได้ เพิ่ม แก้ไข หรือลบรายการบริจาคย้อนหลังได้ตลอดเวลาที่หน้าหลัก",
+  },
+  {
+    q: "เจอปัญหาการใช้งานหรือมีข้อเสนอแนะ ต้องแจ้งยังไง",
+    a: "แจ้งผ่านปุ่ม \"แจ้งปัญหา\" ในริชเมนูของ LINE Official Account ได้เลย",
+  },
+  {
+    q: "แอปนี้ฟรีไหม ใครเป็นผู้พัฒนา",
+    a: "ใช้งานได้ฟรี พัฒนาโดยผู้ใช้อิสระ ไม่ใช่ผลิตภัณฑ์ของสภากาชาดไทยหรือหน่วยงานราชการใด",
+  },
+  {
+    q: "ทำไมต้องกดยินยอมก่อนเริ่มใช้งาน",
+    a: "เพราะข้อมูลวันที่บริจาคโลหิตถือเป็นข้อมูลสุขภาพ ซึ่งเป็นข้อมูลอ่อนไหวตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) แอปจึงขอความยินยอมก่อนเริ่มเก็บข้อมูลเสมอ",
+  },
+  {
+    q: "อยากลบข้อมูลทั้งหมดหรือถอนความยินยอม ทำยังไง",
+    a: "ไปที่ตั้งค่า → ลบข้อมูลทั้งหมด ข้อมูลทุกอย่างในเครื่องจะถูกลบทันทีและกู้คืนไม่ได้",
+  },
 ];
 
 // Preset sizes matching how each platform actually displays a shared image,
@@ -1419,7 +1487,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
 // calling liff.init() (in case init() rewrites/clears the address bar) —
 // read once, lazily, from AppInner's useState initializer so this runs on
 // first render rather than at module-eval time.
-const VALID_TABS = ["home", "dashboard", "missions", "knowledge"];
+const VALID_TABS = ["home", "dashboard", "missions", "knowledge", "eligibility", "faq"];
 function initialTabFromUrl() {
   try {
     const raw = typeof window.__bjInitialSearch === "string" ? window.__bjInitialSearch : window.location.search;
@@ -1439,10 +1507,11 @@ function initialTabFromUrl() {
 
 function AppInner() {
   const [phase, setPhase] = useState("loading"); // loading | consent | app | error
-  const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge
+  const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge | eligibility | faq
   const [nickname, setNickname] = useState("");
   const [photo, setPhoto] = useState("");
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null); // index of the expanded FAQ item, or null
   const [photoBusy, setPhotoBusy] = useState(false);
   const photoCameraInputRef = useRef(null);
   const photoGalleryInputRef = useRef(null);
@@ -3137,6 +3206,25 @@ function AppInner() {
   const weightWarningDismissed = weight !== "" && Number(weight) === dismissedEligibilityWeight;
   const showEligibilityWarning = (ageOutOfRange && !ageWarningDismissed) || (weightBelowMin && !weightWarningDismissed);
 
+  // Feeds the "เช็คคุณสมบัติก่อนบริจาค" (?tab=eligibility) page — reuses the
+  // same profile fields and next-eligible-date math already computed above
+  // instead of asking the user to re-enter anything, per data-minimization.
+  const ageCheck = age === ""
+    ? { status: "unknown", detail: "ยังไม่ได้กรอกอายุที่หน้าโปรไฟล์" }
+    : ageOutOfRange
+      ? { status: "fail", detail: `อายุ ${age} ปี อยู่นอกเกณฑ์ (${MIN_AGE}-${MAX_AGE} ปี)` }
+      : { status: "pass", detail: `อายุ ${age} ปี อยู่ในเกณฑ์ (${MIN_AGE}-${MAX_AGE} ปี)` };
+  const weightCheck = weight === ""
+    ? { status: "unknown", detail: "ยังไม่ได้กรอกน้ำหนักที่หน้าโปรไฟล์" }
+    : weightBelowMin
+      ? { status: "fail", detail: `น้ำหนัก ${weight} กก. ต่ำกว่าเกณฑ์ขั้นต่ำ (${MIN_WEIGHT} กก.)` }
+      : { status: "pass", detail: `น้ำหนัก ${weight} กก. อยู่ในเกณฑ์ (ขั้นต่ำ ${MIN_WEIGHT} กก.)` };
+  const intervalCheck = !effectiveLastDateStr
+    ? { status: "pass", detail: "ยังไม่มีประวัติบริจาคในแอป ถือว่าเว้นระยะครบแล้ว" }
+    : nextEligible && Date.now() >= nextEligible.getTime()
+      ? { status: "pass", detail: `ครบกำหนดแล้วตั้งแต่วันที่ ${toBuddhistDate(nextEligible)}` }
+      : { status: "fail", detail: `ยังไม่ครบกำหนด — บริจาคได้อีกครั้งวันที่ ${toBuddhistDate(nextEligible)}` };
+
   const achievements = useMemo(() => buildAchievements(donorType), [donorType]);
   const medalAchievements = useMemo(() => achievements.filter(a => a.kind === "medal"), [achievements]);
   const pinAchievements = useMemo(() => achievements.filter(a => a.kind === "pin"), [achievements]);
@@ -4540,6 +4628,88 @@ function AppInner() {
 
               <p style={{ fontSize: 11, color: "#B39B96", lineHeight: 1.6 }}>
                 ข้อมูลทั่วไปเพื่อความรู้เบื้องต้นเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์เฉพาะบุคคล หากมีข้อสงสัยให้สอบถามเจ้าหน้าที่ ณ จุดบริจาคโดยตรง
+              </p>
+            </>
+          )}
+
+          {tab === "eligibility" && (
+            <>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 4 }}>เช็คคุณสมบัติก่อนบริจาคโลหิต</div>
+              <p style={{ fontSize: 12.5, color: "#8A7370", margin: "0 0 18px", lineHeight: 1.6 }}>
+                เช็คเบื้องต้นจากข้อมูลโปรไฟล์และประวัติที่คุณบันทึกไว้ในแอปเอง — เป็นข้อมูลเบื้องต้นเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์และไม่ผูกกับระบบของสภากาชาดไทย
+              </p>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <ShieldCheck size={16} color="#9A3B33" />
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เช็คอัตโนมัติจากข้อมูลของคุณ</div>
+              </div>
+              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 10 }}>
+                <EligibilityCheckRow label="อายุ" status={ageCheck.status} detail={ageCheck.detail} />
+                <div style={{ borderTop: "1px solid #F3EAE8" }} />
+                <EligibilityCheckRow label="น้ำหนัก" status={weightCheck.status} detail={weightCheck.detail} />
+                <div style={{ borderTop: "1px solid #F3EAE8" }} />
+                <EligibilityCheckRow label="ระยะห่างจากการบริจาคครั้งก่อน" status={intervalCheck.status} detail={intervalCheck.detail} />
+              </div>
+              {(ageCheck.status === "unknown" || weightCheck.status === "unknown") && (
+                <button onClick={openProfile} style={{ display: "inline-block", marginBottom: 18, background: "none", border: "none", padding: 0, fontSize: 12.5, color: "#9A3B33", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
+                  ไปกรอกข้อมูลโปรไฟล์
+                </button>
+              )}
+              {ageCheck.status !== "unknown" && weightCheck.status !== "unknown" && <div style={{ marginBottom: 8 }} />}
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <Info size={16} color="#9A3B33" />
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เกณฑ์อื่น ๆ ที่ต้องประเมินเอง</div>
+              </div>
+              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: "1px solid #F3EAE8" }}>
+                  <AlertTriangle size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
+                  <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>ไม่มีไข้หรืออาการป่วยในช่วง 14 วันที่ผ่านมา</div>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0" }}>
+                  <ShieldCheck size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
+                  <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>ไม่มีพฤติกรรมเสี่ยงตามเกณฑ์ของสภากาชาดไทย</div>
+                </div>
+              </div>
+
+              <p style={{ fontSize: 11, color: "#B39B96", lineHeight: 1.6 }}>
+                ผลเช็คนี้เป็นเพียงข้อมูลเบื้องต้นจากสิ่งที่คุณกรอกไว้ในแอปเท่านั้น กรุณายืนยันคุณสมบัติจริงกับเจ้าหน้าที่ ณ จุดบริจาคทุกครั้ง
+              </p>
+            </>
+          )}
+
+          {tab === "faq" && (
+            <>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 4 }}>คำถามที่พบบ่อย</div>
+              <p style={{ fontSize: 12.5, color: "#8A7370", margin: "0 0 18px", lineHeight: 1.6 }}>
+                คำถามที่พบบ่อยเกี่ยวกับการใช้งานแอปนี้
+              </p>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "0 15px", marginBottom: 18 }}>
+                {APP_FAQ_ITEMS.map((item, i) => {
+                  const isOpen = openFaqIndex === i;
+                  return (
+                    <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                      <button
+                        onClick={() => setOpenFaqIndex(isOpen ? null : i)}
+                        aria-expanded={isOpen}
+                        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+                      >
+                        <span style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>{item.q}</span>
+                        <span style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+                      </button>
+                      {isOpen && (
+                        <div style={{ fontSize: 12.5, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
+                          {item.a}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p style={{ fontSize: 11, color: "#B39B96", lineHeight: 1.6 }}>
+                ไม่พบคำตอบที่ต้องการ? แจ้งผ่านปุ่ม "แจ้งปัญหา" ในริชเมนูของ LINE Official Account ได้เลย
               </p>
             </>
           )}
