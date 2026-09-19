@@ -534,9 +534,9 @@ function PinIcon({ size = 22 }) {
     <svg width={size} height={Math.round(size * 1.15)} viewBox="0 0 32 37" fill="none" aria-hidden="true">
       <path d="M16 2 L19 8 L26 8 L20 12 L22 18 L16 14 L10 18 L12 12 L6 8 L13 8 Z" fill="#E8C349" stroke="#A9821E" strokeWidth="0.6" />
       <rect x="14.3" y="3.5" width="3.4" height="6.5" fill="#B3261E" />
-      <path d="M16 14 C16 14 6 20.5 6 27 C6 31.7 10.7 35 16 35 C21.3 35 26 31.7 26 27 C26 20.5 16 14 16 14 Z" fill="#C0392B" stroke="#A9821E" strokeWidth="1" />
+      <path d="M16 14 C16 14 6 20.5 6 27 C6 31.7 10.7 35 16 35 C21.3 35 26 31.7 26 27 C26 20.5 16 14 16 14 Z" fill="#B3261E" stroke="#A9821E" strokeWidth="1" />
       <ellipse cx="16" cy="24.5" rx="7" ry="8" fill="#FFF7F0" />
-      <path d="M16 19.5 C16 19.5 12 24.5 12 27 C12 28.9 13.8 30.5 16 30.5 C18.2 30.5 20 28.9 20 27 C20 24.5 16 19.5 16 19.5 Z" fill="#8A1620" />
+      <path d="M16 19.5 C16 19.5 12 24.5 12 27 C12 28.9 13.8 30.5 16 30.5 C18.2 30.5 20 28.9 20 27 C20 24.5 16 19.5 16 19.5 Z" fill="#B3261E" />
     </svg>
   );
 }
@@ -960,7 +960,7 @@ function drawPinBadgeCanvas(ctx, r) {
   ctx.bezierCurveTo(r * 0.75, -r * 0.55, r * 0.75, r * 0.35, 0, r * 0.85);
   ctx.bezierCurveTo(-r * 0.75, r * 0.35, -r * 0.75, -r * 0.55, 0, -r * 0.05);
   ctx.closePath();
-  ctx.fillStyle = "#C0392B";
+  ctx.fillStyle = "#B3261E";
   ctx.fill();
 
   ctx.beginPath();
@@ -973,7 +973,7 @@ function drawPinBadgeCanvas(ctx, r) {
   ctx.bezierCurveTo(r * 0.2, r * 0.18, r * 0.2, r * 0.38, 0, r * 0.42);
   ctx.bezierCurveTo(-r * 0.2, r * 0.38, -r * 0.2, r * 0.18, 0, -r * 0.05);
   ctx.closePath();
-  ctx.fillStyle = "#8A1620";
+  ctx.fillStyle = "#B3261E";
   ctx.fill();
 
   ctx.beginPath();
@@ -3910,9 +3910,9 @@ function AppInner() {
                 // loss rather than just a reminder. Stays up for the rest of
                 // the session until storage actually starts working again.
                 <div style={{ background: "#FDEDED", border: "1px solid #F0C4C0", borderRadius: 14, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
-                  <AlertTriangle size={16} color="#A13328" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <AlertTriangle size={16} color="#B3261E" style={{ marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#A13328" }}>ข้อมูลจะไม่ถูกบันทึกถาวรตอนนี้</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#B3261E" }}>ข้อมูลจะไม่ถูกบันทึกถาวรตอนนี้</div>
                     <div style={{ fontSize: 11.5, color: "#8A5450", marginTop: 3, lineHeight: 1.6 }}>อุปกรณ์นี้บล็อกการบันทึกข้อมูลถาวร (เช่น โหมดส่วนตัว/พื้นที่เก็บข้อมูลเต็ม) รายการที่บันทึกไว้จะหายเมื่อปิดแอป — แนะนำให้ส่งออกไฟล์สำรองก่อนปิด</div>
                   </div>
                 </div>
