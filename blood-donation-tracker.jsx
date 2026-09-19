@@ -3877,7 +3877,7 @@ function AppInner() {
               still guaranteeing 60px (13+34+13, matching the 34px logo)
               when there's no notch to clear. Keep this in sync with the
               app-shell's compensating top padding above if it changes. */}
-          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderBottom: "1px solid #F0E0DC", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
+          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
@@ -3900,7 +3900,7 @@ function AppInner() {
       )}
 
       {phase === "app" && (
-        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 1px + 24px) 20px 88px" }}>
+        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px 88px" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
