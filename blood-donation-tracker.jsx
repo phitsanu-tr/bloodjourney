@@ -3686,10 +3686,15 @@ function AppInner() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
-        /* Hides the scrollbar track/thumb on scrollable modal panels while
-           keeping them fully scrollable (touch/wheel/keyboard all still
-           work) -- covers Firefox, older IE/Edge, and the WebKit/Blink
-           family (Chrome, Safari, Android WebView, iOS WKWebView/LINE). */
+        /* Hides scrollbar tracks/thumbs app-wide -- both the main page's own
+           scroll (every tab: home, dashboard, missions, knowledge, etc, all
+           share one scrolling document body) and every scrollable modal
+           panel below -- while keeping everything fully scrollable
+           (touch/wheel/keyboard all still work). Covers Firefox, older
+           IE/Edge, and the WebKit/Blink family (Chrome, Safari, Android
+           WebView, iOS WKWebView/LINE). */
+        html, body { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
