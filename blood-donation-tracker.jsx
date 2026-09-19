@@ -92,7 +92,7 @@ function daysBetween(a, b) {
 // blocking today's real date from being selected in the early morning, new
 // donation forms defaulting to yesterday's date, and the reminder dismiss
 // "see you tomorrow" resetting hours earlier than an actual local midnight.
-function dateToLocalStr(d) {
+export function dateToLocalStr(d) {
   const date = new Date(d);
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -118,7 +118,7 @@ function parseLocalDate(d) {
   if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T00:00:00`);
   return new Date(d);
 }
-function buildIcsForReminder(date, title) {
+export function buildIcsForReminder(date, title) {
   const dt = new Date(date);
   const y = dt.getFullYear();
   const m = String(dt.getMonth() + 1).padStart(2, "0");
@@ -1502,6 +1502,11 @@ function AppInner() {
   // and closeShareCard keep them mutually exclusive.
   const [shareRecordData, setShareRecordData] = useState(null);
   const [cardSizeKey, setCardSizeKey] = useState(DEFAULT_CARD_SIZE);
+  // When true, shows the small "Google Calendar / .ics" choice popover next
+  // to the "เพิ่มลงปฏิทิน" button (see handleAddToCalendar) instead of
+  // picking one automatically — non-native builds only, since the native
+  // app's OS share sheet already lets the user pick their calendar app.
+  const [showCalendarChoice, setShowCalendarChoice] = useState(false);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
@@ -2932,13 +2937,17 @@ function AppInner() {
   // Rough, clearly-labeled estimate only (350ml/donation) — not meant to be
   // precise, just to give the cumulative count some tangible meaning.
   const estLiters = Math.round(totalCount * 0.35 * 10) / 10;
+  // Native app: a real .ics file through the OS share sheet already lets the
+  // user pick whichever calendar app they use — no ambiguity to resolve, so
+  // this bypasses the popover entirely. Non-native: opens the small
+  // "Google Calendar / .ics" choice popover instead of guessing, since
+  // Google Calendar only helps someone who actually uses a Google account —
+  // an iOS user on Apple's own Calendar app needs the .ics option instead
+  // (see addToCalendarIcs).
   const handleAddToCalendar = async () => {
     if (!nextEligible) return;
-    const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
     if (isNativeApp) {
-      // Real .ics file through the OS share sheet, where the user can pick
-      // Calendar directly — the packaged app has no LINE-WebView download
-      // restriction to work around, unlike the LIFF web build below.
+      const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
       try {
         const ics = buildIcsForReminder(nextEligible, title);
         await nativeSaveAndShare({
@@ -2952,22 +2961,66 @@ function AppInner() {
       }
       return;
     }
-    // Plain link navigation (no blob/download mechanics) — but Google's own
-    // sign-in/Calendar pages separately refuse to load inside *any* embedded
-    // WebView (LINE, Facebook, Instagram, ...), showing their own
-    // "this browser may not be secure" block, regardless of what LINE
-    // itself allows. Same fix as the share-card image: escape to the
-    // device's real browser via liff.openWindow — Google's WebView check
-    // doesn't trigger there. No token/encryption needed here like the
-    // image download, since a calendar link only carries a date/title, not
-    // data someone could forge to fake something (worst case is a wrong
-    // date on an event the user adds to their own calendar).
+    setShowCalendarChoice(true);
+  };
+
+  // Plain link navigation (no blob/download mechanics) — but Google's own
+  // sign-in/Calendar pages separately refuse to load inside *any* embedded
+  // WebView (LINE, Facebook, Instagram, ...), showing their own "this
+  // browser may not be secure" block, regardless of what LINE itself
+  // allows. Same fix as the share-card image: escape to the device's real
+  // browser via liff.openWindow — Google's WebView check doesn't trigger
+  // there. No token/encryption needed here like the image download, since a
+  // calendar link only carries a date/title, not data worth forging.
+  const addToCalendarGoogle = () => {
+    setShowCalendarChoice(false);
+    if (!nextEligible) return;
+    const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
     const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
     const calendarUrl = buildGoogleCalendarUrl(nextEligible, title, details);
     if (isLineInAppBrowser) {
       liff.openWindow({ url: calendarUrl, external: true });
     } else {
       window.open(calendarUrl, "_blank");
+    }
+  };
+
+  // .ics works with any calendar app (Apple Calendar, Google Calendar,
+  // Outlook, ...) — the universal option. Outside LINE we're already in a
+  // real browser, so the file can just be built and downloaded right here.
+  // Inside LINE, the same blob-download block that affects the share-card
+  // image applies, so this escapes to the real browser the same way: via a
+  // small landing page (?ics=1&date=...&title=...) opened through
+  // liff.openWindow, which builds and downloads the .ics itself once it's
+  // actually running in Safari/Chrome instead of LINE's WebView. No
+  // encryption needed (see addToCalendarGoogle) — the params are passed
+  // in the clear.
+  const addToCalendarIcs = () => {
+    setShowCalendarChoice(false);
+    if (!nextEligible) return;
+    const title = `วันบริจาคโลหิตครั้งถัดไป (${DONATION_TYPE_LABELS[activeCountdownType]})`;
+    if (isLineInAppBrowser) {
+      const params = new URLSearchParams();
+      params.set("ics", "1");
+      params.set("date", dateToLocalStr(nextEligible));
+      params.set("title", title);
+      const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      liff.openWindow({ url, external: true });
+      return;
+    }
+    try {
+      const ics = buildIcsForReminder(nextEligible, title);
+      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `blood-donation-reminder-${toBuddhistDate(nextEligible).replace(/\s+/g, "-")}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (e) {
+      showToast("error", "เพิ่มลงปฏิทินไม่สำเร็จ ลองอีกครั้ง");
     }
   };
 
@@ -3597,7 +3650,7 @@ function AppInner() {
               )}
 
               {effectiveLastDateStr && !isEligible && !reminderDismissed && (
-                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 16, position: "relative" }}>
                   <Calendar size={14} color="#9A3B33" style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: 11.5, color: "#5C4A46", flex: 1 }}>อยากให้เตือนวันครบกำหนดไหม ?</span>
                   <button onClick={handleAddToCalendar}
@@ -3608,6 +3661,28 @@ function AppInner() {
                     style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", border: "none", background: "none", color: "#B39B96", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <X size={13} />
                   </button>
+                  {showCalendarChoice && (
+                    <>
+                      {/* Backdrop to close the popover on an outside tap — sits above the
+                          card but below the popover itself. */}
+                      <div onClick={() => setShowCalendarChoice(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 41,
+                        background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12,
+                        boxShadow: "0 10px 28px rgba(90,50,45,0.16)", padding: 6, minWidth: 190,
+                      }}>
+                        <div style={{ fontSize: 10.5, color: "#8A7370", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
+                        <button onClick={addToCalendarGoogle} style={{
+                          width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
+                          background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                        }}>Google Calendar</button>
+                        <button onClick={addToCalendarIcs} style={{
+                          width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
+                          background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                        }}>ไฟล์ .ics (Apple Calendar / อื่น ๆ)</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

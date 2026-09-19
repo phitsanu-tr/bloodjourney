@@ -4,6 +4,7 @@ import liff from "@line/liff";
 import { Capacitor } from "@capacitor/core";
 import App from "./App.jsx";
 import DownloadPage from "./DownloadPage.jsx";
+import CalendarIcsPage from "./CalendarIcsPage.jsx";
 
 // A `?dl=1` URL is the "download landing page" opened via
 // liff.openWindow({external:true}) from inside the main app's share-card
@@ -12,6 +13,10 @@ import DownloadPage from "./DownloadPage.jsx";
 // render path — never the main app — so check for it before doing any
 // LIFF/service-worker setup that only makes sense for the real app.
 const isDownloadPage = new URLSearchParams(window.location.search).get("dl") === "1";
+
+// Same idea as `?dl=1`, for the "add to calendar" .ics file instead of the
+// share-card image — see addToCalendarIcs() in the main app file.
+const isIcsPage = new URLSearchParams(window.location.search).get("ics") === "1";
 
 // The packaged iOS/Android app (Capacitor) is a completely separate
 // distribution from the LINE LIFF web build — it isn't opened through LINE
@@ -53,6 +58,15 @@ async function bootstrap() {
     ReactDOM.createRoot(document.getElementById("root")).render(
       <React.StrictMode>
         <DownloadPage />
+      </React.StrictMode>
+    );
+    return;
+  }
+
+  if (isIcsPage) {
+    ReactDOM.createRoot(document.getElementById("root")).render(
+      <React.StrictMode>
+        <CalendarIcsPage />
       </React.StrictMode>
     );
     return;
