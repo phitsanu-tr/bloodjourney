@@ -2633,6 +2633,13 @@ function AppInner() {
       setDismissedReminders({});
       setShowInfoPills(true);
       setShowReset(false);
+      // resetAll wipes everything back to a fresh start, but never touched
+      // `tab` -- so if the user happened to be on, say, the knowledge tab
+      // when they deleted their data, re-consenting dropped them right
+      // back on that same tab instead of the home dashboard a first-time
+      // user would land on. Reset it here to match every other piece of
+      // state above.
+      setTab("home");
       setPhase("consent");
       setCheckedConsent(false);
     } catch (e) {
