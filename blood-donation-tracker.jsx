@@ -5130,18 +5130,28 @@ function AppInner() {
                     top-right corner as a flat, uncurved clip -- exactly the square-
                     notch look reported. Hugging just the input keeps its rounded
                     box intact and only clips real overflow, invisibly. */}
-                <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                {/* Border moved onto THIS wrapper instead of the input itself.
+                    Pixel-checked a real device screenshot: the input was still
+                    overflowing the wrapper by a couple of pixels, and
+                    overflow:hidden was clipping away the input's own 1px right
+                    border along with the sliver of overflow -- fill stayed
+                    intact but the border vanished on that side only. A border
+                    can't be clipped off if it isn't drawn on the element being
+                    clipped: this wrapper's own border always sits exactly at
+                    its own edge, regardless of how wide the input inside
+                    renders or gets cut off. */}
+                <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                   <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
                     onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit" }} />
                 </div>
               </div>
               <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                   <input type="time" lang="en-US" value={form.time}
                     onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit" }} />
                 </div>
               </div>
             </div>
@@ -5250,18 +5260,18 @@ function AppInner() {
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
-                        <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                           <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
                             onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit" }} />
                         </div>
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                        <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                           <input type="time" lang="en-US" value={tf.time}
                             onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit" }} />
                         </div>
                       </div>
                     </div>
