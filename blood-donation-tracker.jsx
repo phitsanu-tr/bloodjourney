@@ -3021,6 +3021,13 @@ function AppInner() {
       totalInFile: parsed.donations.length,
       profileFieldsToFill,
     });
+    // The confirm-import dialog below renders after (later in the JSX tree
+    // than) the backup/restore hub, so at equal z-index it painted on top
+    // and blocked taps on "นำเข้า"/"ยกเลิก" — close the hub whenever the
+    // confirm dialog is about to take over, from either entry point (file
+    // picker or paste-text).
+    setShowBackupRestore(false);
+    setShowExportPreview(false);
   };
 
   const handleImportFile = async (e) => {
