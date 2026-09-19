@@ -5,6 +5,7 @@ import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
+import liff from "@line/liff";
 
 // True only when running inside the packaged iOS/Android app shell (Capacitor
 // WebView), never inside the LINE LIFF web build — used to route persistence
@@ -18,6 +19,14 @@ const isNativeApp = (() => {
     return false;
   }
 })();
+
+// LINE's own in-app browser (used for both the rich-menu LIFF view and any
+// link tapped inside a LINE chat) is the one context that blocks essentially
+// every client-side save/share mechanism — confirmed this session across
+// blob downloads, data: URI navigation, the Web Share API, and even the
+// browser's native long-press-to-save. It's never true in the packaged
+// native app (no WebView UA to sniff) or in a real browser tab.
+const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && /\bLine\//.test(navigator.userAgent);
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const APP_VERSION = "1.0.0";
@@ -473,13 +482,13 @@ const DONATION_BENEFITS = [
 
 // Preset sizes matching how each platform actually displays a shared image,
 // so the card isn't cropped awkwardly once posted.
-const CARD_SIZES = {
+export const CARD_SIZES = {
   square: { key: "square", w: 1080, h: 1080, label: "1:1", sub: "จัตุรัส • ฟีดโพสต์ Instagram / Facebook" },
   portrait45: { key: "portrait45", w: 1080, h: 1350, label: "4:5", sub: "แนวตั้ง • ฟีดโพสต์ Instagram / Facebook (เต็มจอมากขึ้น)" },
   story: { key: "story", w: 1080, h: 1920, label: "9:16", sub: "สตอรี่ • Instagram/Facebook Story, Reels, TikTok" },
   landscape: { key: "landscape", w: 1920, h: 1080, label: "16:9", sub: "แนวนอน • โพสต์แนวกว้าง, YouTube" },
 };
-const DEFAULT_CARD_SIZE = "portrait45";
+export const DEFAULT_CARD_SIZE = "portrait45";
 
 function wrapCanvasText(ctx, text, maxWidth, maxLines) {
   const words = text.split(" ");
@@ -941,7 +950,7 @@ function drawLandscapeRecordCard(ctx, W, H, FONT, { order, dateStr, timeStr, typ
 // Draws a shareable card for a single donation record (date, sequence
 // number, type, location) — same canvas-only approach as buildShareCardDataUrl
 // below, kept as a separate function so the achievement-card flow is untouched.
-async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel, location, bloodType, nickname, width, height }) {
+export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel, location, bloodType, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
   if (document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
@@ -969,7 +978,7 @@ async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel,
 // Draws a shareable "achievement card" entirely with the Canvas 2D API (no
 // external library needed — safe to run inside any sandbox) and returns a
 // PNG data URL, sized to whichever social-media preset was requested.
-async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, bloodType, nickname, width, height }) {
+export async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, bloodType, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
   if (document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
@@ -2376,6 +2385,50 @@ function AppInner() {
     } catch (e) {
       if (e && e.name === "AbortError") return; // user cancelled the share sheet
       showToast("error", "แชร์ไม่สำเร็จ ลองดาวน์โหลดรูปภาพแทนได้เลย");
+    }
+  };
+
+  // LINE's in-app browser blocks every client-side save mechanism, but it's
+  // just a WebView wrapper — a real external browser tab has none of those
+  // restrictions. This re-opens the same share card in the device's actual
+  // browser (Safari/Chrome) via liff.openWindow({external:true}), pointed at
+  // a lightweight "download page" (?dl=1&...) that redraws the exact same
+  // card from URL params and auto-triggers the save there. Only offered
+  // inside LINE — regular browser tabs already have working download/share
+  // buttons and don't need this detour.
+  const openShareCardInExternalBrowser = () => {
+    try {
+      const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
+      const params = new URLSearchParams();
+      params.set("dl", "1");
+      params.set("size", size.key);
+      if (shareRecordData) {
+        params.set("kind", "record");
+        params.set("order", String(shareRecordData.order ?? ""));
+        params.set("dateStr", shareRecordData.dateStr || "");
+        params.set("timeStr", shareRecordData.timeStr || "");
+        params.set("typeLabel", shareRecordData.typeLabel || "");
+        params.set("location", shareRecordData.location || "");
+        params.set("bloodType", shareRecordData.bloodType || "");
+        params.set("nickname", shareRecordData.nickname || "");
+      } else if (shareData) {
+        params.set("kind", "achievement");
+        params.set("totalCount", String(shareData.totalCount ?? ""));
+        params.set("estVolumeMl", String(shareData.estVolumeMl ?? ""));
+        params.set("title", shareData.achievement?.title || "");
+        params.set("desc", shareData.achievement?.desc || "");
+        params.set("akind", shareData.achievement?.kind || "");
+        params.set("tier", String(shareData.achievement?.tier ?? ""));
+        params.set("isMonk", shareData.achievement?.isMonk ? "1" : "0");
+        params.set("bloodType", shareData.bloodType || "");
+        params.set("nickname", shareData.nickname || "");
+      } else {
+        return;
+      }
+      const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      liff.openWindow({ url, external: true });
+    } catch (e) {
+      showToast("error", "เปิดเบราว์เซอร์ภายนอกไม่สำเร็จ");
     }
   };
 
@@ -4704,6 +4757,15 @@ function AppInner() {
                 <Download size={16} /> ดาวน์โหลด
               </button>
             </div>
+            {isLineInAppBrowser && (
+              <button onClick={openShareCardInExternalBrowser} disabled={!shareCardDataUrl} style={{
+                marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                padding: "11px 0", borderRadius: 12, background: "transparent", color: "#FFF7F5", border: "1px solid rgba(255,247,245,0.4)",
+                fontSize: 13, fontWeight: 600, cursor: "pointer",
+              }}>
+                บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก ↗
+              </button>
+            )}
           </div>
         </div>
       )}

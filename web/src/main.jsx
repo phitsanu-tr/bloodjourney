@@ -3,6 +3,15 @@ import ReactDOM from "react-dom/client";
 import liff from "@line/liff";
 import { Capacitor } from "@capacitor/core";
 import App from "./App.jsx";
+import DownloadPage from "./DownloadPage.jsx";
+
+// A `?dl=1` URL is the "download landing page" opened via
+// liff.openWindow({external:true}) from inside the main app's share-card
+// modal, to escape LINE's in-app browser (which blocks essentially every
+// client-side save mechanism). It's a completely separate, much simpler
+// render path — never the main app — so check for it before doing any
+// LIFF/service-worker setup that only makes sense for the real app.
+const isDownloadPage = new URLSearchParams(window.location.search).get("dl") === "1";
 
 // The packaged iOS/Android app (Capacitor) is a completely separate
 // distribution from the LINE LIFF web build — it isn't opened through LINE
@@ -38,6 +47,17 @@ const LIFF_ID = "2011648974-jwXvKsIg";
 // means "not opened via LINE", which is now a normal, supported case rather
 // than something to block.
 async function bootstrap() {
+  if (isDownloadPage) {
+    // Always opened in a real external browser tab, never inside LINE — no
+    // LIFF setup or service worker registration needed here at all.
+    ReactDOM.createRoot(document.getElementById("root")).render(
+      <React.StrictMode>
+        <DownloadPage />
+      </React.StrictMode>
+    );
+    return;
+  }
+
   if (!isNativeApp) {
     try {
       await liff.init({ liffId: LIFF_ID });
