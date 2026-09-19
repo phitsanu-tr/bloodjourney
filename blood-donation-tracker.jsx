@@ -5424,6 +5424,10 @@ function AppInner() {
               </button>
             </div>
 
+            {/* Fixed min-height so the dialog doesn't jump/resize when switching
+                tabs — the export tab (record-count card + explanation text)
+                is naturally taller than the import tab's content. */}
+            <div style={{ minHeight: 436 }}>
             {backupRestoreTab === "export" ? (
               <>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
@@ -5469,6 +5473,7 @@ function AppInner() {
                 </button>
               </>
             )}
+            </div>
           </div>
         </div>
       )}
