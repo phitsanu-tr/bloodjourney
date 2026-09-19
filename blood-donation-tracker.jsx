@@ -509,84 +509,84 @@ export const CARD_SIZES = {
 };
 export const DEFAULT_CARD_SIZE = "portrait45";
 
-// --- Share-link signing -----------------------------------------------
-// The external-browser download page (?dl=1&...) rebuilds the share card
-// purely from URL params, since LINE's embedded WebView and the external
-// browser it opens are separate browser contexts with no shared storage —
-// there's no way to hand off the already-generated image directly, only
-// small params. Left unchecked, that means anyone could hand-type a URL
-// with fabricated numbers (donation count, badge tier, monk status) and
-// get a "real-looking" card. This signs every link with an HMAC so a page
-// only renders when the params came from this app's own share flow, and
-// makes the link expire after a few minutes so a copied/leaked link can't
-// be replayed later.
+// --- Share-link token ---------------------------------------------------
+// The external-browser download page (?dl=1&d=...) rebuilds the share card
+// purely from what's in the URL, since LINE's embedded WebView and the
+// external browser it opens are separate browser contexts with no shared
+// storage — there's no way to hand off the already-generated image
+// directly, only a small payload. Instead of named query params (kind=...,
+// totalCount=..., nickname=...) the whole payload is packed into ONE
+// AES-GCM encrypted token: nothing about its structure or contents is
+// visible from the URL itself, it carries its own timestamp (for expiry)
+// and its own tamper-check (GCM's authentication tag — decryption itself
+// fails if a single byte was edited), so there's no separate signature
+// param or field-by-field encoding to manage.
 //
-// Caveat (by design, not an oversight): this secret ships inside the
-// client JS bundle, same as any purely client-side app with no backend.
-// Anyone willing to open dev tools and read the minified bundle can
-// extract it and forge a signature too. This raises the bar against
-// casual URL-guessing/editing — it does not, and architecturally cannot,
+// Caveat (by design, not an oversight): the key is derived from a seed
+// that ships inside the client JS bundle, same as any purely client-side
+// app with no backend. Anyone willing to open dev tools and read the
+// minified bundle can extract it and mint their own tokens too. This
+// raises the bar against casual link-guessing/editing a lot further than
+// plain query params did — it does not, and architecturally cannot,
 // provide airtight protection without a server that independently knows
 // the real donation data, which this local-storage-only app deliberately
 // doesn't have.
-const SHARE_LINK_SECRET = "bj-share-2c6f4e91a8d3";
+const SHARE_LINK_KEY_SEED = "bj-share-2c6f4e91a8d3";
 const SHARE_LINK_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-function canonicalizeShareParams(params) {
-  const entries = [];
-  for (const [k, v] of params.entries()) {
-    if (k === "sig") continue;
-    entries.push([k, v]);
+let _shareLinkKeyPromise = null;
+function getShareLinkKey() {
+  if (!_shareLinkKeyPromise) {
+    _shareLinkKeyPromise = crypto.subtle
+      .digest("SHA-256", new TextEncoder().encode(SHARE_LINK_KEY_SEED))
+      .then((hash) => crypto.subtle.importKey("raw", hash, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]));
   }
-  entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  return entries.map(([k, v]) => `${k}=${v}`).join("&");
+  return _shareLinkKeyPromise;
 }
 
-async function computeHmacHex(secret, message) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(message));
-  return Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+function bytesToBase64Url(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export async function signShareParams(params) {
-  return computeHmacHex(SHARE_LINK_SECRET, canonicalizeShareParams(params));
+function base64UrlToBytes(str) {
+  const b64 = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }
 
-// Nickname and donation location are free text typed by the user — unlike
-// the achievement/type text above, there's no fixed formula to regenerate
-// them from, so they do have to travel through the URL. Base64-encoding
-// them keeps the address bar from showing readable Thai text at a glance
-// (e.g. while the page is loading, or in browser history) — this is a
-// cosmetic/glance-privacy measure, not encryption: anyone who bothers to
-// base64-decode the param sees the same text either way.
-function encodeUrlText(str) {
+// Encrypts `payload` (any plain JSON-able object) plus a fresh timestamp
+// into one opaque, URL-safe token — this is what goes in the `d` param.
+export async function encodeShareToken(payload) {
+  const key = await getShareLinkKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(JSON.stringify({ ...payload, ts: Date.now() }));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return bytesToBase64Url(combined);
+}
+
+// Reverses encodeShareToken(): returns the original payload (with `ts`)
+// if the token decrypts cleanly and isn't expired, or null if it's
+// tampered, malformed, or too old to trust.
+export async function decodeShareToken(token) {
   try {
-    return btoa(encodeURIComponent(str || "").replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))));
+    const key = await getShareLinkKey();
+    const combined = base64UrlToBytes(token);
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+    const payload = JSON.parse(new TextDecoder().decode(plainBuf));
+    const age = Date.now() - (payload.ts || 0);
+    if (age > SHARE_LINK_TTL_MS || age < -60 * 1000) return null; // expired, or timestamp from the future beyond clock skew
+    return payload;
   } catch (e) {
-    return "";
-  }
-}
-
-export function decodeUrlText(str) {
-  try {
-    return decodeURIComponent(atob(str || "").split("").map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join(""));
-  } catch (e) {
-    return "";
-  }
-}
-
-export async function verifyShareParams(params) {
-  try {
-    const sig = params.get("sig");
-    const ts = Number(params.get("ts"));
-    if (!sig || !ts) return false;
-    const age = Date.now() - ts;
-    if (age > SHARE_LINK_TTL_MS || age < -60 * 1000) return false; // expired, or timestamp from the future beyond clock skew
-    const expected = await signShareParams(params);
-    return expected === sig;
-  } catch (e) {
-    return false;
+    return null; // wrong key, tampered ciphertext, or malformed token
   }
 }
 
@@ -2502,43 +2502,44 @@ function AppInner() {
   const openShareCardInExternalBrowser = async () => {
     try {
       const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
-      const params = new URLSearchParams();
-      params.set("dl", "1");
-      params.set("size", size.key);
+      let payload;
       if (shareRecordData) {
         // typeLabel/dateStr are re-derived on the download page from `type`
-        // (an enum) and `date` (raw) instead of carried as Thai text — same
-        // card, but the URL and address bar don't show it in the clear.
-        params.set("kind", "record");
-        params.set("order", String(shareRecordData.order ?? ""));
-        params.set("date", shareRecordData.date || "");
-        params.set("timeStr", shareRecordData.timeStr || "");
-        params.set("type", shareRecordData.type || "whole");
-        params.set("location", encodeUrlText(shareRecordData.location));
-        params.set("bloodType", shareRecordData.bloodType || "");
-        params.set("nickname", encodeUrlText(shareRecordData.nickname));
+        // (an enum) and `date` (raw) rather than carried as text — moot for
+        // secrecy now that the whole payload is encrypted, but keeps it
+        // smaller and avoids having two sources of truth for that text.
+        payload = {
+          kind: "record",
+          size: size.key,
+          order: shareRecordData.order ?? "",
+          date: shareRecordData.date || "",
+          timeStr: shareRecordData.timeStr || "",
+          type: shareRecordData.type || "whole",
+          location: shareRecordData.location || "",
+          bloodType: shareRecordData.bloodType || "",
+          nickname: shareRecordData.nickname || "",
+        };
       } else if (shareData) {
-        // title/desc are re-derived on the download page from
-        // kind+tier+isMonk+threshold (see deriveAchievementText) instead of
-        // carried as Thai text in the URL.
-        params.set("kind", "achievement");
-        params.set("totalCount", String(shareData.totalCount ?? ""));
-        params.set("estVolumeMl", String(shareData.estVolumeMl ?? ""));
-        params.set("akind", shareData.achievement?.kind || "");
-        params.set("tier", String(shareData.achievement?.tier ?? ""));
-        params.set("threshold", String(shareData.achievement?.threshold ?? ""));
-        params.set("isMonk", shareData.achievement?.isMonk ? "1" : "0");
-        params.set("bloodType", shareData.bloodType || "");
-        params.set("nickname", encodeUrlText(shareData.nickname));
+        payload = {
+          kind: "achievement",
+          size: size.key,
+          totalCount: shareData.totalCount ?? "",
+          estVolumeMl: shareData.estVolumeMl ?? "",
+          akind: shareData.achievement?.kind || "",
+          tier: shareData.achievement?.tier ?? "",
+          threshold: shareData.achievement?.threshold ?? "",
+          isMonk: !!shareData.achievement?.isMonk,
+          bloodType: shareData.bloodType || "",
+          nickname: shareData.nickname || "",
+        };
       } else {
         return;
       }
-      // Sign + timestamp the link so the download page only renders it when
-      // it genuinely came from this share flow (see verifyShareParams).
-      params.set("ts", String(Date.now()));
-      const sig = await signShareParams(params);
-      params.set("sig", sig);
-      const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      // The entire payload — including its timestamp — is packed into one
+      // AES-GCM encrypted token (see encodeShareToken), so the URL carries
+      // no field names or values in the clear, just `?dl=1&d=<token>`.
+      const token = await encodeShareToken(payload);
+      const url = `${window.location.origin}${window.location.pathname}?dl=1&d=${token}`;
       liff.openWindow({ url, external: true });
     } catch (e) {
       showToast("error", "เปิดเบราว์เซอร์ภายนอกไม่สำเร็จ");

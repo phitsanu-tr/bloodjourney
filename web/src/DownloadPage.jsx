@@ -7,64 +7,63 @@ import {
   DONATION_TYPE_LABELS,
   deriveAchievementText,
   toBuddhistDate,
-  decodeUrlText,
-  verifyShareParams,
+  decodeShareToken,
 } from "./App.jsx";
 
 // Standalone "download landing page" — opened via liff.openWindow({external:
 // true}) from inside the main app's share-card modal, specifically to escape
 // LINE's in-app browser (which blocks essentially every client-side
 // save/share mechanism). A real external browser tab has none of those
-// restrictions, so this page just redraws the same share card from the URL
-// params it was given (the two browser contexts don't share localStorage,
-// so the image itself can't be handed off directly — only small params can)
-// and immediately offers it for download/share/long-press-save, all of
-// which work normally here.
-function readParams() {
-  const params = new URLSearchParams(window.location.search);
-  const sizeKey = params.get("size") || DEFAULT_CARD_SIZE;
+// restrictions, so this page just redraws the same share card from a single
+// encrypted `d` token in the URL (the two browser contexts don't share
+// localStorage, so the image itself can't be handed off directly — only a
+// small payload can) and immediately offers it for download/share/
+// long-press-save, all of which work normally here.
+//
+// Everything the card needs (kind, size, numbers, nickname, etc.) lives
+// inside the encrypted token — decodeShareToken() hands back the plain
+// payload once it's verified the token decrypts cleanly and isn't expired.
+// This just reshapes that payload into what buildShareCardDataUrl /
+// buildRecordShareCardDataUrl expect, re-deriving the Thai achievement/
+// donation-type text from the same formulas the main app uses rather than
+// carrying it separately.
+function buildParsedFromPayload(payload) {
+  const sizeKey = payload.size || DEFAULT_CARD_SIZE;
   const size = CARD_SIZES[sizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
-  const kind = params.get("kind");
-  if (kind === "record") {
-    // typeLabel/dateStr aren't carried in the URL as Thai text — they're
-    // re-derived here from the raw `type` enum and `date`, the same way the
-    // main app computes them (see openShareCardInExternalBrowser).
-    const type = params.get("type") === "component" ? "component" : "whole";
+  if (payload.kind === "record") {
+    const type = payload.type === "component" ? "component" : "whole";
     return {
-      kind,
+      kind: "record",
       size,
       data: {
-        order: params.get("order") || "",
-        dateStr: toBuddhistDate(params.get("date") || ""),
-        timeStr: params.get("timeStr") || "",
+        order: payload.order ?? "",
+        dateStr: toBuddhistDate(payload.date || ""),
+        timeStr: payload.timeStr || "",
         typeLabel: DONATION_TYPE_LABELS[type],
-        location: decodeUrlText(params.get("location")),
-        bloodType: params.get("bloodType") || "",
-        nickname: decodeUrlText(params.get("nickname")),
+        location: payload.location || "",
+        bloodType: payload.bloodType || "",
+        nickname: payload.nickname || "",
         width: size.w,
         height: size.h,
       },
     };
   }
-  if (kind === "achievement") {
-    // title/desc are re-derived here from kind+tier+isMonk+threshold, the
-    // same formula the main app uses to build them in the first place (see
-    // deriveAchievementText / buildAchievements) — not carried as Thai text.
+  if (payload.kind === "achievement") {
     const achievementBase = {
-      kind: params.get("akind") || "",
-      tier: params.get("tier") ? Number(params.get("tier")) : undefined,
-      isMonk: params.get("isMonk") === "1",
-      threshold: params.get("threshold") ? Number(params.get("threshold")) : undefined,
+      kind: payload.akind || "",
+      tier: payload.tier || undefined,
+      isMonk: !!payload.isMonk,
+      threshold: payload.threshold || undefined,
     };
     return {
-      kind,
+      kind: "achievement",
       size,
       data: {
-        totalCount: Number(params.get("totalCount") || 0),
-        estVolumeMl: Number(params.get("estVolumeMl") || 0),
+        totalCount: Number(payload.totalCount || 0),
+        estVolumeMl: Number(payload.estVolumeMl || 0),
         achievement: { ...achievementBase, ...deriveAchievementText(achievementBase) },
-        bloodType: params.get("bloodType") || "",
-        nickname: decodeUrlText(params.get("nickname")),
+        bloodType: payload.bloodType || "",
+        nickname: payload.nickname || "",
         width: size.w,
         height: size.h,
       },
@@ -76,26 +75,30 @@ function readParams() {
 export default function DownloadPage() {
   const [dataUrl, setDataUrl] = useState("");
   const [status, setStatus] = useState("generating"); // generating | ready | error | invalid
+  const [parsed, setParsed] = useState(null);
   const autoTriggeredRef = useRef(false);
-  const parsed = useRef(readParams()).current;
 
   useEffect(() => {
-    if (!parsed) {
-      setStatus("error");
+    let cancelled = false;
+    const token = new URLSearchParams(window.location.search).get("d");
+    if (!token) {
+      setStatus("invalid");
       return;
     }
-    let cancelled = false;
-    // Only render a card built from a link this app's own share flow
-    // actually signed (see signShareParams/verifyShareParams) — otherwise
-    // anyone could hand-craft this URL with fabricated numbers.
-    verifyShareParams(new URLSearchParams(window.location.search)).then((ok) => {
+    decodeShareToken(token).then((payload) => {
       if (cancelled) return;
-      if (!ok) {
-        setStatus("invalid");
+      if (!payload) {
+        setStatus("invalid"); // wrong/tampered token, or expired
         return;
       }
-      const build = parsed.kind === "record" ? buildRecordShareCardDataUrl : buildShareCardDataUrl;
-      build(parsed.data)
+      const built = buildParsedFromPayload(payload);
+      if (!built) {
+        setStatus("error");
+        return;
+      }
+      setParsed(built);
+      const build = built.kind === "record" ? buildRecordShareCardDataUrl : buildShareCardDataUrl;
+      build(built.data)
         .then((url) => {
           if (cancelled) return;
           setDataUrl(url);
@@ -106,12 +109,11 @@ export default function DownloadPage() {
         });
     });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const triggerDownload = () => {
-    if (!dataUrl) return;
-    const filePrefix = parsed?.kind === "record" ? "bloodjourney-donation" : "bloodjourney-achievement";
+    if (!dataUrl || !parsed) return;
+    const filePrefix = parsed.kind === "record" ? "bloodjourney-donation" : "bloodjourney-achievement";
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `${filePrefix}-${parsed.size.key}.png`;
