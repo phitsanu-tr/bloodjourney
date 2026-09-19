@@ -1656,10 +1656,15 @@ function AppInner() {
   const [seenAchievements, setSeenAchievements] = useState([]);
   const [importing, setImporting] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
-  const [showPasteImport, setShowPasteImport] = useState(false);
   const [pasteImportText, setPasteImportText] = useState("");
   const [showExportPreview, setShowExportPreview] = useState(false);
   const [exportJsonText, setExportJsonText] = useState("");
+  // The unified "สำรอง/กู้คืนข้อมูล" hub (replaces separate export/import
+  // entry points in Settings with one tabbed dialog). showExportPreview above
+  // still gates the auto-select-textarea effect below and is kept true
+  // whenever this hub's export tab is open.
+  const [showBackupRestore, setShowBackupRestore] = useState(false);
+  const [backupRestoreTab, setBackupRestoreTab] = useState("export");
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
   const canShareFiles = useMemo(() => {
@@ -3033,10 +3038,36 @@ function AppInner() {
     }
   };
 
-  const triggerPasteImport = () => {
+  // Single entry point for the unified "สำรอง/กู้คืนข้อมูล" hub dialog —
+  // replaces the three separate Settings rows (ส่งออกข้อมูล / นำเข้าไฟล์ /
+  // วางข้อความสำรอง) with one dialog that switches between an export tab and
+  // an import tab. Reuses exportData/exportJsonText and
+  // pasteImportText/confirmPasteImport exactly as before — only the entry
+  // point and the surrounding chrome changed.
+  const openBackupRestore = (tab) => {
+    setShowSettings(false);
     setError("");
-    setPasteImportText("");
-    setShowPasteImport(true);
+    setBackupRestoreTab(tab);
+    setShowBackupRestore(true);
+    if (tab === "export") {
+      exportData();
+    } else {
+      setPasteImportText("");
+    }
+  };
+
+  const switchBackupRestoreTab = (tab) => {
+    setBackupRestoreTab(tab);
+    if (tab === "export") {
+      exportData();
+    } else {
+      setPasteImportText("");
+    }
+  };
+
+  const closeBackupRestore = () => {
+    setShowBackupRestore(false);
+    setShowExportPreview(false);
   };
 
   const confirmPasteImport = async () => {
@@ -3045,7 +3076,7 @@ function AppInner() {
     setImporting(true);
     try {
       await processImportedText(text);
-      setShowPasteImport(false);
+      setPasteImportText("");
     } catch (err) {
       showToast("error", "นำเข้าข้อมูลไม่สำเร็จ — ตรวจสอบว่าวางข้อความที่คัดลอกจากปุ่ม \"คัดลอกข้อความ\" ของแอปนี้ครบถ้วน");
     } finally {
@@ -3080,6 +3111,8 @@ function AppInner() {
       persistProfile(nextProfile);
     }
     showToast("success", `นำเข้าสำเร็จ — เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ`);
+    setShowBackupRestore(false);
+    setShowExportPreview(false);
     setPendingImport(null);
   };
 
@@ -5182,14 +5215,8 @@ function AppInner() {
               {lastExportCount > 0 && (
                 <div style={{ fontSize: 11, color: "#B39B96", padding: "10px 8px 0" }}>ส่งออกล่าสุดตอนมี {lastExportCount} รายการ</div>
               )}
-              <button onClick={exportData} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
-                <Download size={16} color="#9A3B33" /> ส่งออกข้อมูล
-              </button>
-              <button onClick={triggerImport} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
-                <Upload size={16} color="#9A3B33" /> {importing ? "กำลังอ่านไฟล์..." : "นำเข้าไฟล์"}
-              </button>
-              <button onClick={triggerPasteImport} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
-                <StickyNote size={16} color="#9A3B33" /> วางข้อความสำรอง
+              <button onClick={() => openBackupRestore("export")} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
+                <Download size={16} color="#9A3B33" /> สำรอง/กู้คืนข้อมูล
               </button>
               <button onClick={() => { setShowSettings(false); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#C0392B", fontFamily: "inherit" }}>
                 <Trash2 size={16} color="#C0392B" /> ลบข้อมูลทั้งหมด
@@ -5362,62 +5389,86 @@ function AppInner() {
         </div>
       )}
 
-      {showExportPreview && (
-        <div role="dialog" aria-modal="true" aria-label="ส่งออกข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+      {showBackupRestore && (
+        <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ข้อมูลสำรองของคุณ</div>
-              <button onClick={() => setShowExportPreview(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
+              <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
             </div>
-            <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 12px" }}>
-              กด "ดาวน์โหลดไฟล์" เพื่อบันทึกหรือแชร์เป็นไฟล์ หรือถ้าใช้ไม่ได้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
-              <br /><span style={{ fontSize: 11, color: "#B39B96" }}>(ไฟล์นี้ไม่รวมรูปโปรไฟล์ — หลังนำเข้าจะต้องอัปโหลดรูปใหม่ ส่วนรอบบริจาค/ระยะแจ้งเตือนที่ตั้งไว้จะรวมอยู่ในไฟล์นี้ด้วย)</span>
-            </p>
-            <textarea
-              ref={exportTextareaRef}
-              readOnly
-              value={exportJsonText}
-              onFocus={(e) => e.target.select()}
-              aria-label="ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"
-              style={{ width: "100%", height: 140, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
-            />
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={copyExportText} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13, cursor: "pointer" }}>
-                คัดลอกข้อความ
-              </button>
-              <button onClick={downloadExportFile} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                ดาวน์โหลดไฟล์
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {showPasteImport && (
-        <div role="dialog" aria-modal="true" aria-label="วางข้อความสำรอง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>วางข้อความสำรอง</div>
-              <button onClick={() => setShowPasteImport(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
-            </div>
-            <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 12px" }}>
-              ใช้เมื่อดาวน์โหลดไฟล์ไม่ได้และมีแต่ข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" — วางข้อความทั้งหมดที่นี่แล้วกด "นำเข้า"
-            </p>
-            <textarea
-              value={pasteImportText}
-              onChange={(e) => setPasteImportText(e.target.value)}
-              placeholder='{"nickname": "...", "donations": [...] }'
-              aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-              style={{ width: "100%", height: 140, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
-            />
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowPasteImport(false)} disabled={importing} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13, cursor: "pointer" }}>
-                ยกเลิก
+            <div style={{ display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => switchBackupRestoreTab("export")}
+                style={{
+                  flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
+                  background: backupRestoreTab === "export" ? "#FFFFFF" : "transparent",
+                  color: backupRestoreTab === "export" ? "#8A2F28" : "#8A7370",
+                  fontSize: 13.5, fontWeight: backupRestoreTab === "export" ? 600 : 500,
+                  boxShadow: backupRestoreTab === "export" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
+                }}>
+                สำรองข้อมูล
               </button>
-              <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
-                {importing ? "กำลังตรวจสอบ..." : "นำเข้า"}
+              <button
+                type="button"
+                onClick={() => switchBackupRestoreTab("import")}
+                style={{
+                  flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
+                  background: backupRestoreTab === "import" ? "#FFFFFF" : "transparent",
+                  color: backupRestoreTab === "import" ? "#8A2F28" : "#8A7370",
+                  fontSize: 13.5, fontWeight: backupRestoreTab === "import" ? 600 : 500,
+                  boxShadow: backupRestoreTab === "import" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
+                }}>
+                กู้คืนข้อมูล
               </button>
             </div>
+
+            {backupRestoreTab === "export" ? (
+              <>
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
+                  <p style={{ margin: "0 0 4px", fontSize: 12, color: "#8A7370" }}>จำนวนรายการบริจาคที่บันทึกไว้</p>
+                  <p style={{ margin: 0, fontSize: 19, fontWeight: 700, color: "#3A2C29" }}>{donations.length} รายการ</p>
+                </div>
+                <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 12px" }}>
+                  กด "ดาวน์โหลดไฟล์" เพื่อบันทึกหรือแชร์เป็นไฟล์ หรือถ้าใช้ไม่ได้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
+                  <br /><span style={{ fontSize: 11, color: "#B39B96" }}>(ไฟล์นี้ไม่รวมรูปโปรไฟล์ — หลังนำเข้าจะต้องอัปโหลดรูปใหม่ ส่วนรอบบริจาค/ระยะแจ้งเตือนที่ตั้งไว้จะรวมอยู่ในไฟล์นี้ด้วย)</span>
+                </p>
+                <textarea
+                  ref={exportTextareaRef}
+                  readOnly
+                  value={exportJsonText}
+                  onFocus={(e) => e.target.select()}
+                  aria-label="ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"
+                  style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                />
+                <button onClick={downloadExportFile} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
+                  <Download size={17} /> ดาวน์โหลดไฟล์
+                </button>
+                <button onClick={copyExportText} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: "pointer" }}>
+                  <StickyNote size={16} /> คัดลอกข้อความ
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={triggerImport} disabled={importing} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
+                  <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
+                </button>
+                <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 10px" }}>
+                  หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
+                </p>
+                <textarea
+                  value={pasteImportText}
+                  onChange={(e) => setPasteImportText(e.target.value)}
+                  placeholder='{"nickname": "...", "donations": [...] }'
+                  aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
+                  style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                />
+                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
+                  {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
