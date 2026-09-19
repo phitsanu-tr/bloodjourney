@@ -531,14 +531,36 @@ export const DEFAULT_CARD_SIZE = "portrait45";
 // provide airtight protection without a server that independently knows
 // the real donation data, which this local-storage-only app deliberately
 // doesn't have.
-const SHARE_LINK_KEY_SEED = "bj-share-2c6f4e91a8d3";
 const SHARE_LINK_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// The key seed isn't a plain string constant on purpose — a literal like
+// `"bj-share-..."` sitting next to `crypto.subtle` / `"AES-GCM"` is exactly
+// what a plain-text search of the built JS turns up first. Splitting it
+// into three XOR-masked fragments (interleaved back together at runtime)
+// doesn't make it a real secret — nothing shipped to the browser can be
+// (see the note above) — but it means "search the bundle for a
+// suspicious-looking string" no longer works, so extracting it takes
+// actually tracing the code rather than a five-second Ctrl+F.
+const _skA = [57, 98, 60, 56, 60, 63, 111, 98, 99, 63, 56];
+const _skB = [108, 63, 56, 57, 107, 104, 98, 111, 99, 105, 110];
+const _skC = [105, 104, 110, 56, 105, 105, 108, 108, 110, 98];
+const _skMask = 0x5a;
+function _assembleShareLinkSeed() {
+  const codes = [];
+  let ai = 0, bi = 0, ci = 0;
+  const total = _skA.length + _skB.length + _skC.length;
+  for (let i = 0; i < total; i++) {
+    const bucket = i % 3;
+    codes.push(bucket === 0 ? _skA[ai++] : bucket === 1 ? _skB[bi++] : _skC[ci++]);
+  }
+  return codes.map((b) => String.fromCharCode(b ^ _skMask)).join("");
+}
 
 let _shareLinkKeyPromise = null;
 function getShareLinkKey() {
   if (!_shareLinkKeyPromise) {
     _shareLinkKeyPromise = crypto.subtle
-      .digest("SHA-256", new TextEncoder().encode(SHARE_LINK_KEY_SEED))
+      .digest("SHA-256", new TextEncoder().encode(_assembleShareLinkSeed()))
       .then((hash) => crypto.subtle.importKey("raw", hash, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]));
   }
   return _shareLinkKeyPromise;
