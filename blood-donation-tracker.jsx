@@ -1744,6 +1744,37 @@ function AppInner() {
     }
   }, [anyModalOpen]);
 
+  // Header show/hide on scroll direction, matching the familiar Facebook-app
+  // pattern: scrolling DOWN slides the top bar away (giving content the
+  // full screen), scrolling UP even slightly brings it right back, and it's
+  // always shown near the very top of the page regardless of direction, so
+  // it never starts a fresh scroll session hidden. A small threshold (6px)
+  // stops it from twitching on tiny/jittery scroll events, and it's skipped
+  // while any modal has the page scroll-locked (anyModalOpen above) since
+  // window.scrollY doesn't meaningfully change then anyway.
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  useEffect(() => {
+    if (phase !== "app" || anyModalOpen) return;
+    lastScrollYRef.current = window.scrollY || window.pageYOffset || 0;
+    const HIDE_THRESHOLD = 6;
+    const NEAR_TOP = 8;
+    const onScroll = () => {
+      const y = window.scrollY || window.pageYOffset || 0;
+      const delta = y - lastScrollYRef.current;
+      if (y <= NEAR_TOP) {
+        setHeaderVisible(true);
+      } else if (delta > HIDE_THRESHOLD) {
+        setHeaderVisible(false);
+      } else if (delta < -HIDE_THRESHOLD) {
+        setHeaderVisible(true);
+      }
+      lastScrollYRef.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [phase, anyModalOpen]);
+
   const showToast = useCallback((type, message, duration = 3500) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast({ type, message });
@@ -3819,9 +3850,34 @@ function AppInner() {
         </div>
       )}
 
+      {/* Header — fixed to the top like the bottom tab bar below, instead of
+          scrolling away permanently with the page content, so Profile/
+          Settings stay reachable without scrolling back to the top.
+          Mirrors the bottom nav's own fixed-bar pattern (outer full-width
+          flex-center wrapper + inner maxWidth:420 bar) so both bars line up
+          edge-to-edge with the app's content column on any viewport width.
+          Solid background (not transparent) so scrolled-past content
+          doesn't show through underneath it. translateY slides it out of
+          view on scroll-down and back on scroll-up (headerVisible, set by
+          the scroll-direction effect above) -- the Facebook-app pattern, so
+          it doesn't permanently eat screen height like a plain always-fixed
+          bar would. It stays position:fixed the whole time (never removed
+          from flow) either way. The app-shell content below gets matching
+          extra top padding (HEADER_BAR_HEIGHT + env(safe-area-inset-top) +
+          the original 24px breathing room) so nothing starts out hidden
+          behind it when shown — keep the two paddings in sync if this
+          height changes. */}
       {phase === "app" && (
-        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "24px 20px 88px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40, transform: headerVisible ? "translateY(0)" : "translateY(-100%)", transition: "transform 0.25s ease" }}>
+          {/* minHeight (not height) + border-box: with an explicit height,
+              border-box would count the safe-area paddingTop as PART OF that
+              fixed height, squeezing the icon row instead of growing the bar
+              to make room for a notch. minHeight lets the box grow past 60px
+              exactly when the safe-area inset needs the extra room, while
+              still guaranteeing 60px (13+34+13, matching the 34px logo)
+              when there's no notch to clear. Keep this in sync with the
+              app-shell's compensating top padding above if it changes. */}
+          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderBottom: "1px solid #F0E0DC", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
@@ -3840,7 +3896,11 @@ function AppInner() {
               </button>
             </div>
           </div>
+        </div>
+      )}
 
+      {phase === "app" && (
+        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 1px + 24px) 20px 88px" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
