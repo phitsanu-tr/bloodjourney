@@ -5101,7 +5101,7 @@ function AppInner() {
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
             </div>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
-              <div style={{ minWidth: 0, overflow: "hidden" }}>
+              <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
                 {/* lang="en-US" pins iOS Safari's native date-picker display to the
                     Gregorian calendar. Without it, a device set to Thailand region
@@ -5131,7 +5131,7 @@ function AppInner() {
                   onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
                   style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               </div>
-              <div style={{ minWidth: 0, overflow: "hidden" }}>
+              <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                 <input type="time" lang="en-US" value={form.time}
                   onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
@@ -5241,13 +5241,13 @@ function AppInner() {
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
-                      <div style={{ minWidth: 0, overflow: "hidden" }}>
+                      <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
                         <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
                           onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
                           style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
                       </div>
-                      <div style={{ minWidth: 0, overflow: "hidden" }}>
+                      <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                         <input type="time" lang="en-US" value={tf.time}
                           onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
