@@ -3082,8 +3082,12 @@ function AppInner() {
     if (!text) return;
     setImporting(true);
     try {
+      // Don't clear the textarea yet — it only got as far as the confirm
+      // dialog. If the user cancels there, cancelImport() reopens this tab
+      // and the pasted text should still be sitting in the box, not gone.
+      // It's cleared for real once the import is actually confirmed
+      // (see confirmImport) or the hub is closed/reset for a fresh entry.
       await processImportedText(text);
-      setPasteImportText("");
     } catch (err) {
       showToast("error", "นำเข้าข้อมูลไม่สำเร็จ — ตรวจสอบว่าวางข้อความที่คัดลอกจากปุ่ม \"คัดลอกข้อความ\" ของแอปนี้ครบถ้วน");
     } finally {
@@ -3127,6 +3131,7 @@ function AppInner() {
     showToast("success", `นำเข้าสำเร็จ — เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ`);
     setShowBackupRestore(false);
     setShowExportPreview(false);
+    setPasteImportText("");
     setPendingImport(null);
   };
 
