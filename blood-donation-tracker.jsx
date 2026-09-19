@@ -890,6 +890,67 @@ export async function decodeShareToken(token) {
   }
 }
 
+// --- Export-backup handoff token ----------------------------------------
+// A separate, much simpler token from the share-card one above: it just
+// encrypts whatever plain-text is handed to it (the full backup JSON),
+// rather than packing known fixed fields. Used only as a last-resort way to
+// get the export file out of LINE's in-app browser (see downloadExportFile)
+// when navigator.share isn't available there — the encrypted text rides
+// along in the URL to a plain landing page opened via liff.openWindow
+// {external:true}, which runs in a real external browser where a normal
+// blob download works. Reuses the same key as the share-card token (no
+// reason to maintain two secrets) but keeps its own short TTL, since a
+// user's own backup data is more sensitive than a share-card's public
+// fields and this link is meant to be used within seconds of being opened.
+const EXPORT_HANDOFF_TTL_MS = 3 * 60 * 1000; // 3 minutes
+// Caps how much data this fallback will attempt to hand off through the
+// URL at all (measured in UTF-8 BYTES, not JS string length — Thai text in
+// the export, like location/nickname, is 3 bytes/char, not 1) — well under
+// practical URL-length limits across browsers/LINE. Above this, callers
+// should skip straight to the copy-to-clipboard/manual fallback instead,
+// which has no size limit.
+export const EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES = 3000;
+
+// Packs a 4-byte big-endian minute-offset timestamp (same epoch trick as
+// the share-card token) as a raw prefix ahead of the UTF-8 text bytes,
+// instead of JSON-wrapping {t, ts} — nesting the already-JSON-stringified
+// export text as an escaped JSON *string* would double-escape every quote
+// in it and inflate the token size substantially for no benefit.
+export async function encryptExportHandoff(plainText) {
+  const key = await getShareLinkKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const textBytes = new TextEncoder().encode(plainText);
+  const minutes = Math.max(0, Math.min(0xffffffff, Math.round((Date.now() - SHARE_LINK_EPOCH_MS) / 60000)));
+  const plaintext = new Uint8Array(4 + textBytes.length);
+  plaintext[0] = (minutes >>> 24) & 0xff;
+  plaintext[1] = (minutes >>> 16) & 0xff;
+  plaintext[2] = (minutes >>> 8) & 0xff;
+  plaintext[3] = minutes & 0xff;
+  plaintext.set(textBytes, 4);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return bytesToBase64Url(combined);
+}
+
+export async function decryptExportHandoff(token) {
+  try {
+    const key = await getShareLinkKey();
+    const combined = base64UrlToBytes(token);
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    const plainBuf = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext));
+    const minutes = ((plainBuf[0] << 24) | (plainBuf[1] << 16) | (plainBuf[2] << 8) | plainBuf[3]) >>> 0;
+    const ts = SHARE_LINK_EPOCH_MS + minutes * 60000;
+    const age = Date.now() - ts;
+    if (age > EXPORT_HANDOFF_TTL_MS || age < -60 * 1000) return null;
+    return new TextDecoder().decode(plainBuf.slice(4));
+  } catch (e) {
+    return null;
+  }
+}
+
 function wrapCanvasText(ctx, text, maxWidth, maxLines) {
   const words = text.split(" ");
   const lines = [];
@@ -2629,6 +2690,26 @@ function AppInner() {
       }
     } catch (e) {
       if (e && e.name === "AbortError") return; // user cancelled the share sheet — not an error
+    }
+    // Web Share isn't available (older/unsupported browser inside LINE) —
+    // last resort before giving up on an automatic download: hand the data
+    // off to a real external browser via the same liff.openWindow escape
+    // used for the share-card/calendar, where a plain blob download works
+    // normally. Only attempted when the payload is small enough to fit
+    // safely in a URL — see EXPORT_HANDOFF_MAX_PLAINTEXT_CHARS. Above that,
+    // there's no way to move the data out of LINE's isolated browser context
+    // automatically, so this falls through to the copy-to-clipboard fallback
+    // instead (no size limit there, just more manual for the user).
+    if (isLineInAppBrowser && new TextEncoder().encode(exportJsonText).length <= EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES) {
+      try {
+        const token = await encryptExportHandoff(exportJsonText);
+        const url = `${window.location.origin}${window.location.pathname}?exp=1&d=${token}`;
+        liff.openWindow({ url, external: true });
+        showToast("success", "เปิดเบราว์เซอร์ภายนอกให้ดาวน์โหลดไฟล์แล้ว");
+        return;
+      } catch (e) {
+        // fall through to the plain blob-download attempt below
+      }
     }
     try {
       const blob = new Blob([exportJsonText], { type: "application/json" });
