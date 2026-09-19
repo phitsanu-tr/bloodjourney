@@ -1656,6 +1656,8 @@ function AppInner() {
   const [seenAchievements, setSeenAchievements] = useState([]);
   const [importing, setImporting] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [showPasteImport, setShowPasteImport] = useState(false);
+  const [pasteImportText, setPasteImportText] = useState("");
   const [showExportPreview, setShowExportPreview] = useState(false);
   const [exportJsonText, setExportJsonText] = useState("");
   const [showShareCard, setShowShareCard] = useState(false);
@@ -2939,14 +2941,13 @@ function AppInner() {
     fileInputRef.current?.click();
   };
 
-  const handleImportFile = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setImporting(true);
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
+  // Shared by both import entry points — picking a file (handleImportFile)
+  // and pasting text (confirmPasteImport, for when the export's file
+  // download didn't work and the user only has the copied JSON text — see
+  // "คัดลอกข้อความ" in the export modal). Throws on malformed input; callers
+  // decide how to report that.
+  const processImportedText = async (text) => {
+    const parsed = JSON.parse(text);
       if (!parsed || !Array.isArray(parsed.donations)) {
         throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
       }
@@ -3008,15 +3009,45 @@ function AppInner() {
         if (!Number.isNaN(weightNum) && weightNum >= 0 && weightNum <= 300) profileFieldsToFill.weight = Math.round(weightNum * 10) / 10;
       }
       if (!bloodType && parsed.bloodType && BLOOD_TYPES.includes(parsed.bloodType)) profileFieldsToFill.bloodType = parsed.bloodType;
-      setPendingImport({
-        incoming,
-        duplicateCount,
-        invalidCount,
-        totalInFile: parsed.donations.length,
-        profileFieldsToFill,
-      });
+    setPendingImport({
+      incoming,
+      duplicateCount,
+      invalidCount,
+      totalInFile: parsed.donations.length,
+      profileFieldsToFill,
+    });
+  };
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setImporting(true);
+    try {
+      const text = await file.text();
+      await processImportedText(text);
     } catch (err) {
       showToast("error", "นำเข้าไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็นไฟล์สำรองที่ส่งออกจากแอปนี้");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const triggerPasteImport = () => {
+    setError("");
+    setPasteImportText("");
+    setShowPasteImport(true);
+  };
+
+  const confirmPasteImport = async () => {
+    const text = pasteImportText.trim();
+    if (!text) return;
+    setImporting(true);
+    try {
+      await processImportedText(text);
+      setShowPasteImport(false);
+    } catch (err) {
+      showToast("error", "นำเข้าข้อมูลไม่สำเร็จ — ตรวจสอบว่าวางข้อความที่คัดลอกจากปุ่ม \"คัดลอกข้อความ\" ของแอปนี้ครบถ้วน");
     } finally {
       setImporting(false);
     }
@@ -5157,6 +5188,9 @@ function AppInner() {
               <button onClick={triggerImport} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Upload size={16} color="#9A3B33" /> {importing ? "กำลังอ่านไฟล์..." : "นำเข้าไฟล์"}
               </button>
+              <button onClick={triggerPasteImport} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
+                <StickyNote size={16} color="#9A3B33" /> วางข้อความสำรอง
+              </button>
               <button onClick={() => { setShowSettings(false); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#C0392B", fontFamily: "inherit" }}>
                 <Trash2 size={16} color="#C0392B" /> ลบข้อมูลทั้งหมด
               </button>
@@ -5293,7 +5327,7 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22 }}>
             <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 10 }}>ยืนยันการนำเข้าข้อมูล</div>
-            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>ไฟล์นี้มีทั้งหมด {pendingImport.totalInFile} รายการ</p>
+            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>ข้อมูลนี้มีทั้งหมด {pendingImport.totalInFile} รายการ</p>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>จะเพิ่มรายการใหม่ <b>{pendingImport.incoming.length}</b> รายการ</p>
             {pendingImport.duplicateCount > 0 && (
               <p style={{ fontSize: 13, color: "#8A7370", lineHeight: 1.8, margin: "0 0 6px" }}>ข้ามรายการที่มีอยู่แล้ว {pendingImport.duplicateCount} รายการ</p>
@@ -5304,8 +5338,8 @@ function AppInner() {
             {pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0 && (
               <p style={{ fontSize: 12.5, color: "#B39B96", lineHeight: 1.7, margin: "0 0 8px" }}>
                 {pendingImport.invalidCount > 0 && pendingImport.duplicateCount === 0
-                  ? "ไม่มีรายการใหม่ให้เพิ่ม — ทุกรายการในไฟล์นี้มีข้อมูลไม่ถูกต้อง"
-                  : "ไม่มีรายการใหม่ให้เพิ่ม — ข้อมูลในไฟล์นี้มีอยู่ในเครื่องแล้วทั้งหมด"}
+                  ? "ไม่มีรายการใหม่ให้เพิ่ม — ทุกรายการมีข้อมูลไม่ถูกต้อง"
+                  : "ไม่มีรายการใหม่ให้เพิ่ม — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
               </p>
             )}
             {Object.keys(pendingImport.profileFieldsToFill || {}).length > 0 && (
@@ -5353,6 +5387,35 @@ function AppInner() {
               </button>
               <button onClick={downloadExportFile} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 ดาวน์โหลดไฟล์
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPasteImport && (
+        <div role="dialog" aria-modal="true" aria-label="วางข้อความสำรอง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>วางข้อความสำรอง</div>
+              <button onClick={() => setShowPasteImport(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 12px" }}>
+              ใช้เมื่อดาวน์โหลดไฟล์ไม่ได้และมีแต่ข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" — วางข้อความทั้งหมดที่นี่แล้วกด "นำเข้า"
+            </p>
+            <textarea
+              value={pasteImportText}
+              onChange={(e) => setPasteImportText(e.target.value)}
+              placeholder='{"nickname": "...", "donations": [...] }'
+              aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
+              style={{ width: "100%", height: 140, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+            />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setShowPasteImport(false)} disabled={importing} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13, cursor: "pointer" }}>
+                ยกเลิก
+              </button>
+              <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
+                {importing ? "กำลังตรวจสอบ..." : "นำเข้า"}
               </button>
             </div>
           </div>
