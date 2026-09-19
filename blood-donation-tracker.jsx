@@ -26,7 +26,7 @@ const isNativeApp = (() => {
 // blob downloads, data: URI navigation, the Web Share API, and even the
 // browser's native long-press-to-save. It's never true in the packaged
 // native app (no WebView UA to sniff) or in a real browser tab.
-const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && /\bLine\//.test(navigator.userAgent);
+const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const APP_VERSION = "1.0.0";
