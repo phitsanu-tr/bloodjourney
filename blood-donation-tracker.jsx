@@ -531,7 +531,7 @@ export const DEFAULT_CARD_SIZE = "portrait45";
 // provide airtight protection without a server that independently knows
 // the real donation data, which this local-storage-only app deliberately
 // doesn't have.
-const SHARE_LINK_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const SHARE_LINK_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const SHARE_LINK_TAG_BITS = 64; // AES-GCM default is 128; halving the auth
 // tag halves its fixed per-token overhead. Forgery odds without the key go
 // from ~1-in-2^128 to ~1-in-2^64 — astronomically still safe against
