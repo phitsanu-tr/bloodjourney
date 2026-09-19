@@ -1461,8 +1461,8 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
               <button onClick={onShare} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
                 <Share2 size={14} color="#9A3B33" /> แชร์
               </button>
-              <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#C0392B", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
-                <Trash2 size={14} color="#C0392B" /> ลบ
+              <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
+                <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
             </div>
           </>
@@ -4243,8 +4243,8 @@ function AppInner() {
                               <button onClick={() => { setOpenActionMenuId(null); openEditStartingCount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
                                 <Pencil size={14} color="#9A3B33" /> แก้ไข
                               </button>
-                              <button onClick={() => { setOpenActionMenuId(null); requestDeleteStartingCount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#C0392B", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
-                                <Trash2 size={14} color="#C0392B" /> ลบ
+                              <button onClick={() => { setOpenActionMenuId(null); requestDeleteStartingCount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
+                                <Trash2 size={14} color="#B3261E" /> ลบ
                               </button>
                             </div>
                           </>
@@ -5293,8 +5293,8 @@ function AppInner() {
               <button onClick={() => openBackupRestore("export")} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Download size={16} color="#9A3B33" /> สำรอง/กู้คืนข้อมูล
               </button>
-              <button onClick={() => { setShowSettings(false); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#C0392B", fontFamily: "inherit" }}>
-                <Trash2 size={16} color="#C0392B" /> ลบข้อมูลทั้งหมด
+              <button onClick={() => { setShowSettings(false); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit" }}>
+                <Trash2 size={16} color="#B3261E" /> ลบข้อมูลทั้งหมด
               </button>
             </div>
 
