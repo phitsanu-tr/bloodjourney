@@ -3751,7 +3751,7 @@ function AppInner() {
       {phase === "consent" && (
         <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "32px 20px 40px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: "#9A3B33", boxShadow: "0 6px 14px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 6px 14px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
               <Droplet size={20} color="#FFF7F5" />
             </div>
             <div>
@@ -3804,7 +3804,7 @@ function AppInner() {
         <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "24px 20px 88px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: "#9A3B33", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
               </div>
               <div>
@@ -3948,7 +3948,7 @@ function AppInner() {
                   )}
                 </div>
               )}
-              <div style={{ background: "#9A3B33", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+              <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,247,245,0.08)" style={{ position: "absolute", top: -10, right: 120 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,247,245,0.07)" style={{ position: "absolute", bottom: 8, left: -4 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,247,245,0.06)" style={{ position: "absolute", bottom: 55, left: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -4271,7 +4271,7 @@ function AppInner() {
               <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#3A2C29" }}>แดชบอร์ดสรุปข้อมูล</div>
               <p style={{ fontSize: 12.5, color: "#8A7370", margin: "0 0 18px" }}>ภาพรวมการบริจาคโลหิตของคุณ</p>
 
-              <div style={{ background: "#9A3B33", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: 16, marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12, position: "relative", overflow: "hidden" }}>
+              <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: 16, marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12, position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", top: 8, right: 8, width: 60, height: 60 }}>
                   <svg width="36" height="36" viewBox="0 0 24 24" fill="#FFF7F5" style={{ position: "absolute", top: 12, left: 18, opacity: 0.9 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,247,245,0.55)" style={{ position: "absolute", top: 34, left: 0 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -5141,7 +5141,7 @@ function AppInner() {
                     style={{
                       flex: 1, textAlign: "center", padding: "10px 6px", borderRadius: 10, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
                       border: (form.type || DEFAULT_DONATION_TYPE) === t ? "1.5px solid transparent" : "1.5px solid #E3C8C3",
-                      background: (form.type || DEFAULT_DONATION_TYPE) === t ? "#9A3B33" : "#FFFFFF",
+                      background: (form.type || DEFAULT_DONATION_TYPE) === t ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF",
                       color: (form.type || DEFAULT_DONATION_TYPE) === t ? "#FFF7F5" : "#7A6360",
                       fontWeight: (form.type || DEFAULT_DONATION_TYPE) === t ? 600 : 400,
                     }}>
@@ -5479,7 +5479,7 @@ function AppInner() {
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "export" ? "#FFFFFF" : "transparent",
-                  color: backupRestoreTab === "export" ? "#9A3B33" : "#8A7370",
+                  color: backupRestoreTab === "export" ? "#8A2F28" : "#8A7370",
                   fontSize: 13.5, fontWeight: backupRestoreTab === "export" ? 600 : 500,
                   boxShadow: backupRestoreTab === "export" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
                 }}>
@@ -5491,7 +5491,7 @@ function AppInner() {
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "import" ? "#FFFFFF" : "transparent",
-                  color: backupRestoreTab === "import" ? "#9A3B33" : "#8A7370",
+                  color: backupRestoreTab === "import" ? "#8A2F28" : "#8A7370",
                   fontSize: 13.5, fontWeight: backupRestoreTab === "import" ? 600 : 500,
                   boxShadow: backupRestoreTab === "import" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
                 }}>
