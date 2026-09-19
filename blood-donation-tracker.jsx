@@ -5424,12 +5424,19 @@ function AppInner() {
               </button>
             </div>
 
-            {/* Fixed min-height so the dialog doesn't jump/resize when switching
-                tabs — the export tab (record-count card + explanation text)
-                is naturally taller than the import tab's content. */}
-            <div style={{ minHeight: 436 }}>
-            {backupRestoreTab === "export" ? (
-              <>
+            {/* Both tab panels are always mounted, stacked in the same CSS
+                grid cell (an exact equal-height "crossfade tabs" technique).
+                The inactive panel keeps visibility:hidden (not display:none),
+                so it still occupies layout space and the grid row sizes to
+                whichever panel is taller — the dialog's height stays exactly
+                the same no matter which tab is active, with no hand-tuned
+                min-height number to keep in sync as the content changes. */}
+            <div style={{ display: "grid" }}>
+              <div style={{
+                gridArea: "1 / 1",
+                visibility: backupRestoreTab === "export" ? "visible" : "hidden",
+                pointerEvents: backupRestoreTab === "export" ? "auto" : "none",
+              }} aria-hidden={backupRestoreTab !== "export"}>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
                   <p style={{ margin: "0 0 4px", fontSize: 12, color: "#8A7370" }}>จำนวนรายการบริจาคที่บันทึกไว้</p>
                   <p style={{ margin: 0, fontSize: 19, fontWeight: 700, color: "#3A2C29" }}>{donations.length} รายการ</p>
@@ -5441,21 +5448,26 @@ function AppInner() {
                 <textarea
                   ref={exportTextareaRef}
                   readOnly
+                  tabIndex={backupRestoreTab === "export" ? 0 : -1}
                   value={exportJsonText}
                   onFocus={(e) => e.target.select()}
                   aria-label="ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"
                   style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                 />
-                <button onClick={downloadExportFile} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
+                <button onClick={downloadExportFile} tabIndex={backupRestoreTab === "export" ? 0 : -1} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
                   <Download size={17} /> ดาวน์โหลดไฟล์
                 </button>
-                <button onClick={copyExportText} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: "pointer" }}>
+                <button onClick={copyExportText} tabIndex={backupRestoreTab === "export" ? 0 : -1} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: "pointer" }}>
                   <StickyNote size={16} /> คัดลอกข้อความ
                 </button>
-              </>
-            ) : (
-              <>
-                <button onClick={triggerImport} disabled={importing} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
+              </div>
+
+              <div style={{
+                gridArea: "1 / 1",
+                visibility: backupRestoreTab === "import" ? "visible" : "hidden",
+                pointerEvents: backupRestoreTab === "import" ? "auto" : "none",
+              }} aria-hidden={backupRestoreTab !== "import"}>
+                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
                 <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 10px" }}>
@@ -5464,15 +5476,15 @@ function AppInner() {
                 <textarea
                   value={pasteImportText}
                   onChange={(e) => setPasteImportText(e.target.value)}
+                  tabIndex={backupRestoreTab === "import" ? 0 : -1}
                   placeholder='{"nickname": "...", "donations": [...] }'
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
                   style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                 />
-                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
+                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
                   {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
                 </button>
-              </>
-            )}
+              </div>
             </div>
           </div>
         </div>
