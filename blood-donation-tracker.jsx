@@ -5466,22 +5466,29 @@ function AppInner() {
                 gridArea: "1 / 1",
                 visibility: backupRestoreTab === "import" ? "visible" : "hidden",
                 pointerEvents: backupRestoreTab === "import" ? "auto" : "none",
+                display: "flex",
+                flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "import"}>
-                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
+                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
-                <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 10px" }}>
+                <p style={{ flexShrink: 0, fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 10px" }}>
                   หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
                 </p>
+                {/* flex:1 lets this textarea grow to fill whatever vertical
+                    space is left over after the equal-height grid trick
+                    above sizes this tab to match the (taller) export tab —
+                    otherwise that leftover space would just be empty gap
+                    below the "นำเข้าจากข้อความ" button. */}
                 <textarea
                   value={pasteImportText}
                   onChange={(e) => setPasteImportText(e.target.value)}
                   tabIndex={backupRestoreTab === "import" ? 0 : -1}
                   placeholder='{"nickname": "...", "donations": [...] }'
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical", boxSizing: "border-box" }}
                 />
-                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
+                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
                   {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
                 </button>
               </div>
