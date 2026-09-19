@@ -1744,37 +1744,6 @@ function AppInner() {
     }
   }, [anyModalOpen]);
 
-  // Header show/hide on scroll direction, matching the familiar Facebook-app
-  // pattern: scrolling DOWN slides the top bar away (giving content the
-  // full screen), scrolling UP even slightly brings it right back, and it's
-  // always shown near the very top of the page regardless of direction, so
-  // it never starts a fresh scroll session hidden. A small threshold (6px)
-  // stops it from twitching on tiny/jittery scroll events, and it's skipped
-  // while any modal has the page scroll-locked (anyModalOpen above) since
-  // window.scrollY doesn't meaningfully change then anyway.
-  const [headerVisible, setHeaderVisible] = useState(true);
-  const lastScrollYRef = useRef(0);
-  useEffect(() => {
-    if (phase !== "app" || anyModalOpen) return;
-    lastScrollYRef.current = window.scrollY || window.pageYOffset || 0;
-    const HIDE_THRESHOLD = 6;
-    const NEAR_TOP = 8;
-    const onScroll = () => {
-      const y = window.scrollY || window.pageYOffset || 0;
-      const delta = y - lastScrollYRef.current;
-      if (y <= NEAR_TOP) {
-        setHeaderVisible(true);
-      } else if (delta > HIDE_THRESHOLD) {
-        setHeaderVisible(false);
-      } else if (delta < -HIDE_THRESHOLD) {
-        setHeaderVisible(true);
-      }
-      lastScrollYRef.current = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [phase, anyModalOpen]);
-
   const showToast = useCallback((type, message, duration = 3500) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast({ type, message });
@@ -3860,15 +3829,9 @@ function AppInner() {
           underneath it. The app-shell content below gets matching extra
           top padding (HEADER_BAR_HEIGHT + env(safe-area-inset-top) + the
           original 24px breathing room) so nothing starts out hidden behind
-          this bar — keep the two paddings in sync if this height changes.
-          translateY slides it out of view on scroll-down and back on
-          scroll-up (headerVisible, set by the scroll-direction effect
-          above) -- the Facebook-app pattern. It stays position:fixed (not
-          removed from flow) either way, so the app-shell's top padding
-          doesn't need to change when it hides; the content just scrolls up
-          underneath where the bar used to be. */}
+          this bar — keep the two paddings in sync if this height changes. */}
       {phase === "app" && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40, transform: headerVisible ? "translateY(0)" : "translateY(-100%)", transition: "transform 0.25s ease" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40 }}>
           {/* minHeight (not height) + border-box: with an explicit height,
               border-box would count the safe-area paddingTop as PART OF that
               fixed height, squeezing the icon row instead of growing the bar
