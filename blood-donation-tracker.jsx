@@ -60,7 +60,7 @@ const MIN_BACKUP_REMINDER_GAP = 1;
 const MAX_BACKUP_REMINDER_GAP = 50;
 const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
 const DEFAULT_DONATION_TYPE = "whole";
-const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
+export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
 // re-coloring every type pill/icon elsewhere in the app (which stays the
@@ -70,7 +70,7 @@ const DONATION_TYPE_TINT = {
   component: { bg: "#EFE3F0", text: "#6B3E78" },
 };
 
-function toBuddhistDate(d) {
+export function toBuddhistDate(d) {
   const date = parseLocalDate(d);
   return `${date.getDate()} ${THAI_MONTHS[date.getMonth()]} ${date.getFullYear() + 543}`;
 }
@@ -398,6 +398,25 @@ function buildAchievements(donorType) {
   return [...pins, ...medals].sort((a, b) => a.threshold - b.threshold);
 }
 
+// Regenerates an achievement's title/desc from its {kind, tier, isMonk,
+// threshold} — the exact same formula buildAchievements() uses above. Lets
+// the external-browser download page reconstruct the Thai title/desc text
+// itself instead of carrying it as plaintext in the URL (see
+// openShareCardInExternalBrowser).
+export function deriveAchievementText({ kind, tier, isMonk, threshold }) {
+  const n = Number(threshold) || 0;
+  if (kind === "medal") {
+    return {
+      title: isMonk ? `พัดกาชาด ชั้นที่ ${tier}` : `เหรียญกาชาดสมนาคุณ ชั้นที่ ${tier}`,
+      desc: `บริจาคโลหิตครบ ${n} ครั้ง`,
+    };
+  }
+  return {
+    title: n === 1 ? "หยดแรก" : `เข็มที่ระลึก ครั้งที่ ${n}`,
+    desc: n === 1 ? "บริจาคโลหิตครั้งแรกของคุณ" : `บริจาคโลหิตครบ ${n} ครั้ง`,
+  };
+}
+
 // Custom badge icons styled after the real Thai Red Cross designs: a
 // heart-shaped enamel pin with a gold cross-topped crown for เข็มที่ระลึก, a
 // ribboned circular medallion (gold/silver/bronze by tier) for เหรียญกาชาด
@@ -532,6 +551,29 @@ async function computeHmacHex(secret, message) {
 
 export async function signShareParams(params) {
   return computeHmacHex(SHARE_LINK_SECRET, canonicalizeShareParams(params));
+}
+
+// Nickname and donation location are free text typed by the user — unlike
+// the achievement/type text above, there's no fixed formula to regenerate
+// them from, so they do have to travel through the URL. Base64-encoding
+// them keeps the address bar from showing readable Thai text at a glance
+// (e.g. while the page is loading, or in browser history) — this is a
+// cosmetic/glance-privacy measure, not encryption: anyone who bothers to
+// base64-decode the param sees the same text either way.
+function encodeUrlText(str) {
+  try {
+    return btoa(encodeURIComponent(str || "").replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))));
+  } catch (e) {
+    return "";
+  }
+}
+
+export function decodeUrlText(str) {
+  try {
+    return decodeURIComponent(atob(str || "").split("").map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join(""));
+  } catch (e) {
+    return "";
+  }
 }
 
 export async function verifyShareParams(params) {
@@ -2314,6 +2356,7 @@ function AppInner() {
         desc: latestUnlocked.desc,
         kind: latestUnlocked.kind,
         tier: latestUnlocked.tier,
+        threshold: latestUnlocked.threshold,
         isMonk: donorType === "monk",
       },
       estVolumeMl: totalCount * 350,
@@ -2331,8 +2374,10 @@ function AppInner() {
   const openRecordShareCard = (d) => {
     setShareRecordData({
       order: donationOrderMap[d.id] || "",
+      date: d.date || "",
       dateStr: toBuddhistDate(d.date),
       timeStr: d.time || "",
+      type: d.type === "component" ? "component" : "whole",
       typeLabel: DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"],
       location: d.location || "",
       bloodType,
@@ -2461,25 +2506,30 @@ function AppInner() {
       params.set("dl", "1");
       params.set("size", size.key);
       if (shareRecordData) {
+        // typeLabel/dateStr are re-derived on the download page from `type`
+        // (an enum) and `date` (raw) instead of carried as Thai text — same
+        // card, but the URL and address bar don't show it in the clear.
         params.set("kind", "record");
         params.set("order", String(shareRecordData.order ?? ""));
-        params.set("dateStr", shareRecordData.dateStr || "");
+        params.set("date", shareRecordData.date || "");
         params.set("timeStr", shareRecordData.timeStr || "");
-        params.set("typeLabel", shareRecordData.typeLabel || "");
-        params.set("location", shareRecordData.location || "");
+        params.set("type", shareRecordData.type || "whole");
+        params.set("location", encodeUrlText(shareRecordData.location));
         params.set("bloodType", shareRecordData.bloodType || "");
-        params.set("nickname", shareRecordData.nickname || "");
+        params.set("nickname", encodeUrlText(shareRecordData.nickname));
       } else if (shareData) {
+        // title/desc are re-derived on the download page from
+        // kind+tier+isMonk+threshold (see deriveAchievementText) instead of
+        // carried as Thai text in the URL.
         params.set("kind", "achievement");
         params.set("totalCount", String(shareData.totalCount ?? ""));
         params.set("estVolumeMl", String(shareData.estVolumeMl ?? ""));
-        params.set("title", shareData.achievement?.title || "");
-        params.set("desc", shareData.achievement?.desc || "");
         params.set("akind", shareData.achievement?.kind || "");
         params.set("tier", String(shareData.achievement?.tier ?? ""));
+        params.set("threshold", String(shareData.achievement?.threshold ?? ""));
         params.set("isMonk", shareData.achievement?.isMonk ? "1" : "0");
         params.set("bloodType", shareData.bloodType || "");
-        params.set("nickname", shareData.nickname || "");
+        params.set("nickname", encodeUrlText(shareData.nickname));
       } else {
         return;
       }

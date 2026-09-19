@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { buildShareCardDataUrl, buildRecordShareCardDataUrl, CARD_SIZES, DEFAULT_CARD_SIZE, verifyShareParams } from "./App.jsx";
+import {
+  buildShareCardDataUrl,
+  buildRecordShareCardDataUrl,
+  CARD_SIZES,
+  DEFAULT_CARD_SIZE,
+  DONATION_TYPE_LABELS,
+  deriveAchievementText,
+  toBuddhistDate,
+  decodeUrlText,
+  verifyShareParams,
+} from "./App.jsx";
 
 // Standalone "download landing page" — opened via liff.openWindow({external:
 // true}) from inside the main app's share-card modal, specifically to escape
@@ -16,38 +26,45 @@ function readParams() {
   const size = CARD_SIZES[sizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
   const kind = params.get("kind");
   if (kind === "record") {
+    // typeLabel/dateStr aren't carried in the URL as Thai text — they're
+    // re-derived here from the raw `type` enum and `date`, the same way the
+    // main app computes them (see openShareCardInExternalBrowser).
+    const type = params.get("type") === "component" ? "component" : "whole";
     return {
       kind,
       size,
       data: {
         order: params.get("order") || "",
-        dateStr: params.get("dateStr") || "",
+        dateStr: toBuddhistDate(params.get("date") || ""),
         timeStr: params.get("timeStr") || "",
-        typeLabel: params.get("typeLabel") || "",
-        location: params.get("location") || "",
+        typeLabel: DONATION_TYPE_LABELS[type],
+        location: decodeUrlText(params.get("location")),
         bloodType: params.get("bloodType") || "",
-        nickname: params.get("nickname") || "",
+        nickname: decodeUrlText(params.get("nickname")),
         width: size.w,
         height: size.h,
       },
     };
   }
   if (kind === "achievement") {
+    // title/desc are re-derived here from kind+tier+isMonk+threshold, the
+    // same formula the main app uses to build them in the first place (see
+    // deriveAchievementText / buildAchievements) — not carried as Thai text.
+    const achievementBase = {
+      kind: params.get("akind") || "",
+      tier: params.get("tier") ? Number(params.get("tier")) : undefined,
+      isMonk: params.get("isMonk") === "1",
+      threshold: params.get("threshold") ? Number(params.get("threshold")) : undefined,
+    };
     return {
       kind,
       size,
       data: {
         totalCount: Number(params.get("totalCount") || 0),
         estVolumeMl: Number(params.get("estVolumeMl") || 0),
-        achievement: {
-          title: params.get("title") || "",
-          desc: params.get("desc") || "",
-          kind: params.get("akind") || "",
-          tier: params.get("tier") ? Number(params.get("tier")) : undefined,
-          isMonk: params.get("isMonk") === "1",
-        },
+        achievement: { ...achievementBase, ...deriveAchievementText(achievementBase) },
         bloodType: params.get("bloodType") || "",
-        nickname: params.get("nickname") || "",
+        nickname: decodeUrlText(params.get("nickname")),
         width: size.w,
         height: size.h,
       },
