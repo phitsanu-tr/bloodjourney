@@ -5101,7 +5101,7 @@ function AppInner() {
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
             </div>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
-              <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
                 {/* lang="en-US" pins iOS Safari's native date-picker display to the
                     Gregorian calendar. Without it, a device set to Thailand region
@@ -5123,19 +5123,26 @@ function AppInner() {
                     intrinsic layout — under a narrow container (this modal is only
                     ~340px of usable width) WebKit can render it wider than the
                     width:100% we ask for and let it spill past the field's own
-                    rounded border. The wrapping div's overflow:hidden is a second,
-                    belt-and-suspenders line of defense: even if the native control
-                    still wants more room than it's given, it gets clipped instead
-                    of visibly poking out past the modal's edge. */}
-                <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
-                  onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                  style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                    rounded border. The clipWrap below hugs ONLY the input (not the
+                    label above it) with overflow:hidden + matching borderRadius:
+                    wrapping the label too would put the rounded corner up at the
+                    label's top edge instead of the input's, leaving the input's own
+                    top-right corner as a flat, uncurved clip -- exactly the square-
+                    notch look reported. Hugging just the input keeps its rounded
+                    box intact and only clips real overflow, invisibly. */}
+                <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                  <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
+                    onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                </div>
               </div>
-              <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                <input type="time" lang="en-US" value={form.time}
-                  onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                  style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                  <input type="time" lang="en-US" value={form.time}
+                    onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
+                </div>
               </div>
             </div>
             {sameDateConflict ? (
@@ -5241,17 +5248,21 @@ function AppInner() {
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
-                      <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
+                      <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
-                        <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
-                          onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                          style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                        <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                          <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
+                            onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                        </div>
                       </div>
-                      <div style={{ minWidth: 0, overflow: "hidden", borderRadius: 10 }}>
+                      <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                        <input type="time" lang="en-US" value={tf.time}
-                          onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                          style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                        <div style={{ overflow: "hidden", borderRadius: 10 }}>
+                          <input type="time" lang="en-US" value={tf.time}
+                            onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                        </div>
                       </div>
                     </div>
                     <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
