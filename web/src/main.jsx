@@ -5,7 +5,6 @@ import { Capacitor } from "@capacitor/core";
 import App from "./App.jsx";
 import DownloadPage from "./DownloadPage.jsx";
 import CalendarIcsPage from "./CalendarIcsPage.jsx";
-import ExportBackupPage from "./ExportBackupPage.jsx";
 
 // A `?dl=1` URL is the "download landing page" opened via
 // liff.openWindow({external:true}) from inside the main app's share-card
@@ -18,11 +17,6 @@ const isDownloadPage = new URLSearchParams(window.location.search).get("dl") ===
 // Same idea as `?dl=1`, for the "add to calendar" .ics file instead of the
 // share-card image — see addToCalendarIcs() in the main app file.
 const isIcsPage = new URLSearchParams(window.location.search).get("ics") === "1";
-
-// Same idea again, for the export-backup JSON file — see
-// downloadExportFile() in the main app file. Only reached as a last-resort
-// fallback when navigator.share isn't available inside LINE.
-const isExportPage = new URLSearchParams(window.location.search).get("exp") === "1";
 
 // The packaged iOS/Android app (Capacitor) is a completely separate
 // distribution from the LINE LIFF web build — it isn't opened through LINE
@@ -73,15 +67,6 @@ async function bootstrap() {
     ReactDOM.createRoot(document.getElementById("root")).render(
       <React.StrictMode>
         <CalendarIcsPage />
-      </React.StrictMode>
-    );
-    return;
-  }
-
-  if (isExportPage) {
-    ReactDOM.createRoot(document.getElementById("root")).render(
-      <React.StrictMode>
-        <ExportBackupPage />
       </React.StrictMode>
     );
     return;
