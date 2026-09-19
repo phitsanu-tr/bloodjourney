@@ -4760,10 +4760,10 @@ function AppInner() {
             {isLineInAppBrowser && (
               <button onClick={openShareCardInExternalBrowser} disabled={!shareCardDataUrl} style={{
                 marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                padding: "11px 0", borderRadius: 12, background: "transparent", color: "#FFF7F5", border: "1px solid rgba(255,247,245,0.4)",
+                padding: "11px 0", borderRadius: 12, background: "transparent", color: "#9A3B33", border: "1.5px solid #9A3B33",
                 fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}>
-                บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก ↗
+                บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก
               </button>
             )}
           </div>
