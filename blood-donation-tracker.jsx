@@ -5639,19 +5639,17 @@ function AppInner() {
                   <Share2 size={16} /> แชร์
                 </button>
               )}
-              <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "" : "btn-primary"} style={{
+              <button onClick={downloadShareCard} disabled={sharingCard || !shareCardDataUrl} className={canShareFiles ? "btn-ghost" : "btn-primary"} style={{
                 flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                ...(canShareFiles
-                  ? { background: "#FFFFFF", color: "#9A3B33", border: "1.5px solid #9A3B33" }
-                  : { border: "none" }),
+                ...(canShareFiles ? {} : { border: "none" }),
               }}>
                 <Download size={16} /> ดาวน์โหลด
               </button>
             </div>
             {isLineInAppBrowser && (
-              <button onClick={openShareCardInExternalBrowser} disabled={!shareCardDataUrl} style={{
+              <button onClick={openShareCardInExternalBrowser} disabled={!shareCardDataUrl} className="btn-ghost" style={{
                 marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                padding: "11px 0", borderRadius: 12, background: "transparent", color: "#9A3B33", border: "1.5px solid #9A3B33",
+                padding: "11px 0", borderRadius: 12,
                 fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}>
                 บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก
