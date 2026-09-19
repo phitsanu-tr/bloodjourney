@@ -3065,10 +3065,12 @@ function AppInner() {
 
   const switchBackupRestoreTab = (tab) => {
     setBackupRestoreTab(tab);
+    // Switching tabs should never throw away what the user already typed —
+    // only regenerate the export preview (cheap, local, always up to date).
+    // pasteImportText is left untouched here; it's only ever cleared by a
+    // fresh open (openBackupRestore) or an actually-confirmed import.
     if (tab === "export") {
       exportData();
-    } else {
-      setPasteImportText("");
     }
   };
 
