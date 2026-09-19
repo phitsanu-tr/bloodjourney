@@ -909,7 +909,7 @@ const EXPORT_HANDOFF_TTL_MS = 3 * 60 * 1000; // 3 minutes
 // practical URL-length limits across browsers/LINE. Above this, callers
 // should skip straight to the copy-to-clipboard/manual fallback instead,
 // which has no size limit.
-export const EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES = 3000;
+export const EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES = 6000;
 
 // Packs a 4-byte big-endian minute-offset timestamp (same epoch trick as
 // the share-card token) as a raw prefix ahead of the UTF-8 text bytes,
@@ -2696,13 +2696,21 @@ function AppInner() {
     // off to a real external browser via the same liff.openWindow escape
     // used for the share-card/calendar, where a plain blob download works
     // normally. Only attempted when the payload is small enough to fit
-    // safely in a URL — see EXPORT_HANDOFF_MAX_PLAINTEXT_CHARS. Above that,
+    // safely in a URL — see EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES. Above that,
     // there's no way to move the data out of LINE's isolated browser context
     // automatically, so this falls through to the copy-to-clipboard fallback
     // instead (no size limit there, just more manual for the user).
-    if (isLineInAppBrowser && new TextEncoder().encode(exportJsonText).length <= EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES) {
+    //
+    // Re-compacted (no pretty-print whitespace) just for this handoff, since
+    // every byte counts against the URL-length budget here — exportJsonText
+    // itself stays pretty-printed for the on-screen copy/preview textarea,
+    // which isn't size-constrained the same way. Parsing it back is cheap at
+    // realistic export sizes and avoids maintaining two payload builders.
+    let compactExportText = exportJsonText;
+    try { compactExportText = JSON.stringify(JSON.parse(exportJsonText)); } catch (e) {}
+    if (isLineInAppBrowser && new TextEncoder().encode(compactExportText).length <= EXPORT_HANDOFF_MAX_PLAINTEXT_BYTES) {
       try {
-        const token = await encryptExportHandoff(exportJsonText);
+        const token = await encryptExportHandoff(compactExportText);
         const url = `${window.location.origin}${window.location.pathname}?exp=1&d=${token}`;
         liff.openWindow({ url, external: true });
         showToast("success", "เปิดเบราว์เซอร์ภายนอกให้ดาวน์โหลดไฟล์แล้ว");
