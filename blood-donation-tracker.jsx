@@ -3684,7 +3684,15 @@ function AppInner() {
         <svg width="34" height="41" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", bottom: -10, right: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
       </div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap');
+        /* Mitr is now loaded from a <link> in index.html's <head> instead of
+           an @import here -- this @import only started fetching once React
+           had already mounted and rendered this very style block, which was
+           the real cause of the visible "wrong font, then correct font"
+           flash reported: the fallback font showed for JS-load-time PLUS
+           font-download-time, stacked serially, instead of the two
+           happening in parallel from the start of the page load. Removed to
+           avoid a redundant duplicate fetch now that index.html handles it
+           earlier and in parallel. */
         * { box-sizing: border-box; }
         /* Hides scrollbar tracks/thumbs app-wide -- both the main page's own
            scroll (every tab: home, dashboard, missions, knowledge, etc, all

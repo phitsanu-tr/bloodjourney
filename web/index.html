@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
     <meta name="theme-color" content="#8A2F28" />
     <meta name="description" content="บันทึกการบริจาคโลหิตของคุณ" />
+    <!-- The Mitr font used to only load via an @import inside a <style> tag
+         that React injects when it renders — meaning the browser couldn't
+         even START fetching the font until AFTER the JS bundle downloaded,
+         parsed, and ran. That's why text visibly showed in the fallback
+         (Inter/system sans) first and then swapped to Mitr moments later.
+         Loading it here instead, directly in the initial HTML, lets the
+         browser start fetching it immediately in parallel with the JS
+         bundle — before React has even mounted — cutting the fallback
+         window down to (ideally) nothing on a fast connection, and to just
+         the font's own download time otherwise, instead of JS-load time +
+         font-download time stacked on top of each other. preconnect warms
+         up the DNS/TLS handshake to both of Google Fonts' hosts so the
+         stylesheet and the actual font files that its @font-face rules
+         reference both start faster too. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
