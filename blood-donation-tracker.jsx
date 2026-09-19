@@ -5493,20 +5493,9 @@ function AppInner() {
                 <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
-                <div style={{ flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, margin: "0 0 10px" }}>
-                  <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: 0 }}>
-                    หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
-                  </p>
-                  {pasteImportText.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setPasteImportText("")}
-                      tabIndex={backupRestoreTab === "import" ? 0 : -1}
-                      style={{ flexShrink: 0, background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                      ล้างข้อความ
-                    </button>
-                  )}
-                </div>
+                <p style={{ flexShrink: 0, fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 10px" }}>
+                  หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
+                </p>
                 {/* flex:1 lets this textarea grow to fill whatever vertical
                     space is left over after the equal-height grid trick
                     above sizes this tab to match the (taller) export tab —
@@ -5518,8 +5507,19 @@ function AppInner() {
                   tabIndex={backupRestoreTab === "import" ? 0 : -1}
                   placeholder='{"nickname": "...", "donations": [...] }'
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical", boxSizing: "border-box" }}
+                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: pasteImportText.length > 0 ? 4 : 14, resize: "vertical", boxSizing: "border-box" }}
                 />
+                {pasteImportText.length > 0 && (
+                  <div style={{ flexShrink: 0, display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => setPasteImportText("")}
+                      tabIndex={backupRestoreTab === "import" ? 0 : -1}
+                      style={{ background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                      ล้างข้อความ
+                    </button>
+                  </div>
+                )}
                 <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
                   {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
                 </button>
