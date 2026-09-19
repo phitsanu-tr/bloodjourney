@@ -3091,7 +3091,14 @@ function AppInner() {
     }
   };
 
-  const cancelImport = () => setPendingImport(null);
+  const cancelImport = () => {
+    setPendingImport(null);
+    // The confirm dialog only ever appears after processImportedText closed
+    // the backup/restore hub (see there) — on cancel, reopen it on the same
+    // tab so the user lands back where they were instead of having to dig
+    // back in through Settings.
+    setShowBackupRestore(true);
+  };
 
   const confirmImport = async () => {
     if (!pendingImport) return;
