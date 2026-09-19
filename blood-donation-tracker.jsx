@@ -3686,6 +3686,12 @@ function AppInner() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
+        /* Hides the scrollbar track/thumb on scrollable modal panels while
+           keeping them fully scrollable (touch/wheel/keyboard all still
+           work) -- covers Firefox, older IE/Edge, and the WebKit/Blink
+           family (Chrome, Safari, Android WebView, iOS WKWebView/LINE). */
+        .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
         .btn-primary:active { background: #7E2F28; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -4477,7 +4483,7 @@ function AppInner() {
                 {stats.yearData.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "24px 0", color: "#B39B96", fontSize: 13 }}>ยังไม่มีข้อมูลให้แสดงกราฟ</div>
                 ) : (
-                  <div ref={yearChartScrollRef} style={{ width: "100%", height: 180, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <div ref={yearChartScrollRef} className="no-scrollbar" style={{ width: "100%", height: 180, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                     <div style={{ width: stats.yearData.length > YEAR_CHART_VISIBLE_COUNT ? `${Math.round((stats.yearData.length / YEAR_CHART_VISIBLE_COUNT) * 100)}%` : "100%", minWidth: "100%", height: "100%" }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={stats.yearData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
@@ -5225,7 +5231,7 @@ function AppInner() {
 
       {showStartingCountQuickEntry && (
         <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", overflowY: "auto", borderRadius: 18, padding: 22 }}>
+          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", overflowY: "auto", borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
@@ -5310,7 +5316,7 @@ function AppInner() {
 
       {showSettings && (
         <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
+          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
               <button onClick={() => setShowSettings(false)} aria-label="ปิด" autoFocus style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
@@ -5381,7 +5387,7 @@ function AppInner() {
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 0 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
             </p>
-            <div style={{ overflowY: "auto", paddingRight: 4 }}>
+            <div className="no-scrollbar" style={{ overflowY: "auto", paddingRight: 4 }}>
               {PRIVACY_POLICY_SECTIONS.map((sec, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#3A2C29", margin: "0 0 5px" }}>{sec.heading}</div>
@@ -5623,7 +5629,7 @@ function AppInner() {
 
       {showShareCard && (
         <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
+          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
               <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
