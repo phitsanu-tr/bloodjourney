@@ -3077,6 +3077,7 @@ function AppInner() {
   const closeBackupRestore = () => {
     setShowBackupRestore(false);
     setShowExportPreview(false);
+    setShowSettings(true);
   };
 
   const confirmPasteImport = async () => {
@@ -5291,7 +5292,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, padding: 22, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4, flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <button onClick={() => setShowPrivacy(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={() => { setShowPrivacy(false); setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 0 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
@@ -5323,7 +5324,7 @@ function AppInner() {
               ประวัติการบริจาคทั้งหมด {donations.length} รายการ{startingCountNum > 0 ? ` และยอดสะสมยกมา ${startingCountNum} ครั้ง` : ""} จะถูกลบอย่างถาวรและกู้คืนไม่ได้
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowReset(false)} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={() => { setShowReset(false); setShowSettings(true); }} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={resetAll} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
                 {saving ? "กำลังลบ..." : "ลบข้อมูล"}
               </button>
