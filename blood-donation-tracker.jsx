@@ -3819,28 +3819,9 @@ function AppInner() {
         </div>
       )}
 
-      {/* Header — fixed to the top like the bottom tab bar below, instead of
-          scrolling away with the page content, so Profile/Settings stay
-          reachable at any scroll position. Mirrors the bottom nav's own
-          fixed-bar pattern (outer full-width flex-center wrapper + inner
-          maxWidth:420 bar) so both bars line up edge-to-edge with the app's
-          content column on any viewport width. Solid background (not
-          transparent) so scrolled-past content doesn't show through
-          underneath it. The app-shell content below gets matching extra
-          top padding (HEADER_BAR_HEIGHT + env(safe-area-inset-top) + the
-          original 24px breathing room) so nothing starts out hidden behind
-          this bar — keep the two paddings in sync if this height changes. */}
       {phase === "app" && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40 }}>
-          {/* minHeight (not height) + border-box: with an explicit height,
-              border-box would count the safe-area paddingTop as PART OF that
-              fixed height, squeezing the icon row instead of growing the bar
-              to make room for a notch. minHeight lets the box grow past 60px
-              exactly when the safe-area inset needs the extra room, while
-              still guaranteeing 60px (13+34+13, matching the 34px logo)
-              when there's no notch to clear. Keep this in sync with the
-              app-shell's compensating top padding above if it changes. */}
-          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderBottom: "1px solid #F0E0DC", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
+        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "24px 20px 88px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
@@ -3859,11 +3840,7 @@ function AppInner() {
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {phase === "app" && (
-        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 1px + 24px) 20px 88px" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
