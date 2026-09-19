@@ -1712,6 +1712,38 @@ function AppInner() {
     }
   }, [showExportPreview]);
 
+  // Any full-screen dialog (settings, backup/restore, confirm prompts, the
+  // share-card modal, etc.) is rendered as its own position:fixed overlay,
+  // but the page underneath it was never actually prevented from
+  // scrolling — on mobile (especially LINE's in-app browser / iOS Safari)
+  // a finger-drag over the dialog visibly scrolls the background behind it
+  // too. Lock the page in place for as long as *any* dialog is open, and
+  // restore the exact scroll position it was at once the last one closes.
+  const scrollLockYRef = useRef(0);
+  const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
+    || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
+    || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
+    || showBackupRestore || showShareCard;
+  useEffect(() => {
+    if (anyModalOpen) {
+      scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
+      const body = document.body;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollLockYRef.current}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      return () => {
+        body.style.position = "";
+        body.style.top = "";
+        body.style.left = "";
+        body.style.right = "";
+        body.style.width = "";
+        window.scrollTo(0, scrollLockYRef.current);
+      };
+    }
+  }, [anyModalOpen]);
+
   const showToast = useCallback((type, message, duration = 3500) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast({ type, message });
