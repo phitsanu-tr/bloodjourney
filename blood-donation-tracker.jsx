@@ -3062,6 +3062,27 @@ function AppInner() {
     setShowExportPreview(false);
   };
 
+  // Shortcut for the paste-import textarea: read the clipboard directly
+  // instead of making the user long-press → วาง themselves. Clipboard READ
+  // access is stricter than the writeText() used elsewhere in this file
+  // (e.g. copyExportText) — some browsers/webviews (LINE's in-app browser
+  // especially) don't support it or silently deny it — so this is treated
+  // as a pure convenience shortcut: on any failure, fall back to telling
+  // the user to paste into the box manually, which still works exactly as
+  // before and is unaffected by this.
+  const pasteFromClipboard = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim()) {
+          setPasteImportText(text);
+          return;
+        }
+      }
+    } catch (e) {}
+    showToast("error", "วางจากคลิปบอร์ดอัตโนมัติไม่ได้ในเบราว์เซอร์นี้ — กดค้างในช่องด้านล่างแล้วเลือก \"วาง\" แทนได้เลย");
+  };
+
   const handleImportFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -5540,10 +5561,17 @@ function AppInner() {
                   tabIndex={backupRestoreTab === "import" ? 0 : -1}
                   placeholder='{"nickname": "...", "donations": [...] }'
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: pasteImportText.length > 0 ? 4 : 14, resize: "vertical", boxSizing: "border-box" }}
+                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 4, resize: "vertical", boxSizing: "border-box" }}
                 />
-                {pasteImportText.length > 0 && (
-                  <div style={{ flexShrink: 0, display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+                <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <button
+                    type="button"
+                    onClick={pasteFromClipboard}
+                    tabIndex={backupRestoreTab === "import" ? 0 : -1}
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                    <StickyNote size={13} /> วางจากคลิปบอร์ด
+                  </button>
+                  {pasteImportText.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setPasteImportText("")}
@@ -5551,8 +5579,8 @@ function AppInner() {
                       style={{ background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                       ล้างข้อความ
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
                 <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
                   {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
                 </button>
