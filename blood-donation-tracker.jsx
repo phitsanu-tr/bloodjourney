@@ -3725,6 +3725,16 @@ function AppInner() {
            avoid a redundant duplicate fetch now that index.html handles it
            earlier and in parallel. */
         * { box-sizing: border-box; }
+        /* Browsers' default UA stylesheet gives <body> an 8px margin on all
+           four sides unless reset. Every *fixed*-position bar (the header,
+           the bottom tab nav) is positioned relative to the viewport, so
+           that margin never touched them -- they've always sat flush edge-
+           to-edge. But all the normal page content lives inside <body>'s
+           own box, so that unreset 8px margin was quietly insetting it by
+           8px on the left AND right, making the header/footer look full-
+           bleed while the content in between looked framed by a border on
+           both sides. Zeroing it out here matches content to the bars. */
+        body { margin: 0; }
         /* Hides scrollbar tracks/thumbs app-wide -- both the main page's own
            scroll (every tab: home, dashboard, missions, knowledge, etc, all
            share one scrolling document body) and every scrollable modal
