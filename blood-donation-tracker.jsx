@@ -2596,20 +2596,59 @@ function AppInner() {
     }
   };
 
-  const downloadExportFile = () => {
+  // Same underlying bug as the share-card image and the calendar .ics file
+  // earlier in this project: a blob-URL anchor click is silently a no-op
+  // inside LINE's in-app browser — it doesn't throw, so the old code always
+  // showed "เริ่มดาวน์โหลดไฟล์แล้ว" whether or not anything actually happened.
+  // Fixed with the same two mechanisms already proven to work elsewhere in
+  // this file: the native OS share sheet in the packaged app, and the Web
+  // Share API (navigator.share with a real File) in the browser — the one
+  // web mechanism that keeps working inside LINE's WebView even though
+  // blob-anchor downloads don't. The old blob-download is kept only as a
+  // last-resort fallback for a plain desktop/mobile browser outside LINE.
+  const downloadExportFile = async () => {
+    const filename = `donation-backup-${todayLocalStr()}.json`;
+    if (isNativeApp) {
+      try {
+        const base64Data = btoa(unescape(encodeURIComponent(exportJsonText)));
+        await nativeSaveAndShare({ base64Data, filename, mimeType: "application/json", dialogTitle: "บันทึกไฟล์สำรองข้อมูล" });
+        showToast("success", "เปิดเมนูบันทึก/แชร์ไฟล์แล้ว");
+      } catch (e) {
+        showToast("error", "บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด \"คัดลอกข้อความ\" แทน");
+      }
+      return;
+    }
+    try {
+      if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+        const file = new File([exportJsonText], filename, { type: "application/json" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Blood Journey - ข้อมูลสำรอง" });
+          showToast("success", "เปิดเมนูแชร์ไฟล์แล้ว — เลือก \"บันทึกลงไฟล์\" หรือส่งเก็บไว้กับตัวเองได้เลย");
+          return;
+        }
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // user cancelled the share sheet — not an error
+    }
     try {
       const blob = new Blob([exportJsonText], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `donation-backup-${todayLocalStr()}.json`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 2000);
-      showToast("success", "เริ่มดาวน์โหลดไฟล์แล้ว");
+      if (isLineInAppBrowser) {
+        // LINE no-ops this click instead of throwing, so success here can't
+        // actually be confirmed — tell the user plainly instead of claiming it worked.
+        showToast("success", "ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ ให้กด \"คัดลอกข้อความ\" แล้ววางเก็บเองแทน");
+      } else {
+        showToast("success", "เริ่มดาวน์โหลดไฟล์แล้ว");
+      }
     } catch (e) {
-      showToast("error", "ดาวน์โหลดไฟล์อัตโนมัติไม่ได้ในหน้าพรีวิวนี้ — คัดลอกข้อความด้านล่างไปเก็บเองแทนได้เลย");
+      showToast("error", "ดาวน์โหลดไฟล์อัตโนมัติไม่ได้ในหน้านี้ — คัดลอกข้อความด้านล่างไปเก็บเองแทนได้เลย");
     }
   };
 
@@ -5288,7 +5327,7 @@ function AppInner() {
               <button onClick={() => setShowExportPreview(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.7, margin: "0 0 12px" }}>
-              กด "ดาวน์โหลดไฟล์" เพื่อบันทึกเป็นไฟล์ หรือถ้าดาวน์โหลดไม่ได้ในหน้าพรีวิวนี้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
+              กด "ดาวน์โหลดไฟล์" เพื่อบันทึกหรือแชร์เป็นไฟล์ หรือถ้าใช้ไม่ได้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
               <br /><span style={{ fontSize: 11, color: "#B39B96" }}>(ไฟล์นี้ไม่รวมรูปโปรไฟล์ — หลังนำเข้าจะต้องอัปโหลดรูปใหม่ ส่วนรอบบริจาค/ระยะแจ้งเตือนที่ตั้งไว้จะรวมอยู่ในไฟล์นี้ด้วย)</span>
             </p>
             <textarea
