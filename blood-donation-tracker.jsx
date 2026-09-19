@@ -2640,8 +2640,15 @@ function AppInner() {
       // user would land on. Reset it here to match every other piece of
       // state above.
       setTab("home");
-      setPhase("consent");
       setCheckedConsent(false);
+      // Jumping straight to setPhase("consent") skipped the loading splash
+      // that every other route to the consent screen (a cold app open with
+      // no stored consent yet) goes through -- so a full data wipe looked
+      // different from a genuine first run, when it should look identical.
+      // load() re-reads storage (now empty, so it resolves to "consent"
+      // after its usual splash) instead of setting the phase directly,
+      // making a wipe indistinguishable from opening the app fresh.
+      await load();
     } catch (e) {
       setError("ลบข้อมูลไม่สำเร็จ ลองอีกครั้ง");
     } finally {
