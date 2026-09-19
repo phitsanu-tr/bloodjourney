@@ -2952,10 +2952,23 @@ function AppInner() {
       }
       return;
     }
-    // Plain link navigation — confirmed working in LINE's in-app browser on
-    // both iOS and Android, unlike the .ics blob-download approach above.
+    // Plain link navigation (no blob/download mechanics) — but Google's own
+    // sign-in/Calendar pages separately refuse to load inside *any* embedded
+    // WebView (LINE, Facebook, Instagram, ...), showing their own
+    // "this browser may not be secure" block, regardless of what LINE
+    // itself allows. Same fix as the share-card image: escape to the
+    // device's real browser via liff.openWindow — Google's WebView check
+    // doesn't trigger there. No token/encryption needed here like the
+    // image download, since a calendar link only carries a date/title, not
+    // data someone could forge to fake something (worst case is a wrong
+    // date on an event the user adds to their own calendar).
     const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
-    window.open(buildGoogleCalendarUrl(nextEligible, title, details), "_blank");
+    const calendarUrl = buildGoogleCalendarUrl(nextEligible, title, details);
+    if (isLineInAppBrowser) {
+      liff.openWindow({ url: calendarUrl, external: true });
+    } else {
+      window.open(calendarUrl, "_blank");
+    }
   };
 
   const ageOutOfRange = age !== "" && (Number(age) < MIN_AGE || Number(age) > MAX_AGE);
