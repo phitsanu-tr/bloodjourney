@@ -580,12 +580,19 @@ function base64UrlToBytes(str) {
   return bytes;
 }
 
-// Encrypts `payload` (any plain JSON-able object) plus a fresh timestamp
-// into one opaque, URL-safe token — this is what goes in the `d` param.
-export async function encodeShareToken(payload) {
+// Encrypts `payloadArray` (a plain array — see openShareCardInExternalBrowser
+// for the field order) plus a fresh timestamp into one opaque, URL-safe
+// token — this is what goes in the `d` param. Deliberately a positional
+// array rather than a {field: value} object: JSON field names ("totalCount",
+// "estVolumeMl", ...) cost real bytes that then get encrypted and
+// base64-inflated right along with the actual data, so dropping them cuts
+// the finished token noticeably — the trade is that encode/decode must
+// agree on field order, which is why both live in this file (and its
+// DownloadPage.jsx mirror) with the order spelled out in a comment.
+export async function encodeShareToken(payloadArray) {
   const key = await getShareLinkKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const plaintext = new TextEncoder().encode(JSON.stringify({ ...payload, ts: Date.now() }));
+  const plaintext = new TextEncoder().encode(JSON.stringify([...payloadArray, Date.now()]));
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
   combined.set(iv, 0);
@@ -593,9 +600,9 @@ export async function encodeShareToken(payload) {
   return bytesToBase64Url(combined);
 }
 
-// Reverses encodeShareToken(): returns the original payload (with `ts`)
-// if the token decrypts cleanly and isn't expired, or null if it's
-// tampered, malformed, or too old to trust.
+// Reverses encodeShareToken(): returns the original payload array (with the
+// trailing timestamp stripped off) if the token decrypts cleanly and isn't
+// expired, or null if it's tampered, malformed, or too old to trust.
 export async function decodeShareToken(token) {
   try {
     const key = await getShareLinkKey();
@@ -603,10 +610,11 @@ export async function decodeShareToken(token) {
     const iv = combined.slice(0, 12);
     const ciphertext = combined.slice(12);
     const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
-    const payload = JSON.parse(new TextDecoder().decode(plainBuf));
-    const age = Date.now() - (payload.ts || 0);
+    const arr = JSON.parse(new TextDecoder().decode(plainBuf));
+    const ts = arr[arr.length - 1];
+    const age = Date.now() - (ts || 0);
     if (age > SHARE_LINK_TTL_MS || age < -60 * 1000) return null; // expired, or timestamp from the future beyond clock skew
-    return payload;
+    return arr.slice(0, -1);
   } catch (e) {
     return null; // wrong key, tampered ciphertext, or malformed token
   }
@@ -2524,36 +2532,38 @@ function AppInner() {
   const openShareCardInExternalBrowser = async () => {
     try {
       const size = CARD_SIZES[cardSizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
+      const sizeIdx = Object.keys(CARD_SIZES).indexOf(size.key);
       let payload;
       if (shareRecordData) {
-        // typeLabel/dateStr are re-derived on the download page from `type`
-        // (an enum) and `date` (raw) rather than carried as text — moot for
-        // secrecy now that the whole payload is encrypted, but keeps it
-        // smaller and avoids having two sources of truth for that text.
-        payload = {
-          kind: "record",
-          size: size.key,
-          order: shareRecordData.order ?? "",
-          date: shareRecordData.date || "",
-          timeStr: shareRecordData.timeStr || "",
-          type: shareRecordData.type || "whole",
-          location: shareRecordData.location || "",
-          bloodType: shareRecordData.bloodType || "",
-          nickname: shareRecordData.nickname || "",
-        };
+        // Positional array, single-char/numeric codes where possible (see
+        // encodeShareToken for why) — DownloadPage.jsx's buildParsedFromPayload
+        // must read this back in the exact same order:
+        // [kind, sizeIdx, order, date, timeStr, type, location, bloodType, nickname]
+        payload = [
+          "r",
+          sizeIdx,
+          shareRecordData.order ?? "",
+          shareRecordData.date || "",
+          shareRecordData.timeStr || "",
+          shareRecordData.type === "component" ? "c" : "w",
+          shareRecordData.location || "",
+          shareRecordData.bloodType || "",
+          shareRecordData.nickname || "",
+        ];
       } else if (shareData) {
-        payload = {
-          kind: "achievement",
-          size: size.key,
-          totalCount: shareData.totalCount ?? "",
-          estVolumeMl: shareData.estVolumeMl ?? "",
-          akind: shareData.achievement?.kind || "",
-          tier: shareData.achievement?.tier ?? "",
-          threshold: shareData.achievement?.threshold ?? "",
-          isMonk: !!shareData.achievement?.isMonk,
-          bloodType: shareData.bloodType || "",
-          nickname: shareData.nickname || "",
-        };
+        // [kind, sizeIdx, totalCount, estVolumeMl, akind, tier, threshold, isMonk, bloodType, nickname]
+        payload = [
+          "a",
+          sizeIdx,
+          shareData.totalCount ?? 0,
+          shareData.estVolumeMl ?? 0,
+          shareData.achievement?.kind === "medal" ? "m" : "p",
+          shareData.achievement?.tier ?? 0,
+          shareData.achievement?.threshold ?? 0,
+          shareData.achievement?.isMonk ? 1 : 0,
+          shareData.bloodType || "",
+          shareData.nickname || "",
+        ];
       } else {
         return;
       }

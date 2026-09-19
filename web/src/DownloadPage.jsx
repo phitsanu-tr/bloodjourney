@@ -21,49 +21,57 @@ import {
 // long-press-save, all of which work normally here.
 //
 // Everything the card needs (kind, size, numbers, nickname, etc.) lives
-// inside the encrypted token — decodeShareToken() hands back the plain
-// payload once it's verified the token decrypts cleanly and isn't expired.
-// This just reshapes that payload into what buildShareCardDataUrl /
-// buildRecordShareCardDataUrl expect, re-deriving the Thai achievement/
-// donation-type text from the same formulas the main app uses rather than
-// carrying it separately.
-function buildParsedFromPayload(payload) {
-  const sizeKey = payload.size || DEFAULT_CARD_SIZE;
-  const size = CARD_SIZES[sizeKey] || CARD_SIZES[DEFAULT_CARD_SIZE];
-  if (payload.kind === "record") {
-    const type = payload.type === "component" ? "component" : "whole";
+// inside the encrypted token as a positional array — decodeShareToken()
+// hands it back once it's verified the token decrypts cleanly and isn't
+// expired. This reads that array back in the *exact* order
+// openShareCardInExternalBrowser wrote it in (see the comments there) and
+// reshapes it into what buildShareCardDataUrl / buildRecordShareCardDataUrl
+// expect, re-deriving the Thai achievement/donation-type text from the same
+// formulas the main app uses rather than carrying it separately.
+function sizeFromIdx(idx) {
+  const key = Object.keys(CARD_SIZES)[idx];
+  return CARD_SIZES[key] || CARD_SIZES[DEFAULT_CARD_SIZE];
+}
+
+function buildParsedFromPayload(arr) {
+  if (!Array.isArray(arr) || arr.length < 2) return null;
+  const [kindCode, sizeIdx, ...rest] = arr;
+  const size = sizeFromIdx(sizeIdx);
+  if (kindCode === "r") {
+    const [order, date, timeStr, type, location, bloodType, nickname] = rest;
     return {
       kind: "record",
       size,
       data: {
-        order: payload.order ?? "",
-        dateStr: toBuddhistDate(payload.date || ""),
-        timeStr: payload.timeStr || "",
-        typeLabel: DONATION_TYPE_LABELS[type],
-        location: payload.location || "",
-        bloodType: payload.bloodType || "",
-        nickname: payload.nickname || "",
+        order: order ?? "",
+        dateStr: toBuddhistDate(date || ""),
+        timeStr: timeStr || "",
+        typeLabel: DONATION_TYPE_LABELS[type === "c" ? "component" : "whole"],
+        location: location || "",
+        bloodType: bloodType || "",
+        nickname: nickname || "",
         width: size.w,
         height: size.h,
       },
     };
   }
-  if (payload.kind === "achievement") {
+  if (kindCode === "a") {
+    const [totalCount, estVolumeMl, akind, tier, threshold, isMonk, bloodType, nickname] = rest;
     const achievementBase = {
-      kind: payload.akind || "",
-      tier: payload.tier || undefined,
-      isMonk: !!payload.isMonk,
-      threshold: payload.threshold || undefined,
+      kind: akind === "m" ? "medal" : "pin",
+      tier: tier || undefined,
+      isMonk: !!isMonk,
+      threshold: threshold || undefined,
     };
     return {
       kind: "achievement",
       size,
       data: {
-        totalCount: Number(payload.totalCount || 0),
-        estVolumeMl: Number(payload.estVolumeMl || 0),
+        totalCount: Number(totalCount || 0),
+        estVolumeMl: Number(estVolumeMl || 0),
         achievement: { ...achievementBase, ...deriveAchievementText(achievementBase) },
-        bloodType: payload.bloodType || "",
-        nickname: payload.nickname || "",
+        bloodType: bloodType || "",
+        nickname: nickname || "",
         width: size.w,
         height: size.h,
       },
