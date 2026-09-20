@@ -3700,6 +3700,12 @@ function AppInner() {
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
         <style>{`
           @keyframes bjSplashSpin { to { transform: rotate(360deg); } }
+          /* Staggered fade-up for the splash text: the title settles in
+             first, then the subtitle follows ~0.35s later so the eye reads
+             them as two beats instead of one flat block appearing at once.
+             Both finish comfortably inside the 2s minimum the splash is
+             guaranteed to stay on screen (see MIN_LOADING_MS in load()). */
+          @keyframes bjSplashFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 26 }}>
@@ -3710,8 +3716,8 @@ function AppInner() {
               <svg width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>BloodJourney</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif" }}>บันทึกการบริจาคโลหิตของคุณ</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards" }}>BloodJourney</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards", animationDelay: "0.35s" }}>บันทึกการบริจาคโลหิตของคุณ</div>
         </div>
       </div>
     );
