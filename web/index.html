@@ -22,6 +22,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" />
+    <!-- These resets used to live only in a <style> tag React renders --
+         but the app's "loading" splash phase is a separate early-return
+         that never renders that block at all, so for the ~2s the splash
+         is on screen, the browser's default UA stylesheet (an 8px margin
+         on <body>, a reserved scrollbar gutter) was back in effect: the
+         exact "border on both sides" bug fixed elsewhere, reappearing
+         specifically during loading, on every screen size (not just
+         desktop) since it's not a viewport-width issue at all. Putting
+         the resets here instead means they're active from the very first
+         paint, before React mounts, no matter which phase renders. -->
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      html, body { scrollbar-width: none; -ms-overflow-style: none; }
+      html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    </style>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />

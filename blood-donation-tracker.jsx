@@ -3738,26 +3738,14 @@ function AppInner() {
            happening in parallel from the start of the page load. Removed to
            avoid a redundant duplicate fetch now that index.html handles it
            earlier and in parallel. */
-        * { box-sizing: border-box; }
-        /* Browsers' default UA stylesheet gives <body> an 8px margin on all
-           four sides unless reset. Every *fixed*-position bar (the header,
-           the bottom tab nav) is positioned relative to the viewport, so
-           that margin never touched them -- they've always sat flush edge-
-           to-edge. But all the normal page content lives inside <body>'s
-           own box, so that unreset 8px margin was quietly insetting it by
-           8px on the left AND right, making the header/footer look full-
-           bleed while the content in between looked framed by a border on
-           both sides. Zeroing it out here matches content to the bars. */
-        body { margin: 0; }
-        /* Hides scrollbar tracks/thumbs app-wide -- both the main page's own
-           scroll (every tab: home, dashboard, missions, knowledge, etc, all
-           share one scrolling document body) and every scrollable modal
-           panel below -- while keeping everything fully scrollable
-           (touch/wheel/keyboard all still work). Covers Firefox, older
-           IE/Edge, and the WebKit/Blink family (Chrome, Safari, Android
-           WebView, iOS WKWebView/LINE). */
-        html, body { scrollbar-width: none; -ms-overflow-style: none; }
-        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+        /* * { box-sizing }, body { margin: 0 }, and the html/body scrollbar-
+           hiding rules now live as a plain <style> tag in index.html's
+           <head> instead of here -- this block is skipped entirely by the
+           "loading" splash phase's early return above, so those resets
+           weren't applying for the ~2s that phase is on screen. See
+           index.html for the full explanation. .no-scrollbar itself stays
+           here since it's only ever applied to elements this component
+           renders, so it doesn't have the same early-return gap. */
         .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
