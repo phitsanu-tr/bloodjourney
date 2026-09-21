@@ -3706,6 +3706,19 @@ function AppInner() {
              Both finish comfortably inside the 2s minimum the splash is
              guaranteed to stay on screen (see MIN_LOADING_MS in load()). */
           @keyframes bjSplashFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+          /* Splash mark "combo" animation, chosen from a 10-variant preview:
+             a slow breathing scale on the whole droplet plus a periodic
+             blink on the eyes only -- picked over louder options (bounce,
+             wobble, sparkle, rapid flutter) because the splash is only on
+             screen for ~2s and a health app's loading moment should read as
+             calm, not playful. Respects prefers-reduced-motion below. */
+          @keyframes bjFaceBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+          @keyframes bjFaceBlink { 0%, 82%, 100% { transform: scaleY(1); } 88% { transform: scaleY(0.12); } 94% { transform: scaleY(1); } }
+          .bj-splash-drop { transform-origin: 12px 13px; animation: bjFaceBreathe 2.6s ease-in-out infinite; }
+          .bj-splash-eye { transform-origin: center; animation: bjFaceBlink 3.6s ease-in-out infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            .bj-splash-drop, .bj-splash-eye { animation: none !important; }
+          }
         `}</style>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 26 }}>
@@ -3713,7 +3726,14 @@ function AppInner() {
               <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
             </div>
             <div style={{ width: 92, height: 92, borderRadius: 26, background: "#FFFFFF", boxShadow: "0 14px 30px rgba(154,59,51,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+              <svg className="bj-splash-drop" width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33">
+                <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
+                <path className="bj-splash-eye" d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+                <path className="bj-splash-eye" d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+                <circle cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+                <circle cx="17" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+                <path d="M9 17.6 Q12 20.4 15 17.6" stroke="#FFF7F5" strokeWidth="1" fill="none" strokeLinecap="round"/>
+              </svg>
             </div>
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards" }}>BloodJourney</div>
