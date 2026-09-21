@@ -1816,7 +1816,7 @@ function AppInner() {
     // single frame of it actually gets painted to the screen. finishLoading
     // tops that up to MIN_LOADING_MS so the splash is actually visible, but
     // never adds delay on top of a load that's already slower than that.
-    const MIN_LOADING_MS = 2000; // 1 full rotation of the 2s orbit spin animation
+    const MIN_LOADING_MS = 3000; // 3 full loops of the 1s breathe/blink icon animation below
     const loadStartedAt = Date.now();
     const finishLoading = async (nextPhase) => {
       const elapsed = Date.now() - loadStartedAt;
@@ -3709,13 +3709,16 @@ function AppInner() {
           /* Splash mark "combo" animation, chosen from a 10-variant preview:
              a slow breathing scale on the whole droplet plus a periodic
              blink on the eyes only -- picked over louder options (bounce,
-             wobble, sparkle, rapid flutter) because the splash is only on
-             screen for ~2s and a health app's loading moment should read as
-             calm, not playful. Respects prefers-reduced-motion below. */
+             wobble, sparkle, rapid flutter) because a health app's loading
+             moment should read as calm, not playful. Both run on a 1s loop
+             (synced together) so they complete exactly 3 full rounds within
+             the 3s MIN_LOADING_MS floor above, instead of being cut off
+             mid-cycle or barely repeating once. Respects
+             prefers-reduced-motion below. */
           @keyframes bjFaceBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
           @keyframes bjFaceBlink { 0%, 82%, 100% { transform: scaleY(1); } 88% { transform: scaleY(0.12); } 94% { transform: scaleY(1); } }
-          .bj-splash-drop { transform-origin: 12px 13px; animation: bjFaceBreathe 2.6s ease-in-out infinite; }
-          .bj-splash-eye { transform-origin: center; animation: bjFaceBlink 3.6s ease-in-out infinite; }
+          .bj-splash-drop { transform-origin: 12px 13px; animation: bjFaceBreathe 1s ease-in-out infinite; }
+          .bj-splash-eye { transform-origin: center; animation: bjFaceBlink 1s ease-in-out infinite; }
           @media (prefers-reduced-motion: reduce) {
             .bj-splash-drop, .bj-splash-eye { animation: none !important; }
           }
