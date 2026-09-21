@@ -3726,7 +3726,7 @@ function AppInner() {
           }
         `}</style>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 26 }}>
+          <div style={{ position: "relative", width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
             <div style={{ position: "absolute", inset: 0, animation: "bjSplashSpin 2s linear infinite" }}>
               <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
             </div>
