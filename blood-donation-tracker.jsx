@@ -3726,7 +3726,7 @@ function AppInner() {
               <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
             </div>
             <div style={{ width: 92, height: 92, borderRadius: 26, background: "#FFFFFF", boxShadow: "0 14px 30px rgba(154,59,51,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg className="bj-splash-drop" width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33">
+              <svg className="bj-splash-drop" width="56" height="68" viewBox="0 0 24 24" fill="#9A3B33">
                 <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
                 <path className="bj-splash-eye" d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
                 <path className="bj-splash-eye" d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
