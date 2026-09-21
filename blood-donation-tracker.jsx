@@ -3834,6 +3834,27 @@ function AppInner() {
         .date-time-row > * {
           flex: 1;
         }
+        /* Centers the date/time value text inside the native date and time
+           inputs above (text-align:center on the input alone isn't enough:
+           Chromium's built-in calendar/clock icon sits in the same flex row
+           as the value text and claims its own width first, so the
+           remaining "value" box is already off-center before text-align
+           ever gets a say -- it just centers the text within that
+           already-lopsided box). Taking the icon out of that flow with its
+           own absolute position frees the whole input width for the value
+           text to center in truthfully. position:relative goes on the
+           input itself (not the wrapper) since the indicator is one of
+           this input's own pseudo-elements. */
+        input[type="date"], input[type="time"] {
+          position: relative;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
       `}</style>
 
       {phase === "error" && (
@@ -5286,7 +5307,7 @@ function AppInner() {
                 <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                   <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
                     onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit" }} />
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit", textAlign: "center" }} />
                 </div>
               </div>
               <div style={{ minWidth: 0 }}>
@@ -5294,7 +5315,7 @@ function AppInner() {
                 <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                   <input type="time" lang="en-US" value={form.time}
                     onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit" }} />
+                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit", textAlign: "center" }} />
                 </div>
               </div>
             </div>
@@ -5406,7 +5427,7 @@ function AppInner() {
                         <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                           <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
                             onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit" }} />
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit", textAlign: "center" }} />
                         </div>
                       </div>
                       <div style={{ minWidth: 0 }}>
@@ -5414,7 +5435,7 @@ function AppInner() {
                         <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
                           <input type="time" lang="en-US" value={tf.time}
                             onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit" }} />
+                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit", textAlign: "center" }} />
                         </div>
                       </div>
                     </div>
