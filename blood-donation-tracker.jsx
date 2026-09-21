@@ -3710,15 +3710,17 @@ function AppInner() {
              a slow breathing scale on the whole droplet plus a periodic
              blink on the eyes only -- picked over louder options (bounce,
              wobble, sparkle, rapid flutter) because a health app's loading
-             moment should read as calm, not playful. Both run on a 1s loop
-             (synced together) so they complete exactly 3 full rounds within
-             the 3s MIN_LOADING_MS floor above, instead of being cut off
-             mid-cycle or barely repeating once. Respects
-             prefers-reduced-motion below. */
+             moment should read as calm, not playful. The 1s/1s looping
+             version (needed to fill the old 2s floor) felt too busy once
+             the floor grew to 3s, so this plays just once at the original,
+             slower 2.6s pace: a single gentle breathe with one blink
+             landing near the 82-94% mark (~2.1s-2.4s in), settling back to
+             rest well before the 3s MIN_LOADING_MS floor above ends.
+             Respects prefers-reduced-motion below. */
           @keyframes bjFaceBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
           @keyframes bjFaceBlink { 0%, 82%, 100% { transform: scaleY(1); } 88% { transform: scaleY(0.12); } 94% { transform: scaleY(1); } }
-          .bj-splash-drop { transform-origin: 12px 13px; animation: bjFaceBreathe 1s ease-in-out infinite; }
-          .bj-splash-eye { transform-origin: center; animation: bjFaceBlink 1s ease-in-out infinite; }
+          .bj-splash-drop { transform-origin: 12px 13px; animation: bjFaceBreathe 2.6s ease-in-out 1; }
+          .bj-splash-eye { transform-origin: center; animation: bjFaceBlink 2.6s ease-in-out 1; }
           @media (prefers-reduced-motion: reduce) {
             .bj-splash-drop, .bj-splash-eye { animation: none !important; }
           }
