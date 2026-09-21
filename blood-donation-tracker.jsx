@@ -3737,7 +3737,7 @@ function AppInner() {
             </div>
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards" }}>Blood Journey</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards", animationDelay: "0.35s" }}>บันทึกบริจาคโลหิต</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif", letterSpacing: "0.06em", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards", animationDelay: "0.35s" }}>บันทึกบริจาคโลหิต</div>
         </div>
       </div>
     );
