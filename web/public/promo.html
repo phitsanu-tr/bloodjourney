@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+<title>Blood Journey — บันทึกการบริจาคโลหิต</title>
+<meta name="description" content="บันทึกวันบริจาคเลือด คำนวณวันครบกำหนดครั้งถัดไปให้อัตโนมัติ ข้อมูลเก็บในเครื่องคุณเท่านั้น ใช้งานฟรีผ่านเว็บหรือ LINE" />
+<meta name="theme-color" content="#9A3B33" />
+<meta property="og:title" content="Blood Journey — บันทึกการบริจาคโลหิต" />
+<meta property="og:description" content="บันทึกวันบริจาคเลือด คำนวณวันครบกำหนดครั้งถัดไปให้อัตโนมัติ ข้อมูลเก็บในเครื่องคุณเท่านั้น" />
+<meta property="og:type" content="website" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #FBF6F5;
+    --surface: #FFFFFF;
+    --surface-soft: #FFF7F5;
+    --ink: #241A18;
+    --muted: #8A7370;
+    --accent: #9A3B33;
+    --accent-deep: #6E241D;
+    --accent-soft: rgba(154, 59, 51, 0.07);
+    --accent-soft-2: rgba(154, 59, 51, 0.045);
+    --line: #F0DEDA;
+    --on-accent: #FFF7F5;
+    --nav-bg: rgba(255, 255, 255, 0.88);
+    --accent-shadow: rgba(154, 59, 51, 0.55);
+    --phone-shadow: rgba(110, 36, 29, 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #180E0C;
+      --surface: #241714;
+      --surface-soft: #2C1B18;
+      --ink: #F5E6E2;
+      --muted: #B99189;
+      --accent: #FF8A76;
+      --accent-deep: #E2695C;
+      --accent-soft: rgba(255, 138, 118, 0.1);
+      --accent-soft-2: rgba(255, 138, 118, 0.06);
+      --line: rgba(245, 230, 226, 0.12);
+      --on-accent: #2A0E09;
+      --nav-bg: rgba(24, 14, 12, 0.82);
+      --accent-shadow: rgba(255, 138, 118, 0.35);
+      --phone-shadow: rgba(226, 105, 92, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Mitr', 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { text-wrap: balance; font-family: 'Mitr', 'Inter', sans-serif; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 24px; }
+  @media (max-width: 560px) { .wrap { padding-inline: 16px; } }
+
+  nav.top {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 40;
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; text-decoration: none; }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+    background: linear-gradient(150deg, var(--accent) 0%, var(--accent-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px -4px var(--accent-shadow);
+  }
+  nav.top .links { display: flex; align-items: center; gap: 26px; font-size: 13px; font-weight: 500; color: var(--muted); }
+  nav.top .links a { text-decoration: none; }
+  nav.top .links a:hover { color: var(--ink); }
+  @media (max-width: 720px) { nav.top .links { display: none; } }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: inherit; font-weight: 700; font-size: 13.5px;
+    padding: 11px 22px; border-radius: 11px; border: none;
+    text-decoration: none; cursor: pointer; white-space: nowrap;
+  }
+  .btn-fill { background: var(--accent); color: var(--on-accent); }
+  .btn-fill:hover { background: var(--accent-deep); }
+  .btn-line {
+    background: transparent; color: var(--accent);
+    border: 1.5px solid var(--line);
+  }
+  .btn-line:hover { border-color: var(--accent); }
+  .btn-sm { padding: 8px 16px; font-size: 12.5px; }
+
+  .hero { position: relative; overflow: hidden; }
+  .hero .droplet-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .hero .droplet-bg svg { position: absolute; }
+  .hero .inner {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px;
+    align-items: center;
+    padding-block: 64px 56px;
+  }
+  @media (max-width: 860px) {
+    .hero .inner { grid-template-columns: 1fr; padding-block: 40px 36px; gap: 34px; }
+  }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 6px 13px; border-radius: 999px; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 4.6vw, 46px);
+    font-weight: 800; line-height: 1.28; letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p.lead {
+    font-size: 15.5px; line-height: 1.85; color: var(--muted);
+    max-width: 46ch; margin: 0 0 28px;
+  }
+  .cta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .cta-note { font-size: 12px; color: var(--muted); margin: 0 0 26px; }
+  .trust-line {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 600; color: var(--muted);
+    border-top: 1px solid var(--line); padding-top: 18px;
+  }
+  .trust-line svg { flex-shrink: 0; }
+
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .phone {
+    width: 100%; max-width: 300px;
+    background: var(--surface);
+    border-radius: 32px;
+    padding: 14px;
+    box-shadow: 0 30px 60px -24px var(--phone-shadow), 0 0 0 1px var(--line);
+  }
+  .phone .screen { background: var(--bg); border-radius: 22px; padding: 18px 16px; }
+  .phone .app-head { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .phone .app-head .mk { width: 22px; height: 22px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .phone .app-head .tt { font-size: 11px; font-weight: 700; }
+  .phone .hero-card {
+    background: linear-gradient(150deg, var(--accent) 0%, var(--accent-deep) 100%);
+    border-radius: 16px; padding: 16px; color: var(--on-accent); margin-bottom: 10px;
+  }
+  .phone .hero-card .cap { font-size: 10px; opacity: 0.85; margin-bottom: 4px; }
+  .phone .hero-card .num { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .phone .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .phone .cell { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 9px 6px; text-align: center; }
+  .phone .cell b { display: block; font-size: 13px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .phone .cell span { font-size: 8.5px; color: var(--muted); font-weight: 600; }
+  .phone-caption { font-size: 10.5px; color: var(--muted); }
+
+  footer.site {
+    border-top: 1px solid var(--line);
+    padding-block: 26px calc(26px + env(safe-area-inset-bottom, 0px));
+    margin-top: 20px;
+  }
+  footer.site .row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  footer.site .copy { font-size: 12px; color: var(--muted); }
+  footer.site .flinks { display: flex; gap: 20px; font-size: 12px; color: var(--muted); }
+  footer.site .flinks a { text-decoration: none; }
+  footer.site .flinks a:hover { color: var(--accent); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero h1, .hero p.lead, .cta-row, .trust-line { animation: rise 0.6s cubic-bezier(.2,.7,.3,1) both; }
+    .hero p.lead { animation-delay: 0.06s; }
+    .cta-row { animation-delay: 0.12s; }
+    .trust-line { animation-delay: 0.18s; }
+    .phone-wrap { animation: rise 0.7s cubic-bezier(.2,.7,.3,1) both; animation-delay: 0.1s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap row">
+    <a class="brand" href="#top">
+      <span class="mark">
+        <svg width="14" height="17" viewBox="0 0 24 24" fill="var(--on-accent)"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+      </span>
+      Blood Journey
+    </a>
+    <div class="links">
+      <a href="#features">ฟีเจอร์</a>
+      <a href="#privacy">ความเป็นส่วนตัว</a>
+    </div>
+    <a class="btn btn-fill btn-sm" href="/">เริ่มใช้งาน</a>
+  </div>
+</nav>
+
+<div class="hero" id="top">
+  <div class="droplet-bg" aria-hidden="true">
+    <svg width="260" height="315" viewBox="0 0 24 24" fill="var(--accent-soft)" style="top:-70px; right:-40px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="90" height="109" viewBox="0 0 24 24" fill="var(--accent-soft-2)" style="top:120px; right:280px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+    <svg width="130" height="158" viewBox="0 0 24 24" fill="var(--accent-soft-2)" style="bottom:-50px; left:-40px;"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>
+  </div>
+  <div class="wrap inner">
+    <div>
+      <span class="eyebrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+        ข้อมูลอยู่ในเครื่องคุณเท่านั้น
+      </span>
+      <h1>ทุกหยดที่คุณให้<br><em>นับไว้ให้ครบทุกครั้ง</em></h1>
+      <p class="lead">Blood Journey ช่วยบันทึกวันบริจาคเลือด คำนวณวันครบกำหนดครั้งถัดไปให้อัตโนมัติ และเก็บสถิติการให้ของคุณไว้อย่างเป็นระเบียบ ใช้งานได้ทันทีผ่านเว็บหรือใน LINE</p>
+      <div class="cta-row">
+        <a class="btn btn-fill" href="/">เริ่มบันทึกวันนี้</a>
+        <a class="btn btn-line" href="#features">ดูฟีเจอร์ทั้งหมด</a>
+      </div>
+      <p class="cta-note">ไม่มีค่าใช้จ่าย · ไม่ต้องสมัครสมาชิก</p>
+      <div class="trust-line" id="privacy-anchor">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+        ไม่มีเซิร์ฟเวอร์เก็บข้อมูลส่วนตัวของคุณ ลบข้อมูลทั้งหมดได้ทุกเมื่อ
+      </div>
+    </div>
+    <div class="phone-wrap" id="features">
+      <div class="phone">
+        <div class="screen">
+          <div class="app-head">
+            <span class="mk"><svg width="10" height="12" viewBox="0 0 24 24" fill="var(--on-accent)"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg></span>
+            <span class="tt">Blood Journey</span>
+          </div>
+          <div class="hero-card">
+            <div class="cap">บริจาคสะสมทั้งหมด</div>
+            <div class="num">12 ครั้ง</div>
+          </div>
+          <div class="row3">
+            <div class="cell"><b>3/11</b><span>เข็มที่ระลึก</span></div>
+            <div class="cell"><b>84</b><span>วันถัดไป</span></div>
+            <div class="cell"><b>O+</b><span>กรุ๊ปเลือด</span></div>
+          </div>
+        </div>
+      </div>
+      <span class="phone-caption">* หน้าจอตัวอย่าง ไม่ใช่ข้อมูลจริง</span>
+    </div>
+  </div>
+</div>
+
+<footer class="site" id="privacy">
+  <div class="wrap row">
+    <span class="copy">© Blood Journey · ข้อมูลของคุณถูกเก็บไว้ในเครื่องของคุณเท่านั้น</span>
+    <span class="flinks">
+      <a href="/">เปิดแอป</a>
+      <a href="#top">กลับขึ้นบน</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
