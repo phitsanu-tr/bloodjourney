@@ -3731,8 +3731,20 @@ function AppInner() {
               <div style={{ position: "absolute", top: -2, left: "50%", transform: "translateX(-50%)", width: 9, height: 9, borderRadius: "50%", background: "#9A3B33" }} />
             </div>
             <div style={{ width: 92, height: 92, borderRadius: 26, background: "#FFFFFF", boxShadow: "0 14px 30px rgba(154,59,51,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg className="bj-splash-drop" width="56" height="68" viewBox="0 0 24 24" fill="#9A3B33">
-                <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
+              <svg className="bj-splash-drop" width="56" height="68" viewBox="0 0 24 24">
+                {/* Design "2" from a 10-variant dimension/depth exploration: a
+                    simple light-to-dark diagonal gradient in place of the
+                    flat fill, giving the droplet a sense of volume without
+                    extra layers (highlight ellipses, drop shadows) that risk
+                    blurring away once this same mark is reused at the much
+                    smaller 17-20px header icon sizes. */}
+                <defs>
+                  <linearGradient id="bjSplashDropGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#C25B4F"/>
+                    <stop offset="100%" stopColor="#6E241D"/>
+                  </linearGradient>
+                </defs>
+                <path fill="url(#bjSplashDropGradient)" d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
                 <path className="bj-splash-eye" d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
                 <path className="bj-splash-eye" d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
                 <circle cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
