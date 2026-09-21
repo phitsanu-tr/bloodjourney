@@ -3819,18 +3819,20 @@ function AppInner() {
             min-height: 100vh;
           }
         }
-        /* Date + time inputs: always stack full-width instead of sitting
-           side-by-side. Reported as cramped on an iPhone 11 even after the
-           lang="en-US" fix shortened the native picker's displayed text —
-           the real constraint is the form modal's own maxWidth (380px, same
-           on phone and desktop card view, since the app stays phone-width
-           either way), not the device's screen size, so a viewport media
-           query wouldn't have helped here. Stacking removes the crowding
-           regardless of width. */
+        /* Date + time inputs: side-by-side two-column layout. Was briefly
+           stacked full-width after an iPhone 11 cramping report, but that
+           traded away the row layout entirely rather than just shrinking
+           each field -- reverted back to side-by-side per user feedback.
+           The two children already carry minWidth:0 so each input's
+           replaced-element intrinsic width can still shrink to fit its
+           half of the row instead of overflowing. */
         .date-time-row {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           gap: 10px;
+        }
+        .date-time-row > * {
+          flex: 1;
         }
       `}</style>
 
