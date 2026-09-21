@@ -4754,7 +4754,7 @@ function AppInner() {
               <p style={{ fontSize: 12.5, color: "#8A7370", margin: "0 0 16px" }}>สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</p>
 
               {stats.nextAchievement && (
-                <div style={{ background: "#9A3B33", borderRadius: 16, padding: "16px 18px", color: "#FFF7F5", marginBottom: 16 }}>
+                <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: "16px 18px", color: "#FFF7F5", marginBottom: 16 }}>
                   <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>ภารกิจถัดไป</div>
                   <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 10 }}>
                     อีก {stats.nextAchievement.threshold - totalCount} ครั้ง ถึง "{stats.nextAchievement.title}"
