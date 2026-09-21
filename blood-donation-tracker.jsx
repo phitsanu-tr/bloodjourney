@@ -3962,7 +3962,7 @@ function AppInner() {
       )}
 
       {phase === "app" && (
-        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px 88px" }}>
+        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
