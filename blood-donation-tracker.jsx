@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -4236,10 +4236,25 @@ function AppInner() {
                 </div>
               )}
 
-              <button onClick={handleAddButtonClick} className="btn-primary"
-                style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 14.5, fontWeight: 600,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 26, cursor: "pointer" }}>
-                <Plus size={18} style={{ flexShrink: 0 }} /> บันทึกบริจาคโลหิต
+              {/* Row-style CTA (design "3" from a 10-variant exploration) in
+                  place of the old full-width solid button -- reads as a
+                  menu-style list item that matches the other white/bordered
+                  cards on this tab (next-achievement card just below,
+                  history rows further down) instead of a heavy standalone
+                  bar of color. The icon badge keeps the gradient accent so
+                  it still reads as the primary action; the chevron signals
+                  "tap to continue" the way the rest of the app's row items
+                  do. */}
+              <button onClick={handleAddButtonClick}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: 14,
+                  background: "#FFFFFF", border: "1px solid #EEDEDA", boxShadow: "0 4px 14px rgba(122,42,35,0.06)",
+                  marginBottom: 26, cursor: "pointer", fontFamily: "inherit" }}>
+                <span style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF7F5", flexShrink: 0 }}>
+                  <Plus size={18} />
+                </span>
+                <span style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
+                <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
               </button>
 
               {stats.nextAchievement ? (
