@@ -6,10 +6,6 @@
 // fires once per due date, tracked via the record's sentWhole/sentComponent
 // flags (reset by subscribe.js whenever the due date itself changes).
 //
-// Also deletes any record that's gone stale (see isStale/STALE_AFTER_DAYS
-// below) instead of only ever adding records — this is the feature's
-// retention limit, not just its opt-out mechanism.
-//
 // Protected by CRON_SECRET (see setup doc) so this can't be triggered by
 // anyone who finds the URL — Vercel Cron is configured to call it with that
 // same secret as a bearer token.
@@ -51,24 +47,6 @@ const DUE_DATE_FIELDS = [
   ["component", "nextComponent", "sentComponent", " (พลาสมา/เกล็ดเลือด)"],
 ];
 
-// A record only gets touched (subscribe.js re-upserts it) when the user logs,
-// edits, or deletes a donation while the toggle stays on — which normally
-// happens well within one donation cycle. If a record has gone untouched for
-// this long, the most likely explanation is the user stopped using the app
-// (or uninstalled it) without remembering to flip the toggle off first, so
-// there's no one left to remind. Deleting it keeps data off the server
-// beyond what the feature actually needs (see PRIVACY_POLICY_SECTIONS item 7
-// in the main app file) instead of letting it sit there indefinitely.
-const STALE_AFTER_DAYS = 120;
-
-function isStale(record, todayStr) {
-  if (!record || !record.updatedAt) return false;
-  const updatedMs = new Date(record.updatedAt).getTime();
-  if (Number.isNaN(updatedMs)) return false;
-  const todayMs = new Date(`${todayStr}T00:00:00Z`).getTime();
-  return (todayMs - updatedMs) / 86400000 > STALE_AFTER_DAYS;
-}
-
 export default async function handler(req, res) {
   if (CRON_SECRET) {
     const auth = req.headers["authorization"] || "";
@@ -82,7 +60,6 @@ export default async function handler(req, res) {
   let cursor = 0;
   let scanned = 0;
   let sent = 0;
-  let cleaned = 0;
   const errors = [];
 
   try {
@@ -94,13 +71,6 @@ export default async function handler(req, res) {
         const record = await kv.get(key);
         if (!record) continue;
         const userId = key.slice("reminder:".length);
-
-        if (isStale(record, today)) {
-          await kv.del(key);
-          cleaned++;
-          continue;
-        }
-
         let changed = false;
 
         for (const [, dateField, sentField, label] of DUE_DATE_FIELDS) {
@@ -126,7 +96,7 @@ export default async function handler(req, res) {
       }
     } while (cursor !== 0);
 
-    res.status(200).json({ ok: true, scanned, sent, cleaned, errors });
+    res.status(200).json({ ok: true, scanned, sent, errors });
   } catch (e) {
     res.status(500).json({ error: "cron failed", detail: String(e) });
   }

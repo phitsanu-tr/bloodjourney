@@ -7,8 +7,6 @@
 // a next-due-date per donation type — never donation history, profile
 // fields, or anything else — and only for users who explicitly opted in.
 
-import { kv } from "@vercel/kv";
-
 const LINE_LOGIN_CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID;
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -62,27 +60,4 @@ export const REMINDER_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function cleanDateStr(value) {
   return typeof value === "string" && REMINDER_DATE_RE.test(value) ? value : null;
-}
-
-// Simple fixed-window rate limiter backed by the same Vercel KV store, keyed
-// per verified LINE user ID (never per raw request, since IP alone is
-// unreliable behind Vercel's edge network). Protects subscribe/unsubscribe
-// from being hammered by a compromised/reused token or a buggy client stuck
-// in a retry loop — this endpoint's own logic is cheap, but every call also
-// makes an outbound request to LINE's verify endpoint, so unbounded retries
-// would burn through that quota too. Returns true if the call is allowed.
-export async function checkRateLimit(bucket, userId, limit, windowSeconds) {
-  const key = `ratelimit:${bucket}:${userId}`;
-  try {
-    const count = await kv.incr(key);
-    if (count === 1) {
-      await kv.expire(key, windowSeconds);
-    }
-    return count <= limit;
-  } catch (e) {
-    // If the rate-limit store itself is unreachable, fail open rather than
-    // blocking legitimate users over an unrelated KV hiccup — the token
-    // verification step already guards against unauthenticated abuse.
-    return true;
-  }
 }
