@@ -5,7 +5,7 @@
 // record keyed by the user's verified LINE user ID — never trusts a
 // client-supplied user ID directly, see verifyLineIdToken.
 import { kv } from "@vercel/kv";
-import { verifyLineIdToken, cleanDateStr } from "../_lib/line.js";
+import { verifyLineIdToken, cleanDateStr, checkRateLimit } from "../_lib/line.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -22,6 +22,17 @@ export default async function handler(req, res) {
     const userId = await verifyLineIdToken(idToken);
     if (!userId) {
       res.status(401).json({ error: "invalid or expired token" });
+      return;
+    }
+
+    // Generous limit — this fires once on toggle-on and again, silently, on
+    // every donation logged/edited/deleted while the toggle stays on — but
+    // still bounded, so a stuck retry loop or a reused token can't hammer
+    // this route (and LINE's own verify endpoint, called just above)
+    // indefinitely.
+    const allowed = await checkRateLimit("subscribe", userId, 30, 600);
+    if (!allowed) {
+      res.status(429).json({ error: "too many requests" });
       return;
     }
 
