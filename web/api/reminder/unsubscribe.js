@@ -3,7 +3,7 @@
 // user's verified LINE user ID immediately — this IS the "right to delete"
 // for this feature's data (see PRIVACY_POLICY_SECTIONS item 7).
 import { kv } from "@vercel/kv";
-import { verifyLineIdToken } from "../_lib/line.js";
+import { verifyLineIdToken, checkRateLimit } from "../_lib/line.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -20,6 +20,11 @@ export default async function handler(req, res) {
     const userId = await verifyLineIdToken(idToken);
     if (!userId) {
       res.status(401).json({ error: "invalid or expired token" });
+      return;
+    }
+    const allowed = await checkRateLimit("unsubscribe", userId, 10, 600);
+    if (!allowed) {
+      res.status(429).json({ error: "too many requests" });
       return;
     }
     await kv.del(`reminder:${userId}`);
