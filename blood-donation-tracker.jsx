@@ -54,7 +54,7 @@ const PRIVACY_POLICY_SECTIONS = [
       "ข้อมูลโปรไฟล์ (ไม่บังคับ): ชื่อเล่น/ชื่อที่แสดง, อายุ, น้ำหนัก, หมู่โลหิต, จำนวนครั้งที่เคยบริจาคมาก่อนใช้แอป (ยอดสะสมยกมา)",
       "ข้อมูลรายการบริจาค: วันที่, เวลา, ประเภทการบริจาค (โลหิตรวม/พลาสมา-เกล็ดเลือด), สถานที่บริจาค, บันทึกช่วยจำที่คุณพิมพ์เอง — ทั้งหมดนี้กรอกโดยคุณเองทีละรายการ",
       "ข้อมูลการตั้งค่า: รอบระยะเวลาที่สามารถบริจาคซ้ำได้ (ค่าเริ่มต้น 90 วัน), สถานะการให้ความยินยอม และวันที่ให้ความยินยอม",
-      "ข้อมูลจาก LINE (เฉพาะเมื่อเปิดผ่าน LINE): แอปขอสิทธิ์ LIFF เพียงขอบเขต openid เท่านั้น ซึ่งใช้ยืนยันบริบทการเปิดแอปผ่าน LINE ในทางเทคนิค แอปไม่ได้ดึงชื่อหรือรูปโปรไฟล์ของคุณไปเก็บหรือใช้งานแต่อย่างใด และไม่เก็บ LINE User ID ไว้ที่ใดนอกเครื่องของคุณ เว้นแต่คุณเลือกเปิดใช้งานฟีเจอร์เสริม \"แจ้งเตือนผ่าน LINE\" ด้วยตนเอง (ดูข้อ 7)",
+      "ข้อมูลจาก LINE (เฉพาะเมื่อเปิดผ่าน LINE): แอปขอสิทธิ์ LIFF เพียงขอบเขต openid เท่านั้น ซึ่งใช้ยืนยันบริบทการเปิดแอปผ่าน LINE ในทางเทคนิค แอปไม่ได้ดึงชื่อ รูปโปรไฟล์ หรือ LINE User ID ของคุณไปเก็บหรือใช้งานแต่อย่างใด",
       "แอปไม่เก็บและไม่ขอข้อมูลที่ระบุตัวตนได้ เช่น เลขบัตรประชาชน เบอร์โทรศัพท์ อีเมล หรือที่อยู่",
     ],
   },
@@ -79,7 +79,6 @@ const PRIVACY_POLICY_SECTIONS = [
     body: [
       "ข้อมูลทั้งหมดของคุณถูกจัดเก็บไว้ในเครื่อง/อุปกรณ์ของคุณเองเท่านั้น (local storage) แอปไม่มีเซิร์ฟเวอร์ฐานข้อมูลส่วนกลางสำหรับเก็บข้อมูลผู้ใช้ ไม่มีบัญชีผู้ใช้ และผู้พัฒนาแอปไม่สามารถเข้าถึงหรือมองเห็นข้อมูลของคุณได้เลย",
       "เนื่องจากข้อมูลอยู่ในเครื่องเท่านั้น หากคุณล้างข้อมูลเบราว์เซอร์ ล้างแคชของแอป LINE ถอนการติดตั้ง หรือเปลี่ยนเครื่อง/เปลี่ยนเบราว์เซอร์ ข้อมูลที่ไม่ได้ส่งออกไว้อาจสูญหายและไม่สามารถกู้คืนได้ — แนะนำให้ใช้ฟังก์ชัน \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเพื่อสำรองข้อมูลเป็นระยะ",
-      "ข้อยกเว้นเดียวคือฟีเจอร์เสริม \"แจ้งเตือนผ่าน LINE\" ที่ปิดอยู่โดยค่าเริ่มต้นและต้องกดเปิดเอง ซึ่งจะเก็บ LINE User ID และวันครบกำหนดบริจาคครั้งถัดไปไว้ที่เซิร์ฟเวอร์ของแอปชั่วคราวเท่าที่จำเป็นสำหรับส่งข้อความแจ้งเตือนเท่านั้น — รายละเอียดทั้งหมดอยู่ในข้อ 7",
     ],
   },
   {
@@ -87,63 +86,53 @@ const PRIVACY_POLICY_SECTIONS = [
     body: [
       "ฟีเจอร์ \"สร้างการ์ดแชร์ภาพ\" และ \"เพิ่มลงปฏิทิน\" เมื่อเปิดผ่าน LINE จะเปิดหน้าต่างเบราว์เซอร์ภายนอกของอุปกรณ์คุณเอง (เช่น Safari/Chrome) เพื่อให้สามารถบันทึกรูปภาพหรือไฟล์ปฏิทินได้ เนื่องจากเบราว์เซอร์ในแอป LINE มีข้อจำกัดทางเทคนิคที่ไม่รองรับการบันทึกไฟล์โดยตรง",
       "ในการทำเช่นนี้ ข้อมูลเท่าที่จำเป็นสำหรับสร้างภาพหรือไฟล์ปฏิทินเพียงรายการเดียว (เช่น จำนวนครั้งสะสม หมู่โลหิต ชื่อเล่นที่คุณตั้ง หรือวันที่นัดหมาย) จะถูกเข้ารหัสและแนบไปกับลิงก์ที่เปิดในเบราว์เซอร์ภายนอก ลิงก์นี้หมดอายุภายในเวลาสั้น ๆ (5 นาที) และถอดรหัสได้เฉพาะโดยแอปเท่านั้น เนื้อหาในลิงก์จะไม่ถูกจัดเก็บถาวรที่ใดนอกจากผ่านหน้าเว็บที่ให้บริการแอปนี้ในช่วงเวลาสั้น ๆ ที่ใช้เปิดลิงก์ดังกล่าว",
-      "นอกเหนือจากกรณีนี้และฟีเจอร์แจ้งเตือนผ่าน LINE (ข้อ 7) ข้อมูลของคุณจะไม่ถูกส่งออกจากเครื่องโดยอัตโนมัติ",
+      "นอกเหนือจากกรณีนี้ ข้อมูลของคุณจะไม่ถูกส่งออกจากเครื่องโดยอัตโนมัติ",
     ],
   },
   {
-    heading: "7. ฟีเจอร์แจ้งเตือนผ่าน LINE (ทางเลือกเสริม ปิดอยู่โดยค่าเริ่มต้น)",
+    heading: "7. การเปิดเผยข้อมูลต่อบุคคลที่สาม",
     body: [
-      "ฟีเจอร์นี้ต้องกดเปิดเองที่หน้าตั้งค่า (ปิดอยู่เป็นค่าเริ่มต้น) เมื่อเปิดใช้งาน แอปจะส่งข้อมูลเพียง 2 อย่างไปเก็บไว้ที่เซิร์ฟเวอร์ของแอปชั่วคราว: (1) LINE User ID ของคุณ ใช้ระบุว่าจะส่งข้อความไปหาใคร และ (2) วันครบกำหนดบริจาคครั้งถัดไปที่คำนวณจากข้อมูลในเครื่องคุณเอง — จะไม่มีการส่งประวัติการบริจาค ข้อมูลโปรไฟล์ หรือข้อมูลอื่นใดออกจากเครื่องเพิ่มเติม",
-      "ข้อมูลนี้ใช้เพื่อวัตถุประสงค์เดียวคือส่งข้อความแจ้งเตือนเข้าแชทผ่าน LINE Official Account ของแอป ก่อนวันครบกำหนด 7 วัน, 1 วัน และในวันครบกำหนด",
-      "คุณสามารถปิดฟีเจอร์นี้ได้ทุกเมื่อที่หน้าตั้งค่า เมื่อปิดแล้ว LINE User ID และวันครบกำหนดที่เก็บไว้จะถูกลบออกจากเซิร์ฟเวอร์ทันที",
-      "ข้อมูลนี้จะไม่ถูกใช้เพื่อวัตถุประสงค์อื่นใดนอกจากที่ระบุไว้ข้างต้น และไม่ถูกแบ่งปันต่อบุคคลที่สามใด ๆ นอกจาก LINE ในฐานะผู้ให้บริการส่งข้อความซึ่งจำเป็นต้องใช้เพื่อให้ข้อความไปถึงคุณ",
+      "แอปไม่ขาย ให้เช่า หรือแบ่งปันข้อมูลส่วนบุคคลของคุณแก่บุคคลที่สามเพื่อวัตถุประสงค์ทางการตลาดหรือการค้าใด ๆ และไม่มีการเชื่อมต่อกับสภากาชาดไทยหรือหน่วยงานใดตามที่กล่าวไว้ในข้อ 1",
     ],
   },
   {
-    heading: "8. การเปิดเผยข้อมูลต่อบุคคลที่สาม",
-    body: [
-      "แอปไม่ขาย ให้เช่า หรือแบ่งปันข้อมูลส่วนบุคคลของคุณแก่บุคคลที่สามเพื่อวัตถุประสงค์ทางการตลาดหรือการค้าใด ๆ และไม่มีการเชื่อมต่อกับสภากาชาดไทยหรือหน่วยงานใดตามที่กล่าวไว้ในข้อ 1 (ดูข้อยกเว้นเฉพาะฟีเจอร์แจ้งเตือนผ่าน LINE ในข้อ 7)",
-    ],
-  },
-  {
-    heading: "9. ระยะเวลาการเก็บข้อมูล",
+    heading: "8. ระยะเวลาการเก็บข้อมูล",
     body: [
       "ข้อมูลจะถูกเก็บไว้ในเครื่องของคุณตราบเท่าที่คุณยังใช้งานแอปอยู่ และจะถูกลบทันทีเมื่อคุณกดลบข้อมูลทั้งหมดที่หน้าตั้งค่า หรือเมื่อข้อมูลในเครื่อง/เบราว์เซอร์ของคุณถูกล้างไปด้วยเหตุผลอื่น",
-      "ข้อมูลของฟีเจอร์แจ้งเตือนผ่าน LINE (ข้อ 7) จะถูกเก็บไว้เฉพาะระหว่างที่คุณเปิดใช้งานฟีเจอร์นี้เท่านั้น และถูกลบทันทีเมื่อคุณปิดฟีเจอร์",
     ],
   },
   {
-    heading: "10. สิทธิของเจ้าของข้อมูล",
+    heading: "9. สิทธิของเจ้าของข้อมูล",
     body: [
       "เนื่องจากข้อมูลทั้งหมดอยู่ในความควบคุมของคุณโดยตรงภายในเครื่องของคุณเอง คุณจึงสามารถใช้สิทธิต่อไปนี้ได้ด้วยตนเองตลอดเวลาผ่านหน้าตั้งค่าของแอป โดยไม่ต้องติดต่อผู้พัฒนา:",
       "สิทธิเข้าถึงและตรวจสอบข้อมูล — ดูข้อมูลทั้งหมดได้ในแอปโดยตรง",
       "สิทธิแก้ไขข้อมูล — แก้ไขหรือลบรายการบริจาคแต่ละรายการ หรือข้อมูลโปรไฟล์ได้ทุกเมื่อ",
-      "สิทธิลบข้อมูล/ถอนความยินยอม — ลบข้อมูลทั้งหมดได้ทันทีที่หน้าตั้งค่า รวมถึงปิดฟีเจอร์แจ้งเตือนผ่าน LINE เพื่อลบข้อมูลบนเซิร์ฟเวอร์ได้ทันทีเช่นกัน (ดูข้อ 7)",
+      "สิทธิลบข้อมูล/ถอนความยินยอม — ลบข้อมูลทั้งหมดได้ทันทีที่หน้าตั้งค่า",
       "สิทธิในการโอนย้ายข้อมูล — ส่งออกข้อมูลเป็นไฟล์เพื่อเก็บไว้เองหรือนำไปใช้ที่อื่นได้",
     ],
   },
   {
-    heading: "11. มาตรการรักษาความปลอดภัย",
+    heading: "10. มาตรการรักษาความปลอดภัย",
     body: [
       "ข้อมูลถูกเก็บในพื้นที่จัดเก็บของเบราว์เซอร์/อุปกรณ์คุณเอง ซึ่งโดยปกติเข้าถึงได้เฉพาะจากอุปกรณ์และผู้ใช้เครื่องนั้น ๆ",
       "ข้อมูลที่จำเป็นต้องส่งผ่านลิงก์ไปยังเบราว์เซอร์ภายนอกชั่วคราว (ตามข้อ 6) จะถูกเข้ารหัสด้วยมาตรฐาน AES-GCM และมีอายุการใช้งานจำกัดเพียง 5 นาที เพื่อป้องกันการเดาหรือปลอมแปลงลิงก์โดยบุคคลทั่วไป",
-      "เนื่องจากแอปทำงานฝั่งอุปกรณ์ผู้ใช้ทั้งหมดโดยไม่มีเซิร์ฟเวอร์เก็บข้อมูล (ยกเว้นฟีเจอร์แจ้งเตือนผ่าน LINE ในข้อ 7 ซึ่งเก็บข้อมูลเพียง 2 อย่างชั่วคราว) จึงมีความเสี่ยงจากการรั่วไหลของข้อมูลผ่านฐานข้อมูลกลางหรือการโจมตีเซิร์ฟเวอร์อยู่ในระดับต่ำมาก",
+      "เนื่องจากแอปทำงานฝั่งอุปกรณ์ผู้ใช้ทั้งหมดโดยไม่มีเซิร์ฟเวอร์เก็บข้อมูล จึงไม่มีความเสี่ยงจากการรั่วไหลของข้อมูลผ่านฐานข้อมูลกลางหรือการโจมตีเซิร์ฟเวอร์",
     ],
   },
   {
-    heading: "12. คุกกี้และการวิเคราะห์การใช้งาน",
+    heading: "11. คุกกี้และการวิเคราะห์การใช้งาน",
     body: [
       "แอปไม่ใช้คุกกี้เพื่อการติดตามพฤติกรรม ไม่มีการฝังเครื่องมือวิเคราะห์การใช้งาน (analytics) หรือโฆษณาของบุคคลที่สามใด ๆ",
     ],
   },
   {
-    heading: "13. การเปลี่ยนแปลงนโยบาย",
+    heading: "12. การเปลี่ยนแปลงนโยบาย",
     body: [
       "หากมีการเปลี่ยนแปลงสาระสำคัญของนโยบายนี้ เช่น ประเภทข้อมูลที่เก็บหรือวิธีการใช้ข้อมูล แอปจะแจ้งให้ทราบผ่านหน้าจอขอความยินยอมใหม่ก่อนให้ใช้งานต่อ",
     ],
   },
   {
-    heading: "14. ช่องทางติดต่อ",
+    heading: "13. ช่องทางติดต่อ",
     body: [
       `หากมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัวนี้ ติดต่อผู้พัฒนาแอปได้ที่ ${PRIVACY_POLICY_CONTACT_EMAIL}`,
     ],
@@ -1610,12 +1599,6 @@ function AppInner() {
   const [cycleDays, setCycleDays] = useState(DEFAULT_CYCLE_DAYS);
   const [componentCycleDays, setComponentCycleDays] = useState(DEFAULT_COMPONENT_CYCLE_DAYS);
   const [backupReminderGap, setBackupReminderGap] = useState(DEFAULT_BACKUP_REMINDER_GAP);
-  // Optional, opt-in (off by default) LINE push reminder — see
-  // toggleLineReminder/syncLineReminder below and PRIVACY_POLICY_SECTIONS
-  // item 7 for what this actually stores server-side (LINE user ID + next
-  // due date only, deleted the moment this is switched off).
-  const [lineReminderEnabled, setLineReminderEnabled] = useState(false);
-  const [lineReminderBusy, setLineReminderBusy] = useState(false);
   // The number inputs below bind directly to the raw state above so the
   // user can freely type/clear digits, only clamped to range on blur — but
   // that means the raw state can transiently hold an out-of-range or
@@ -1928,7 +1911,6 @@ function AppInner() {
           setCycleDays(typeof u.cycleDays === "number" && u.cycleDays >= MIN_CYCLE_DAYS && u.cycleDays <= MAX_CYCLE_DAYS ? u.cycleDays : DEFAULT_CYCLE_DAYS);
           setComponentCycleDays(typeof u.componentCycleDays === "number" && u.componentCycleDays >= MIN_CYCLE_DAYS && u.componentCycleDays <= MAX_CYCLE_DAYS ? u.componentCycleDays : DEFAULT_COMPONENT_CYCLE_DAYS);
           setBackupReminderGap(typeof u.backupReminderGap === "number" && u.backupReminderGap >= MIN_BACKUP_REMINDER_GAP && u.backupReminderGap <= MAX_BACKUP_REMINDER_GAP ? u.backupReminderGap : DEFAULT_BACKUP_REMINDER_GAP);
-          setLineReminderEnabled(!!u.lineReminderEnabled);
           setDismissedEligibilityAge(typeof u.dismissedEligibilityAge === "number" ? u.dismissedEligibilityAge : null);
           setDismissedEligibilityWeight(typeof u.dismissedEligibilityWeight === "number" ? u.dismissedEligibilityWeight : null);
           if (typeof u.showInfoPills === "boolean") setShowInfoPills(u.showInfoPills);
@@ -2053,7 +2035,7 @@ function AppInner() {
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
       seenAchievements, backupSnoozeCount, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap,
-      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, showInfoPills, lineReminderEnabled,
+      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, showInfoPills,
       ...uiMetaRef.current, ...patch,
     };
     uiMetaWriteQueueRef.current = uiMetaWriteQueueRef.current
@@ -3318,89 +3300,6 @@ function AppInner() {
   const componentNextEligible = lastComponent ? new Date(parseLocalDate(lastComponent.date).getTime() + effectiveComponentCycleDays * 86400000) : null;
   const componentDaysLeft = componentNextEligible ? daysBetween(new Date(), new Date(componentNextEligible)) : 0;
   const componentIsEligible = !componentNextEligible || componentDaysLeft <= 0;
-
-  // Sends the current next-eligible date(s) to our own minimal backend (see
-  // web/api/reminder/*.js) so it can push a LINE message before they're due.
-  // Only ever meaningful inside LINE's in-app browser — liff.getIDToken()
-  // only returns a real token there, since LIFF login happens automatically
-  // as part of opening the app through LINE (never in a plain browser tab or
-  // the packaged native app, neither of which go through liff.init()).
-  // `silent` suppresses the error toast for background resyncs (triggered by
-  // logging/editing/deleting a donation) so only the explicit on/off toggle
-  // below ever interrupts the user with a failure message.
-  const syncLineReminder = async (silent) => {
-    if (!isLineInAppBrowser) return false;
-    try {
-      const idToken = liff.getIDToken();
-      if (!idToken) throw new Error("not logged in");
-      const res = await fetch("/api/reminder/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idToken,
-          nextWhole: wholeNextEligible ? dateToLocalStr(wholeNextEligible) : null,
-          nextComponent: componentNextEligible ? dateToLocalStr(componentNextEligible) : null,
-        }),
-      });
-      if (!res.ok) throw new Error("subscribe failed");
-      return true;
-    } catch (e) {
-      if (!silent) showToast("error", "เปิดแจ้งเตือนผ่าน LINE ไม่สำเร็จ ลองใหม่อีกครั้ง");
-      return false;
-    }
-  };
-
-  // Toggle handler for the "แจ้งเตือนผ่าน LINE" switch in Settings. Turning
-  // it off deletes the server-side record immediately (best-effort — the
-  // local switch still turns off even if the network call fails, since this
-  // is the user's own local preference; a stale server record with no future
-  // matching due-date/day just never fires another message and is harmless).
-  const toggleLineReminder = async () => {
-    if (lineReminderBusy) return;
-    setLineReminderBusy(true);
-    try {
-      if (lineReminderEnabled) {
-        try {
-          const idToken = isLineInAppBrowser ? liff.getIDToken() : null;
-          if (idToken) {
-            await fetch("/api/reminder/unsubscribe", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ idToken }),
-            });
-          }
-        } catch (e) {}
-        setLineReminderEnabled(false);
-        persistUiMeta({ lineReminderEnabled: false });
-        showToast("success", "ปิดการแจ้งเตือนผ่าน LINE แล้ว");
-      } else {
-        const ok = await syncLineReminder(false);
-        if (ok) {
-          setLineReminderEnabled(true);
-          persistUiMeta({ lineReminderEnabled: true });
-          showToast("success", "เปิดการแจ้งเตือนผ่าน LINE แล้ว");
-        }
-      }
-    } finally {
-      setLineReminderBusy(false);
-    }
-  };
-
-  // Keeps the reminder backend's copy of the due date(s) in sync whenever
-  // they change locally (a new donation logged, an existing one edited, or
-  // the latest one deleted) — otherwise a donor who logs a new donation
-  // right before their reminder would keep getting notified against the old,
-  // now-stale due date. Debounced slightly so rapid edits (e.g. fixing a
-  // typo right after saving) don't fire one request per save. Comparing via
-  // .getTime() (rather than the Date objects themselves, which are fresh
-  // instances every render) avoids re-firing on every unrelated re-render.
-  useEffect(() => {
-    if (!lineReminderEnabled) return;
-    const id = setTimeout(() => { syncLineReminder(true); }, 1200);
-    return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineReminderEnabled, wholeNextEligible ? wholeNextEligible.getTime() : null, componentNextEligible ? componentNextEligible.getTime() : null]);
-
   const wholeComparableDays = !lastWhole ? Infinity : (wholeIsEligible ? 0 : wholeDaysLeft);
   const componentComparableDays = !lastComponent ? Infinity : (componentIsEligible ? 0 : componentDaysLeft);
   const soonestDonationType = componentComparableDays < wholeComparableDays ? "component" : "whole";
@@ -5632,28 +5531,6 @@ function AppInner() {
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
               <div style={{ fontSize: 11, color: "#B39B96" }}>ค่าเริ่มต้นทุก {DEFAULT_BACKUP_REMINDER_GAP} รายการที่เพิ่ม</div>
             </div>
-
-            {isLineInAppBrowser && (
-              <>
-                <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>แจ้งเตือนผ่าน LINE</div>
-                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "14px 14px 16px", marginBottom: 18 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
-                    <span style={{ fontSize: 13.5, color: "#3A2C29", fontWeight: 600 }}>ส่งข้อความแจ้งเตือนเข้าแชท</span>
-                    <button role="switch" aria-checked={lineReminderEnabled} aria-label="เปิด/ปิดแจ้งเตือนผ่าน LINE"
-                      disabled={lineReminderBusy} onClick={toggleLineReminder}
-                      style={{ position: "relative", width: 42, height: 24, borderRadius: 999, border: "none", flexShrink: 0,
-                        cursor: lineReminderBusy ? "wait" : "pointer", background: lineReminderEnabled ? "#9A3B33" : "#E3C8C3",
-                        transition: "background 0.15s", padding: 0 }}>
-                      <span style={{ position: "absolute", top: 3, left: lineReminderEnabled ? 21 : 3, width: 18, height: 18,
-                        borderRadius: "50%", background: "#FFFFFF", transition: "left 0.15s" }} />
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 11.5, color: "#8A7370", lineHeight: 1.6, margin: 0 }}>
-                    เปิดแล้วแอปจะส่ง<b>เฉพาะวันครบกำหนดบริจาคครั้งถัดไป</b> (ไม่ใช่ประวัติการบริจาคหรือข้อมูลอื่น) ไปเก็บไว้ชั่วคราวที่เซิร์ฟเวอร์ของแอป เพื่อส่งข้อความเข้าแชทก่อนครบกำหนด 7 วัน, 1 วัน และในวันครบกำหนด — ปิดเมื่อไหร่ก็ได้ที่นี่ ข้อมูลจะถูกลบออกจากเซิร์ฟเวอร์ทันที (รายละเอียดที่ "ความเป็นส่วนตัว" ข้อ 7)
-                  </p>
-                </div>
-              </>
-            )}
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>เกี่ยวกับ</div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 4px" }}>
