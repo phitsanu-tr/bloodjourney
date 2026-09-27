@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.16";
+const APP_VERSION = "1.0.17";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -826,8 +826,13 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
     // year), pull the month back in-bounds too -- same clamp goNext already
     // enforces one month at a time, just applied in one jump here.
     if (max && y === max.getFullYear() && viewMonth > max.getMonth()) setViewMonth(max.getMonth());
-    setYearMode("calendar");
+    // A third step: after picking the year, pick the month too, instead of
+    // dropping straight back to the calendar and making the user page
+    // through </> one month at a time to reach it.
+    setYearMode("month");
   };
+  const isMonthFuture = (m) => !!max && viewYear === max.getFullYear() && m > max.getMonth();
+  const pickMonth = (m) => { if (!isMonthFuture(m)) { setViewMonth(m); setYearMode("calendar"); } };
   const openYearPicker = () => {
     if (yearMode === "calendar") {
       setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
@@ -838,6 +843,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   };
   const pickDecade = (start) => { setSelectedDecadeStart(start); setYearMode("year"); };
   const backToDecades = () => setYearMode("decade");
+  const backToYears = () => setYearMode("year");
 
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
@@ -870,7 +876,9 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               ? `${THAI_MONTHS_FULL[viewMonth]} ${viewYear + 543}`
               : yearMode === "decade"
               ? "เลือกช่วงปี"
-              : `${selectedDecadeStart}-${Math.min(selectedDecadeStart + 9, maxYear + 543)}`}
+              : yearMode === "year"
+              ? `${selectedDecadeStart}-${Math.min(selectedDecadeStart + 9, maxYear + 543)}`
+              : `เลือกเดือน ${viewYear + 543}`}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               style={{ transform: pickingYear ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
               <path d="M6 9l6 6 6-6" />
@@ -921,6 +929,34 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                   {y + 543}
                 </button>
               ))}
+            </div>
+          </>
+        ) : yearMode === "month" ? (
+          <>
+            <button type="button" onClick={backToYears}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              ย้อนกลับ
+            </button>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {THAI_MONTHS_FULL.map((label, m) => {
+                const future = isMonthFuture(m);
+                const isCurrentMonth = m === viewMonth;
+                return (
+                  <button key={label} type="button" onClick={() => pickMonth(m)} disabled={future}
+                    style={{
+                      padding: "10px 0", borderRadius: 8, border: "none",
+                      background: isCurrentMonth ? "#9A3B33" : "transparent",
+                      color: future ? "#D9C7C3" : isCurrentMonth ? "#FFF7F5" : "#3A2C29",
+                      fontWeight: isCurrentMonth ? 700 : 400,
+                      fontSize: 12.5, cursor: future ? "default" : "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                    }}>
+                    {THAI_MONTHS[m]}
+                  </button>
+                );
+              })}
             </div>
           </>
         ) : (
