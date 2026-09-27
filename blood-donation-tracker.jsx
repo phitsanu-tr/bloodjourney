@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.49";
+const APP_VERSION = "1.0.50";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4234,23 +4234,36 @@ function AppInner() {
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [donations]);
 
-  // Maps each donation id to its overall sequence number ("ครั้งที่ N"),
-  // counting the carried-over starting count first, then each in-app record
-  // in chronological (ascending date) order — independent of the year filter
-  // or the newest-first sort used for display, so the number stays stable no
+  // Maps each donation id to its sequence number ("ครั้งที่ N"), counting the
+  // carried-over starting count first, then each in-app record in
+  // chronological (ascending date) order — independent of the year filter or
+  // the newest-first sort used for display, so the number stays stable no
   // matter how the history list is currently filtered/sorted on screen.
+  //
+  // Counted PER DONATION TYPE, not combined: โลหิตรวม and พลาสมา/เกล็ดเลือด
+  // have separate carried-over starting counts (startingCountWholeNum /
+  // startingCountComponentNum) and separate Thai Red Cross re-donation rules,
+  // so "ครั้งที่" on a whole-blood card means "this is your Nth whole-blood
+  // donation" -- not a combined figure that also counts the other type's
+  // donations. Combining them used to make a card read e.g. "ครั้งที่ 1000"
+  // for someone whose actual whole-blood count was only 500, because the
+  // other 500 came from component donations (reported directly by the user
+  // from a screenshot showing exactly this mismatch).
   const donationOrderMap = useMemo(() => {
-    const ascending = [...donations].sort((a, b) => {
+    const sortAscending = (list) => [...list].sort((a, b) => {
       const dateDiff = new Date(a.date) - new Date(b.date);
       if (dateDiff !== 0) return dateDiff;
       const aLogged = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
       const bLogged = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
       return aLogged - bLogged;
     });
+    const wholeAscending = sortAscending(donations.filter(d => (d.type || DEFAULT_DONATION_TYPE) !== "component"));
+    const componentAscending = sortAscending(donations.filter(d => d.type === "component"));
     const map = {};
-    ascending.forEach((d, i) => { map[d.id] = startingCountNum + i + 1; });
+    wholeAscending.forEach((d, i) => { map[d.id] = startingCountWholeNum + i + 1; });
+    componentAscending.forEach((d, i) => { map[d.id] = startingCountComponentNum + i + 1; });
     return map;
-  }, [donations, startingCountNum]);
+  }, [donations, startingCountWholeNum, startingCountComponentNum]);
 
   const topLocations = useMemo(() => {
     const counts = {};
@@ -4273,6 +4286,19 @@ function AppInner() {
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [donations, historyYearFilter, historyTypeFilter]);
+
+  // The "ยอดยกมา" (carried-over starting count) card at the end of the
+  // history list used to only ever show/hide based on the COMBINED total
+  // (startingCountNum), even while historyTypeFilter narrowed the list to
+  // just one type -- so switching to, say, "พลาสมา/เกล็ดเลือด" made the whole
+  // card disappear even though that type does have its own carried-over
+  // count sitting behind it (reported directly by the user: "ทำไมจำนวนยอด
+  // ยกมาไม่แสดงให้ด้วยอ่ะ" after filtering to one type). This tracks
+  // whichever total actually applies to the currently selected filter, so
+  // the card's visibility and its number both follow the active filter.
+  const displayedStartingCount = historyTypeFilter === "whole" ? startingCountWholeNum
+    : historyTypeFilter === "component" ? startingCountComponentNum
+    : startingCountNum;
 
   useEffect(() => { setHistoryVisibleCount(HISTORY_PAGE_SIZE); }, [historyYearFilter, historyTypeFilter]);
 
@@ -5025,18 +5051,16 @@ function AppInner() {
                 </div>
               )}
 
-              {filteredHistory.length === 0 && !(historyYearFilter === "all" && historyTypeFilter === "all" && startingCountNum > 0) && (
+              {/* Whenever the carried-over starting-count summary card below is
+                  about to render for the active filter (displayedStartingCount > 0,
+                  year filter "all"), it already explains the "no itemized records
+                  yet, but there's a carried-over count" situation on its own -- so
+                  this empty-state message steps aside instead of showing a redundant
+                  second explanation above it. */}
+              {filteredHistory.length === 0 && !(historyYearFilter === "all" && displayedStartingCount > 0) && (
                 <div style={{ textAlign: "center", padding: "36px 0", color: "#B39B96", fontSize: 13.5 }}>
                   {(() => {
                     if (donations.length === 0) return "ยังไม่มีรายการ กดปุ่มด้านบนเพื่อเริ่มบันทึก";
-                    const filteredTypeStartingCount = historyTypeFilter === "component" ? startingCountComponentNum : historyTypeFilter === "whole" ? startingCountWholeNum : 0;
-                    if (historyTypeFilter !== "all" && historyYearFilter === "all" && filteredTypeStartingCount > 0) {
-                      // The filtered type has no itemized records, but does have a
-                      // carried-over starting count — plain "ไม่มีรายการ" would read
-                      // as data loss, since the type's total elsewhere (header pill,
-                      // dashboard) already counts this starting-count figure.
-                      return `มียอดสะสม ${filteredTypeStartingCount} ครั้งจากยอดยกมา ยังไม่มีรายการละเอียดของ${DONATION_TYPE_LABELS[historyTypeFilter]}`;
-                    }
                     if (historyTypeFilter !== "all" && historyYearFilter !== "all") return `ไม่มีรายการ${DONATION_TYPE_LABELS[historyTypeFilter]}ในปีที่เลือก`;
                     if (historyTypeFilter !== "all") return `ไม่มีรายการ${DONATION_TYPE_LABELS[historyTypeFilter]}`;
                     return "ไม่มีรายการในปีที่เลือก";
@@ -5057,7 +5081,7 @@ function AppInner() {
                     onDelete={() => { setOpenActionMenuId(null); requestDeleteDonation(d.id); }}
                   />
                 ))}
-                {startingCountNum > 0 && historyYearFilter === "all" && historyTypeFilter === "all" && filteredHistory.length <= historyVisibleCount && (
+                {displayedStartingCount > 0 && historyYearFilter === "all" && filteredHistory.length <= historyVisibleCount && (
                   editingStartingCount ? (
                     <div style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px" }}>
                       <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
@@ -5083,11 +5107,18 @@ function AppInner() {
                   ) : (
                     <div style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{startingCountNum}</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                         <div style={{ fontSize: 8, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        {startingCountWholeNum > 0 && startingCountComponentNum > 0 ? (
+                        {/* "ทั้งหมด" with both types carried over shows the combined total plus
+                            its per-type breakdown; filtering to one specific type (or having
+                            only one type carried over at all) instead shows just that type's
+                            own figure, matching displayedStartingCount above -- otherwise
+                            switching to, say, "พลาสมา/เกล็ดเลือด" would keep showing the
+                            combined "เคยบริจาคมาแล้ว 1000 ครั้ง" heading next to a card that's
+                            now only about one type (reported directly by the user). */}
+                        {historyTypeFilter === "all" && startingCountWholeNum > 0 && startingCountComponentNum > 0 ? (
                           <div style={{ fontSize: 13.5, color: "#7A6360" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                               <Trophy size={14} color="#9A3B33" style={{ flexShrink: 0 }} /> เคยบริจาคมาแล้ว {startingCountNum} ครั้ง
@@ -5100,12 +5131,12 @@ function AppInner() {
                         ) : (
                           <div style={{ fontSize: 13.5, color: "#7A6360" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                              <Trophy size={14} color="#9A3B33" style={{ flexShrink: 0 }} /> เคยบริจาคมาแล้ว {startingCountNum} ครั้ง
+                              <Trophy size={14} color="#9A3B33" style={{ flexShrink: 0 }} /> เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 11.5 }}>
-                              {startingCountComponentNum > 0
-                                ? <><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด {startingCountComponentNum} ครั้ง</>
-                                : <><Droplet size={11} color="#9A3B33" /> โลหิตรวม {startingCountWholeNum} ครั้ง</>}
+                              {(historyTypeFilter === "component" || (historyTypeFilter === "all" && startingCountComponentNum > 0))
+                                ? <><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด {displayedStartingCount} ครั้ง</>
+                                : <><Droplet size={11} color="#9A3B33" /> โลหิตรวม {displayedStartingCount} ครั้ง</>}
                             </div>
                           </div>
                         )}
