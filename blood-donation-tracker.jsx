@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.28";
+const APP_VERSION = "1.0.29";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -785,9 +785,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const [selectedDecadeStart, setSelectedDecadeStart] = useState(null);
   const pickingYear = yearMode !== "calendar";
   // Swipe left/right on the calendar grid to move a month, same as the
-  // </> buttons -- a ref (not state) is enough since the gesture doesn't
-  // need to trigger a re-render until it actually changes the month.
-  const touchStartRef = useRef(null);
+  // </> buttons. The grid visually tracks the finger in real time (via a
+  // ref + direct style writes, not state -- a drag can fire touchmove dozens
+  // of times a second, far more often than we want a React re-render), and
+  // only turns into an actual month change once the finger lifts.
+  const gridRef = useRef(null);
+  const dragRef = useRef({ startX: 0, startY: 0, dragging: false, horizontal: false });
   // Direction of the most recent month change (1 = moved forward, -1 = moved
   // back), purely to pick which slide-in animation class to play next render.
   const [slideDir, setSlideDir] = useState(0);
@@ -824,21 +827,61 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const goNext = () => { if (!canGoNext) return; setSlideDir(1); if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
   const pick = (d) => { if (!isFuture(d)) setPendingDate(new Date(viewYear, viewMonth, d)); };
 
+  const DRAG_MAX = 90; // px the grid will visually follow the finger before resisting further
+  const SWIPE_COMMIT_PX = 16; // same threshold the old tap-only swipe used
+
   const handleGridTouchStart = (e) => {
     const t = e.touches[0];
-    touchStartRef.current = { x: t.clientX, y: t.clientY };
+    dragRef.current = { startX: t.clientX, startY: t.clientY, dragging: true, horizontal: false };
+  };
+  const handleGridTouchMove = (e) => {
+    const state = dragRef.current;
+    if (!state.dragging) return;
+    const t = e.touches[0];
+    const dx = t.clientX - state.startX;
+    const dy = t.clientY - state.startY;
+    if (!state.horizontal) {
+      // Decide once, past a small deadzone, whether this is a deliberate
+      // horizontal swipe or a vertical scroll/stray tap -- don't drag the
+      // grid sideways in response to what's actually a vertical gesture.
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      state.horizontal = Math.abs(dx) > Math.abs(dy) * 1.5;
+      if (!state.horizontal) { state.dragging = false; return; }
+    }
+    // Rubber-band resistance when dragging toward a month that's out of
+    // range (past maxDate), so the finger still gets some feedback instead
+    // of the grid feeling stuck in place.
+    let px = dx;
+    if (dx < 0 && !canGoNext) px = dx / 3;
+    px = Math.max(-DRAG_MAX, Math.min(DRAG_MAX, px));
+    if (gridRef.current) {
+      gridRef.current.style.transition = "none";
+      gridRef.current.style.transform = `translateX(${px}px)`;
+    }
   };
   const handleGridTouchEnd = (e) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start) return;
+    const state = dragRef.current;
+    state.dragging = false;
+    if (!state.horizontal) return;
     const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    // Require a clearly horizontal, deliberate swipe (not a stray tap or a
-    // mostly-vertical scroll) before treating it as a month-change gesture.
-    if (Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) goNext(); else goPrev();
+    const dx = t.clientX - state.startX;
+    const el = gridRef.current;
+    const commit = Math.abs(dx) > SWIPE_COMMIT_PX && ((dx < 0 && canGoNext) || dx > 0);
+    if (!el) {
+      if (commit) { if (dx < 0) goNext(); else goPrev(); }
+      return;
+    }
+    el.style.transition = "transform 0.16s ease-in";
+    if (commit) {
+      // Flick the current grid the rest of the way off-screen in the same
+      // direction the finger was already moving it, then swap the month --
+      // the incoming grid's own slide-in animation picks up from there.
+      el.style.transform = `translateX(${dx < 0 ? -140 : 140}px)`;
+      window.setTimeout(() => { if (dx < 0) goNext(); else goPrev(); }, 150);
+    } else {
+      // Not a deliberate enough swipe -- spring the grid back to rest
+      // instead of changing the month.
+      el.style.transform = "translateX(0px)";
     }
   };
 
@@ -996,8 +1039,11 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
         ) : (
           <div
             key={`${viewYear}-${viewMonth}`}
+            ref={gridRef}
             className={slideDir === 1 ? "calendar-slide-next" : slideDir === -1 ? "calendar-slide-prev" : undefined}
+            style={{ touchAction: "pan-y" }}
             onTouchStart={handleGridTouchStart}
+            onTouchMove={handleGridTouchMove}
             onTouchEnd={handleGridTouchEnd}
           >
             {/* Weekend (ส./อา.) is called out in maroon, both in this header
