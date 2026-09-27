@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.51";
+const APP_VERSION = "1.0.52";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2242,6 +2242,13 @@ function AppInner() {
   // DateCalendarDialog's `initial`), it's just not assumed/shown until the
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
+  // Lets submitDonation below put the user's attention directly on the date
+  // field when it's the reason validation failed ("กรุณาเลือกวันที่บริจาค"/
+  // "วันที่ไม่ถูกต้อง"/"เลือกวันที่ในอนาคตไม่ได้") -- previously the error
+  // text appeared above the บันทึก button but nothing pointed back up at
+  // the actual empty/invalid field, so on a longer form it was easy to miss
+  // which field the error was even about (reported directly by the user).
+  const formDateFieldRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [lastExportCount, setLastExportCount] = useState(0);
@@ -3137,15 +3144,18 @@ function AppInner() {
   const submitDonation = async () => {
     if (!form.date) {
       setFormError("กรุณาเลือกวันที่บริจาค");
+      formDateFieldRef.current?.focus();
       return;
     }
     const selected = new Date(form.date);
     if (Number.isNaN(selected.getTime())) {
       setFormError("วันที่ไม่ถูกต้อง");
+      formDateFieldRef.current?.focus();
       return;
     }
     if (selected.setHours(0,0,0,0) > startOfToday().getTime()) {
       setFormError("เลือกวันที่ในอนาคตไม่ได้");
+      formDateFieldRef.current?.focus();
       return;
     }
     if (sameDateConflict) {
@@ -4335,6 +4345,14 @@ function AppInner() {
   }, [form.date, donations, editingId]);
 
   const sameDateConflictMessage = "วันที่นี้มีรายการบริจาคโลหิตอยู่แล้ว กรุณาเลือกวันที่อื่น หรือกลับไปแก้ไขรายการเดิม";
+
+  // Whether the currently-shown formError is one of submitDonation's three
+  // date-specific validation messages (empty / invalid / future date) --
+  // drives the date field's red-border highlight below, so the field itself
+  // stays neutral for errors that have nothing to do with it.
+  const dateFieldHasError = formError === "กรุณาเลือกวันที่บริจาค"
+    || formError === "วันที่ไม่ถูกต้อง"
+    || formError === "เลือกวันที่ในอนาคตไม่ได้";
 
   // Only relevant while editing an existing record — disables the save
   // button when nothing has actually changed from what was opened.
@@ -6052,8 +6070,17 @@ function AppInner() {
                     clipped: this wrapper's own border always sits exactly at
                     its own edge, regardless of how wide the input inside
                     renders or gets cut off. */}
-                <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
-                  <DateField value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
+                {/* Border turns red while formError is specifically about this field.
+                    A plain .focus() call alone isn't enough to visibly point the user
+                    at the date field here: the wrapper's own overflow:hidden (see the
+                    comment above) clips off the browser's default focus outline right
+                    along with everything else it clips, so without this the field would
+                    silently receive focus with no visible sign of it. Cleared back to
+                    the neutral border via onChange since date-related errors only ever
+                    exist because form.date was empty/invalid/in the future -- picking
+                    any valid date resolves all three at once. */}
+                <div style={{ overflow: "hidden", borderRadius: 10, border: `1px solid ${dateFieldHasError ? "#B3261E" : "#E3C8C3"}` }}>
+                  <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
                     onChange={(date) => setForm(f => ({ ...f, date }))}
                     height={44} fontSize={14} />
                 </div>
