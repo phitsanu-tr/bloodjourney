@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.24";
+const APP_VERSION = "1.0.25";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -830,7 +830,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
     const dy = t.clientY - start.y;
     // Require a clearly horizontal, deliberate swipe (not a stray tap or a
     // mostly-vertical scroll) before treating it as a month-change gesture.
-    if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       if (dx < 0) goNext(); else goPrev();
     }
   };
