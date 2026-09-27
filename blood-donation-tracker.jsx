@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.14";
+const APP_VERSION = "1.0.15";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -777,7 +777,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const initial = selected || (maxDate ? parseLocalDate(maxDate) : new Date());
   const [viewYear, setViewYear] = useState(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial.getMonth());
-  const [pickingYear, setPickingYear] = useState(false);
+  // Year selection is two levels deep: pick a decade first, then a year
+  // within it, so jumping back 10-20 years is a couple of taps through
+  // short lists rather than one long scroll through ~100 individual years.
+  const [yearMode, setYearMode] = useState("calendar"); // "calendar" | "decade" | "year"
+  const [selectedDecadeStart, setSelectedDecadeStart] = useState(null);
+  const pickingYear = yearMode !== "calendar";
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -798,6 +803,15 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
 
   const maxYear = max ? max.getFullYear() : today.getFullYear();
   const years = useMemo(() => Array.from({ length: DATE_PICKER_YEARS_BACK + 1 }, (_, i) => maxYear - i), [maxYear]);
+  // Decade groups are computed on the Buddhist-Era year (what's actually
+  // displayed), not the raw Gregorian one -- otherwise a Gregorian-aligned
+  // decade like 2020-2029 shows up as the odd-looking "2563-2572" instead
+  // of the round "2560-2569" a Thai user expects. selectedDecadeStart is
+  // therefore stored as a BE year throughout.
+  const decades = useMemo(() => {
+    const starts = new Set(years.map((y) => Math.floor((y + 543) / 10) * 10));
+    return Array.from(starts).sort((a, b) => b - a);
+  }, [years]);
   const pickYear = (y) => {
     setViewYear(y);
     // If jumping to the max year would leave viewMonth past max's own month
@@ -805,8 +819,18 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
     // year), pull the month back in-bounds too -- same clamp goNext already
     // enforces one month at a time, just applied in one jump here.
     if (max && y === max.getFullYear() && viewMonth > max.getMonth()) setViewMonth(max.getMonth());
-    setPickingYear(false);
+    setYearMode("calendar");
   };
+  const openYearPicker = () => {
+    if (yearMode === "calendar") {
+      setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
+      setYearMode("decade");
+    } else {
+      setYearMode("calendar");
+    }
+  };
+  const pickDecade = (start) => { setSelectedDecadeStart(start); setYearMode("year"); };
+  const backToDecades = () => setYearMode("decade");
 
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
@@ -833,9 +857,13 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: pickingYear ? "#D9C7C3" : "#9A3B33", fontSize: 16, lineHeight: 1, cursor: pickingYear ? "default" : "pointer" }}>
             ‹
           </button>
-          <button type="button" onClick={() => setPickingYear((v) => !v)} aria-expanded={pickingYear}
+          <button type="button" onClick={openYearPicker} aria-expanded={pickingYear}
             style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", fontSize: 14, fontWeight: 600, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", padding: "4px 8px" }}>
-            {pickingYear ? "เลือกปี" : `${THAI_MONTHS_FULL[viewMonth]} ${viewYear + 543}`}
+            {yearMode === "calendar"
+              ? `${THAI_MONTHS_FULL[viewMonth]} ${viewYear + 543}`
+              : yearMode === "decade"
+              ? "เลือกช่วงปี"
+              : `${selectedDecadeStart}-${Math.min(selectedDecadeStart + 9, maxYear + 543)}`}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               style={{ transform: pickingYear ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
               <path d="M6 9l6 6 6-6" />
@@ -846,21 +874,48 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             ›
           </button>
         </div>
-        {pickingYear ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
-            {years.map((y) => (
-              <button key={y} type="button" onClick={() => pickYear(y)}
-                style={{
-                  padding: "9px 0", borderRadius: 8, border: "none",
-                  background: y === viewYear ? "#9A3B33" : "transparent",
-                  color: y === viewYear ? "#FFF7F5" : "#3A2C29",
-                  fontWeight: y === viewYear ? 700 : 400,
-                  fontSize: 12.5, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
-                }}>
-                {y + 543}
-              </button>
-            ))}
+        {yearMode === "decade" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
+            {decades.map((start) => {
+              const isCurrentDecade = Math.floor((viewYear + 543) / 10) * 10 === start;
+              return (
+                <button key={start} type="button" onClick={() => pickDecade(start)}
+                  style={{
+                    padding: "12px 0", borderRadius: 10, border: "none",
+                    background: isCurrentDecade ? "#9A3B33" : "#FBEAE7",
+                    color: isCurrentDecade ? "#FFF7F5" : "#3A2C29",
+                    fontWeight: isCurrentDecade ? 700 : 500,
+                    fontSize: 13, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                  }}>
+                  {start}-{Math.min(start + 9, maxYear + 543)}
+                </button>
+              );
+            })}
           </div>
+        ) : yearMode === "year" ? (
+          <>
+            <button type="button" onClick={backToDecades}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              ย้อนกลับ
+            </button>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 200, overflowY: "auto" }} className="no-scrollbar">
+              {years.filter((y) => Math.floor((y + 543) / 10) * 10 === selectedDecadeStart).map((y) => (
+                <button key={y} type="button" onClick={() => pickYear(y)}
+                  style={{
+                    padding: "9px 0", borderRadius: 8, border: "none",
+                    background: y === viewYear ? "#9A3B33" : "transparent",
+                    color: y === viewYear ? "#FFF7F5" : "#3A2C29",
+                    fontWeight: y === viewYear ? 700 : 400,
+                    fontSize: 12.5, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                  }}>
+                  {y + 543}
+                </button>
+              ))}
+            </div>
+          </>
         ) : (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
