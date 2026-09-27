@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.42";
+const APP_VERSION = "1.0.43";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -715,7 +715,15 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             digit peeking into the label text. Simpler and more reliable to
             leave the labels out; the hour:minute layout with the colon
             between the two columns already reads clearly on its own. */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        {/* width: "fit-content" + margin auto -- without it this div (a
+            block-level flex container) stretches to the full width of the
+            dialog card, and the highlight overlay below (left:0/right:0,
+            positioned relative to THIS div) stretched with it: the two
+            horizontal lines ran edge-to-edge of the card, well past the
+            actual hour:minute digits (reported directly by the user from a
+            screenshot). Shrinking this wrapper to just its content width
+            makes the overlay hug the two wheel columns instead. */}
+        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "fit-content", margin: "0 auto" }}>
           <TimeWheelColumn key={`h-${wheelH}`} items={hours} initialIndex={wheelH}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
           <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
