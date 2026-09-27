@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.17";
+const APP_VERSION = "1.0.18";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -693,25 +693,19 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ตอนนี้
           </button>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <div style={{ width: 64, textAlign: "center", fontSize: 11, color: "#8A7370", fontFamily: "'Mitr', 'Inter', sans-serif" }}>ชั่วโมง</div>
-          <span style={{ width: 10 }} aria-hidden="true" />
-          <div style={{ width: 64, textAlign: "center", fontSize: 11, color: "#8A7370", fontFamily: "'Mitr', 'Inter', sans-serif" }}>นาที</div>
-        </div>
-        {/* The wheel columns are pulled up (marginTop: -22) to tighten the
-            gap under the ชั่วโมง/นาที labels, but that overlap has to be
-            clipped -- otherwise a row scrolling past that overlapped zone
-            paints straight over the label text instead of staying hidden
-            behind it. The outer wrapper crops exactly that 22px sliver. */}
-        <div style={{ overflow: "hidden", height: WHEEL_HEIGHT - 22 }}>
-          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: -22 }}>
-            <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
-              ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
-            <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
-            <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
-              ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
-            <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
-          </div>
+        {/* No ชั่วโมง/นาที column labels above the wheel: tried tightening the
+            gap with a negative margin + clip, but real momentum scrolling
+            can still overshoot past the clipped sliver and re-expose a
+            digit peeking into the label text. Simpler and more reliable to
+            leave the labels out; the hour:minute layout with the colon
+            between the two columns already reads clearly on its own. */}
+        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
+            ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
+          <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
+          <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
+            ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
+          <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
         <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
           <button type="button" onClick={onClose}
