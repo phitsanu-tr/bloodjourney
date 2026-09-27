@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.48";
+const APP_VERSION = "1.0.49";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5898,14 +5898,17 @@ function AppInner() {
                   <div style={{ fontSize: 11.5, color: "#8A7370", marginTop: 1 }}>แก้ไขข้อมูลส่วนตัว</div>
                 </div>
               </div>
-              <button onClick={closeProfile} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}><X size={20} /></button>
+              <button onClick={closeProfile} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: 14, marginBottom: 14 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700, color: "#9A3B33", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><User size={13} /> ข้อมูลส่วนตัว</div>
               <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ชื่อ</label>
-                  <input ref={nicknameFirstInputRef} type="text" value={profileDraft.nicknameFirst} autoFocus
+                  {/* No autoFocus: opening this dialog (via the profile icon/menu) shouldn't
+                      itself pop the keyboard on this field before the user has tapped
+                      anything -- same reasoning as the quick-entry count input above. */}
+                  <input ref={nicknameFirstInputRef} type="text" value={profileDraft.nicknameFirst}
                     onChange={handleNameFieldChange("nicknameFirst", nicknameFirstInputRef)}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
                 </div>
@@ -5981,7 +5984,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 20px 28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"}</div>
-              <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
               <div style={{ minWidth: 0 }}>
@@ -6087,7 +6090,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นี่คือการบริจาคโลหิตครั้งใด?</div>
-              <button onClick={() => setShowOnboardingChoice(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={() => setShowOnboardingChoice(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 12.5, color: "#8A7370", lineHeight: 1.6, margin: "0 0 16px" }}>
               เพื่อความถูกต้องในการนับจำนวนครั้ง
@@ -6111,7 +6114,7 @@ function AppInner() {
           <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", overflowY: "auto", borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
-              <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 12, color: "#8A7370", lineHeight: 1.6, margin: "0 0 16px" }}>
               เปิดสวิตช์ของประเภทที่เคยบริจาค แล้วกรอกจำนวนครั้งทั้งหมด (รวมครั้งล่าสุด) และวันที่บริจาคล่าสุด
@@ -6200,7 +6203,7 @@ function AppInner() {
           <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
-              <button onClick={() => setShowSettings(false)} aria-label="ปิด" autoFocus style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={() => setShowSettings(false)} aria-label="ปิด" autoFocus style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>ข้อมูลของฉัน</div>
@@ -6263,7 +6266,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, padding: 22, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4, flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <button onClick={() => { setShowPrivacy(false); setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={() => { setShowPrivacy(false); setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 0 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
@@ -6387,7 +6390,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
-              <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
 
             <div style={{ display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, marginBottom: 16 }}>
@@ -6513,7 +6516,7 @@ function AppInner() {
           <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
-              <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer" }}><X size={19} /></button>
+              <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 8, fontWeight: 500 }}>เลือกขนาดภาพ</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
