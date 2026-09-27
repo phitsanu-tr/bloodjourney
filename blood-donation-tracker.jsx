@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.50";
+const APP_VERSION = "1.0.51";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4234,36 +4234,31 @@ function AppInner() {
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [donations]);
 
-  // Maps each donation id to its sequence number ("ครั้งที่ N"), counting the
-  // carried-over starting count first, then each in-app record in
-  // chronological (ascending date) order — independent of the year filter or
-  // the newest-first sort used for display, so the number stays stable no
+  // Maps each donation id to its overall sequence number ("ครั้งที่ N"),
+  // counting the carried-over starting count first, then each in-app record
+  // in chronological (ascending date) order — independent of the year filter
+  // or the newest-first sort used for display, so the number stays stable no
   // matter how the history list is currently filtered/sorted on screen.
   //
-  // Counted PER DONATION TYPE, not combined: โลหิตรวม and พลาสมา/เกล็ดเลือด
-  // have separate carried-over starting counts (startingCountWholeNum /
-  // startingCountComponentNum) and separate Thai Red Cross re-donation rules,
-  // so "ครั้งที่" on a whole-blood card means "this is your Nth whole-blood
-  // donation" -- not a combined figure that also counts the other type's
-  // donations. Combining them used to make a card read e.g. "ครั้งที่ 1000"
-  // for someone whose actual whole-blood count was only 500, because the
-  // other 500 came from component donations (reported directly by the user
-  // from a screenshot showing exactly this mismatch).
+  // Combined across BOTH donation types (โลหิตรวม + พลาสมา/เกล็ดเลือด), not
+  // counted separately per type -- this was tried as a per-type split for one
+  // version (v1.0.50) after a screenshot showing "ครั้งที่ 1000" looked like a
+  // mismatch, but the user confirmed directly afterward that the combined,
+  // single running total across both types is the intended/correct behavior.
+  // Reverted back to combined counting; don't re-introduce the per-type split
+  // without the user explicitly asking for it again.
   const donationOrderMap = useMemo(() => {
-    const sortAscending = (list) => [...list].sort((a, b) => {
+    const ascending = [...donations].sort((a, b) => {
       const dateDiff = new Date(a.date) - new Date(b.date);
       if (dateDiff !== 0) return dateDiff;
       const aLogged = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
       const bLogged = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
       return aLogged - bLogged;
     });
-    const wholeAscending = sortAscending(donations.filter(d => (d.type || DEFAULT_DONATION_TYPE) !== "component"));
-    const componentAscending = sortAscending(donations.filter(d => d.type === "component"));
     const map = {};
-    wholeAscending.forEach((d, i) => { map[d.id] = startingCountWholeNum + i + 1; });
-    componentAscending.forEach((d, i) => { map[d.id] = startingCountComponentNum + i + 1; });
+    ascending.forEach((d, i) => { map[d.id] = startingCountNum + i + 1; });
     return map;
-  }, [donations, startingCountWholeNum, startingCountComponentNum]);
+  }, [donations, startingCountNum]);
 
   const topLocations = useMemo(() => {
     const counts = {};
