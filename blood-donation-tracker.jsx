@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.37";
+const APP_VERSION = "1.0.38";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -942,7 +942,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // idea as the month-first change above: jumps straight to the list of
   // years in the CURRENT decade (2560-2569 for example), since picking a
   // year close to the one already showing is the common case -- jumping to
-  // a different decade entirely is one tap further still, via "ย้อนกลับ"
+  // a different decade entirely is one tap further still, via "เลือกช่วงปีอื่น"
   // inside that year list.
   const openYearListPicker = () => {
     setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
@@ -1034,12 +1034,16 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
           </>
         ) : yearMode === "year" ? (
           <>
+            {/* This isn't really "back" -- it's a jump one level up to the
+                full decade list, so it gets its own wording rather than
+                reusing the "ย้อนกลับ" of the decade view (which really is a
+                back-navigation, to the year list it came from). */}
             <button type="button" onClick={backToDecades}
               style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
-              ย้อนกลับ
+              เลือกช่วงปีอื่น
             </button>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 200, overflowY: "auto" }} className="no-scrollbar">
               {years.filter((y) => Math.floor((y + 543) / 10) * 10 === selectedDecadeStart).map((y) => (
