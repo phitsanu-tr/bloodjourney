@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -588,6 +588,70 @@ function EligibilityCheckRow({ label, status, detail }) {
         <div style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", marginBottom: 2 }}>{label}</div>
         <div style={{ fontSize: 12, color: "#8A7370", lineHeight: 1.5 }}>{detail}</div>
       </div>
+    </div>
+  );
+}
+
+// Replaces the native <input type="time"> in the record/edit donation forms.
+// That native control turned out to be unstyleable in a way that couldn't be
+// fixed from CSS alone: Safari on a real iPhone ignores text-align on it and
+// keeps an invisible AM/PM sub-field in its internal layout even on a
+// 24-hour-region device that never displays one, so the visible digits kept
+// drifting off-center no matter which ::-webkit-datetime-edit-* pseudo-
+// element trick was tried (confirmed by direct user testing on-device,
+// since this sandbox has no real iOS Safari to check against). Two plain
+// <select> elements sidestep the problem entirely: their appearance is
+// stripped with -webkit-appearance:none (the .time-hm-select class below),
+// which — unlike <input type="date"/"time"> — real mobile browsers do
+// consistently honor, so centering is guaranteed rather than hoped for.
+// Stores/returns the same "HH:MM" string the rest of the app already uses
+// (donation.time / form.time / tf.time), so no other code had to change.
+function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, fontSize = 14 }) {
+  // hh/mm are local state, not derived straight from `value` each render:
+  // picking only the hour first has no complete "HH:MM" to report upward yet,
+  // so we still emit onChange(""). If hh/mm were derived from `value` alone,
+  // that "" bouncing back in as the next `value` prop would immediately wipe
+  // the hour the user just picked, before they get to the minute dropdown.
+  const [hh, setHh] = useState(() => (value ? value.split(":")[0] : ""));
+  const [mm, setMm] = useState(() => (value ? value.split(":")[1] : ""));
+  const lastEmitted = useRef(value || "");
+
+  useEffect(() => {
+    // Only re-sync from the parent when `value` changed for a reason other
+    // than our own commit() below (e.g. the form was reset, or an existing
+    // record's saved time was loaded in) -- not from our own echoed "".
+    if (value !== lastEmitted.current) {
+      const [h, m] = value ? value.split(":") : ["", ""];
+      setHh(h || "");
+      setMm(m || "");
+      lastEmitted.current = value || "";
+    }
+  }, [value]);
+
+  const commit = (newHh, newMm) => {
+    setHh(newHh);
+    setMm(newMm);
+    const next = newHh && newMm ? `${newHh}:${newMm}` : "";
+    lastEmitted.current = next;
+    onChange(next);
+  };
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")), []);
+  const minutes = useMemo(() => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")), []);
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height, gap: 2 }}>
+      <select className="time-hm-select" aria-label={`${ariaLabelPrefix} ชั่วโมง`} value={hh}
+        onChange={(e) => commit(e.target.value, mm)}
+        style={{ fontSize }}>
+        <option value="">--</option>
+        {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+      </select>
+      <span style={{ color: "#7A6360", fontSize }}>:</span>
+      <select className="time-hm-select" aria-label={`${ariaLabelPrefix} นาที`} value={mm}
+        onChange={(e) => commit(hh, e.target.value)}
+        style={{ fontSize }}>
+        <option value="">--</option>
+        {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+      </select>
     </div>
   );
 }
@@ -3834,57 +3898,56 @@ function AppInner() {
         .date-time-row > * {
           flex: 1;
         }
-        /* Centers the date/time value text inside the native date and time
-           inputs above (text-align:center on the input alone isn't enough:
-           Chromium's built-in calendar/clock icon sits in the same flex row
-           as the value text and claims its own width first, so the
-           remaining "value" box is already off-center before text-align
-           ever gets a say -- it just centers the text within that
-           already-lopsided box). Taking the icon out of that flow with its
-           own absolute position frees the whole input width for the value
-           text to center in truthfully. position:relative goes on the
-           input itself (not the wrapper) since the indicator is one of
-           this input's own pseudo-elements. */
-        input[type="date"], input[type="time"] {
+        /* Centers the date value text inside the native date input above
+           (text-align:center on the input alone isn't enough: Chromium's
+           built-in calendar icon sits in the same flex row as the value
+           text and claims its own width first, so the remaining "value" box
+           is already off-center before text-align ever gets a say). Taking
+           the icon out of that flow with its own absolute position frees
+           the whole input width for the value text to center in truthfully.
+           position:relative goes on the input itself (not the wrapper)
+           since the indicator is one of this input's own pseudo-elements.
+           (The time field used to get the same treatment, plus two more
+           rounds of ::-webkit-datetime-edit* pseudo-element fixes on top —
+           none of it held up on a real iPhone. It's now a pair of <select>
+           elements instead; see TimeHourMinuteSelect and .time-hm-select.) */
+        input[type="date"] {
           position: relative;
         }
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
+        input[type="date"]::-webkit-calendar-picker-indicator {
           position: absolute;
           right: 12px;
           top: 50%;
           transform: translateY(-50%);
         }
-        /* The above (icon out of flow + text-align:center on the input)
-           centered the DATE field fine, but the TIME field kept drifting off
-           to one side on real iOS/Android devices once this row went from a
-           narrow half-width column to a full-width one -- text-align on the
-           outer <input> doesn't reliably reach the actual value text, which
-           lives in a separate internal part (::-webkit-datetime-edit) with
-           its own layout. Centering that part directly with flexbox is the
-           fix real browsers actually honor consistently; harmless to apply
-           to the date field too since it already looked centered by luck of
-           the previous method, not because of it. */
-        input[type="date"]::-webkit-datetime-edit,
-        input[type="time"]::-webkit-datetime-edit {
+        input[type="date"]::-webkit-datetime-edit {
           display: flex;
           justify-content: center;
           width: 100%;
         }
-        /* Still off-center on real iOS after the above (confirmed by user
-           testing -- this sandbox has no real Safari/iOS to verify against,
-           only desktop Chromium, which already looked fine either way).
-           Root cause per Apple's own bug reports: Safari's time control
-           keeps an hour-period (AM/PM) sub-field in the layout even when the
-           device's region uses 24-hour time and never displays it -- that
-           invisible field still takes up width, so centering the whole
-           value group (visible HH:MM + invisible AM/PM) pushes the visible
-           digits off to one side instead of true-centering them. Collapsing
-           that field to zero width removes it from the centering math
-           entirely. Scoped to the time field only -- the date field has no
-           such hidden segment and was already fine. */
-        input[type="time"]::-webkit-datetime-edit-ampm-field {
-          display: none;
+        /* TimeHourMinuteSelect's two <select> elements. -webkit-appearance
+           (and its unprefixed form) strip each browser's own control chrome
+           -- border, background, native dropdown arrow -- which, unlike
+           <input type="date"/"time">, real mobile browsers consistently
+           honor for <select>. That's what makes text-align reliable here
+           when it wasn't on the native time input above: with the OS chrome
+           gone, what's left is just text in a box, not a shadow-DOM control
+           free to ignore CSS. text-align-last centers the CLOSED/collapsed
+           value specifically (plain text-align only reliably centers text
+           inside the open dropdown list on some browsers), and centers is
+           harmless where it's unsupported since text-align already covers
+           it as a fallback. */
+        select.time-hm-select {
+          -webkit-appearance: none;
+          appearance: none;
+          background: transparent;
+          border: none;
+          color: #3A2C29;
+          font-family: inherit;
+          text-align: center;
+          text-align-last: center;
+          padding: 0;
+          width: 34px;
         }
       `}</style>
 
@@ -5359,9 +5422,9 @@ function AppInner() {
               <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                 <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
-                  <input type="time" lang="en-US" value={form.time}
-                    onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit", textAlign: "center" }} />
+                  <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาคโลหิต"
+                    onChange={(time) => setForm(f => ({ ...f, time }))}
+                    height={44} fontSize={14} />
                 </div>
               </div>
             </div>
@@ -5479,9 +5542,9 @@ function AppInner() {
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                         <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
-                          <input type="time" lang="en-US" value={tf.time}
-                            onChange={(e) => setTf(f => ({ ...f, time: e.target.value }))}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit", textAlign: "center" }} />
+                          <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคโลหิตครั้งล่าสุด"
+                            onChange={(time) => setTf(f => ({ ...f, time }))}
+                            height={42} fontSize={13.5} />
                         </div>
                       </div>
                     </div>
