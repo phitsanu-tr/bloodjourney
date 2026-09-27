@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.13";
+const APP_VERSION = "1.0.14";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -719,7 +719,7 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
         {value && (
           <button type="button" onClick={() => onConfirm("")}
             style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#9A3B33", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
-            ล้างเวลา (ไม่ระบุ)
+            ไม่ระบุเวลา
           </button>
         )}
       </div>
