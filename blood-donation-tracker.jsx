@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.29";
+const APP_VERSION = "1.0.30";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -1037,6 +1037,11 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </>
         ) : (
+          // overflow: hidden here clips the sliding/dragging grid to the
+          // card's own width -- without it, a drag or the flick-out/slide-in
+          // animation visibly pokes the day numbers out past the dialog's
+          // rounded edges into the dimmed backdrop behind it.
+          <div style={{ overflow: "hidden" }}>
           <div
             key={`${viewYear}-${viewMonth}`}
             ref={gridRef}
@@ -1094,6 +1099,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 );
               })}
             </div>
+          </div>
           </div>
         )}
         <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
