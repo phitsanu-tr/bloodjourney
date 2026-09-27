@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.41";
+const APP_VERSION = "1.0.42";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -843,6 +843,14 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const isSelected = (d) => !!pendingDate && viewYear === pendingDate.getFullYear() && viewMonth === pendingDate.getMonth() && d === pendingDate.getDate();
   const isToday = (d) => viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
   const canGoNext = !max || viewYear < max.getFullYear() || (viewYear === max.getFullYear() && viewMonth < max.getMonth());
+  // "ยืนยัน" should only ever commit a date the user can actually see
+  // highlighted on screen right now -- not a value staged earlier (by the
+  // initial auto-stage-today, or an explicit tap) that's since scrolled out
+  // of view because the user browsed to a different month/year/decade
+  // picker. Without this, browsing away from the staged month left the
+  // button enabled and ready to silently confirm a date nothing on screen
+  // pointed at (reported directly by the user, who found it confusing).
+  const pendingVisible = yearMode === "calendar" && !!pendingDate && viewYear === pendingDate.getFullYear() && viewMonth === pendingDate.getMonth();
 
   const goPrev = () => { setSlideDir(-1); if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
   const goNext = () => { if (!canGoNext) return; setSlideDir(1); if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
@@ -1166,8 +1174,8 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
             ยกเลิก
           </button>
-          <button type="button" disabled={!pendingDate} onClick={() => onConfirm(dateToLocalStr(pendingDate))}
-            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: pendingDate ? "#9A3B33" : "#E3C8C3", color: "#FFF7F5", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: pendingDate ? "pointer" : "default" }}>
+          <button type="button" disabled={!pendingVisible} onClick={() => onConfirm(dateToLocalStr(pendingDate))}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: pendingVisible ? "#9A3B33" : "#E3C8C3", color: "#FFF7F5", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: pendingVisible ? "pointer" : "default" }}>
             ยืนยัน
           </button>
         </div>
