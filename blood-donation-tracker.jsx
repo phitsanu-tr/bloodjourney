@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3870,6 +3870,21 @@ function AppInner() {
           display: flex;
           justify-content: center;
           width: 100%;
+        }
+        /* Still off-center on real iOS after the above (confirmed by user
+           testing -- this sandbox has no real Safari/iOS to verify against,
+           only desktop Chromium, which already looked fine either way).
+           Root cause per Apple's own bug reports: Safari's time control
+           keeps an hour-period (AM/PM) sub-field in the layout even when the
+           device's region uses 24-hour time and never displays it -- that
+           invisible field still takes up width, so centering the whole
+           value group (visible HH:MM + invisible AM/PM) pushes the visible
+           digits off to one side instead of true-centering them. Collapsing
+           that field to zero width removes it from the centering math
+           entirely. Scoped to the time field only -- the date field has no
+           such hidden segment and was already fine. */
+        input[type="time"]::-webkit-datetime-edit-ampm-field {
+          display: none;
         }
       `}</style>
 
