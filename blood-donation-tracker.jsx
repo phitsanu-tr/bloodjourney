@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.36";
+const APP_VERSION = "1.0.37";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -934,19 +934,23 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // already being viewed -- jumping to a different month within the same
   // year is by far the more common case, so it shouldn't require detouring
   // through a decade/year picker first. Jumping further back in time is
-  // still there, just one level deeper: see openDecadePicker below.
+  // still there, just one (or two) levels deeper: see openYearListPicker.
   const openYearPicker = () => {
     setYearMode(yearMode === "calendar" ? "month" : "calendar");
   };
-  // Reached by tapping the year number shown inside the month grid --
-  // this is the "actually, a different year" escape hatch.
-  const openDecadePicker = () => {
+  // Reached by tapping the year number shown inside the month grid. Same
+  // idea as the month-first change above: jumps straight to the list of
+  // years in the CURRENT decade (2560-2569 for example), since picking a
+  // year close to the one already showing is the common case -- jumping to
+  // a different decade entirely is one tap further still, via "ย้อนกลับ"
+  // inside that year list.
+  const openYearListPicker = () => {
     setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
-    setYearMode("decade");
+    setYearMode("year");
   };
   const pickDecade = (start) => { setSelectedDecadeStart(start); setYearMode("year"); };
   const backToDecades = () => setYearMode("decade");
-  const backToMonth = () => setYearMode("month");
+  const backToYear = () => setYearMode("year");
 
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
@@ -1000,7 +1004,10 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
         </div>
         {yearMode === "decade" ? (
           <>
-            <button type="button" onClick={backToMonth}
+            {/* The decade list is now reached FROM the year list (via its
+                own "ย้อนกลับ", one level below), so backing out of it
+                returns to that year list, not the month grid. */}
+            <button type="button" onClick={backToYear}
               style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6" />
@@ -1055,7 +1062,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 jumping between months within this same year is the common
                 case (just tap a month below), while changing the year at
                 all is the deeper, less common action this button leads to. */}
-            <button type="button" onClick={openDecadePicker}
+            <button type="button" onClick={openYearListPicker}
               style={{ display: "flex", alignItems: "center", gap: 4, background: "#FBEAE7", border: "none", borderRadius: 999, color: "#9A3B33", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "5px 12px", marginBottom: 10, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
               ปี {viewYear + 543}
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
