@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.25";
+const APP_VERSION = "1.0.26";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -788,6 +788,9 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // </> buttons -- a ref (not state) is enough since the gesture doesn't
   // need to trigger a re-render until it actually changes the month.
   const touchStartRef = useRef(null);
+  // Direction of the most recent month change (1 = moved forward, -1 = moved
+  // back), purely to pick which slide-in animation class to play next render.
+  const [slideDir, setSlideDir] = useState(0);
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -813,8 +816,8 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const isToday = (d) => viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
   const canGoNext = !max || viewYear < max.getFullYear() || (viewYear === max.getFullYear() && viewMonth < max.getMonth());
 
-  const goPrev = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
-  const goNext = () => { if (!canGoNext) return; if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
+  const goPrev = () => { setSlideDir(-1); if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
+  const goNext = () => { if (!canGoNext) return; setSlideDir(1); if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
   const pick = (d) => { if (!isFuture(d)) onConfirm(dateToLocalStr(new Date(viewYear, viewMonth, d))); };
 
   const handleGridTouchStart = (e) => {
@@ -987,7 +990,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </>
         ) : (
-          <div onTouchStart={handleGridTouchStart} onTouchEnd={handleGridTouchEnd}>
+          <div
+            key={`${viewYear}-${viewMonth}`}
+            className={slideDir === 1 ? "calendar-slide-next" : slideDir === -1 ? "calendar-slide-prev" : undefined}
+            onTouchStart={handleGridTouchStart}
+            onTouchEnd={handleGridTouchEnd}
+          >
             {/* Weekend (ส./อา.) is called out in maroon, both in this header
                 and in the day numbers below, and the whole header row sits
                 on a light rounded card so it reads as a distinct "table
@@ -4348,6 +4356,29 @@ function AppInner() {
           color: #B39B96;
           font-family: 'Mitr', 'Inter', sans-serif;
           transition: color 0.1s, font-size 0.1s, font-weight 0.1s;
+        }
+        /* DateCalendarDialog's month-change animation: whichever direction
+           the month moved (via </> or a swipe), the incoming grid slides in
+           from that side while fading in, giving the swipe gesture a
+           visible, physical response instead of an instant flat-cut swap. */
+        @keyframes calendar-slide-in-left {
+          from { transform: translateX(24px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes calendar-slide-in-right {
+          from { transform: translateX(-24px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        .calendar-slide-next {
+          animation: calendar-slide-in-left 0.18s ease-out;
+        }
+        .calendar-slide-prev {
+          animation: calendar-slide-in-right 0.18s ease-out;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .calendar-slide-next, .calendar-slide-prev {
+            animation: none;
+          }
         }
         .time-wheel-item-active {
           font-size: 17px;
