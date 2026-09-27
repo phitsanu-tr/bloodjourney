@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.21";
+const APP_VERSION = "1.0.22";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -794,9 +794,15 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // Always pad out to exactly 6 rows (42 cells): a month can need 4, 5, or 6
   // calendar rows depending on where it starts, and without this the whole
   // dialog visibly grows/shrinks a row's height when navigating between
-  // months -- padding with trailing blanks keeps the dialog's height fixed.
-  const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-  while (cells.length < 42) cells.push(null);
+  // months. Rather than leaving that padding as a dead blank row, it's
+  // filled with the next month's leading days (muted, non-interactive) --
+  // the common "overflow days" pattern most calendar UIs use.
+  const cells = [
+    ...Array(firstWeekday).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, overflow: false })),
+  ];
+  let nextDay = 1;
+  while (cells.length < 42) cells.push({ day: nextDay++, overflow: true });
 
   const isFuture = (d) => !!max && new Date(viewYear, viewMonth, d) > max;
   const isSelected = (d) => !!selected && viewYear === selected.getFullYear() && viewMonth === selected.getMonth() && d === selected.getDate();
@@ -973,13 +979,25 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               })}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
-              {cells.map((d, i) => {
-                // Placeholder cells need the same aspect-ratio square as a
-                // real day button -- otherwise a row made entirely of blanks
-                // (the trailing padding, or the leading offset) has nothing
-                // to size it, and CSS grid collapses that row's height to
-                // near zero instead of matching the other rows.
-                if (d === null) return <div key={`e${i}`} style={{ aspectRatio: "1" }} aria-hidden="true" />;
+              {cells.map((cell, i) => {
+                // A leading gap (before day 1) is still a plain blank -- but
+                // it still needs the same aspect-ratio square as a real day
+                // button, otherwise a row made entirely of blanks has
+                // nothing to size it and CSS grid collapses that row's
+                // height to near zero instead of matching the other rows.
+                if (cell === null) return <div key={`e${i}`} style={{ aspectRatio: "1" }} aria-hidden="true" />;
+                const { day: d, overflow } = cell;
+                // Trailing padding is filled with the next month's leading
+                // days instead, muted and non-interactive -- purely to keep
+                // the grid visually filled, not a real navigation shortcut.
+                if (overflow) {
+                  return (
+                    <div key={`n${i}`} aria-hidden="true"
+                      style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#EADEDB", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+                      {d}
+                    </div>
+                  );
+                }
                 const isWeekend = i % 7 === 5 || i % 7 === 6;
                 return (
                   <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
