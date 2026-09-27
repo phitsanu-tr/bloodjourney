@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.52";
+const APP_VERSION = "1.0.53";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -144,7 +144,25 @@ const MAX_CYCLE_DAYS = 365;
 const MIN_AGE = 17;
 const MAX_AGE = 70;
 const MIN_WEIGHT = 45; // matches ELIGIBILITY_CRITERIA text and the locked criteria in the handoff doc (was inconsistently 50 here)
-const MAX_STARTING_COUNT = 999;
+// Per-type ceilings on the "เคยบริจาคมาแล้วกี่ครั้ง" (carried-over starting
+// count) inputs, so a donor can't accidentally type in a number no real
+// person could actually reach. Derived from Thai Red Cross's own donor
+// eligibility window (age 17-70, MIN_AGE/MAX_AGE above -> at most 53
+// eligible years) and its own stated donation intervals for each type:
+//   - โลหิตรวม (whole blood): every 90 days -> ~4.06/year -> ~215 over 53
+//     years. Capped a bit above that (300) for margin/edge cases.
+//   - พลาสมา/เกล็ดเลือด (plasma/platelet apheresis): every 14 days
+//     ("สามารถบริจาคได้ทุก 14 วัน" -- thaibloodcentre.redcross.or.th) ->
+//     ~26.1/year -> ~1,383 over 53 years. Capped a bit above that (1500).
+// Sanity-checked against the real world: the actual Guinness World Record
+// for most lifetime donations is 1,162, set over 70 years (age 20-90,
+// mostly apheresis) -- close to but below this 53-year Thai-eligibility
+// ceiling, confirming 1500 isn't an unreasonably tight cap even for an
+// extreme real donor. Previously both fields shared one flat 999, which
+// was simultaneously far too loose for โลหิตรวม (999 vs. a real ~215 max)
+// and slightly too tight for พลาสมา/เกล็ดเลือด (999 vs. a real ~1,383 max).
+const MAX_STARTING_COUNT_WHOLE = 300;
+const MAX_STARTING_COUNT_COMPONENT = 1500;
 const BLOOD_TYPES = ["A", "B", "AB", "O", "ไม่ทราบ"];
 // Thai consonants/vowels/tone marks (U+0E01–U+0E3A, U+0E40–U+0E4E) — this
 // deliberately excludes the Thai digits (U+0E50–U+0E59) and punctuation
@@ -3054,16 +3072,20 @@ function AppInner() {
     // Validate one card fully (count, then date) before moving to the next,
     // so the first error a donor sees always belongs to the card at the top
     // of the form rather than jumping between cards.
-    for (const [on, totalRaw, countRef, f, dateRef] of [
-      [quickTypeOnWhole, wholeTotalRaw, quickCountInputRefWhole, quickEntryFormWhole, quickDateInputRefWhole],
-      [quickTypeOnComponent, componentTotalRaw, quickCountInputRefComponent, quickEntryFormComponent, quickDateInputRefComponent],
+    for (const [on, totalRaw, countRef, f, dateRef, typeMax] of [
+      [quickTypeOnWhole, wholeTotalRaw, quickCountInputRefWhole, quickEntryFormWhole, quickDateInputRefWhole, MAX_STARTING_COUNT_WHOLE],
+      [quickTypeOnComponent, componentTotalRaw, quickCountInputRefComponent, quickEntryFormComponent, quickDateInputRefComponent, MAX_STARTING_COUNT_COMPONENT],
     ]) {
       if (!on) continue;
       // The entered total INCLUDES the most-recent donation being logged in
       // this same form, so the minimum valid value is 1 (not 0) — see
-      // handoff doc decision log ("แบบ A").
-      if (Number.isNaN(totalRaw) || !Number.isInteger(totalRaw) || totalRaw < 1 || totalRaw > MAX_STARTING_COUNT) {
-        setQuickStartingCountError(`กรุณาระบุจำนวนครั้งที่เคยบริจาคโลหิตทั้งหมด (1-${MAX_STARTING_COUNT} ครั้ง)`);
+      // handoff doc decision log ("แบบ A"). The upper bound is type-specific
+      // (see MAX_STARTING_COUNT_WHOLE/COMPONENT above): no real donor could
+      // exceed either given Thai Red Cross's own age window and donation
+      // intervals, so this message tells the donor the number they typed
+      // isn't realistically possible rather than just "too big".
+      if (Number.isNaN(totalRaw) || !Number.isInteger(totalRaw) || totalRaw < 1 || totalRaw > typeMax) {
+        setQuickStartingCountError(`จำนวนครั้งที่เคยบริจาคควรอยู่ระหว่าง 1-${typeMax} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
         countRef.current?.focus();
         return;
       }
@@ -3226,11 +3248,16 @@ function AppInner() {
   const saveStartingCountInline = async () => {
     const numWhole = startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0;
     const numComponent = startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0;
-    if (
-      Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > MAX_STARTING_COUNT ||
-      Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > MAX_STARTING_COUNT
-    ) {
-      showToast("error", `จำนวนครั้งต้องเป็นจำนวนเต็มระหว่าง 0-${MAX_STARTING_COUNT} ครั้ง`);
+    // Each type validated against its own realistic ceiling (see
+    // MAX_STARTING_COUNT_WHOLE/COMPONENT above) and reported by name, so a
+    // number that's fine for one type but not the other doesn't get folded
+    // into one generic message that doesn't say which field is the problem.
+    if (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > MAX_STARTING_COUNT_WHOLE) {
+      showToast("error", `จำนวนครั้งโลหิตรวมต้องเป็นจำนวนเต็มระหว่าง 0-${MAX_STARTING_COUNT_WHOLE} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      return;
+    }
+    if (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > MAX_STARTING_COUNT_COMPONENT) {
+      showToast("error", `จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${MAX_STARTING_COUNT_COMPONENT} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
       return;
     }
     try {
@@ -5101,13 +5128,13 @@ function AppInner() {
                       <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#7A6360", marginBottom: 5 }}><Droplet size={11} color="#9A3B33" /> โลหิตรวม</div>
-                          <input type="number" min="0" max={MAX_STARTING_COUNT} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus
+                          <input type="number" min="0" max={MAX_STARTING_COUNT_WHOLE} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus
                             onChange={(e) => setStartingCountDraftWhole(e.target.value)}
                             style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#7A6360", marginBottom: 5 }}><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
-                          <input type="number" min="0" max={MAX_STARTING_COUNT} step="1" value={startingCountDraftComponent} placeholder="0"
+                          <input type="number" min="0" max={MAX_STARTING_COUNT_COMPONENT} step="1" value={startingCountDraftComponent} placeholder="0"
                             onChange={(e) => setStartingCountDraftComponent(e.target.value)}
                             style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
                         </div>
@@ -6174,9 +6201,9 @@ function AppInner() {
             </p>
 
             {[
-              { key: "whole", label: "โลหิตรวม", on: quickTypeOnWhole, setOn: setQuickTypeOnWhole, draft: quickStartingCountWholeDraft, setDraft: setQuickStartingCountWholeDraft, form: quickEntryFormWhole, setForm: setQuickEntryFormWhole, countRef: quickCountInputRefWhole, dateRef: quickDateInputRefWhole },
-              { key: "component", label: "พลาสมา/เกล็ดเลือด", on: quickTypeOnComponent, setOn: setQuickTypeOnComponent, draft: quickStartingCountComponentDraft, setDraft: setQuickStartingCountComponentDraft, form: quickEntryFormComponent, setForm: setQuickEntryFormComponent, countRef: quickCountInputRefComponent, dateRef: quickDateInputRefComponent },
-            ].map(({ key, label, on, setOn, draft, setDraft, form: tf, setForm: setTf, countRef, dateRef }, idx) => (
+              { key: "whole", label: "โลหิตรวม", on: quickTypeOnWhole, setOn: setQuickTypeOnWhole, draft: quickStartingCountWholeDraft, setDraft: setQuickStartingCountWholeDraft, form: quickEntryFormWhole, setForm: setQuickEntryFormWhole, countRef: quickCountInputRefWhole, dateRef: quickDateInputRefWhole, max: MAX_STARTING_COUNT_WHOLE },
+              { key: "component", label: "พลาสมา/เกล็ดเลือด", on: quickTypeOnComponent, setOn: setQuickTypeOnComponent, draft: quickStartingCountComponentDraft, setDraft: setQuickStartingCountComponentDraft, form: quickEntryFormComponent, setForm: setQuickEntryFormComponent, countRef: quickCountInputRefComponent, dateRef: quickDateInputRefComponent, max: MAX_STARTING_COUNT_COMPONENT },
+            ].map(({ key, label, on, setOn, draft, setDraft, form: tf, setForm: setTf, countRef, dateRef, max }, idx) => (
               <div key={key} style={{ marginTop: idx === 0 ? 0 : 8, marginBottom: 8 }}>
                 <div style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#FFFFFF",
@@ -6197,7 +6224,7 @@ function AppInner() {
                         is toggled on, and auto-focusing it would pop the keyboard open
                         immediately without the user tapping anything -- reported directly
                         by the user as unwanted. Let them tap the field themselves. */}
-                    <input ref={countRef} type="number" min="1" max={MAX_STARTING_COUNT} step="1" value={draft} placeholder="0"
+                    <input ref={countRef} type="number" min="1" max={max} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
