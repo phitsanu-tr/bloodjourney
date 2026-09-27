@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.19";
+const APP_VERSION = "1.0.20";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -791,7 +791,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const firstOfMonth = new Date(viewYear, viewMonth, 1);
   const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // JS: 0=Sun..6=Sat -> 0=Mon..6=Sun
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // Always pad out to exactly 6 rows (42 cells): a month can need 4, 5, or 6
+  // calendar rows depending on where it starts, and without this the whole
+  // dialog visibly grows/shrinks a row's height when navigating between
+  // months -- padding with trailing blanks keeps the dialog's height fixed.
   const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  while (cells.length < 42) cells.push(null);
 
   const isFuture = (d) => !!max && new Date(viewYear, viewMonth, d) > max;
   const isSelected = (d) => !!selected && viewYear === selected.getFullYear() && viewMonth === selected.getMonth() && d === selected.getDate();
