@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.30";
+const APP_VERSION = "1.0.31";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -1037,20 +1037,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </>
         ) : (
-          // overflow: hidden here clips the sliding/dragging grid to the
-          // card's own width -- without it, a drag or the flick-out/slide-in
-          // animation visibly pokes the day numbers out past the dialog's
-          // rounded edges into the dimmed backdrop behind it.
-          <div style={{ overflow: "hidden" }}>
-          <div
-            key={`${viewYear}-${viewMonth}`}
-            ref={gridRef}
-            className={slideDir === 1 ? "calendar-slide-next" : slideDir === -1 ? "calendar-slide-prev" : undefined}
-            style={{ touchAction: "pan-y" }}
-            onTouchStart={handleGridTouchStart}
-            onTouchMove={handleGridTouchMove}
-            onTouchEnd={handleGridTouchEnd}
-          >
+          // The weekday header (จ. อ. พ. ...) never changes between months,
+          // so it stays put -- only the day-number grid underneath slides or
+          // drags. Touch handlers sit on this outer wrapper (not the grid
+          // itself) so a swipe started anywhere in the calendar area, header
+          // row included, still moves the month.
+          <div style={{ touchAction: "pan-y" }} onTouchStart={handleGridTouchStart} onTouchMove={handleGridTouchMove} onTouchEnd={handleGridTouchEnd}>
             {/* Weekend (ส./อา.) is called out in maroon, both in this header
                 and in the day numbers below, and the whole header row sits
                 on a light rounded card so it reads as a distinct "table
@@ -1063,7 +1055,17 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 );
               })}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+            {/* overflow: hidden here clips the sliding/dragging grid to the
+                card's own width -- without it, a drag or the flick-out/
+                slide-in animation visibly pokes the day numbers out past
+                the dialog's rounded edges into the dimmed backdrop. */}
+            <div style={{ overflow: "hidden" }}>
+            <div
+              key={`${viewYear}-${viewMonth}`}
+              ref={gridRef}
+              className={slideDir === 1 ? "calendar-slide-next" : slideDir === -1 ? "calendar-slide-prev" : undefined}
+              style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}
+            >
               {cells.map((cell, i) => {
                 // A leading gap (before day 1) is still a plain blank -- but
                 // it still needs the same aspect-ratio square as a real day
