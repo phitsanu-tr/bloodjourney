@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3854,6 +3854,22 @@ function AppInner() {
           right: 12px;
           top: 50%;
           transform: translateY(-50%);
+        }
+        /* The above (icon out of flow + text-align:center on the input)
+           centered the DATE field fine, but the TIME field kept drifting off
+           to one side on real iOS/Android devices once this row went from a
+           narrow half-width column to a full-width one -- text-align on the
+           outer <input> doesn't reliably reach the actual value text, which
+           lives in a separate internal part (::-webkit-datetime-edit) with
+           its own layout. Centering that part directly with flexbox is the
+           fix real browsers actually honor consistently; harmless to apply
+           to the date field too since it already looked centered by luck of
+           the previous method, not because of it. */
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit {
+          display: flex;
+          justify-content: center;
+          width: 100%;
         }
       `}</style>
 
