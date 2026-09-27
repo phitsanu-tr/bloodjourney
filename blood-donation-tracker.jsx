@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.31";
+const APP_VERSION = "1.0.32";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -675,10 +675,21 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   const initialMIndex = Math.max(0, minutes.indexOf(vm));
   const [selH, setSelH] = useState(initialHIndex);
   const [selM, setSelM] = useState(initialMIndex);
+  // Separate from selH/selM: this is what the wheels actually mount at (via
+  // the key below), so "ตอนนี้" can re-scroll them to the current time
+  // without touching the parent's saved value -- that still only happens
+  // when "ยืนยัน" is pressed.
+  const [wheelH, setWheelH] = useState(initialHIndex);
+  const [wheelM, setWheelM] = useState(initialMIndex);
 
   const fillNow = () => {
     const now = new Date();
-    onConfirm(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+    const hi = Math.max(0, hours.indexOf(String(now.getHours()).padStart(2, "0")));
+    const mi = Math.max(0, minutes.indexOf(String(now.getMinutes()).padStart(2, "0")));
+    setWheelH(hi);
+    setWheelM(mi);
+    setSelH(hi);
+    setSelM(mi);
   };
 
   return (
@@ -700,10 +711,10 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             leave the labels out; the hour:minute layout with the colon
             between the two columns already reads clearly on its own. */}
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
+          <TimeWheelColumn key={`h-${wheelH}`} items={hours} initialIndex={wheelH}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
           <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
-          <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
+          <TimeWheelColumn key={`m-${wheelM}`} items={minutes} initialIndex={wheelM}
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
@@ -925,9 +936,15 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
     // caller could in principle pass an earlier max) rather than always
-    // confirming the real calendar today regardless of that limit.
+    // jumping to the real calendar today regardless of that limit. Only
+    // navigates to and stages today's date (highlighted, like tapping a
+    // day) -- nothing is saved until "ยืนยัน" is pressed, same as the time
+    // picker's "ตอนนี้".
     const target = max && today > max ? max : today;
-    onConfirm(dateToLocalStr(target));
+    setViewYear(target.getFullYear());
+    setViewMonth(target.getMonth());
+    setYearMode("calendar");
+    setPendingDate(target);
   };
 
   return (
