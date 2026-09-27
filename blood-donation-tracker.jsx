@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.5";
+const APP_VERSION = "1.0.6";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -601,11 +601,12 @@ function EligibilityCheckRow({ label, status, detail }) {
 // element trick was tried (confirmed by direct user testing on-device,
 // since this sandbox has no real iOS Safari to check against). A first fix
 // (two plain <select> elements) solved the centering, but the user then
-// asked for a fuller redesign: a tap opens a bottom sheet with a scrolling
-// hour/minute wheel picker and an explicit "ยืนยัน" (confirm) step, so nothing
-// is set until the user deliberately confirms it. Stores/returns the same
-// "HH:MM" string the rest of the app already uses (donation.time / form.time
-// / tf.time), so no other code had to change.
+// asked for a fuller redesign: a tap opens a dialog (centered on screen,
+// matching the app's other modals) with a scrolling hour/minute wheel picker
+// and an explicit "ยืนยัน" (confirm) step, so nothing is set until the user
+// deliberately confirms it. Stores/returns the same "HH:MM" string the rest
+// of the app already uses (donation.time / form.time / tf.time), so no
+// other code had to change.
 const WHEEL_ITEM_HEIGHT = 40;
 const WHEEL_VISIBLE_ROWS = 3;
 const WHEEL_HEIGHT = WHEEL_ITEM_HEIGHT * WHEEL_VISIBLE_ROWS;
@@ -649,7 +650,7 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
   );
 }
 
-// The bottom sheet itself: two wheels + confirm/cancel/clear. Nothing here
+// The picker dialog itself: two wheels + confirm/cancel/clear. Nothing here
 // touches the parent's value until "ยืนยัน" is pressed (or "ล้างเวลา" for an
 // explicit clear) -- scrolling the wheels only updates this component's own
 // state, so backing out via "ยกเลิก" or tapping the backdrop leaves the
@@ -665,11 +666,10 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
-      style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(36,26,24,0.45)" }} />
-      <div style={{ position: "relative", width: "100%", maxWidth: 420, background: "#FFFFFF", borderRadius: "18px 18px 0 0", padding: "14px 20px calc(20px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 -6px 20px rgba(122,42,35,0.16)" }}>
-        <div style={{ width: 36, height: 4, background: "#E3C8C3", borderRadius: 2, margin: "0 auto 14px" }} aria-hidden="true" />
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 12 }}>เลือก{ariaLabelPrefix}</div>
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 14 }}>เลือก{ariaLabelPrefix}</div>
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
