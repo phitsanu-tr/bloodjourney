@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.43";
+const APP_VERSION = "1.0.44";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -741,9 +741,15 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ยืนยัน
           </button>
         </div>
+        {/* Used to be a bare underlined text link sitting below the button
+            row with its own margin -- direct user feedback was that it read
+            as floating, disconnected from ยกเลิก/ยืนยัน above it. Styling it
+            as a real (ghost) button, stacked with the same 10px gap used
+            between the two buttons above, makes it read as a third option
+            in the same group instead of an afterthought underneath. */}
         {value && (
           <button type="button" onClick={() => onConfirm("")}
-            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#9A3B33", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+            style={{ display: "block", width: "100%", marginTop: 10, padding: "9px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
             ไม่ระบุเวลา
           </button>
         )}
