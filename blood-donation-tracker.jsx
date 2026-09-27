@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.45";
+const APP_VERSION = "1.0.46";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -686,6 +686,16 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   // when "ยืนยัน" is pressed.
   const [wheelH, setWheelH] = useState(initialHIndex);
   const [wheelM, setWheelM] = useState(initialMIndex);
+  // Bumped on every "ตอนนี้" tap and folded into the wheels' key below. Just
+  // setWheelH/setWheelM isn't enough on its own: if the wheels were opened
+  // (or last snapped to "now") within the same minute the user later taps
+  // "ตอนนี้" again, the freshly computed hi/mi come out identical to the
+  // current wheelH/wheelM, React sees no state change, the key stays the
+  // same, and the wheel never remounts -- so a wheel the user had manually
+  // scrolled elsewhere just stays put instead of snapping back to now
+  // (reported directly by the user). This nonce guarantees the key changes
+  // on every tap regardless of whether the index itself changed.
+  const [nowNonce, setNowNonce] = useState(0);
 
   const fillNow = () => {
     const now = new Date();
@@ -695,6 +705,7 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
     setWheelM(mi);
     setSelH(hi);
     setSelM(mi);
+    setNowNonce((n) => n + 1);
   };
 
   return (
@@ -724,10 +735,10 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             screenshot). Shrinking this wrapper to just its content width
             makes the overlay hug the two wheel columns instead. */}
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "fit-content", margin: "0 auto" }}>
-          <TimeWheelColumn key={`h-${wheelH}`} items={hours} initialIndex={wheelH}
+          <TimeWheelColumn key={`h-${wheelH}-${nowNonce}`} items={hours} initialIndex={wheelH}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
           <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
-          <TimeWheelColumn key={`m-${wheelM}`} items={minutes} initialIndex={wheelM}
+          <TimeWheelColumn key={`m-${wheelM}-${nowNonce}`} items={minutes} initialIndex={wheelM}
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
