@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.9";
+const APP_VERSION = "1.0.10";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -686,13 +686,7 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
-          <button type="button" onClick={fillNow}
-            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
-            ตอนนี้
-          </button>
-        </div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 14 }}>เลือก{ariaLabelPrefix}</div>
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
@@ -701,7 +695,11 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+        <button type="button" onClick={fillNow}
+          style={{ display: "block", width: "100%", marginTop: 16, padding: "9px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+          ตอนนี้
+        </button>
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <button type="button" onClick={onClose}
             style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
             ยกเลิก
@@ -816,13 +814,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
-          <button type="button" onClick={fillToday}
-            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
-            วันนี้
-          </button>
-        </div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 14 }}>เลือก{ariaLabelPrefix}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า" disabled={pickingYear}
             style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: pickingYear ? "#D9C7C3" : "#9A3B33", fontSize: 16, lineHeight: 1, cursor: pickingYear ? "default" : "pointer" }}>
@@ -880,8 +872,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </>
         )}
+        <button type="button" onClick={fillToday}
+          style={{ display: "block", width: "100%", marginTop: 16, padding: "9px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+          วันนี้
+        </button>
         <button type="button" onClick={onClose}
-          style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+          style={{ display: "block", width: "100%", marginTop: 10, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
           ยกเลิก
         </button>
       </div>
