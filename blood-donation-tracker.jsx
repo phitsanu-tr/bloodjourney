@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.7";
+const APP_VERSION = "1.0.8";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -621,6 +621,12 @@ const WHEEL_HEIGHT = WHEEL_ITEM_HEIGHT * WHEEL_VISIBLE_ROWS;
 function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
   const scrollRef = useRef(null);
   const settleTimer = useRef(null);
+  // centerIndex drives which item is styled bold/dark (vs. the dimmed rest) --
+  // updated on every scroll frame, cheap since there are at most 60 items and
+  // only one of them ever needs the "active" class at a time. Separate from
+  // onSettle below, which only fires once scrolling has actually stopped and
+  // is what reports the value upward / snaps the scroll position exactly.
+  const [centerIndex, setCenterIndex] = useState(initialIndex);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -631,9 +637,13 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
   }, []);
 
   const handleScroll = () => {
+    const el = scrollRef.current;
+    if (el) {
+      const live = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / WHEEL_ITEM_HEIGHT)));
+      setCenterIndex(live);
+    }
     if (settleTimer.current) clearTimeout(settleTimer.current);
     settleTimer.current = setTimeout(() => {
-      const el = scrollRef.current;
       if (!el) return;
       const i = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / WHEEL_ITEM_HEIGHT)));
       el.scrollTop = i * WHEEL_ITEM_HEIGHT; // snap exactly, in case of rubber-band overscroll
@@ -644,7 +654,9 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
   return (
     <div ref={scrollRef} onScroll={handleScroll} aria-label={ariaLabel} className="no-scrollbar time-wheel-col">
       <div style={{ height: WHEEL_ITEM_HEIGHT }} aria-hidden="true" />
-      {items.map((label) => <div key={label} className="time-wheel-item">{label}</div>)}
+      {items.map((label, i) => (
+        <div key={label} className={i === centerIndex ? "time-wheel-item time-wheel-item-active" : "time-wheel-item"}>{label}</div>
+      ))}
       <div style={{ height: WHEEL_ITEM_HEIGHT }} aria-hidden="true" />
     </div>
   );
@@ -673,7 +685,7 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
             ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
-          <span style={{ fontSize: 19, fontWeight: 600, color: "#7A6360", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
+          <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
           <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
@@ -737,11 +749,19 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
 const THAI_MONTHS_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 const THAI_WEEKDAYS_SHORT = ["จ.","อ.","พ.","พฤ.","ศ.","ส.","อา."]; // Monday-first, matching Thai calendar convention
 
+// How far back the year list in the header dropdown reaches. A donor's
+// history can plausibly go back decades (first donation as a young adult,
+// logged years later), and the month-by-month </> nav alone would take
+// dozens of taps to get there -- this lets a 10-20-year-old date be reached
+// in two taps (open year list, tap the year) instead.
+const DATE_PICKER_YEARS_BACK = 100;
+
 function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefix }) {
   const selected = value ? parseLocalDate(value) : null;
   const initial = selected || (maxDate ? parseLocalDate(maxDate) : new Date());
   const [viewYear, setViewYear] = useState(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial.getMonth());
+  const [pickingYear, setPickingYear] = useState(false);
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -760,44 +780,80 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const goNext = () => { if (!canGoNext) return; if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
   const pick = (d) => { if (!isFuture(d)) onConfirm(dateToLocalStr(new Date(viewYear, viewMonth, d))); };
 
+  const maxYear = max ? max.getFullYear() : today.getFullYear();
+  const years = useMemo(() => Array.from({ length: DATE_PICKER_YEARS_BACK + 1 }, (_, i) => maxYear - i), [maxYear]);
+  const pickYear = (y) => {
+    setViewYear(y);
+    // If jumping to the max year would leave viewMonth past max's own month
+    // (e.g. currently viewing December but max is only up to June this
+    // year), pull the month back in-bounds too -- same clamp goNext already
+    // enforces one month at a time, just applied in one jump here.
+    if (max && y === max.getFullYear() && viewMonth > max.getMonth()) setViewMonth(max.getMonth());
+    setPickingYear(false);
+  };
+
   return (
     <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า"
-            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 16, lineHeight: 1, cursor: "pointer" }}>
+          <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า" disabled={pickingYear}
+            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: pickingYear ? "#D9C7C3" : "#9A3B33", fontSize: 16, lineHeight: 1, cursor: pickingYear ? "default" : "pointer" }}>
             ‹
           </button>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
-            {THAI_MONTHS_FULL[viewMonth]} {viewYear + 543}
-          </div>
-          <button type="button" onClick={goNext} aria-label="เดือนถัดไป" disabled={!canGoNext}
-            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: canGoNext ? "#9A3B33" : "#D9C7C3", fontSize: 16, lineHeight: 1, cursor: canGoNext ? "pointer" : "default" }}>
+          <button type="button" onClick={() => setPickingYear((v) => !v)} aria-expanded={pickingYear}
+            style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", fontSize: 14, fontWeight: 600, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", padding: "4px 8px" }}>
+            {pickingYear ? "เลือกปี" : `${THAI_MONTHS_FULL[viewMonth]} ${viewYear + 543}`}
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: pickingYear ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <button type="button" onClick={goNext} aria-label="เดือนถัดไป" disabled={!canGoNext || pickingYear}
+            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: (canGoNext && !pickingYear) ? "#9A3B33" : "#D9C7C3", fontSize: 16, lineHeight: 1, cursor: (canGoNext && !pickingYear) ? "pointer" : "default" }}>
             ›
           </button>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
-          {THAI_WEEKDAYS_SHORT.map((w) => (
-            <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
-          ))}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
-          {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
-            <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
-              style={{
-                aspectRatio: "1", borderRadius: "50%", border: "none",
-                background: isSelected(d) ? "#9A3B33" : "transparent",
-                color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
-                fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
-                fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
-                fontFamily: "'Mitr', 'Inter', sans-serif",
-              }}>
-              {d}
-            </button>
-          ))}
-        </div>
+        {pickingYear ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
+            {years.map((y) => (
+              <button key={y} type="button" onClick={() => pickYear(y)}
+                style={{
+                  padding: "9px 0", borderRadius: 8, border: "none",
+                  background: y === viewYear ? "#9A3B33" : "transparent",
+                  color: y === viewYear ? "#FFF7F5" : "#3A2C29",
+                  fontWeight: y === viewYear ? 700 : 400,
+                  fontSize: 12.5, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                }}>
+                {y + 543}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
+              {THAI_WEEKDAYS_SHORT.map((w) => (
+                <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+              {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
+                <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
+                  style={{
+                    aspectRatio: "1", borderRadius: "50%", border: "none",
+                    background: isSelected(d) ? "#9A3B33" : "transparent",
+                    color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
+                    fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
+                    fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
+                    fontFamily: "'Mitr', 'Inter', sans-serif",
+                  }}>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <button type="button" onClick={onClose}
           style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
           ยกเลิก
@@ -4103,9 +4159,16 @@ function AppInner() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 17px;
-          color: #3A2C29;
+          font-size: 15px;
+          font-weight: 400;
+          color: #B39B96;
           font-family: 'Mitr', 'Inter', sans-serif;
+          transition: color 0.1s, font-size 0.1s, font-weight 0.1s;
+        }
+        .time-wheel-item-active {
+          font-size: 17px;
+          font-weight: 700;
+          color: #3A2C29;
         }
       `}</style>
 
