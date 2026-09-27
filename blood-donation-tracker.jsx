@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.46";
+const APP_VERSION = "1.0.47";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5001,18 +5001,27 @@ function AppInner() {
                     { key: "all", label: "ทั้งหมด" },
                     { key: "whole", label: DONATION_TYPE_LABELS.whole },
                     { key: "component", label: DONATION_TYPE_LABELS.component },
-                  ].map(({ key, label }) => (
-                    <button key={key} onClick={() => setHistoryTypeFilter(key)}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
-                        fontFamily: "inherit", border: "none", cursor: "pointer",
-                        color: historyTypeFilter === key ? "#FFF7F5" : "#9A3B33",
-                        background: historyTypeFilter === key ? "#9A3B33" : "#F3EAE8",
-                      }}>
-                      {key === "component" ? <Droplets size={11} style={{ flexShrink: 0 }} /> : key === "whole" ? <Droplet size={11} style={{ flexShrink: 0 }} /> : null}
-                      {label}
-                    </button>
-                  ))}
+                  ].map(({ key, label }) => {
+                    // Match this filter pill's color to the same per-type tint
+                    // used on each history card's own type badge (DONATION_TYPE_TINT),
+                    // so "whole"/"component" are told apart by color here too, not
+                    // just by icon shape. "all" keeps the original neutral red scheme
+                    // since it has no single donation type to tint toward.
+                    const tint = key === "all" ? { bg: "#F3EAE8", text: "#9A3B33" } : DONATION_TYPE_TINT[key];
+                    const selected = historyTypeFilter === key;
+                    return (
+                      <button key={key} onClick={() => setHistoryTypeFilter(key)}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
+                          fontFamily: "inherit", border: "none", cursor: "pointer",
+                          color: selected ? "#FFF7F5" : tint.text,
+                          background: selected ? tint.text : tint.bg,
+                        }}>
+                        {key === "component" ? <Droplets size={11} style={{ flexShrink: 0 }} /> : key === "whole" ? <Droplet size={11} style={{ flexShrink: 0 }} /> : null}
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
