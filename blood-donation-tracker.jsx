@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.26";
+const APP_VERSION = "1.0.27";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -791,6 +791,10 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // Direction of the most recent month change (1 = moved forward, -1 = moved
   // back), purely to pick which slide-in animation class to play next render.
   const [slideDir, setSlideDir] = useState(0);
+  // Tapping a day only stages it here (highlighted, like the time picker's
+  // wheels) -- nothing reaches the parent until "ยืนยัน" is pressed, so
+  // backing out via "ยกเลิก" or the backdrop leaves the saved date untouched.
+  const [pendingDate, setPendingDate] = useState(selected);
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -812,13 +816,13 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   while (cells.length < 42) cells.push({ day: nextDay++, overflow: true });
 
   const isFuture = (d) => !!max && new Date(viewYear, viewMonth, d) > max;
-  const isSelected = (d) => !!selected && viewYear === selected.getFullYear() && viewMonth === selected.getMonth() && d === selected.getDate();
+  const isSelected = (d) => !!pendingDate && viewYear === pendingDate.getFullYear() && viewMonth === pendingDate.getMonth() && d === pendingDate.getDate();
   const isToday = (d) => viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
   const canGoNext = !max || viewYear < max.getFullYear() || (viewYear === max.getFullYear() && viewMonth < max.getMonth());
 
   const goPrev = () => { setSlideDir(-1); if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
   const goNext = () => { if (!canGoNext) return; setSlideDir(1); if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
-  const pick = (d) => { if (!isFuture(d)) onConfirm(dateToLocalStr(new Date(viewYear, viewMonth, d))); };
+  const pick = (d) => { if (!isFuture(d)) setPendingDate(new Date(viewYear, viewMonth, d)); };
 
   const handleGridTouchStart = (e) => {
     const t = e.touches[0];
@@ -1046,10 +1050,16 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </div>
         )}
-        <button type="button" onClick={onClose}
-          style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
-          ยกเลิก
-        </button>
+        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <button type="button" onClick={onClose}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+            ยกเลิก
+          </button>
+          <button type="button" disabled={!pendingDate} onClick={() => onConfirm(dateToLocalStr(pendingDate))}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: pendingDate ? "#9A3B33" : "#E3C8C3", color: "#FFF7F5", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: pendingDate ? "pointer" : "default" }}>
+            ยืนยัน
+          </button>
+        </div>
       </div>
     </div>
   );
