@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.33";
+const APP_VERSION = "1.0.34";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4396,16 +4396,16 @@ function AppInner() {
             min-height: 100vh;
           }
         }
-        /* Date + time inputs: stacked full-width, date on top and time below
-           (per user request -- an earlier round tried this same stacked
-           layout after an iPhone 11 cramping report and was reverted back to
-           side-by-side, but the user has now asked for stacked again, so
-           this is a deliberate re-adoption, not the old bug). The two
-           children still carry minWidth:0, which is harmless in column mode
-           too and keeps them safe if this ever goes back to a row. */
+        /* Date + time inputs: side by side on one row (per user request --
+           this has previously gone back and forth between this and a
+           stacked layout more than once; if a future report says these feel
+           cramped on a narrow phone, that's the same iPhone 11-width issue
+           that triggered the earlier switch to stacked, not a new bug). The
+           two children carry minWidth:0 so a long date string can still
+           shrink instead of forcing the row wider than its container. */
         .date-time-row {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           gap: 10px;
         }
         .date-time-row > * {
