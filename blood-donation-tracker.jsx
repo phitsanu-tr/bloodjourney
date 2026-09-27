@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.47";
+const APP_VERSION = "1.0.48";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -6137,7 +6137,11 @@ function AppInner() {
                 {on && (
                   <div style={{ border: "1px solid #EEDEDA", borderTop: "none", borderRadius: "0 0 12px 12px", padding: "12px 14px 14px", background: "#FFFFFF" }}>
                     <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>จำนวนครั้งที่เคยบริจาคโลหิตทั้งหมด</label>
-                    <input ref={countRef} type="number" min="1" max={MAX_STARTING_COUNT} step="1" value={draft} placeholder="0" autoFocus={idx === 0}
+                    {/* No autoFocus here: this input mounts the instant the switch above
+                        is toggled on, and auto-focusing it would pop the keyboard open
+                        immediately without the user tapping anything -- reported directly
+                        by the user as unwanted. Let them tap the field themselves. */}
+                    <input ref={countRef} type="number" min="1" max={MAX_STARTING_COUNT} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
