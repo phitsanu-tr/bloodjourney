@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.10";
+const APP_VERSION = "1.0.9";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -667,29 +667,6 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
 // explicit clear) -- scrolling the wheels only updates this component's own
 // state, so backing out via "ยกเลิก" or tapping the backdrop leaves the
 // donation form's saved time completely untouched.
-// Shared shell for both the time and date pickers -- design #10 from a
-// 10-option exploration the user picked, combining three of that
-// exploration's ideas: a thin maroon accent stripe across the card's top
-// edge (a lighter-touch way to visually tie the two pickers together than a
-// full-width colored header bar would be), a warm cream body (matching the
-// app's own page background, #FBF6F5, instead of a stark-white card sitting
-// on top of it), and -- applied per-dialog below, since only the time
-// picker has a real "confirm" step -- a full-width primary action with any
-// secondary action demoted to an underlined text link rather than a second
-// equal-weight button.
-function PickerDialogShell({ ariaLabel, onBackdropClick, children }) {
-  return (
-    <div role="dialog" aria-modal="true" aria-label={ariaLabel}
-      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onBackdropClick(); }}>
-      <div style={{ width: "100%", maxWidth: 340, background: "#FBF6F5", borderRadius: 18, overflow: "hidden", boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
-        <div style={{ height: 4, background: "#9A3B33" }} aria-hidden="true" />
-        <div style={{ padding: 20 }}>{children}</div>
-      </div>
-    </div>
-  );
-}
-
 function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")), []);
   const minutes = useMemo(() => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")), []);
@@ -705,37 +682,43 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   };
 
   return (
-    <PickerDialogShell ariaLabel={`เลือก${ariaLabelPrefix}`} onBackdropClick={onClose}>
-      <div style={{ position: "relative", marginBottom: 14 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
-        <button type="button" onClick={fillNow}
-          style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
-          ตอนนี้
-        </button>
+    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
+        <div style={{ position: "relative", marginBottom: 14 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
+          <button type="button" onClick={fillNow}
+            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
+            ตอนนี้
+          </button>
+        </div>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
+            ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
+          <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
+          <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
+            ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
+          <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          <button type="button" onClick={onClose}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+            ยกเลิก
+          </button>
+          <button type="button" onClick={() => onConfirm(`${hours[selH]}:${minutes[selM]}`)}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+            ยืนยัน
+          </button>
+        </div>
+        {value && (
+          <button type="button" onClick={() => onConfirm("")}
+            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#9A3B33", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+            ล้างเวลา (ไม่ระบุ)
+          </button>
+        )}
       </div>
-      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#FFFFFF", borderRadius: 12, padding: "4px 0" }}>
-        <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
-          ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
-        <span style={{ fontSize: 19, fontWeight: 700, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
-        <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
-          ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
-        <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
-      </div>
-      <button type="button" onClick={() => onConfirm(`${hours[selH]}:${minutes[selM]}`)}
-        style={{ display: "block", width: "100%", marginTop: 18, padding: "12px 0", borderRadius: 10, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
-        ยืนยัน
-      </button>
-      <button type="button" onClick={onClose}
-        style={{ display: "block", width: "100%", marginTop: 10, background: "none", border: "none", color: "#9A3B33", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
-        ยกเลิก
-      </button>
-      {value && (
-        <button type="button" onClick={() => onConfirm("")}
-          style={{ display: "block", margin: "10px auto 0", background: "none", border: "none", color: "#8A7370", fontSize: 11.5, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
-          ล้างเวลา (ไม่ระบุ)
-        </button>
-      )}
-    </PickerDialogShell>
+    </div>
   );
 }
 
@@ -829,7 +812,10 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   };
 
   return (
-    <PickerDialogShell ariaLabel={`เลือก${ariaLabelPrefix}`} onBackdropClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
         <div style={{ position: "relative", marginBottom: 14 }}>
           <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
           <button type="button" onClick={fillToday}
@@ -855,52 +841,51 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             ›
           </button>
         </div>
-        <div style={{ background: "#FFFFFF", borderRadius: 12, padding: 10 }}>
-          {pickingYear ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
-              {years.map((y) => (
-                <button key={y} type="button" onClick={() => pickYear(y)}
+        {pickingYear ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
+            {years.map((y) => (
+              <button key={y} type="button" onClick={() => pickYear(y)}
+                style={{
+                  padding: "9px 0", borderRadius: 8, border: "none",
+                  background: y === viewYear ? "#9A3B33" : "transparent",
+                  color: y === viewYear ? "#FFF7F5" : "#3A2C29",
+                  fontWeight: y === viewYear ? 700 : 400,
+                  fontSize: 12.5, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                }}>
+                {y + 543}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
+              {THAI_WEEKDAYS_SHORT.map((w) => (
+                <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+              {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
+                <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
                   style={{
-                    padding: "9px 0", borderRadius: 8, border: "none",
-                    background: y === viewYear ? "#9A3B33" : "transparent",
-                    color: y === viewYear ? "#FFF7F5" : "#3A2C29",
-                    fontWeight: y === viewYear ? 700 : 400,
-                    fontSize: 12.5, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif",
+                    aspectRatio: "1", borderRadius: "50%", border: "none",
+                    background: isSelected(d) ? "#9A3B33" : "transparent",
+                    color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
+                    fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
+                    fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
+                    fontFamily: "'Mitr', 'Inter', sans-serif",
                   }}>
-                  {y + 543}
+                  {d}
                 </button>
               ))}
             </div>
-          ) : (
-            <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
-                {THAI_WEEKDAYS_SHORT.map((w) => (
-                  <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
-                ))}
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
-                {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
-                  <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
-                    style={{
-                      aspectRatio: "1", borderRadius: "50%", border: "none",
-                      background: isSelected(d) ? "#9A3B33" : "transparent",
-                      color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
-                      fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
-                      fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
-                      fontFamily: "'Mitr', 'Inter', sans-serif",
-                    }}>
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+          </>
+        )}
         <button type="button" onClick={onClose}
-          style={{ display: "block", width: "100%", marginTop: 16, background: "none", border: "none", color: "#9A3B33", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+          style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
           ยกเลิก
         </button>
-    </PickerDialogShell>
+      </div>
+    </div>
   );
 }
 
