@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.40";
+const APP_VERSION = "1.0.41";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -755,8 +755,9 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
     <>
       <button type="button" onClick={() => { setSheetKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${value}` : ": ยังไม่ระบุ"}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
-        {value || "-- : --"}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: value ? fontSize : fontSize - 1, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
+        {!value && <Clock size={14} color="#B39B96" />}
+        {value || "เลือกเวลา"}
       </button>
       {open && (
         <TimeBottomSheet key={sheetKey} value={value} ariaLabelPrefix={ariaLabelPrefix}
@@ -1191,8 +1192,9 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
     <>
       <button ref={ref} type="button" onClick={() => { setDialogKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${toBuddhistDate(value)}` : ""}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
-        {value ? toBuddhistDate(value) : "--/--/----"}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: value ? fontSize : fontSize - 1, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
+        {!value && <Calendar size={14} color="#B39B96" />}
+        {value ? toBuddhistDate(value) : "เลือกวันที่"}
       </button>
       {open && (
         <DateCalendarDialog key={dialogKey} value={value} maxDate={maxDate} ariaLabelPrefix={ariaLabelPrefix}
