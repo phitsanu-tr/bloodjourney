@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.32";
+const APP_VERSION = "1.0.33";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -670,7 +670,12 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
 function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")), []);
   const minutes = useMemo(() => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")), []);
-  const [vh, vm] = value ? value.split(":") : ["", ""];
+  // The very first time this field is opened for a record (no time saved
+  // yet), default the wheels to the current time instead of 00:00 -- once a
+  // real value exists, that's what the wheels start at, same as before.
+  const [vh, vm] = value
+    ? value.split(":")
+    : [String(new Date().getHours()).padStart(2, "0"), String(new Date().getMinutes()).padStart(2, "0")];
   const initialHIndex = Math.max(0, hours.indexOf(vh));
   const initialMIndex = Math.max(0, minutes.indexOf(vm));
   const [selH, setSelH] = useState(initialHIndex);
