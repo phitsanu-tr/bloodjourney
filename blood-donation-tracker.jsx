@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.18";
+const APP_VERSION = "1.0.19";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -955,25 +955,36 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
           </>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
-              {THAI_WEEKDAYS_SHORT.map((w) => (
-                <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
-              ))}
+            {/* Weekend (ส./อา.) is called out in maroon, both in this header
+                and in the day numbers below, and the whole header row sits
+                on a light rounded card so it reads as a distinct "table
+                head" instead of blending into the day grid underneath. */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, background: "#FBF6F5", borderRadius: 10, padding: "6px 0", marginBottom: 8 }}>
+              {THAI_WEEKDAYS_SHORT.map((w, i) => {
+                const isWeekend = i === 5 || i === 6;
+                return (
+                  <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: isWeekend ? "#9A3B33" : "#8A7370", fontWeight: isWeekend ? 700 : 600, padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
+                );
+              })}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
-              {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
-                <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
-                  style={{
-                    aspectRatio: "1", borderRadius: "50%", border: "none",
-                    background: isSelected(d) ? "#9A3B33" : "transparent",
-                    color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
-                    fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
-                    fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
-                    fontFamily: "'Mitr', 'Inter', sans-serif",
-                  }}>
-                  {d}
-                </button>
-              ))}
+              {cells.map((d, i) => {
+                if (d === null) return <div key={`e${i}`} />;
+                const isWeekend = i % 7 === 5 || i % 7 === 6;
+                return (
+                  <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
+                    style={{
+                      aspectRatio: "1", borderRadius: "50%", border: "none",
+                      background: isSelected(d) ? "#9A3B33" : "transparent",
+                      color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : isWeekend ? "#9A3B33" : "#3A2C29",
+                      fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
+                      fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
+                      fontFamily: "'Mitr', 'Inter', sans-serif",
+                    }}>
+                    {d}
+                  </button>
+                );
+              })}
             </div>
           </>
         )}
