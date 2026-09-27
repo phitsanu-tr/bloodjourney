@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.22";
+const APP_VERSION = "1.0.23";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -784,6 +784,10 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const [yearMode, setYearMode] = useState("calendar"); // "calendar" | "decade" | "year"
   const [selectedDecadeStart, setSelectedDecadeStart] = useState(null);
   const pickingYear = yearMode !== "calendar";
+  // Swipe left/right on the calendar grid to move a month, same as the
+  // </> buttons -- a ref (not state) is enough since the gesture doesn't
+  // need to trigger a re-render until it actually changes the month.
+  const touchStartRef = useRef(null);
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -812,6 +816,24 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const goPrev = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
   const goNext = () => { if (!canGoNext) return; if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
   const pick = (d) => { if (!isFuture(d)) onConfirm(dateToLocalStr(new Date(viewYear, viewMonth, d))); };
+
+  const handleGridTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleGridTouchEnd = (e) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    // Require a clearly horizontal, deliberate swipe (not a stray tap or a
+    // mostly-vertical scroll) before treating it as a month-change gesture.
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) goNext(); else goPrev();
+    }
+  };
 
   const maxYear = max ? max.getFullYear() : today.getFullYear();
   const years = useMemo(() => Array.from({ length: DATE_PICKER_YEARS_BACK + 1 }, (_, i) => maxYear - i), [maxYear]);
@@ -965,7 +987,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
           </>
         ) : (
-          <>
+          <div onTouchStart={handleGridTouchStart} onTouchEnd={handleGridTouchEnd}>
             {/* Weekend (ส./อา.) is called out in maroon, both in this header
                 and in the day numbers below, and the whole header row sits
                 on a light rounded card so it reads as a distinct "table
@@ -1014,7 +1036,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 );
               })}
             </div>
-          </>
+          </div>
         )}
         <button type="button" onClick={onClose}
           style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
