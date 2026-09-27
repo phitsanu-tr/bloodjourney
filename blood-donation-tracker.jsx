@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.6";
+const APP_VERSION = "1.0.7";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -721,6 +721,119 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
     </>
   );
 }
+
+// Replaces the native <input type="date"> in the record/edit donation forms.
+// The native control worked fine functionally, but visually it's the OS's
+// own calendar sheet -- grey, English month names, a "Reset" button -- which
+// looked jarring right next to the app's own themed time-picker dialog above
+// (direct user feedback from a real-device screenshot). This draws the same
+// calendar everyone already recognizes (month/year header with </> nav, a
+// 7-column day grid) but in the app's own cream/maroon palette with Thai
+// month names and a Buddhist-era year, matching toBuddhistDate's format used
+// everywhere else donation dates are displayed. Tapping a valid day both
+// selects and closes the dialog, same as a native date picker's own tap-to-
+// pick behavior -- there's no separate confirm step here, unlike the time
+// picker, since a single tap is already unambiguous for a calendar grid.
+const THAI_MONTHS_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const THAI_WEEKDAYS_SHORT = ["จ.","อ.","พ.","พฤ.","ศ.","ส.","อา."]; // Monday-first, matching Thai calendar convention
+
+function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefix }) {
+  const selected = value ? parseLocalDate(value) : null;
+  const initial = selected || (maxDate ? parseLocalDate(maxDate) : new Date());
+  const [viewYear, setViewYear] = useState(initial.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initial.getMonth());
+
+  const max = maxDate ? parseLocalDate(maxDate) : null;
+  const today = new Date();
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // JS: 0=Sun..6=Sat -> 0=Mon..6=Sun
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+
+  const isFuture = (d) => !!max && new Date(viewYear, viewMonth, d) > max;
+  const isSelected = (d) => !!selected && viewYear === selected.getFullYear() && viewMonth === selected.getMonth() && d === selected.getDate();
+  const isToday = (d) => viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
+  const canGoNext = !max || viewYear < max.getFullYear() || (viewYear === max.getFullYear() && viewMonth < max.getMonth());
+
+  const goPrev = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); } else setViewMonth((m) => m - 1); };
+  const goNext = () => { if (!canGoNext) return; if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); } else setViewMonth((m) => m + 1); };
+  const pick = (d) => { if (!isFuture(d)) onConfirm(dateToLocalStr(new Date(viewYear, viewMonth, d))); };
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า"
+            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 16, lineHeight: 1, cursor: "pointer" }}>
+            ‹
+          </button>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+            {THAI_MONTHS_FULL[viewMonth]} {viewYear + 543}
+          </div>
+          <button type="button" onClick={goNext} aria-label="เดือนถัดไป" disabled={!canGoNext}
+            style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: canGoNext ? "#9A3B33" : "#D9C7C3", fontSize: 16, lineHeight: 1, cursor: canGoNext ? "pointer" : "default" }}>
+            ›
+          </button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
+          {THAI_WEEKDAYS_SHORT.map((w) => (
+            <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: "#8A7370", padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
+          ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+          {cells.map((d, i) => d === null ? <div key={`e${i}`} /> : (
+            <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
+              style={{
+                aspectRatio: "1", borderRadius: "50%", border: "none",
+                background: isSelected(d) ? "#9A3B33" : "transparent",
+                color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : "#3A2C29",
+                fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
+                fontSize: 13, cursor: isFuture(d) ? "default" : "pointer",
+                fontFamily: "'Mitr', 'Inter', sans-serif",
+              }}>
+              {d}
+            </button>
+          ))}
+        </div>
+        <button type="button" onClick={onClose}
+          style={{ display: "block", width: "100%", marginTop: 16, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// The field as it sits in the form: a button showing the current value (via
+// toBuddhistDate, same format used everywhere else in the app) which opens
+// DateCalendarDialog above on tap. dialogKey forces a fresh dialog (and a
+// fresh viewYear/viewMonth reset to the current value) every time it's
+// reopened, same reasoning as TimeHourMinuteSelect's sheetKey above.
+// Wrapped in forwardRef because a couple of call sites keep a ref to the
+// underlying field to call .focus() on it after a validation error (it used
+// to be the native <input>'s own ref) -- forwarding it to this button gives
+// the same "put the user's attention there" behavior.
+const DateField = React.forwardRef(function DateField({ value, onChange, maxDate, ariaLabelPrefix, height = 44, fontSize = 14 }, ref) {
+  const [open, setOpen] = useState(false);
+  const [dialogKey, setDialogKey] = useState(0);
+  return (
+    <>
+      <button ref={ref} type="button" onClick={() => { setDialogKey((k) => k + 1); setOpen(true); }}
+        aria-label={`${ariaLabelPrefix}${value ? `: ${toBuddhistDate(value)}` : ""}`}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontSize, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>
+        {value ? toBuddhistDate(value) : "-- เลือกวันที่ --"}
+      </button>
+      {open && (
+        <DateCalendarDialog key={dialogKey} value={value} maxDate={maxDate} ariaLabelPrefix={ariaLabelPrefix}
+          onConfirm={(next) => { onChange(next); setOpen(false); }}
+          onClose={() => setOpen(false)} />
+      )}
+    </>
+  );
+});
 
 const PRE_DONATION_TIPS = [
   { icon: Moon, text: "นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 6 ชั่วโมงก่อนวันบริจาค" },
@@ -3964,34 +4077,13 @@ function AppInner() {
         .date-time-row > * {
           flex: 1;
         }
-        /* Centers the date value text inside the native date input above
-           (text-align:center on the input alone isn't enough: Chromium's
-           built-in calendar icon sits in the same flex row as the value
-           text and claims its own width first, so the remaining "value" box
-           is already off-center before text-align ever gets a say). Taking
-           the icon out of that flow with its own absolute position frees
-           the whole input width for the value text to center in truthfully.
-           position:relative goes on the input itself (not the wrapper)
-           since the indicator is one of this input's own pseudo-elements.
-           (The time field used to get the same treatment, plus two more
-           rounds of ::-webkit-datetime-edit* pseudo-element fixes on top —
-           none of it held up on a real iPhone. It's now a tap-to-open wheel
-           picker instead; see TimeHourMinuteSelect / TimeBottomSheet and
-           .time-wheel-col / .time-wheel-item below.) */
-        input[type="date"] {
-          position: relative;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-        }
-        input[type="date"]::-webkit-datetime-edit {
-          display: flex;
-          justify-content: center;
-          width: 100%;
-        }
+        /* Both the date and time fields used to be native <input type="date"/
+           "time">, with their value text centered via ::-webkit-datetime-edit*
+           pseudo-element rules here -- none of which held up on a real
+           iPhone (confirmed by direct user testing). Both are now tap-to-
+           open dialogs instead: DateCalendarDialog (a themed calendar grid)
+           and TimeBottomSheet (a wheel picker) -- see .time-wheel-col /
+           .time-wheel-item just below for the latter's styling. */
         /* TimeBottomSheet's scrolling hour/minute columns. scroll-snap-type
            does the physical snapping in the browser itself, so the resting
            position after a flick or drag is always exactly on an item
@@ -5480,9 +5572,9 @@ function AppInner() {
                     its own edge, regardless of how wide the input inside
                     renders or gets cut off. */}
                 <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
-                  <input type="date" lang="en-US" value={form.date} max={todayLocalStr()}
-                    onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))}
-                    style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 44, padding: "0 12px", border: "none", fontSize: 14, fontFamily: "inherit", textAlign: "center" }} />
+                  <DateField value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
+                    onChange={(date) => setForm(f => ({ ...f, date }))}
+                    height={44} fontSize={14} />
                 </div>
               </div>
               <div style={{ minWidth: 0 }}>
@@ -5600,9 +5692,9 @@ function AppInner() {
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
                         <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
-                          <input ref={dateRef} type="date" lang="en-US" value={tf.date} max={todayLocalStr()}
-                            onChange={(e) => { setTf(f => ({ ...f, date: e.target.value })); setQuickStartingCountError(""); }}
-                            style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box", height: 42, padding: "0 12px", border: "none", fontSize: 13.5, fontFamily: "inherit", textAlign: "center" }} />
+                          <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
+                            onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
+                            height={42} fontSize={13.5} />
                         </div>
                       </div>
                       <div style={{ minWidth: 0 }}>
