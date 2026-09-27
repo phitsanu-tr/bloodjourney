@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.27";
+const APP_VERSION = "1.0.28";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4370,20 +4370,26 @@ function AppInner() {
         /* DateCalendarDialog's month-change animation: whichever direction
            the month moved (via </> or a swipe), the incoming grid slides in
            from that side while fading in, giving the swipe gesture a
-           visible, physical response instead of an instant flat-cut swap. */
+           visible, physical response instead of an instant flat-cut swap.
+           Made deliberately more pronounced (bigger travel, longer hold,
+           a real 0->1 fade) than a typical subtle micro-transition, since
+           a barely-there effect reads as no effect at all on a fast phone
+           screen. */
         @keyframes calendar-slide-in-left {
-          from { transform: translateX(24px); opacity: 0; }
+          from { transform: translateX(48px); opacity: 0; }
+          60% { opacity: 1; }
           to { transform: translateX(0); opacity: 1; }
         }
         @keyframes calendar-slide-in-right {
-          from { transform: translateX(-24px); opacity: 0; }
+          from { transform: translateX(-48px); opacity: 0; }
+          60% { opacity: 1; }
           to { transform: translateX(0); opacity: 1; }
         }
         .calendar-slide-next {
-          animation: calendar-slide-in-left 0.18s ease-out;
+          animation: calendar-slide-in-left 0.32s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .calendar-slide-prev {
-          animation: calendar-slide-in-right 0.18s ease-out;
+          animation: calendar-slide-in-right 0.32s cubic-bezier(0.22, 1, 0.36, 1);
         }
         @media (prefers-reduced-motion: reduce) {
           .calendar-slide-next, .calendar-slide-prev {
