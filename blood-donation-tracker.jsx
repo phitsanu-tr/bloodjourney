@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.20";
+const APP_VERSION = "1.0.21";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -974,7 +974,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
               {cells.map((d, i) => {
-                if (d === null) return <div key={`e${i}`} />;
+                // Placeholder cells need the same aspect-ratio square as a
+                // real day button -- otherwise a row made entirely of blanks
+                // (the trailing padding, or the leading offset) has nothing
+                // to size it, and CSS grid collapses that row's height to
+                // near zero instead of matching the other rows.
+                if (d === null) return <div key={`e${i}`} style={{ aspectRatio: "1" }} aria-hidden="true" />;
                 const isWeekend = i % 7 === 5 || i % 7 === 6;
                 return (
                   <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
