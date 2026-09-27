@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.35";
+const APP_VERSION = "1.0.36";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -923,24 +923,30 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
     // year), pull the month back in-bounds too -- same clamp goNext already
     // enforces one month at a time, just applied in one jump here.
     if (max && y === max.getFullYear() && viewMonth > max.getMonth()) setViewMonth(max.getMonth());
-    // A third step: after picking the year, pick the month too, instead of
-    // dropping straight back to the calendar and making the user page
-    // through </> one month at a time to reach it.
+    // Back to the month grid (for the newly picked year), not straight to
+    // the calendar -- picking a year is almost always in service of then
+    // picking a month too.
     setYearMode("month");
   };
   const isMonthFuture = (m) => !!max && viewYear === max.getFullYear() && m > max.getMonth();
   const pickMonth = (m) => { if (!isMonthFuture(m)) { setViewMonth(m); setYearMode("calendar"); } };
+  // Tapping the header now opens the month grid directly, for the year
+  // already being viewed -- jumping to a different month within the same
+  // year is by far the more common case, so it shouldn't require detouring
+  // through a decade/year picker first. Jumping further back in time is
+  // still there, just one level deeper: see openDecadePicker below.
   const openYearPicker = () => {
-    if (yearMode === "calendar") {
-      setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
-      setYearMode("decade");
-    } else {
-      setYearMode("calendar");
-    }
+    setYearMode(yearMode === "calendar" ? "month" : "calendar");
+  };
+  // Reached by tapping the year number shown inside the month grid --
+  // this is the "actually, a different year" escape hatch.
+  const openDecadePicker = () => {
+    setSelectedDecadeStart(Math.floor((viewYear + 543) / 10) * 10);
+    setYearMode("decade");
   };
   const pickDecade = (start) => { setSelectedDecadeStart(start); setYearMode("year"); };
   const backToDecades = () => setYearMode("decade");
-  const backToYears = () => setYearMode("year");
+  const backToMonth = () => setYearMode("month");
 
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
@@ -981,7 +987,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               ? "เลือกช่วงปี"
               : yearMode === "year"
               ? `${selectedDecadeStart}-${Math.min(selectedDecadeStart + 9, maxYear + 543)}`
-              : `เลือกเดือน ${viewYear + 543}`}
+              : "เลือกเดือน"}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               style={{ transform: pickingYear ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
               <path d="M6 9l6 6 6-6" />
@@ -993,6 +999,14 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
           </button>
         </div>
         {yearMode === "decade" ? (
+          <>
+            <button type="button" onClick={backToMonth}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              ย้อนกลับ
+            </button>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, maxHeight: 232, overflowY: "auto" }} className="no-scrollbar">
             {decades.map((start) => {
               const isCurrentDecade = Math.floor((viewYear + 543) / 10) * 10 === start;
@@ -1010,6 +1024,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               );
             })}
           </div>
+          </>
         ) : yearMode === "year" ? (
           <>
             <button type="button" onClick={backToDecades}
@@ -1036,12 +1051,16 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
           </>
         ) : yearMode === "month" ? (
           <>
-            <button type="button" onClick={backToYears}
-              style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "2px 0", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+            {/* The year is a separate, deliberately tappable control here --
+                jumping between months within this same year is the common
+                case (just tap a month below), while changing the year at
+                all is the deeper, less common action this button leads to. */}
+            <button type="button" onClick={openDecadePicker}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "#FBEAE7", border: "none", borderRadius: 999, color: "#9A3B33", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "5px 12px", marginBottom: 10, fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+              ปี {viewYear + 543}
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
+                <path d="M9 6l6 6-6 6" />
               </svg>
-              ย้อนกลับ
             </button>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
               {THAI_MONTHS_FULL.map((label, m) => {
