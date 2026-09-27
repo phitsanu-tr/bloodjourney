@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.4";
+const APP_VERSION = "1.0.5";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -599,60 +599,126 @@ function EligibilityCheckRow({ label, status, detail }) {
 // 24-hour-region device that never displays one, so the visible digits kept
 // drifting off-center no matter which ::-webkit-datetime-edit-* pseudo-
 // element trick was tried (confirmed by direct user testing on-device,
-// since this sandbox has no real iOS Safari to check against). Two plain
-// <select> elements sidestep the problem entirely: their appearance is
-// stripped with -webkit-appearance:none (the .time-hm-select class below),
-// which — unlike <input type="date"/"time"> — real mobile browsers do
-// consistently honor, so centering is guaranteed rather than hoped for.
-// Stores/returns the same "HH:MM" string the rest of the app already uses
-// (donation.time / form.time / tf.time), so no other code had to change.
-function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, fontSize = 14 }) {
-  // hh/mm are local state, not derived straight from `value` each render:
-  // picking only the hour first has no complete "HH:MM" to report upward yet,
-  // so we still emit onChange(""). If hh/mm were derived from `value` alone,
-  // that "" bouncing back in as the next `value` prop would immediately wipe
-  // the hour the user just picked, before they get to the minute dropdown.
-  const [hh, setHh] = useState(() => (value ? value.split(":")[0] : ""));
-  const [mm, setMm] = useState(() => (value ? value.split(":")[1] : ""));
-  const lastEmitted = useRef(value || "");
+// since this sandbox has no real iOS Safari to check against). A first fix
+// (two plain <select> elements) solved the centering, but the user then
+// asked for a fuller redesign: a tap opens a bottom sheet with a scrolling
+// hour/minute wheel picker and an explicit "ยืนยัน" (confirm) step, so nothing
+// is set until the user deliberately confirms it. Stores/returns the same
+// "HH:MM" string the rest of the app already uses (donation.time / form.time
+// / tf.time), so no other code had to change.
+const WHEEL_ITEM_HEIGHT = 40;
+const WHEEL_VISIBLE_ROWS = 3;
+const WHEEL_HEIGHT = WHEEL_ITEM_HEIGHT * WHEEL_VISIBLE_ROWS;
+
+// One scrolling column (hours, or minutes). Scroll-snap does the physical
+// snapping; the onScroll handler just figures out, after scrolling settles,
+// which item ended up centered and reports its index upward. initialIndex is
+// only consulted on mount -- the column intentionally does not re-scroll
+// itself if its index prop changes later, so the parent remounts it (via a
+// `key`) whenever the sheet is freshly opened instead of fighting an
+// in-progress scroll.
+function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
+  const scrollRef = useRef(null);
+  const settleTimer = useRef(null);
 
   useEffect(() => {
-    // Only re-sync from the parent when `value` changed for a reason other
-    // than our own commit() below (e.g. the form was reset, or an existing
-    // record's saved time was loaded in) -- not from our own echoed "".
-    if (value !== lastEmitted.current) {
-      const [h, m] = value ? value.split(":") : ["", ""];
-      setHh(h || "");
-      setMm(m || "");
-      lastEmitted.current = value || "";
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = initialIndex * WHEEL_ITEM_HEIGHT;
     }
-  }, [value]);
+    return () => { if (settleTimer.current) clearTimeout(settleTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const commit = (newHh, newMm) => {
-    setHh(newHh);
-    setMm(newMm);
-    const next = newHh && newMm ? `${newHh}:${newMm}` : "";
-    lastEmitted.current = next;
-    onChange(next);
+  const handleScroll = () => {
+    if (settleTimer.current) clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const i = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / WHEEL_ITEM_HEIGHT)));
+      el.scrollTop = i * WHEEL_ITEM_HEIGHT; // snap exactly, in case of rubber-band overscroll
+      onSettle(i);
+    }, 110);
   };
+
+  return (
+    <div ref={scrollRef} onScroll={handleScroll} aria-label={ariaLabel} className="no-scrollbar time-wheel-col">
+      <div style={{ height: WHEEL_ITEM_HEIGHT }} aria-hidden="true" />
+      {items.map((label) => <div key={label} className="time-wheel-item">{label}</div>)}
+      <div style={{ height: WHEEL_ITEM_HEIGHT }} aria-hidden="true" />
+    </div>
+  );
+}
+
+// The bottom sheet itself: two wheels + confirm/cancel/clear. Nothing here
+// touches the parent's value until "ยืนยัน" is pressed (or "ล้างเวลา" for an
+// explicit clear) -- scrolling the wheels only updates this component's own
+// state, so backing out via "ยกเลิก" or tapping the backdrop leaves the
+// donation form's saved time completely untouched.
+function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")), []);
   const minutes = useMemo(() => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")), []);
+  const [vh, vm] = value ? value.split(":") : ["", ""];
+  const initialHIndex = Math.max(0, hours.indexOf(vh));
+  const initialMIndex = Math.max(0, minutes.indexOf(vm));
+  const [selH, setSelH] = useState(initialHIndex);
+  const [selM, setSelM] = useState(initialMIndex);
+
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height, gap: 2 }}>
-      <select className="time-hm-select" aria-label={`${ariaLabelPrefix} ชั่วโมง`} value={hh}
-        onChange={(e) => commit(e.target.value, mm)}
-        style={{ fontSize }}>
-        <option value="">--</option>
-        {hours.map((h) => <option key={h} value={h}>{h}</option>)}
-      </select>
-      <span style={{ color: "#7A6360", fontSize }}>:</span>
-      <select className="time-hm-select" aria-label={`${ariaLabelPrefix} นาที`} value={mm}
-        onChange={(e) => commit(hh, e.target.value)}
-        style={{ fontSize }}>
-        <option value="">--</option>
-        {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
-      </select>
+    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+      style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(36,26,24,0.45)" }} />
+      <div style={{ position: "relative", width: "100%", maxWidth: 420, background: "#FFFFFF", borderRadius: "18px 18px 0 0", padding: "14px 20px calc(20px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 -6px 20px rgba(122,42,35,0.16)" }}>
+        <div style={{ width: 36, height: 4, background: "#E3C8C3", borderRadius: 2, margin: "0 auto 14px" }} aria-hidden="true" />
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 12 }}>เลือก{ariaLabelPrefix}</div>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
+            ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
+          <span style={{ fontSize: 19, fontWeight: 600, color: "#7A6360", fontFamily: "'Mitr', 'Inter', sans-serif" }}>:</span>
+          <TimeWheelColumn key={`m-${initialMIndex}`} items={minutes} initialIndex={initialMIndex}
+            ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
+          <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          <button type="button" onClick={onClose}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+            ยกเลิก
+          </button>
+          <button type="button" onClick={() => onConfirm(`${hours[selH]}:${minutes[selM]}`)}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
+            ยืนยัน
+          </button>
+        </div>
+        {value && (
+          <button type="button" onClick={() => onConfirm("")}
+            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#9A3B33", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+            ล้างเวลา (ไม่ระบุ)
+          </button>
+        )}
+      </div>
     </div>
+  );
+}
+
+// The field as it sits in the form: a button showing the current value (or a
+// placeholder), which opens the TimeBottomSheet above on tap. `sheetKey`
+// forces a fresh TimeBottomSheet (and fresh wheel scroll positions) every
+// time it's reopened, rather than reusing one left over from a previous open.
+function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, fontSize = 14 }) {
+  const [open, setOpen] = useState(false);
+  const [sheetKey, setSheetKey] = useState(0);
+  return (
+    <>
+      <button type="button" onClick={() => { setSheetKey((k) => k + 1); setOpen(true); }}
+        aria-label={`${ariaLabelPrefix}${value ? `: ${value}` : ": ยังไม่ระบุ"}`}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
+        {value || "-- : --"}
+      </button>
+      {open && (
+        <TimeBottomSheet key={sheetKey} value={value} ariaLabelPrefix={ariaLabelPrefix}
+          onConfirm={(next) => { onChange(next); setOpen(false); }}
+          onClose={() => setOpen(false)} />
+      )}
+    </>
   );
 }
 
@@ -3909,8 +3975,9 @@ function AppInner() {
            since the indicator is one of this input's own pseudo-elements.
            (The time field used to get the same treatment, plus two more
            rounds of ::-webkit-datetime-edit* pseudo-element fixes on top —
-           none of it held up on a real iPhone. It's now a pair of <select>
-           elements instead; see TimeHourMinuteSelect and .time-hm-select.) */
+           none of it held up on a real iPhone. It's now a tap-to-open wheel
+           picker instead; see TimeHourMinuteSelect / TimeBottomSheet and
+           .time-wheel-col / .time-wheel-item below.) */
         input[type="date"] {
           position: relative;
         }
@@ -3925,29 +3992,28 @@ function AppInner() {
           justify-content: center;
           width: 100%;
         }
-        /* TimeHourMinuteSelect's two <select> elements. -webkit-appearance
-           (and its unprefixed form) strip each browser's own control chrome
-           -- border, background, native dropdown arrow -- which, unlike
-           <input type="date"/"time">, real mobile browsers consistently
-           honor for <select>. That's what makes text-align reliable here
-           when it wasn't on the native time input above: with the OS chrome
-           gone, what's left is just text in a box, not a shadow-DOM control
-           free to ignore CSS. text-align-last centers the CLOSED/collapsed
-           value specifically (plain text-align only reliably centers text
-           inside the open dropdown list on some browsers), and centers is
-           harmless where it's unsupported since text-align already covers
-           it as a fallback. */
-        select.time-hm-select {
-          -webkit-appearance: none;
-          appearance: none;
-          background: transparent;
-          border: none;
+        /* TimeBottomSheet's scrolling hour/minute columns. scroll-snap-type
+           does the physical snapping in the browser itself, so the resting
+           position after a flick or drag is always exactly on an item
+           boundary -- TimeWheelColumn's onScroll handler only has to read
+           that final position back, never fight the browser's own momentum
+           scrolling the way a JS-driven "snap" would. */
+        .time-wheel-col {
+          height: 120px;
+          width: 64px;
+          overflow-y: scroll;
+          scroll-snap-type: y mandatory;
+          -webkit-overflow-scrolling: touch;
+        }
+        .time-wheel-item {
+          height: 40px;
+          scroll-snap-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 17px;
           color: #3A2C29;
-          font-family: inherit;
-          text-align: center;
-          text-align-last: center;
-          padding: 0;
-          width: 34px;
+          font-family: 'Mitr', 'Inter', sans-serif;
         }
       `}</style>
 
