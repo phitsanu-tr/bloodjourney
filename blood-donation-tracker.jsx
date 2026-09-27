@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.11";
+const APP_VERSION = "1.0.12";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -692,6 +692,11 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
             ตอนนี้
           </button>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 4 }}>
+          <div style={{ width: 64, textAlign: "center", fontSize: 11, color: "#8A7370", fontFamily: "'Mitr', 'Inter', sans-serif" }}>ชั่วโมง</div>
+          <span style={{ width: 10 }} aria-hidden="true" />
+          <div style={{ width: 64, textAlign: "center", fontSize: 11, color: "#8A7370", fontFamily: "'Mitr', 'Inter', sans-serif" }}>นาที</div>
         </div>
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
