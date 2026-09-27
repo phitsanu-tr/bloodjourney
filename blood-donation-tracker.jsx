@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.34";
+const APP_VERSION = "1.0.35";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -813,7 +813,11 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   // Tapping a day only stages it here (highlighted, like the time picker's
   // wheels) -- nothing reaches the parent until "ยืนยัน" is pressed, so
   // backing out via "ยกเลิก" or the backdrop leaves the saved date untouched.
-  const [pendingDate, setPendingDate] = useState(selected);
+  // Defaults to `initial` (the saved date if there is one, otherwise
+  // today/maxDate) so a field with nothing saved yet still opens with
+  // today already staged, ready to confirm in one tap -- same idea as the
+  // time picker defaulting its wheels to the current time.
+  const [pendingDate, setPendingDate] = useState(initial);
 
   const max = maxDate ? parseLocalDate(maxDate) : null;
   const today = new Date();
@@ -2168,7 +2172,11 @@ function AppInner() {
   const quickCountInputRefComponent = useRef(null);
   const quickDateInputRefWhole = useRef(null);
   const quickDateInputRefComponent = useRef(null);
-  const [form, setForm] = useState({ date: todayLocalStr(), time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
+  // date starts blank (not pre-filled with today) -- opening the date field
+  // still defaults to today inside the calendar dialog itself (see
+  // DateCalendarDialog's `initial`), it's just not assumed/shown until the
+  // user actually opens and confirms it.
+  const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [lastExportCount, setLastExportCount] = useState(0);
@@ -2893,7 +2901,7 @@ function AppInner() {
   const openAddForm = () => {
     setEditingId(null);
     setFormError("");
-    setForm({ date: todayLocalStr(), time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
+    setForm({ date: "", time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
     setEditSnapshot(null);
     setShowForm(true);
   };
