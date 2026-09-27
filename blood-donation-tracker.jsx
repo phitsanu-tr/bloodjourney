@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.9";
+const APP_VERSION = "1.0.10";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -699,9 +699,20 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   const [selH, setSelH] = useState(initialHIndex);
   const [selM, setSelM] = useState(initialMIndex);
 
+  const fillNow = () => {
+    const now = new Date();
+    onConfirm(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+  };
+
   return (
     <PickerDialogShell ariaLabel={`เลือก${ariaLabelPrefix}`} onBackdropClick={onClose}>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center", marginBottom: 14 }}>เลือก{ariaLabelPrefix}</div>
+      <div style={{ position: "relative", marginBottom: 14 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
+        <button type="button" onClick={fillNow}
+          style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
+          ตอนนี้
+        </button>
+      </div>
       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#FFFFFF", borderRadius: 12, padding: "4px 0" }}>
         <TimeWheelColumn key={`h-${initialHIndex}`} items={hours} initialIndex={initialHIndex}
           ariaLabel={`${ariaLabelPrefix} ชั่วโมง`} onSettle={setSelH} />
@@ -809,8 +820,23 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
     setPickingYear(false);
   };
 
+  const fillToday = () => {
+    // Respects the max-date constraint (normally "today" itself, but a
+    // caller could in principle pass an earlier max) rather than always
+    // confirming the real calendar today regardless of that limit.
+    const target = max && today > max ? max : today;
+    onConfirm(dateToLocalStr(target));
+  };
+
   return (
     <PickerDialogShell ariaLabel={`เลือก${ariaLabelPrefix}`} onBackdropClick={onClose}>
+        <div style={{ position: "relative", marginBottom: 14 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
+          <button type="button" onClick={fillToday}
+            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
+            วันนี้
+          </button>
+        </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า" disabled={pickingYear}
             style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #E3C8C3", background: "#FFFFFF", color: pickingYear ? "#D9C7C3" : "#9A3B33", fontSize: 16, lineHeight: 1, cursor: pickingYear ? "default" : "pointer" }}>
