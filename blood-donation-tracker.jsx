@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.99";
+const APP_VERSION = "1.0.100";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2785,6 +2785,47 @@ function AppInner() {
     return () => obs.disconnect();
   }, []);
 
+  // "มีเวอร์ชันใหม่" slide (design 2 from refresh-update-designs.html: first
+  // slide of the home reminder carousel). The web build's index.html names
+  // its hashed entry script (/assets/index-<hash>.js); a fresh copy of
+  // index.html naming a different file means a newer version is live. Checked
+  // a few seconds after opening, whenever the app comes back to the
+  // foreground, and every 30 minutes. Never on the packaged native app or the
+  // dev server (no hashed entry script). The app never reloads by itself --
+  // only when the donor taps "อัปเดต"; ✕ hides it until the app is reopened.
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateDismissed, setUpdateDismissed] = useState(false);
+  useEffect(() => {
+    if (isNativeApp || typeof document === "undefined") return;
+    const entryRe = /\/assets\/index-[^/"]+\.js/;
+    const current = [...document.querySelectorAll("script[src]")].map(el => el.src).find(src => entryRe.test(src));
+    if (!current) return;
+    const currentPath = new URL(current, window.location.href).pathname;
+    let stopped = false;
+    const check = async () => {
+      if (stopped || document.visibilityState === "hidden") return;
+      try {
+        // Same URL as the page itself (no cache-busting query, so the
+        // service worker keeps one cached copy of it rather than one per
+        // check); cache: "no-store" makes it skip the HTTP cache.
+        const res = await fetch(new URL(window.location.pathname, window.location.origin).toString(), { cache: "no-store" });
+        if (!res.ok) return;
+        const html = await res.text();
+        const m = html.match(/src="([^"]*\/assets\/index-[^"]+\.js)"/);
+        if (!m) return;
+        const latestPath = new URL(m[1], window.location.href).pathname;
+        if (!stopped && latestPath !== currentPath) setUpdateAvailable(true);
+      } catch (e) {
+        // Offline or blocked -- try again next time.
+      }
+    };
+    const first = setTimeout(check, 5000);
+    const every = setInterval(check, 30 * 60 * 1000);
+    const onVis = () => { if (document.visibilityState === "visible") check(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { stopped = true; clearTimeout(first); clearInterval(every); document.removeEventListener("visibilitychange", onVis); };
+  }, []);
+
   // Warm the dashboard chart's chunk well after the first screen is up
   // (8s, then whenever the browser is idle), so switching to แดชบอร์ด later
   // draws the chart at once and it lands in the service worker cache for
@@ -5446,6 +5487,7 @@ function AppInner() {
                   (✕) a slide removes it from the queue. */}
               {(() => {
                 const queue = [];
+                if (updateAvailable && !updateDismissed) queue.push("update");
                 if (needsBackupReminder) queue.push("backup");
                 if (ageOutOfRange && !ageWarningDismissed) queue.push("age");
                 if (weightBelowMin && !weightWarningDismissed) queue.push("weight");
@@ -5460,13 +5502,25 @@ function AppInner() {
                   </button>
                 );
                 const slide = (kind, idx) => {
-                  const isWarn = kind !== "calendar";
+                  const isWarn = kind === "backup" || kind === "age" || kind === "weight";
                   return (
                     <div key={kind} aria-label={multi ? `เรื่องที่ ${idx + 1} จาก ${queue.length}` : undefined} role={multi ? "group" : undefined} style={{
                       flex: "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
                       background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
                       padding: "10px 12px", display: "flex", alignItems: "center", gap: 6, minHeight: 50,
                     }}>
+                      {kind === "update" && (
+                        <>
+                          <Sparkles size={15} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#3A2C29" }}>มีเวอร์ชันใหม่ของแอป</span>
+                          <button onClick={() => window.location.reload()}
+                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
+                            อัปเดต
+                          </button>
+                          {closeBtn(() => setUpdateDismissed(true))}
+                        </>
+                      )}
                       {kind === "backup" && (
                         <>
                           <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
