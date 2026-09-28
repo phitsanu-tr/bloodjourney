@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.62";
+const APP_VERSION = "1.0.63";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4766,12 +4766,16 @@ function AppInner() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
-              {/* The header's own "โปรไฟล์ของฉัน" button used to open the exact
-                  same dialog as the avatar/greeting card on the home tab below --
-                  two tap targets for one destination. Removed here; the profile
-                  card (design "6" from a 10-variant exploration) is now the
-                  single entry point, and this header keeps only settings, which
-                  is a genuinely different destination. */}
+              {/* The header icon and the home tab's avatar/greeting row used to
+                  both open the same profile dialog -- two tap targets for one
+                  destination. Design "5" from a 10-variant exploration resolves
+                  it the other way round from design 6: this header icon is now
+                  the single entry point into the profile, and the avatar/
+                  greeting row below is display-only info (still has its own
+                  separate photo-menu interaction on the avatar itself). */}
+              <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
+                <User size={19} color="#9A3B33" />
+              </button>
               <button onClick={() => setShowSettings(true)} aria-label="ตั้งค่า" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
                 <Settings size={19} color="#9A3B33" />
               </button>
@@ -4784,19 +4788,14 @@ function AppInner() {
         <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
-              {/* Whole-row profile card (design "6" from a 10-variant exploration)
-                  -- previously the header's own "โปรไฟล์ของฉัน" icon and this
-                  greeting text/avatar opened the exact same dialog, two tap
-                  targets for one destination. This card is now the single entry
-                  point: the outer card itself opens the profile on tap, with a
-                  chevron signaling that (matching the other tappable list rows
-                  on this tab), while the avatar (still its own separate photo
-                  menu) and the info-pill visibility toggle stop the click from
-                  bubbling up so they keep their own distinct behavior. */}
-              <div role="button" tabIndex={0} onClick={openProfile} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openProfile(); } }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 15px", marginBottom: 20, borderRadius: 14, background: "#FFFFFF", border: "1px solid #EEDEDA", boxShadow: "0 4px 14px rgba(122,42,35,0.06)", cursor: "pointer" }}>
+              {/* Avatar/greeting row (design "5" from a 10-variant exploration)
+                  -- this row is display-only info now; the header's own
+                  "โปรไฟล์ของฉัน" icon above is the single entry point into the
+                  profile dialog. The avatar keeps its own separate photo-menu
+                  interaction, which is unrelated to opening the profile. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  <button onClick={(e) => { e.stopPropagation(); setShowPhotoMenu(v => !v); }} disabled={photoBusy} aria-label="รูปโปรไฟล์"
+                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="รูปโปรไฟล์"
                     style={{ width: 44, height: 44, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -4811,8 +4810,8 @@ function AppInner() {
                   </div>
                   {showPhotoMenu && !showProfile && (
                     <>
-                      <div onClick={(e) => { e.stopPropagation(); setShowPhotoMenu(false); }} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                      <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 180 }}>
+                      <div onClick={() => setShowPhotoMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
+                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 180 }}>
                         <button onClick={() => { setShowPhotoMenu(false); photoCameraInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
                           <Camera size={15} color="#9A3B33" /> ถ่ายรูปใหม่
                         </button>
@@ -4828,7 +4827,7 @@ function AppInner() {
                     </>
                   )}
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ minWidth: 0 }}>
                   {nickname ? (
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4 }}>
                       สวัสดี, คุณ{/^[A-Za-z]/.test(nickname.trim()) ? " " : ""}{nickname}
@@ -4868,7 +4867,7 @@ function AppInner() {
                           <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{weight} กก.</span>
                         </span>
                       )}
-                      <button onClick={(e) => { e.stopPropagation(); toggleInfoPillsVisibility(); }} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
+                      <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
                         style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, margin: -7, borderRadius: "50%", border: "none", background: "none", color: "#B7A5A1", cursor: "pointer", padding: 0, flexShrink: 0 }}>
                         {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
@@ -4879,7 +4878,6 @@ function AppInner() {
                     </div>
                   )}
                 </div>
-                <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
               </div>
               <input ref={photoCameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
               <input ref={photoGalleryInputRef} type="file" accept="image/*" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
