@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.59";
+const APP_VERSION = "1.0.60";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2074,15 +2074,15 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // whole openActionMenuId string) precisely so that opening the menu on ONE
 // row doesn't also cause every other row's memo comparison to fail.
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onEdit, onShare, onDelete }) {
-  // Single source of truth for this row's per-type tint -- used for both the
-  // type pill and the order-number badge below, so the badge shape now tells
-  // whole/component apart by color too instead of always being maroon.
+  // Used for the type pill only -- the order-number droplet badge below is
+  // deliberately kept a single consistent color regardless of type (per
+  // explicit user feedback), rather than tinting it per donation type.
   const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
   return (
     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
-          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill={tint.text} />
+          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 11.5 : 15, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
