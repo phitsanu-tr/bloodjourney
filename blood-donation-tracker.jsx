@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.83";
+const APP_VERSION = "1.0.84";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -6002,26 +6002,47 @@ function AppInner() {
 
               {stats.nextAchievement && (
                 <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: "16px 18px", color: "#FFF7F5", marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>ภารกิจถัดไป</div>
-                  <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 10 }}>
-                    อีก {stats.nextAchievement.threshold - totalCount} ครั้ง ถึง "{stats.nextAchievement.title}"
-                  </div>
-                  <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}"`} aria-valuemin={0} aria-valuemax={stats.nextAchievement.threshold} aria-valuenow={Math.min(totalCount, stats.nextAchievement.threshold)} style={{ height: 7, borderRadius: 4, background: "rgba(255,247,245,0.3)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.min(100, (totalCount / stats.nextAchievement.threshold) * 100)}%`, background: "#FFF7F5", borderRadius: 4 }} />
-                  </div>
-                  {stats.avgGap != null ? (
-                    <div style={{ fontSize: 11, opacity: 0.8, marginTop: 8 }}>
-                      {(() => {
-                        const months = (stats.nextAchievement.threshold - totalCount) * stats.avgGap / 30;
-                        // Rounding to 1 decimal can show "0.0 เดือน" for a
-                        // genuinely-positive-but-tiny estimate, which reads as
-                        // "basically no time left" rather than "very soon" —
-                        // say "น้อยกว่า 0.1 เดือน" instead of understating it as zero.
-                        const label = months > 0 && months < 0.1 ? "น้อยกว่า 0.1" : months.toFixed(1);
-                        return `ที่อัตราการบริจาคเฉลี่ยปัจจุบัน อีกประมาณ ${label} เดือน`;
-                      })()}
-                    </div>
-                  ) : null}
+                  {/* Design "2" from missions-card-ring-6-designs.html: same
+                      layout as the home tab's mission card (reward name bold,
+                      "อีก N ครั้ง" under it, done/goal ring on the right) in
+                      white-on-red, with the pace estimate folded into the
+                      second line instead of its own row under a progress bar. */}
+                  {(() => {
+                    const goal = stats.nextAchievement.threshold;
+                    const done = Math.min(totalCount, goal);
+                    const left = goal - totalCount;
+                    const size = 58, stroke = 5, r = (size - stroke) / 2, circ = 2 * Math.PI * r;
+                    const frac = goal > 0 ? done / goal : 0;
+                    let eta = null;
+                    if (stats.avgGap != null) {
+                      const months = left * stats.avgGap / 30;
+                      eta = months < 1 ? "ไม่ถึงเดือน" : `ประมาณ ${Math.round(months)} เดือน`;
+                    }
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>ภารกิจถัดไป</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>{stats.nextAchievement.title}</div>
+                          <div style={{ fontSize: 12.5, opacity: 0.85, marginTop: 2 }}>
+                            อีก {left} ครั้ง{eta && <> · <span title="คำนวณจากระยะห่างเฉลี่ยระหว่างการบริจาคที่ผ่านมา">{eta}</span></>}
+                          </div>
+                        </div>
+                        <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}" ${done} จาก ${goal} ครั้ง`} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}
+                          style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+                          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+                            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,247,245,0.28)" strokeWidth={stroke} />
+                            {frac > 0 && (
+                              <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#FFF7F5" strokeWidth={stroke} strokeLinecap="round"
+                                strokeDasharray={`${circ * frac} ${circ}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+                            )}
+                          </svg>
+                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${done}/${goal}`.length > 5 ? 11 : 13.5, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                            {done}<span style={{ opacity: 0.75, fontWeight: 600 }}>/{goal}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
