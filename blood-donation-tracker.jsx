@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.55";
+const APP_VERSION = "1.0.56";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2110,7 +2110,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         )}
       </div>
       <div style={{ position: "relative", flexShrink: 0 }}>
-        <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+        <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
           <MoreVertical size={17} color="#9A3B33" />
         </button>
         {isMenuOpen && (
@@ -4758,10 +4758,10 @@ function AppInner() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
-              <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 6 }}>
+              <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
                 <User size={19} color="#9A3B33" />
               </button>
-              <button onClick={() => setShowSettings(true)} aria-label="ตั้งค่า" style={{ background: "none", border: "none", cursor: "pointer", padding: 6 }}>
+              <button onClick={() => setShowSettings(true)} aria-label="ตั้งค่า" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
                 <Settings size={19} color="#9A3B33" />
               </button>
             </div>
@@ -4809,12 +4809,22 @@ function AppInner() {
                 </div>
                 <div style={{ minWidth: 0 }}>
                   {nickname ? (
-                    <button onClick={openProfile} style={{ display: "block", background: "none", border: "none", padding: 0, margin: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2C29", textAlign: "left", lineHeight: 1.4 }}>
+                    <button onClick={openProfile} style={{ display: "block", background: "none", border: "none", padding: "4px 0", margin: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2C29", textAlign: "left", lineHeight: 1.4 }}>
                       สวัสดี, คุณ{/^[A-Za-z]/.test(nickname.trim()) ? " " : ""}{nickname}
                     </button>
+                  ) : totalCount === 0 ? (
+                    // Only asks "have you donated today?" for someone with genuinely
+                    // no history at all -- previously this greeting showed for anyone
+                    // without a nickname regardless of donation history, so a returning
+                    // donor still mid-wait for their next eligible date (see the
+                    // countdown card just below) saw a question that already had an
+                    // obvious "no, not yet" answer baked into their own data.
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4 }}>
+                      สวัสดี วันนี้คุณบริจาคโลหิตแล้วหรือยัง?
+                    </div>
                   ) : (
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4 }}>
-                      สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง ?
+                      สวัสดี
                     </div>
                   )}
                   {(bloodType || age !== "" || weight !== "") ? (
@@ -4838,7 +4848,7 @@ function AppInner() {
                         </span>
                       )}
                       <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", border: "none", background: "none", color: "#B7A5A1", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, margin: -7, borderRadius: "50%", border: "none", background: "none", color: "#B7A5A1", cursor: "pointer", padding: 0, flexShrink: 0 }}>
                         {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
                     </div>
@@ -4948,18 +4958,21 @@ function AppInner() {
                     </span>
                   </div>
                 ) : (
-                  // Invisible placeholder matching the pill's box size, so the
-                  // card is the same height whether or not there's a pill to
-                  // show yet — keeps the "no history" and "has history" states
-                  // from jumping around in height.
-                  <div aria-hidden style={{ visibility: "hidden", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600 }}>
-                    <Droplet size={12} /> {DONATION_TYPE_LABELS.whole}
-                    <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600 }}>0</span>
+                  // Brand-new user with no history yet -- previously this was an
+                  // invisible placeholder just to hold the pill's box height, which
+                  // left a blank-looking gap in the card. Same box size/position,
+                  // now filled with a small useful fact instead of empty space.
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "rgba(255,247,245,0.16)", color: "#FFF7F5", position: "relative", zIndex: 1 }}>
+                    <HeartPulse size={12} /> บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต
                   </div>
                 )}
                 <div style={{ marginTop: 10, paddingTop: 14, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "flex-start", gap: 10, position: "relative", zIndex: 1 }}>
                   <span style={{ display: "flex", flexShrink: 0, marginTop: 1 }}>
-                    {!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0
+                    {/* totalCount === 0 (brand-new user, no history at all) must never
+                        show the checkmark -- isEligible is true by default when there's
+                        no nextEligible date yet, but a checkmark next to "no history"
+                        reads as a false confirmation rather than a neutral empty state. */}
+                    {totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0)
                       ? <Info size={18} />
                       : isEligible ? <CheckCircle2 size={18} /> : <Clock size={18} />}
                   </span>
@@ -4993,7 +5006,7 @@ function AppInner() {
                     เพิ่มลงปฏิทิน
                   </button>
                   <button onClick={dismissCalendarReminder} aria-label="เตือนทีหลัง"
-                    style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", border: "none", background: "none", color: "#B39B96", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    style={{ flexShrink: 0, width: 36, height: 36, margin: -7, borderRadius: "50%", border: "none", background: "none", color: "#B39B96", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <X size={13} />
                   </button>
                   {showCalendarChoice && (
@@ -5211,7 +5224,7 @@ function AppInner() {
                         )}
                       </div>
                       <div style={{ position: "relative", flexShrink: 0 }}>
-                        <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                        <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
                           <MoreVertical size={17} color="#9A3B33" />
                         </button>
                         {openActionMenuId === "startingCount" && (
