@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ช่องว่างใต้หัวข้อ "เลือกเวลาบริจาคโลหิต" — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 30px; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1180px; margin: 0 auto; }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { font-size: 11px; font-weight: 700; padding: 9px 12px; background: #9A3B33; color: #FFF7F5; font-family: 'Mitr', sans-serif; }
+  .desc { font-size: 11px; color: #8A7370; padding: 10px 14px 0; line-height: 1.55; min-height: 48px; }
+  .stage { padding: 16px; display: flex; justify-content: center; }
+
+  /* mini dialog mockup, shared shell */
+  .dlg { width: 100%; max-width: 260px; background: #FFFFFF; border-radius: 16px; padding: 16px; box-shadow: 0 6px 16px rgba(122,42,35,0.12); }
+  .dlg-title { font-size: 13px; font-weight: 600; color: #3A2C29; text-align: center; font-family: 'Mitr', sans-serif; margin-bottom: 8px; }
+  .wheel-mini { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; position: relative; }
+  .wheel-mini::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 26px; transform: translateY(-50%); border-top: 1px solid #E3C8C3; border-bottom: 1px solid #E3C8C3; pointer-events: none; }
+  .wcol { font-family: 'Mitr', sans-serif; font-size: 12px; color: #B39B96; line-height: 1.9; text-align: center; width: 26px; }
+  .wcol b { display: block; color: #3A2C29; font-size: 14px; font-weight: 700; }
+  .wsep { color: #7A6360; font-weight: 600; }
+  .actions-mini { display: flex; gap: 6px; margin-top: 10px; }
+  .btn-mini { flex: 1; padding: 7px 0; border-radius: 8px; font-size: 10.5px; font-weight: 600; font-family: 'Mitr', sans-serif; text-align: center; }
+  .btn-mini.cancel { border: 1px solid #E3C8C3; color: #5C4A46; }
+  .btn-mini.confirm { background: #9A3B33; color: #FFF7F5; }
+  .chip-mini { padding: 4px 9px; border-radius: 999px; border: 1px solid #E3C8C3; background: #FFF; font-size: 9.5px; color: #5C4A46; font-family: 'Mitr', sans-serif; }
+  .chip-mini.active { background: #9A3B33; border-color: #9A3B33; color: #FFF7F5; }
+</style>
+</head>
+<body>
+  <h1>ช่องว่างใต้หัวข้อ "เลือกเวลาบริจาคโลหิต" — 10 แบบ</h1>
+  <p class="sub">แผ่นตอนนี้มีที่ว่างระหว่างหัวข้อกับ wheel เยอะไป ลองใส่อะไรกำกับให้ดูแน่นขึ้น ไม่ใช่แค่ที่ว่างเปล่า</p>
+  <div class="grid">
+
+    <!-- 1: subtitle text -->
+    <div class="panel">
+      <div class="tag">1. ข้อความบอกวัตถุประสงค์</div>
+      <div class="desc">เพิ่มบรรทัดเล็กใต้หัวข้อ อธิบายว่าทำไมต้องกรอก ช่วยลดที่ว่างและตอบคำถาม "ทำไมต้องมีเวลาด้วย" ไปในตัว</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="font-size:10.5px; color:#8A7370; text-align:center; margin-bottom:6px; line-height:1.5;">ใช้เพื่อเตือนช่วงเวลาที่ควรพักหลังบริจาคเท่านั้น</div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2: big live preview -->
+    <div class="panel">
+      <div class="tag">2. ตัวเลขเวลาพรีวิวขนาดใหญ่</div>
+      <div class="desc">โชว์เวลาที่กำลังเลือกอยู่แบบตัวใหญ่เด่นเหนือ wheel อัปเดตตามที่เลื่อน ทำให้รู้ผลลัพธ์ชัดโดยไม่ต้องมองแถบกึ่งกลางเทียบ</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="font-family:'Mitr',sans-serif; font-size:26px; font-weight:700; color:#9A3B33; text-align:center; margin-bottom:2px;">17:45</div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3: column labels -->
+    <div class="panel">
+      <div class="tag">3. ป้ายชื่อ "ชั่วโมง / นาที" เหนือแต่ละคอลัมน์</div>
+      <div class="desc">เติมป้ายกำกับสั้น ๆ เหนือ wheel แต่ละคอลัมน์ กินที่ว่างน้อยแต่ชัดเจนขึ้นว่าคอลัมน์ไหนคือชั่วโมง/นาที เผื่อคนงงตอนแรกเห็น</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="display:flex; justify-content:center; gap:30px; font-size:10px; color:#8A7370; font-family:'Mitr',sans-serif; margin-bottom:2px;"><span>ชั่วโมง</span><span>นาที</span></div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4: icon -->
+    <div class="panel">
+      <div class="tag">4. ไอคอนนาฬิกาตกแต่ง</div>
+      <div class="desc">ไอคอนวงกลมสีอ่อนตรงกลาง เติมที่ว่างด้วยภาพแทนตัวหนังสือ ดูเป็นมิตร แต่ไม่ได้ให้ข้อมูลอะไรเพิ่มเติมจริง ๆ</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="display:flex; justify-content:center; margin-bottom:6px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:#F3E7E4; display:flex; align-items:center; justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+          </div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5: quick chips -->
+    <div class="panel">
+      <div class="tag">5. ชิปเวลายอดนิยม (กดลัด)</div>
+      <div class="desc">แถวชิปเวลาที่คนมักไปบริจาค กดแล้ว wheel เด้งไปตำแหน่งนั้นให้เลย ใช้ที่ว่างให้เกิดประโยชน์จริง ลดจำนวนครั้งที่ต้องเลื่อน wheel เอง</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="display:flex; gap:5px; justify-content:center; margin-bottom:8px; flex-wrap:wrap;">
+            <div class="chip-mini">09:00</div><div class="chip-mini active">17:45</div><div class="chip-mini">13:00</div>
+          </div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6: reduce spacing only -->
+    <div class="panel">
+      <div class="tag">6. ลด padding ไม่ใส่อะไรเพิ่ม</div>
+      <div class="desc">ไม่เพิ่ม element ใหม่เลย แค่ลดระยะห่างระหว่างหัวข้อกับ wheel ให้ชิดกันมากขึ้น เรียบง่ายสุด แก้ปัญหา "ดูโล่ง" ตรง ๆ โดยไม่เพิ่มความซับซ้อน</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title" style="margin-bottom:2px;">เลือกเวลาบริจาคโลหิต</div>
+          <div class="wheel-mini" style="padding:4px 0;"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7: skip link -->
+    <div class="panel">
+      <div class="tag">7. ลิงก์ "ไม่ระบุเวลา" ไว้ด้านบน</div>
+      <div class="desc">ย้ายปุ่มข้าม/ไม่ระบุเวลาขึ้นมาไว้ใต้หัวข้อเลย (จากเดิมอยู่ล่างสุดใต้ปุ่มยืนยัน) เผื่อคนที่แค่อยากปิดโดยไม่กรอก ไม่ต้องมองหาไกล และเติมที่ว่างพอดี</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title" style="margin-bottom:2px;">เลือกเวลาบริจาคโลหิต</div>
+          <div style="text-align:center; font-size:10.5px; color:#9A3B33; text-decoration:underline; font-family:'Mitr',sans-serif; margin-bottom:6px;">ไม่ระบุเวลา</div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8: icon + subtitle combo -->
+    <div class="panel">
+      <div class="tag">8. ไอคอน + ข้อความรวมกัน</div>
+      <div class="desc">ไอคอนเล็กวางข้างข้อความอธิบายแบบบรรทัดเดียว ("ไม่บังคับ ใส่เพื่อบันทึกไว้เฉย ๆ") ผสมข้อดีของแบบ 1 และ 4 เข้าด้วยกัน โดยไม่กินที่มากขึ้น</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title">เลือกเวลาบริจาคโลหิต</div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B39B96" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <span style="font-size:10px; color:#8A7370; font-family:'Mitr',sans-serif;">ไม่บังคับ ใส่เพื่อบันทึกไว้เฉย ๆ</span>
+          </div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9: divider line -->
+    <div class="panel">
+      <div class="tag">9. เส้นคั่นบาง ๆ ใต้หัวข้อ</div>
+      <div class="desc">เพิ่มแค่เส้นบาง ๆ กั้นระหว่างหัวข้อกับ wheel ไม่มีข้อความเพิ่ม ช่วยตัดพื้นที่ว่างเป็นสัดส่วนสายตา โดยไม่ต้องคิดคำอธิบายใหม่</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title" style="margin-bottom:8px;">เลือกเวลาบริจาคโลหิต</div>
+          <div style="height:1px; background:#EEDEDA; margin-bottom:8px;"></div>
+          <div class="wheel-mini"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10: combined recommended -->
+    <div class="panel" style="border: 2px solid #9A3B33;">
+      <div class="tag" style="background:#3A7D5C;">10. ผสม: ป้ายคอลัมน์ + ลดที่ว่าง (แนะนำ)</div>
+      <div class="desc">รวมแบบ 3 (ป้ายชั่วโมง/นาที ที่ให้ข้อมูลจริง ไม่ใช่แค่ตกแต่ง) กับแบบ 6 (ลด padding) เข้าด้วยกัน ได้ทั้งความชัดเจนและความกระชับ โดยไม่เพิ่มข้อความอธิบายที่อาจไม่มีใครอ่าน</div>
+      <div class="stage">
+        <div class="dlg">
+          <div class="dlg-title" style="margin-bottom:4px;">เลือกเวลาบริจาคโลหิต</div>
+          <div style="display:flex; justify-content:center; gap:30px; font-size:10px; color:#8A7370; font-family:'Mitr',sans-serif;"><span>ชั่วโมง</span><span>นาที</span></div>
+          <div class="wheel-mini" style="padding:4px 0;"><div class="wcol">16<br><b>17</b><br>18</div><div class="wsep">:</div><div class="wcol">44<br><b>45</b><br>46</div></div>
+          <div class="actions-mini"><div class="btn-mini cancel">ยกเลิก</div><div class="btn-mini confirm">ยืนยัน</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>การ์ดแชร์ — 20 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #221514; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; color: #FFF7F5; }
+  .sub { text-align: center; font-size: 12.5px; color: #C9AFA9; margin: 0 0 30px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 1080px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 56px; }
+  .card { width: 100%; aspect-ratio: 4/5; margin-top: 12px; overflow: hidden; position: relative; }
+  .card-inner { position: absolute; inset: 0; padding: 14px; display:flex; flex-direction:column; }
+</style>
+</head>
+<body>
+  <h1>การ์ดแชร์ความสำเร็จ — 20 แบบใหม่</h1>
+  <p class="sub">แทนที่การ์ดแชร์เดิม (ไล่เฉดแดง + วงกลมมี badge) — ข้อมูลตัวอย่างเดียวกันทุกแบบ (เข็มที่ระลึก ครั้งที่ 7 · สะสม 15 ครั้ง · 5.3 ลิตร · หมู่เลือด A)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const DROP = (fill, w=16,h=19) => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="${fill}"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const BADGE = (fg='#9A3B33',size=52) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fg}"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const STAR = (fill,size=10) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.8 1.4 6.9L12 17.3l-6.1 3.5 1.4-6.9L2.2 9.1l6.9-.8z"/></svg>`;
+
+const variants = [
+  {
+    label: "1. ใบประกาศเกียรติคุณเรียบหรู",
+    desc: "กรอบเส้นบางล้อมทั้งใบแบบใบประกาศนียบัตร ตราปั๊มกลม ตัวหนังสือเซอริฟ ให้ความรู้สึกเป็นทางการ น่าภูมิใจ เหมาะแชร์ให้ดูจริงจัง",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;border:1.5px solid #9A3B33;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-family:'EB Garamond',serif;font-size:8px;letter-spacing:0.15em;color:#8A7370;text-transform:uppercase;">Certificate of Giving</div>
+        <div style="width:56px;height:56px;border-radius:50%;border:1.5px solid #9A3B33;display:flex;align-items:center;justify-content:center;margin:10px 0;">${BADGE('#9A3B33',26)}</div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:#3A2C29;">เข็มที่ระลึก ครั้งที่ 7</div>
+        <div style="font-family:'EB Garamond',serif;font-size:9px;color:#7A6360;margin-top:2px;">บริจาคโลหิตครบ 7 ครั้ง</div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:30px;color:#9A3B33;margin-top:12px;">15</div>
+        <div style="font-family:'EB Garamond',serif;font-size:8px;color:#7A6360;">ครั้งที่บริจาคเลือดสะสม · 5.3 ลิตร · หมู่เลือด A</div>
+        <div style="width:24px;height:1px;background:#D9C9C2;margin:8px 0;"></div>
+        <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:8px;color:#8A7370;">พิษณุ ตรุษสาท · 21 กันยายน 2569</div>
+      </div>`,
+  },
+  {
+    label: "2. Instagram Story ตัวหนาเต็มจอ",
+    dark:true,
+    desc: "ตัวเลขยักษ์ล้นขอบพื้นดำ ไล่เฉดแดง สไตล์สตอรี่โฆษณาแคมเปญ อ่านชัดในสายตาแวบเดียวขณะเลื่อนฟีด",
+    body: `
+      <div style="flex:1;background:linear-gradient(160deg,#B24A40,#4A1712);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;">
+        <div style="font-family:'Mitr',sans-serif;font-size:9px;color:#FFF7F5;opacity:0.85;">Blood Journey</div>
+        <div style="font-family:'Inter',sans-serif;font-weight:800;font-size:64px;color:#FFF7F5;line-height:0.9;margin:8px 0;">15</div>
+        <div style="font-family:'Mitr',sans-serif;font-size:10px;color:#FFF7F5;font-weight:600;">ครั้งที่บริจาคเลือดสะสม</div>
+        <div style="font-family:'Inter',sans-serif;font-size:8px;color:rgba(255,247,245,0.85);margin-top:10px;">🏅 เข็มที่ระลึก ครั้งที่ 7 · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "3. เหรียญบนริบบิ้น",
+    desc: "ภาพประกอบเหรียญรางวัลห้อยริบบิ้นสองแฉกแบบรางวัลกีฬา ให้ความรู้สึกถึงรางวัลที่ได้รับจริง ไม่ใช่แค่ตัวเลขสถิติ",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;">
+        <svg width="60" height="90" viewBox="0 0 60 90">
+          <polygon points="18,10 30,45 6,45" fill="#7A241D"/><polygon points="42,10 30,45 54,45" fill="#9A3B33"/>
+          <circle cx="30" cy="60" r="24" fill="#E3B04A" stroke="#B5842C" stroke-width="2"/>
+          <circle cx="30" cy="60" r="17" fill="none" stroke="#B5842C" stroke-width="1"/>
+          <text x="30" y="65" text-anchor="middle" font-family="Fraunces" font-weight="700" font-size="16" fill="#5C3A0F">7</text>
+        </svg>
+        <div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:13px;color:#3A2C29;margin-top:6px;">เข็มที่ระลึก ครั้งที่ 7</div>
+        <div style="font-family:'Inter',sans-serif;font-size:9px;color:#7A6360;">สะสม 15 ครั้ง · 5.3 ลิตร · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "4. มืดหรูขลิบทอง",
+    dark:true,
+    desc: "พื้นดำสนิท ตัวเลขและกรอบเส้นทองบาง ให้ความรู้สึกพรีเมียมแบบใบเชิญงานกาล่า เหมาะแชร์ให้ดูมีระดับ",
+    body: `
+      <div style="flex:1;background:#171010;border:1px solid #D9B25C;margin:6px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-family:'EB Garamond',serif;font-size:8px;letter-spacing:0.15em;color:#D9B25C;">BLOOD JOURNEY</div>
+        <div style="width:26px;height:1px;background:#D9B25C;margin:8px 0;"></div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:36px;color:#D9B25C;">15</div>
+        <div style="font-family:'EB Garamond',serif;font-size:9px;color:#F3E9E5;margin-top:2px;">ครั้งที่บริจาคเลือดสะสม</div>
+        <div style="font-family:'EB Garamond',serif;font-size:7.5px;color:#B5A29C;margin-top:10px;">เข็มที่ระลึก ครั้งที่ 7 · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "5. วงกลมนวลตาแบบภาพถ่าย",
+    desc: "วงกลมทึบเบลอนุ่มเป็นฉากหลัง (duotone) badge ลอยตรงกลาง ให้ความรู้สึกเป็นภาพถ่ายมากกว่ากราฟิกข้อมูล เหมาะกับสายอาร์ต",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;background:radial-gradient(circle at 30% 30%,#F4A6A0,transparent 55%),radial-gradient(circle at 75% 70%,#8A2F28,transparent 55%),#FBF6F5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:#FFF7F5;box-shadow:0 8px 20px rgba(122,42,35,0.25);display:flex;align-items:center;justify-content:center;">${BADGE('#9A3B33',30)}</div>
+        <div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:13px;margin-top:10px;">เข็มที่ระลึก ครั้งที่ 7</div>
+        <div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#7A241D;margin-top:2px;">15 ครั้ง</div>
+        <div style="font-size:8px;color:#8A7370;">5.3 ลิตร · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "6. ดูโอโทนโปสเตอร์สถิติ",
+    dark:true,
+    desc: "สองสีตัดกันแบบโปสเตอร์บรรณาธิการ ตัวเลขและป้ายชื่อจัดวางเป็นบล็อกกริดชัดเจน อ่านเป็นระบบ",
+    body: `
+      <div style="flex:1;background:#8A2F28;display:flex;flex-direction:column;padding:14px;">
+        <div style="font-family:'Mitr',sans-serif;font-size:9px;color:#FFF7F5;">BLOOD JOURNEY</div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-family:'Fraunces',serif;font-weight:700;font-size:48px;color:#FFF7F5;line-height:0.9;">15</div>
+          <div style="font-family:'Inter',sans-serif;font-size:9px;color:#F4A6A0;margin-top:4px;">ครั้งที่บริจาคเลือดสะสม</div>
+        </div>
+        <div style="border-top:1px solid rgba(255,247,245,0.3);padding-top:8px;font-family:'Inter',sans-serif;font-size:7.5px;color:#F0DAD6;">เข็มที่ระลึก 7 · 5.3 ล. · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "7. ตั๋วที่ระลึก (ticket stub)",
+    desc: "การ์ดทรงตั๋วมีรอยปรุแบ่งครึ่ง ด้านซ้ายเป็นตราสัญลักษณ์ ด้านขวาเป็นรายละเอียด ให้ความรู้สึกเป็นของสะสมชิ้นหนึ่ง",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;">
+        <div style="display:flex;width:100%;background:#FFFFFF;border:1.5px solid #9A3B33;border-radius:10px;overflow:hidden;">
+          <div style="width:34%;background:#9A3B33;display:flex;align-items:center;justify-content:center;border-right:2px dashed #FFF7F5;">${BADGE('#FFF7F5',30)}</div>
+          <div style="flex:1;padding:10px 8px;">
+            <div style="font-family:'Space Mono',monospace;font-size:7px;color:#8A7370;">ADMIT ONE · DONOR</div>
+            <div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:11px;margin-top:3px;">เข็มที่ระลึก #7</div>
+            <div style="font-family:'Space Mono',monospace;font-size:8px;color:#9A3B33;font-weight:700;margin-top:6px;">15 ครั้ง</div>
+            <div style="font-family:'Space Mono',monospace;font-size:6px;color:#8A7370;">5.3L · TYPE A</div>
+          </div>
+        </div>
+      </div>`,
+  },
+  {
+    label: "8. หยดสีน้ำกระจาย",
+    desc: "พื้นหลังสีน้ำซึมกระจายโทนแดง-ชมพู นุ่มนวล ให้ความรู้สึกงานศิลป์มือวาด ต่างจากกราฟิก flat/gradient ทั่วไป",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;background:radial-gradient(circle at 25% 25%,rgba(178,74,64,0.55),transparent 55%),radial-gradient(circle at 75% 65%,rgba(244,166,160,0.6),transparent 50%),radial-gradient(circle at 50% 90%,rgba(122,36,29,0.35),transparent 55%),#FBF6F5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;">
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:30px;color:#5C1B15;">15 ครั้ง</div>
+        <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:9px;color:#7A4038;margin-top:2px;">เข็มที่ระลึก ครั้งที่ 7</div>
+        <div style="font-size:7.5px;color:#7A4038;margin-top:8px;">5.3 ลิตร · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "9. ลายเรขาคณิตพื้นหลัง",
+    dark:true,
+    desc: "รูปสามเหลี่ยม/วงกลมซ้อนเป็นแพทเทิร์นเรขาคณิตทันสมัยด้านหลัง ตัวเลขและตราลอยเด่นด้านหน้า ดูเป็นแบรนด์ดีไซน์จริงจัง",
+    body: `
+      <div style="flex:1;background:#2A1512;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 200 250" style="position:absolute;inset:0;opacity:0.5;">
+          <polygon points="0,0 60,0 0,60" fill="#B24A40"/><polygon points="200,250 140,250 200,190" fill="#B24A40"/>
+          <circle cx="170" cy="30" r="18" fill="none" stroke="#8A2F28" stroke-width="1.5"/><circle cx="20" cy="220" r="24" fill="none" stroke="#8A2F28" stroke-width="1.5"/>
+        </svg>
+        <div style="position:relative;">${BADGE('#F4A6A0',40)}<div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:22px;color:#FFF7F5;margin-top:8px;">15 ครั้ง</div><div style="font-family:'Inter',sans-serif;font-size:8px;color:#F0DAD6;margin-top:2px;">เข็มที่ระลึก 7 · หมู่เลือด A</div></div>
+      </div>`,
+  },
+  {
+    label: "10. คอนเฟตติฉลอง",
+    desc: "เศษกระดาษสีสันหลากหลายกระจายรอบตัวเลข ให้ความรู้สึกเฉลิมฉลองสนุกสนาน เหมาะแชร์เมื่อถึงเป้าหมายสำคัญ",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;">
+        ${Array.from({length:20}).map(()=>{const colors=['#9A3B33','#E3B04A','#5C7A5A','#6E88B5','#C97165'];const c=colors[Math.floor(Math.random()*colors.length)];return `<div style="position:absolute;width:5px;height:9px;background:${c};left:${Math.random()*100}%;top:${Math.random()*100}%;transform:rotate(${Math.random()*360}deg);"></div>`}).join('')}
+        <div style="position:relative;">${BADGE('#9A3B33',44)}<div style="font-family:'Mitr',sans-serif;font-weight:800;font-size:20px;margin-top:8px;">15 ครั้ง! 🎉</div><div style="font-size:8px;color:#7A6360;margin-top:2px;">เข็มที่ระลึก ครั้งที่ 7</div></div>
+      </div>`,
+  },
+  {
+    label: "11. เรืองแสงนีออน",
+    dark:true,
+    desc: "ตัวเลขและวงกลม badge เรืองแสงแบบไฟนีออน พื้นมืดสนิท ให้ความรู้สึกทันสมัย มีพลัง เหมาะแชร์ในกลุ่มคนรุ่นใหม่",
+    body: `
+      <div style="flex:1;background:#0D0705;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;border:2px solid #FF6B57;box-shadow:0 0 16px #FF6B57;display:flex;align-items:center;justify-content:center;">${BADGE('#FF6B57',26)}</div>
+        <div style="font-family:'Inter',sans-serif;font-weight:800;font-size:36px;color:#FF6B57;text-shadow:0 0 14px rgba(255,107,87,0.8);margin-top:10px;">15</div>
+        <div style="font-family:'Inter',sans-serif;font-size:9px;color:#C9AFA9;">ครั้งที่บริจาคเลือดสะสม</div>
+        <div style="font-family:'Inter',sans-serif;font-size:7.5px;color:#8A7370;margin-top:6px;">เข็มที่ระลึก 7 · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "12. เซอริฟบรรณาธิการ",
+    desc: "จัดหน้าแบบบทความนิตยสาร พาดหัวเซอริฟใหญ่ พารากราฟย่อยอธิบายละเอียด ให้ความรู้สึกเป็นเรื่องราวมากกว่าป้ายสถิติ",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;padding:12px;display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-family:'EB Garamond',serif;font-size:8px;color:#8A7370;letter-spacing:0.1em;">BLOOD JOURNEY — MILESTONE</div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:26px;line-height:1.15;color:#241A18;margin-top:6px;">เข็มที่ระลึก<br/>ครั้งที่ 7</div>
+        <div style="font-family:'EB Garamond',serif;font-size:9.5px;color:#3A2C29;margin-top:10px;line-height:1.6;">พิษณุได้บริจาคโลหิตสะสมแล้ว <b>15</b> ครั้ง รวมประมาณ 5.3 ลิตร หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "13. โพลารอยด์กรอบขาว",
+    desc: "กรอบภาพขาวหนาแบบฟิล์มโพลารอยด์ badge อยู่ในกรอบภาพ คำบรรยายเขียนมือใต้ภาพ ให้ความรู้สึกเป็นความทรงจำ",
+    bg: '#EDE3DE',
+    body: `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;">
+        <div style="background:#FFFFFF;padding:10px 10px 20px;box-shadow:0 8px 18px rgba(0,0,0,0.15);transform:rotate(-2deg);">
+          <div style="width:120px;height:120px;background:linear-gradient(135deg,#B24A40,#8A2F28);display:flex;align-items:center;justify-content:center;">${BADGE('#FFF7F5',48)}</div>
+          <div style="text-align:center;font-family:'Mitr',sans-serif;font-size:9px;color:#3A2C29;margin-top:6px;">เข็มที่ระลึก #7 ✿</div>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:8px;color:#7A6360;margin-top:10px;">15 ครั้ง · 5.3 ล. · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "14. แดชบอร์ดสรุปสถิติ",
+    desc: "จัดข้อมูลเป็นแถวสถิติหลายตัวคล้ายรายงานผล ให้รายละเอียดครบในแวบเดียว เหมาะกับผู้ที่ชอบดูตัวเลขจริงจัง",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;padding:12px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">${BADGE('#9A3B33',24)}<div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:11px;">เข็มที่ระลึก ครั้งที่ 7</div></div>
+        ${[['สะสมทั้งหมด','15 ครั้ง'],['ปริมาณโลหิต','5.3 ลิตร'],['หมู่เลือด','A']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EEDEDA;font-size:9px;"><span style="color:#8A7370;">${k}</span><span style="font-weight:700;color:#3A2C29;">${v}</span></div>`).join('')}
+      </div>`,
+  },
+  {
+    label: "15. โปสเตอร์อัลบั้มเพลง",
+    dark:true,
+    desc: "จัดวางแบบปกอัลบั้มเพลง ชื่อ 'ศิลปิน/ชื่อเพลง' แทนด้วยชื่อผู้บริจาค/เหตุการณ์ ตัวหนังสือใหญ่โฉบเฉี่ยว ให้ความรู้สึกเท่ทันสมัย",
+    body: `
+      <div style="flex:1;background:linear-gradient(200deg,#3A1410,#0D0705);display:flex;flex-direction:column;justify-content:flex-end;padding:14px;">
+        <div style="width:44px;height:44px;background:#9A3B33;display:flex;align-items:center;justify-content:center;border-radius:4px;margin-bottom:10px;">${BADGE('#FFF7F5',22)}</div>
+        <div style="font-family:'Inter',sans-serif;font-weight:800;font-size:22px;color:#FFF7F5;line-height:1.1;">เข็มที่ระลึก<br/>ครั้งที่ 7</div>
+        <div style="font-family:'Inter',sans-serif;font-size:8px;color:#C9AFA9;margin-top:6px;">พิษณุ ตรุษสาท · 15 ครั้งสะสม</div>
+      </div>`,
+  },
+  {
+    label: "16. ตราครั่งประทับ",
+    desc: "ตราประทับครั่งสีเลือดหมูนูนกลม ขอบหยักแบบจดหมายโบราณ ให้ความรู้สึกเป็นเกียรติ ทางการ สง่างาม",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;">
+        <div style="width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#B3392B,#6E241D 75%);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(0,0,0,0.25);">
+          <div style="width:60px;height:60px;border-radius:50%;border:1px solid rgba(255,247,245,0.4);display:flex;align-items:center;justify-content:center;">${BADGE('#FFF7F5',26)}</div>
+        </div>
+        <div style="font-family:'EB Garamond',serif;font-size:9px;margin-top:10px;">เข็มที่ระลึก ครั้งที่ 7</div>
+        <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:8px;color:#7A6360;">15 ครั้ง · 5.3 ล. · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "17. เมชเกรเดียนต์พรีเมียม",
+    dark:true,
+    desc: "ไล่เฉดหลายจุดแบบ mesh gradient เทรนด์ใหม่ ให้ความรู้สึกทันสมัย มีชีวิตชีวา โดดเด่นในฟีดโซเชียล",
+    body: `
+      <div style="flex:1;background:radial-gradient(circle at 20% 20%,#FF9B8C,transparent 55%),radial-gradient(circle at 85% 25%,#8A2F28,transparent 50%),radial-gradient(circle at 30% 85%,#B24A40,transparent 55%),radial-gradient(circle at 90% 90%,#4A1A15,transparent 55%),#241412;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-family:'Inter',sans-serif;font-weight:800;font-size:40px;color:#FFF7F5;">15</div>
+        <div style="font-family:'Inter',sans-serif;font-size:9px;color:rgba(255,247,245,0.9);">ครั้งที่บริจาคเลือดสะสม</div>
+        <div style="font-family:'Inter',sans-serif;font-size:7.5px;color:rgba(255,247,245,0.75);margin-top:8px;">เข็มที่ระลึก 7 · หมู่เลือด A</div>
+      </div>`,
+  },
+  {
+    label: "18. เส้นทางไมล์สโตนแนวนอน",
+    desc: "แสดงเป็นเส้นทางจุดไมล์สโตนแนวนอน จุดปัจจุบันไฮไลต์เด่น ให้เห็นบริบทว่าอยู่ตรงไหนของเส้นทางทั้งหมด",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;padding:14px;display:flex;flex-direction:column;justify-content:center;">
+        <svg width="100%" height="50" viewBox="0 0 160 50">
+          <line x1="10" y1="25" x2="150" y2="25" stroke="#EEDEDA" stroke-width="2"/>
+          ${[10,50,90,130].map((x,i)=>`<circle cx="${x}" cy="25" r="${i===2?7:4}" fill="${i===2?'#9A3B33':'#D9C9C2'}"/>`).join('')}
+          <text x="90" y="42" text-anchor="middle" font-family="Mitr" font-size="7" fill="#9A3B33" font-weight="700">ครั้งที่ 7</text>
+        </svg>
+        <div style="text-align:center;margin-top:8px;"><div style="font-family:'Mitr',sans-serif;font-weight:700;font-size:14px;">15 ครั้งสะสม</div><div style="font-size:8px;color:#8A7370;">5.3 ลิตร · หมู่เลือด A</div></div>
+      </div>`,
+  },
+  {
+    label: "19. การ์ดอวยพรลายมือ",
+    desc: "โทนอบอุ่นแบบการ์ดอวยพรวันเกิด ลายเส้นดอกไม้เล็กๆ ประดับมุม ตัวหนังสือดูเป็นกันเอง เหมาะแชร์แบบส่วนตัว",
+    bg: '#FDF1EF',
+    body: `
+      <div style="flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;">
+        <svg width="30" height="30" viewBox="0 0 30 30" style="position:absolute;top:8px;left:8px;opacity:0.5;"><path d="M15 5 Q20 12 15 15 Q10 12 15 5 M5 15 Q12 20 15 15 Q12 10 5 15 M25 15 Q18 20 15 15 Q18 10 25 15 M15 25 Q20 18 15 15 Q10 18 15 25" fill="#F4A6A0"/></svg>
+        <div style="font-family:'Mitr',sans-serif;font-size:9px;color:#B5615A;">ขอบคุณที่เป็นผู้ให้ 💗</div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:#7A2A22;margin-top:6px;">15 ครั้ง</div>
+        <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:8.5px;color:#8A5C55;margin-top:4px;">เข็มที่ระลึกครั้งที่ 7 ของพิษณุ</div>
+      </div>`,
+  },
+  {
+    label: "20. พาดหัวหนังสือพิมพ์",
+    desc: "จัดหน้าแบบหน้าหนึ่งหนังสือพิมพ์ เส้นคั่นหนา ตัวพาดหัวใหญ่ คอลัมน์ข้อความ ให้ความรู้สึกเป็นข่าวสำคัญที่ควรบอกต่อ",
+    bg: '#FBF6F5',
+    body: `
+      <div style="flex:1;padding:12px;">
+        <div style="text-align:center;font-family:'EB Garamond',serif;font-size:7px;letter-spacing:0.15em;color:#8A7370;border-bottom:2px solid #241A18;padding-bottom:6px;margin-bottom:8px;">THE BLOOD JOURNEY TIMES</div>
+        <div style="font-family:'Fraunces',serif;font-weight:800;font-size:19px;line-height:1.2;text-align:center;">พิษณุบริจาคโลหิต<br/>ครบ 15 ครั้ง!</div>
+        <div style="border-top:1px solid #241A18;margin-top:8px;padding-top:6px;font-family:'EB Garamond',serif;font-size:8px;text-align:center;color:#3A2C29;">เข็มที่ระลึกครั้งที่ 7 · รวม 5.3 ลิตร · หมู่เลือด A</div>
+      </div>`,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="card" style="background:${v.bg || (v.dark ? '#171010' : '#FBF6F5')};"><div class="card-inner">${v.body}</div></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

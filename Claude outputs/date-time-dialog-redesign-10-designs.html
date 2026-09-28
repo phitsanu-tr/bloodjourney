@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>รีดีไซน์แผ่นวันที่/เวลา ให้เป็นชุดเดียวกัน — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 30px; max-width: 620px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 980px; margin: 0 auto; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); }
+  .panel.rec { outline: 2px solid #3A7D5C; outline-offset: -2px; }
+  .tag { font-size: 11.5px; font-weight: 700; padding: 10px 14px; background: #9A3B33; color: #FFF7F5; font-family: 'Mitr', sans-serif; }
+  .tag.rec { background: #3A7D5C; }
+  .desc { font-size: 11.5px; color: #8A7370; padding: 12px 16px 4px; line-height: 1.6; }
+  .stage { padding: 14px 16px 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .mini { width: 150px; }
+  .mini-title { font-family: 'Mitr', sans-serif; font-size: 11px; font-weight: 600; text-align: center; }
+  .wk { font-family: 'Mitr', sans-serif; }
+</style>
+</head>
+<body>
+  <h1>รีดีไซน์แผ่นเลือกวันที่ / เวลา ให้เป็นชุดเดียวกัน — 10 แบบ</h1>
+  <p class="sub">ตอนนี้ปฏิทินกับ wheel เวลาใช้สีพาเลตต์เดียวกันแล้ว แต่หน้าตายัง "เรียบเฉย ๆ" ไม่มีเอกลักษณ์ร่วม ลอง 10 แนวทางออกแบบให้ทั้งคู่ดูเป็นระบบเดียวกันชัดเจนขึ้น สวยขึ้น และรู้สึกใช้ง่ายขึ้น</p>
+  <div class="grid">
+
+    <!-- 1 -->
+    <div class="panel">
+      <div class="tag">1. แถบหัวสีเข้ม + ไอคอน</div>
+      <div class="desc">เพิ่มแถบหัวสีแดงเข้มเต็มความกว้างด้านบนของทั้งสองแผ่น มีไอคอน+ชื่อฟิลด์เป็นตัวหนังสือขาว ตัดกับตัวเนื้อหาสีครีมด้านล่าง ให้เอกลักษณ์ร่วมชัดเจนตั้งแต่มองแวบแรก</div>
+      <div class="stage">
+        <div class="mini" style="border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="background:#9A3B33; color:#FFF7F5; padding:8px 10px; display:flex; align-items:center; gap:5px; font-size:10px;" class="wk">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            วันที่บริจาคโลหิต
+          </div>
+          <div style="background:#FFF; padding:8px; text-align:center;">
+            <div style="font-size:10px; color:#3A2C29;" class="wk">ก.ย. 2569 · 27 ถูกเลือก</div>
+          </div>
+        </div>
+        <div class="mini" style="border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="background:#9A3B33; color:#FFF7F5; padding:8px 10px; display:flex; align-items:center; gap:5px; font-size:10px;" class="wk">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            เวลาบริจาคโลหิต
+          </div>
+          <div style="background:#FFF; padding:14px 8px; display:flex; justify-content:center; gap:6px; font-size:15px; font-weight:700; color:#3A2C29;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="panel">
+      <div class="tag">2. ไอคอนวงกลมลอยเหนือหัวข้อ</div>
+      <div class="desc">ไอคอนวงกลมสีครีมเข้มลอยอยู่กึ่งกลาง เหนือหัวข้อของทั้งสองแผ่น เหมือน alert dialog ที่มีตราสัญลักษณ์ ให้ความรู้สึก "เป็นชุดฟอร์มเดียวกัน" โดยไม่ต้องเปลี่ยนโครงเดิมมาก</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:14px 10px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="width:32px; height:32px; border-radius:50%; background:#F3E7E4; margin:0 auto 8px; display:flex; align-items:center; justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.3"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          </div>
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">เลือกวันที่บริจาคโลหิต</div>
+        </div>
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:14px 10px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="width:32px; height:32px; border-radius:50%; background:#F3E7E4; margin:0 auto 8px; display:flex; align-items:center; justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:8px;" class="wk">เลือกเวลาบริจาคโลหิต</div>
+          <div style="font-size:15px; font-weight:700; color:#3A2C29;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="panel">
+      <div class="tag">3. การ์ดสีครีมอุ่น แทนพื้นขาว</div>
+      <div class="desc">เปลี่ยนพื้นหลังการ์ดจากขาวล้วนเป็นครีมอุ่น (#FBF6F5) เหมือนพื้นหลังแอป ให้ความรู้สึกนุ่มนวลกว่าการ์ดขาวตัดกับพื้นหลังปกติ ใช้กับทั้งสองแผ่นเหมือนกัน แก้ไขง่าย ไม่ต้องปรับโครง</div>
+      <div class="stage">
+        <div class="mini" style="background:#FBF6F5; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.10);">
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">วันที่บริจาคโลหิต</div>
+          <div style="background:#FFFFFF; border-radius:10px; padding:6px; font-size:10px; color:#3A2C29;" class="wk">27 ก.ย. 2569</div>
+        </div>
+        <div class="mini" style="background:#FBF6F5; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.10);">
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">เวลาบริจาคโลหิต</div>
+          <div style="background:#FFFFFF; border-radius:10px; padding:10px 6px; font-size:15px; font-weight:700; color:#3A2C29;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="panel">
+      <div class="tag">4. เส้นขีดบาง (segmented) ไม่มีเงา</div>
+      <div class="desc">เอาเงาการ์ดออกทั้งหมด ใช้แค่กรอบเส้นบาง ๆ สีเดียวกับกรอบช่อง input ในฟอร์มหลัก (#E3C8C3) แนวมินิมอลกว่า เข้ากับสไตล์ input ที่เหลือของแอปได้แนบเนียนที่สุด</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border:1.5px solid #E3C8C3; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">วันที่บริจาคโลหิต</div>
+          <div style="font-size:10px; color:#3A2C29;" class="wk">27 ก.ย. 2569</div>
+        </div>
+        <div class="mini" style="background:#FFF; border:1.5px solid #E3C8C3; border-radius:14px; padding:12px; text-align:center;">
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">เวลาบริจาคโลหิต</div>
+          <div style="font-size:15px; font-weight:700; color:#3A2C29;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="panel">
+      <div class="tag">5. ปุ่มยืนยันแบบเต็มความกว้าง วางซ้อน</div>
+      <div class="desc">เปลี่ยนจากปุ่ม "ยกเลิก/ยืนยัน" วางคู่กัน เป็นปุ่ม "ยืนยัน" เต็มความกว้างเด่นด้านบน ส่วน "ยกเลิก" เป็นลิงก์ตัวหนังสือเล็กใต้ปุ่ม ลดความรู้สึก "สองตัวเลือกเท่ากัน" เน้นให้กดยืนยันเป็นเส้นทางหลัก</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:8px;" class="wk">วันที่: 27 ก.ย. 2569</div>
+          <div style="background:#9A3B33; color:#FFF7F5; border-radius:8px; padding:6px 0; font-size:10px; font-weight:600; margin-bottom:6px;" class="wk">ยืนยัน</div>
+          <div style="font-size:9.5px; color:#9A3B33; text-decoration:underline;" class="wk">ยกเลิก</div>
+        </div>
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="font-size:15px; font-weight:700; color:#3A2C29; margin-bottom:8px;" class="wk">17 : 45</div>
+          <div style="background:#9A3B33; color:#FFF7F5; border-radius:8px; padding:6px 0; font-size:10px; font-weight:600; margin-bottom:6px;" class="wk">ยืนยัน</div>
+          <div style="font-size:9.5px; color:#9A3B33; text-decoration:underline;" class="wk">ยกเลิก</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="panel">
+      <div class="tag">6. รวมเป็นแผ่นเดียว มีแท็บสลับ</div>
+      <div class="desc">รวมวันที่+เวลาไว้ในแผ่นเดียวกัน มีแท็บ "วันที่ | เวลา" ให้สลับดูด้านบน กดครั้งเดียวได้ครบทั้งวันและเวลา ไม่ต้องเปิด-ปิดแผ่นสองรอบ เหมาะกับฟอร์มที่มักกรอกทั้งคู่พร้อมกัน</div>
+      <div class="stage" style="width:100%;">
+        <div style="width:100%; max-width:220px; background:#FFF; border-radius:16px; padding:12px; box-shadow:0 4px 12px rgba(122,42,35,0.12); margin:0 auto;">
+          <div style="display:flex; border-radius:999px; background:#F3E7E4; padding:2px; margin-bottom:10px;">
+            <div style="flex:1; text-align:center; padding:5px 0; border-radius:999px; background:#9A3B33; color:#FFF7F5; font-size:9.5px; font-weight:600;" class="wk">วันที่</div>
+            <div style="flex:1; text-align:center; padding:5px 0; font-size:9.5px; color:#8A7370;" class="wk">เวลา</div>
+          </div>
+          <div style="font-size:10px; text-align:center; color:#3A2C29;" class="wk">27 ก.ย. 2569 (แตะแท็บเวลาเพื่อระบุต่อ)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="panel">
+      <div class="tag">7. แถบสีบาง ๆ ขอบบน (accent stripe)</div>
+      <div class="desc">เพิ่มแถบสีแดงบาง ๆ 4px คาดขอบบนสุดของการ์ด (ไม่ใช่แถบหัวเต็มแบบที่ 1) แค่จุดสีเล็ก ๆ ก็พอให้รู้ว่าเป็นชุดเดียวกัน โดยเนื้อหาข้างในยังคงมินิมอลเหมือนเดิม</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="height:4px; background:#9A3B33;"></div>
+          <div style="padding:10px; text-align:center;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">วันที่บริจาคโลหิต</div>
+            <div style="font-size:10px; color:#8A7370; margin-top:4px;" class="wk">27 ก.ย. 2569</div>
+          </div>
+        </div>
+        <div class="mini" style="background:#FFF; border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="height:4px; background:#9A3B33;"></div>
+          <div style="padding:10px; text-align:center;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">เวลาบริจาคโลหิต</div>
+            <div style="font-size:15px; font-weight:700; color:#3A2C29; margin-top:4px;" class="wk">17 : 45</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="panel">
+      <div class="tag">8. ปุ่มปิด (×) ลอยมุมขวาบน ทุกแผ่น</div>
+      <div class="desc">เพิ่มปุ่ม × วงกลมเล็กมุมขวาบนของทั้งสองแผ่น (ตอนนี้มีแค่ "ยกเลิก" เป็นปุ่มยาวด้านล่าง) ให้ปิดได้เร็วแบบเดียวกับ modal อื่น ๆ ในแอปเอง (ฟอร์มหลักก็มี × แบบนี้ที่มุมขวาบน) เพิ่มความสอดคล้องกับส่วนอื่นของแอป ไม่ใช่แค่กับกันเอง</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; position:relative; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; background:#F3E7E4; color:#9A3B33; font-size:11px; display:flex; align-items:center; justify-content:center;">×</div>
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">วันที่บริจาคโลหิต</div>
+          <div style="font-size:10px; color:#8A7370; margin-top:4px;" class="wk">27 ก.ย. 2569</div>
+        </div>
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; position:relative; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; background:#F3E7E4; color:#9A3B33; font-size:11px; display:flex; align-items:center; justify-content:center;">×</div>
+          <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">เวลาบริจาคโลหิต</div>
+          <div style="font-size:15px; font-weight:700; color:#3A2C29; margin-top:4px;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="panel">
+      <div class="tag">9. ปุ่มวันนี้ / เวลาปัจจุบัน (quick-fill)</div>
+      <div class="desc">เพิ่มปุ่มเล็ก ๆ "วันนี้" / "ตอนนี้" มุมบนของแต่ละแผ่น ให้กรอกค่าปัจจุบันได้ในแตะเดียวสำหรับคนที่บริจาคเสร็จแล้วมาบันทึกทันที ไม่ต้องเลื่อน/กดหาเอง ใช้ธีมสีเดียวกันทั้งคู่</div>
+      <div class="stage">
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">วันที่บริจาคโลหิต</div>
+            <div style="font-size:9px; color:#9A3B33; border:1px solid #9A3B33; border-radius:999px; padding:2px 7px;" class="wk">วันนี้</div>
+          </div>
+          <div style="font-size:10px; color:#8A7370;" class="wk">27 ก.ย. 2569</div>
+        </div>
+        <div class="mini" style="background:#FFF; border-radius:16px; padding:12px; text-align:center; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29;" class="wk">เวลาบริจาคโลหิต</div>
+            <div style="font-size:9px; color:#9A3B33; border:1px solid #9A3B33; border-radius:999px; padding:2px 7px;" class="wk">ตอนนี้</div>
+          </div>
+          <div style="font-size:15px; font-weight:700; color:#3A2C29;" class="wk">17 : 45</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10: recommended combo -->
+    <div class="panel rec">
+      <div class="tag rec">10. ผสม: แถบขอบบน + การ์ดครีม + ปุ่มยืนยันเด่น (แนะนำ)</div>
+      <div class="desc">รวมแบบ 7 (แถบสีบาง ๆ ขอบบน ให้เอกลักษณ์ร่วมแบบไม่แรงเกินไป) + แบบ 3 (การ์ดสีครีมอุ่นแทนขาวล้วน) + แบบ 5 (ปุ่มยืนยันเด่นเต็มความกว้าง ยกเลิกเป็นลิงก์) เข้าด้วยกัน — ได้ทั้งความสวยมีเอกลักษณ์ ความนุ่มนวลเข้ากับพื้นหลังแอป และเส้นทางกดที่ชัดเจนไม่ทำให้ลังเล โดยไม่ต้องปรับโครง component ใหม่ทั้งหมด (แก้แค่สี/เลย์เอาต์ปุ่ม ใช้เวลาพัฒนาไม่นาน)</div>
+      <div class="stage">
+        <div class="mini" style="background:#FBF6F5; border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="height:4px; background:#9A3B33;"></div>
+          <div style="padding:10px; text-align:center;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">วันที่บริจาคโลหิต</div>
+            <div style="background:#FFF; border-radius:8px; padding:5px; font-size:9.5px; color:#3A2C29; margin-bottom:8px;" class="wk">27 ก.ย. 2569</div>
+            <div style="background:#9A3B33; color:#FFF7F5; border-radius:8px; padding:6px 0; font-size:10px; font-weight:600; margin-bottom:5px;" class="wk">ยืนยัน</div>
+            <div style="font-size:9px; color:#9A3B33; text-decoration:underline;" class="wk">ยกเลิก</div>
+          </div>
+        </div>
+        <div class="mini" style="background:#FBF6F5; border-radius:14px; overflow:hidden; box-shadow:0 4px 12px rgba(122,42,35,0.12);">
+          <div style="height:4px; background:#9A3B33;"></div>
+          <div style="padding:10px; text-align:center;">
+            <div style="font-size:10.5px; font-weight:600; color:#3A2C29; margin-bottom:6px;" class="wk">เวลาบริจาคโลหิต</div>
+            <div style="background:#FFF; border-radius:8px; padding:8px 5px; font-size:14px; font-weight:700; color:#3A2C29; margin-bottom:8px;" class="wk">17 : 45</div>
+            <div style="background:#9A3B33; color:#FFF7F5; border-radius:8px; padding:6px 0; font-size:10px; font-weight:600; margin-bottom:5px;" class="wk">ยืนยัน</div>
+            <div style="font-size:9px; color:#9A3B33; text-decoration:underline;" class="wk">ยกเลิก</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

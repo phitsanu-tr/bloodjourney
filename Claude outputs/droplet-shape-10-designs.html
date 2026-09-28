@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>รูปทรงหยดเลือด — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; color: #241A18; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-width: 1080px; margin: 0 auto; }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 6px 10px 0; line-height: 1.5; min-height: 44px; }
+  .screen { height: 150px; display: flex; align-items: center; justify-content: center; }
+  .card-icon { width: 92px; height: 92px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 12px 26px rgba(154,59,51,0.14); display: flex; align-items: center; justify-content: center; }
+  .foot { padding: 12px 0 16px; }
+</style>
+</head>
+<body>
+  <h1>รูปทรงหยดเลือดให้อ่อนช้อยขึ้น — 10 แบบ</h1>
+  <p class="sub">ทุกแบบขยายขนาดตามคำแนะนำก่อนหน้า (~56×68 ในกรอบการ์ด 92×92 แทนของเดิม 46×56)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const face = `
+  <path d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <path d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <circle cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+  <circle cx="17" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+  <path d="M9 17.6 Q12 20.4 15 17.6" stroke="#FFF7F5" stroke-width="1" fill="none" stroke-linecap="round"/>
+`;
+
+const variants = [
+  {
+    label: "1. คลาสสิก (ขนาดใหม่)",
+    desc: "ทรงเดิม แค่ขยายขนาดตามคำแนะนำ — ใช้เทียบฐาน",
+    d: "M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z",
+  },
+  {
+    label: "2. ปลายเรียว คอดกิ่ว",
+    desc: "เรียวบางลื่นไหลจากปลายถึงฐาน ไม่มีจุดหักงอ ให้ความรู้สึกเพรียวบางแบบของเหลวจริง",
+    d: "M12 1.2 C12 1.2 7.5 9 7 13 C6.7 16 9 24.6 12 24.6 C15 24.6 17.3 16 17 13 C16.5 9 12 1.2 12 1.2 Z",
+  },
+  {
+    label: "3. เอนเบาๆ (อสมมาตร)",
+    desc: "เอนปลายไปทางขวาเล็กน้อย ดูมีชีวิตชีวากว่าทรงสมมาตรเป๊ะ",
+    d: "M13 1.4 C13 1.4 5 12 4.6 16.5 C4.2 20.6 7.8 24.2 12.6 24.2 C17 24.2 20.2 20.6 19.6 16.8 C19 13 13 1.4 13 1.4 Z",
+  },
+  {
+    label: "4. ทรงเพรียวสูง",
+    desc: "ยืดสัดส่วนแนวตั้งขึ้น ฐานแคบลง เพรียวกว่าทรงเดิม",
+    d: "M12 1 C12 1 6.6 10.5 6.2 15 C5.8 19.5 8.3 24.8 12 24.8 C15.7 24.8 18.2 19.5 17.8 15 C17.4 10.5 12 1 12 1 Z",
+  },
+  {
+    label: "5. ปลายตวัดโค้ง",
+    desc: "ปลายบนม้วนตวัดคล้ายเปลวไฟ/ลายพู่กัน มีลีลามากขึ้น",
+    d: "M13.8 1 C15.3 2.3 12.6 4.8 10.6 5.4 C6.6 6.6 4.2 12.2 4.2 16.6 C4.2 21 7.7 24.2 12 24.2 C16.3 24.2 19.8 21 19.8 16.6 C19.8 12.5 15.6 4.2 13.8 1 Z",
+  },
+  {
+    label: "6. ฐานอวบ ปลายคม",
+    desc: "เพิ่มความต่างระหว่างปลายแหลมกับฐานกลม ให้ดูมีมิติ",
+    d: "M12 0.9 C12 0.9 5 11.2 4.2 16.2 C3.5 20.8 7 25 12 25 C17 25 20.5 20.8 19.8 16.2 C19 11.2 12 0.9 12 0.9 Z",
+  },
+  {
+    label: "7. คอดกิ่วลึก (หยดน้ำผึ้ง)",
+    desc: "คอดเว้าเด่นชัด คล้ายหยดน้ำผึ้งหรือน้ำเชื่อมหนืดๆ",
+    d: "M12 1.4 C12 1.4 9.2 6.3 9.2 9.3 C9.2 11.3 10.3 12 10.9 12.8 C7.7 14.4 4.8 17.5 4.8 20 C4.8 22.8 8.1 24.7 12 24.7 C15.9 24.7 19.2 22.8 19.2 20 C19.2 17.5 16.3 14.4 13.1 12.8 C13.7 12 14.8 11.3 14.8 9.3 C14.8 6.3 12 1.4 12 1.4 Z",
+  },
+  {
+    label: "8. อสมมาตรธรรมชาติ",
+    desc: "ข้างซ้ายตรงกว่า ข้างขวาโค้งมนกว่า — ไม่สมมาตรแบบหยดจริง",
+    d: "M12.3 1.4 C12.3 1.4 6.2 11 5.7 15.6 C5.2 20.2 8.1 24.2 12.3 24.2 C16.4 24.2 20 20.6 19.4 16 C18.8 11.8 13.4 2.8 12.3 1.4 Z",
+  },
+  {
+    label: "9. มีไฮไลต์มันวาว",
+    desc: "ทรงคลาสสิก + เส้นไฮไลต์โค้งด้านซ้าย ให้ดูมีมิติเหมือนของเหลว",
+    d: "M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z",
+    highlight: true,
+  },
+  {
+    label: "10. รวมทุกความอ่อนช้อย (แนะนำ)",
+    desc: "เรียวบางลื่นไหล + เอนเบาๆ + ไฮไลต์มันวาว ผสมกันในทรงเดียว",
+    d: "M12.6 1.2 C12.6 1.2 7.3 9.2 6.8 13.2 C6.4 16.4 8.8 24.6 12.6 24.6 C16.3 24.6 18.6 16.4 18.2 13.2 C17.7 9.2 12.6 1.2 12.6 1.2 Z",
+    highlight: true,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  const highlightPath = v.highlight
+    ? `<path d="M8 8.5 C6.6 11 6 14 6.3 17" stroke="#FFF7F5" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.4"/>`
+    : "";
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="screen">
+      <div class="card-icon">
+        <svg width="56" height="68" viewBox="0 0 24 24" fill="#9A3B33">
+          <path d="${v.d}"/>
+          ${highlightPath}
+          ${face}
+        </svg>
+      </div>
+    </div>
+    <div class="foot"></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

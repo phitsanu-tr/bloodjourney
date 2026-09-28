@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แบบกระพริบตา — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #F3E9E7;
+    font-family: 'Inter', sans-serif;
+    padding: 28px 16px 60px;
+  }
+  h1 {
+    font-family: 'Mitr', sans-serif;
+    font-size: 19px;
+    text-align: center;
+    color: #241A18;
+    margin: 0 0 4px;
+  }
+  .sub {
+    text-align: center;
+    font-size: 12.5px;
+    color: #8A7370;
+    margin: 0 0 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .panel {
+    background: #FBF6F5;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(122,42,35,0.10);
+  }
+  .tag {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 9px 6px;
+    background: #9A3B33;
+    color: #FFF7F5;
+  }
+  .desc {
+    font-size: 10.5px;
+    color: #8A7370;
+    text-align: center;
+    padding: 6px 10px 0;
+    line-height: 1.5;
+    min-height: 44px;
+  }
+  .screen {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-icon { width: 78px; height: 78px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 12px 26px rgba(154,59,51,0.14); display: flex; align-items: center; justify-content: center; }
+  .foot { padding: 12px 0 16px; }
+
+  .drop-svg { transform-origin: 12px 13px; }
+  .eye-l, .eye-r { transform-origin: center; }
+  .mouth { transform-origin: 12px 18px; }
+  .spark { transform-origin: center; opacity: 0; }
+
+  /* baseline gentle breathing on every variant, so it always looks alive */
+  @keyframes faceBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  .drop-svg { animation: faceBreathe 2.6s ease-in-out infinite; }
+
+  /* 1: classic single blink */
+  @keyframes blinkClassic { 0%, 82%, 100% { transform: scaleY(1); } 88% { transform: scaleY(0.12); } 94% { transform: scaleY(1); } }
+  .b1 .eye-l, .b1 .eye-r { animation: blinkClassic 3.6s ease-in-out infinite; }
+
+  /* 2: double blink */
+  @keyframes blinkDouble {
+    0%, 78%, 100% { transform: scaleY(1); }
+    82% { transform: scaleY(0.12); } 85% { transform: scaleY(1); }
+    88% { transform: scaleY(0.12); } 91% { transform: scaleY(1); }
+  }
+  .b2 .eye-l, .b2 .eye-r { animation: blinkDouble 4s ease-in-out infinite; }
+
+  /* 3: slow dreamy blink */
+  @keyframes blinkSlow { 0%, 70%, 100% { transform: scaleY(1); } 85% { transform: scaleY(0.1); } }
+  .b3 .eye-l, .b3 .eye-r { animation: blinkSlow 4.2s ease-in-out infinite; }
+
+  /* 4: alternating wink (left then right) */
+  @keyframes blinkWink { 0%, 85%, 100% { transform: scaleY(1); } 91% { transform: scaleY(0.12); } 96% { transform: scaleY(1); } }
+  .b4 .eye-l { animation: blinkWink 4.4s ease-in-out infinite; }
+  .b4 .eye-r { animation: blinkWink 4.4s ease-in-out infinite; animation-delay: 2.2s; }
+
+  /* 5: squint-then-close */
+  @keyframes blinkSquint {
+    0%, 76%, 100% { transform: scaleY(1); }
+    82% { transform: scaleY(0.55); }
+    88% { transform: scaleY(0.1); }
+    94% { transform: scaleY(1); }
+  }
+  .b5 .eye-l, .b5 .eye-r { animation: blinkSquint 3.8s ease-in-out infinite; }
+
+  /* 6: blink + sparkle on reopen */
+  .b6 .eye-l, .b6 .eye-r { animation: blinkClassic 3.6s ease-in-out infinite; }
+  @keyframes sparkPop { 0%, 90%, 100% { opacity: 0; transform: scale(0.4); } 95% { opacity: 1; transform: scale(1); } }
+  .b6 .spark { animation: sparkPop 3.6s ease-in-out infinite; }
+
+  /* 7: cascade blink (left slightly before right) */
+  .b7 .eye-l { animation: blinkClassic 3.6s ease-in-out infinite; }
+  .b7 .eye-r { animation: blinkClassic 3.6s ease-in-out infinite; animation-delay: 0.12s; }
+
+  /* 8: blink synced with smile widen */
+  .b8 .eye-l, .b8 .eye-r { animation: blinkClassic 3.6s ease-in-out infinite; }
+  @keyframes mouthSync { 0%, 82%, 100% { transform: scale(1); } 88% { transform: scale(1.15); } 94% { transform: scale(1); } }
+  .b8 .mouth { animation: mouthSync 3.6s ease-in-out infinite; }
+
+  /* 9: rapid flutter */
+  @keyframes blinkFlutter {
+    0%, 74%, 100% { transform: scaleY(1); }
+    77% { transform: scaleY(0.15); } 80% { transform: scaleY(1); }
+    83% { transform: scaleY(0.15); } 86% { transform: scaleY(1); }
+    89% { transform: scaleY(0.15); } 92% { transform: scaleY(1); }
+  }
+  .b9 .eye-l, .b9 .eye-r { animation: blinkFlutter 4s ease-in-out infinite; }
+
+  /* 10: soft fade blink (opacity glimmer, not squish) */
+  @keyframes blinkFade { 0%, 82%, 100% { opacity: 1; } 88% { opacity: 0.15; } 94% { opacity: 1; } }
+  .b10 .eye-l, .b10 .eye-r { animation: blinkFade 3.6s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drop-svg, .eye-l, .eye-r, .mouth, .spark { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <h1>แบบกระพริบตา — 10 แบบ</h1>
+  <p class="sub">ทุกแบบมีหายใจเบาๆ เป็นพื้นฐาน ต่างกันที่จังหวะ/สไตล์การกระพริบตา</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const faceSVG = (cls, withSpark) => `
+  <svg class="drop-svg ${cls}" width="40" height="49" viewBox="0 0 24 24" fill="#9A3B33">
+    <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
+    <path class="eye-l" d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <path class="eye-r" d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <circle cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+    <circle cx="17" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+    <path class="mouth" d="M9 17.6 Q12 20.4 15 17.6" stroke="#FFF7F5" stroke-width="1" fill="none" stroke-linecap="round"/>
+    ${withSpark ? `<path class="spark" d="M18 10 l0.6 1.6 1.6 0.6 -1.6 0.6 -0.6 1.6 -0.6 -1.6 -1.6 -0.6 1.6 -0.6 z" fill="#FFF7F5"/>` : ""}
+  </svg>
+`;
+
+const variants = [
+  { cls: "b1",  label: "1. กระพริบธรรมดา",     desc: "ปิด-เปิดครั้งเดียว ทุก 3.6 วิ — แบบมาตรฐาน" },
+  { cls: "b2",  label: "2. กระพริบสองครั้งติด", desc: "ปิดเปิดถี่ๆ สองจังหวะ เหมือนกระพริบสงสัยน่ารัก" },
+  { cls: "b3",  label: "3. กระพริบช้า ง่วงๆ",   desc: "หลับตาลงช้าๆ นุ่มนวล ให้ความรู้สึกผ่อนคลาย" },
+  { cls: "b4",  label: "4. ขยิบทีละข้าง",       desc: "ตาซ้าย-ขวา ขยิบสลับกันคนละจังหวะ" },
+  { cls: "b5",  label: "5. หรี่ตาก่อนปิด",      desc: "หรี่ตาลงครึ่งนึงก่อนค่อยปิดสนิท เหมือนยิ้มเขิน" },
+  { cls: "b6",  label: "6. กระพริบ+ประกาย",     desc: "มีประกายเล็กๆ วาบตอนลืมตาขึ้น" },
+  { cls: "b7",  label: "7. กระพริบลูกคลื่น",     desc: "ตาซ้ายปิดก่อนตาขวาเล็กน้อย ดูเป็นธรรมชาติ" },
+  { cls: "b8",  label: "8. กระพริบพร้อมยิ้ม",   desc: "ปากขยับยิ้มกว้างขึ้นพร้อมจังหวะกระพริบตา" },
+  { cls: "b9",  label: "9. กระพริบถี่รัว",       desc: "กระพริบรัว 3 ครั้งติดก่อนหยุดนิ่ง ขี้เล่น" },
+  { cls: "b10", label: "10. กระพริบแบบจาง",      desc: "ตาค่อยๆ จางหาย-กลับมาแทนการหุบตา ดูนุ่มนวล" },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="screen"><div class="card-icon">${faceSVG(v.cls, v.cls === 'b6')}</div></div>
+    <div class="foot"></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

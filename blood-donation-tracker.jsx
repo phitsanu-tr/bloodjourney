@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.54";
+const APP_VERSION = "1.0.55";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -6223,6 +6223,23 @@ function AppInner() {
             <p style={{ fontSize: 12, color: "#8A7370", lineHeight: 1.6, margin: "0 0 16px" }}>
               เปิดสวิตช์ของประเภทที่เคยบริจาค แล้วกรอกจำนวนครั้งทั้งหมด (รวมครั้งล่าสุด) และวันที่บริจาคล่าสุด
             </p>
+
+            {/* Soft, non-blocking nudge only -- age stays fully optional
+                everywhere else in the app (privacy-conscious by design, PDPA
+                self-assessment doc), so this never gates or forces anything.
+                Without a known age, the count caps above already fall back
+                to the full 17-70 eligibility window (still catches obviously
+                fabricated numbers) -- this just lets the donor know a real
+                age would tighten that check to their own actual situation,
+                and leaves the choice entirely to them. */}
+            {age === "" && (
+              <div style={{ display: "flex", gap: 8, background: "#F3EAE8", border: "1px solid #E9D3CE", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                <Info size={14} color="#9A3B33" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.5 }}>
+                  ยังไม่ได้กรอกอายุในโปรไฟล์ — หากกรอกไว้ ระบบจะช่วยตรวจสอบว่าจำนวนครั้งที่กรอกสมเหตุสมผลกับช่วงอายุได้แม่นยำขึ้น (ไม่บังคับ)
+                </div>
+              </div>
+            )}
 
             {[
               { key: "whole", label: "โลหิตรวม", on: quickTypeOnWhole, setOn: setQuickTypeOnWhole, draft: quickStartingCountWholeDraft, setDraft: setQuickStartingCountWholeDraft, form: quickEntryFormWhole, setForm: setQuickEntryFormWhole, countRef: quickCountInputRefWhole, dateRef: quickDateInputRefWhole, max: maxStartingCountWhole },

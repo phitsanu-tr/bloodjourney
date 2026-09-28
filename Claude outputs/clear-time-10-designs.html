@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 แบบ: ตำแหน่ง "ไม่ระบุเวลา"</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #F4EDEA;
+    font-family: 'Mitr', 'Inter', sans-serif;
+    padding: 32px 16px 80px;
+    color: #3A2C29;
+  }
+  h1 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .sub {
+    text-align: center;
+    color: #8A7370;
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .cell {
+    background: #FFF;
+    border-radius: 16px;
+    padding: 18px 16px 14px;
+    box-shadow: 0 4px 14px rgba(122,42,35,0.08);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #9A3B33;
+    background: #FBEAE7;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .desc {
+    font-size: 11.5px;
+    color: #8A7370;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  /* dialog mock */
+  .dialog {
+    background: #FFFFFF;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 12px 30px rgba(122,42,35,0.18);
+    border: 1px solid #F1E4E1;
+    position: relative;
+  }
+  .dtitle {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #3A2C29;
+    text-align: center;
+    position: relative;
+  }
+  .now-pill {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #9A3B33;
+    color: #9A3B33;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .cols {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .col-label {
+    width: 64px;
+    text-align: center;
+    font-size: 11px;
+    color: #8A7370;
+  }
+  .wheel-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .hl {
+    position: absolute;
+    left: 0; right: 0; top: 40px; height: 40px;
+    border-top: 1px solid #E3C8C3;
+    border-bottom: 1px solid #E3C8C3;
+    pointer-events: none;
+  }
+  .wcol {
+    width: 64px;
+  }
+  .wrow {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #B39B96;
+  }
+  .wrow.active {
+    font-size: 17px;
+    font-weight: 700;
+    color: #3A2C29;
+  }
+  .colon {
+    font-size: 19px;
+    font-weight: 700;
+    color: #3A2C29;
+  }
+  .btnrow {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .btn {
+    flex: 1;
+    padding: 11px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.ghost {
+    border: 1px solid #E3C8C3;
+    background: #FFFFFF;
+    color: #5C4A46;
+  }
+  .btn.solid {
+    border: none;
+    background: #9A3B33;
+    color: #FFF7F5;
+  }
+  .link {
+    display: block;
+    text-align: center;
+    background: none;
+    border: none;
+    color: #9A3B33;
+    font-size: 12px;
+    text-decoration: underline;
+    margin: 12px auto 0;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>10 แบบ: ตำแหน่ง/ดีไซน์ปุ่ม "ไม่ระบุเวลา"</h1>
+<div class="sub">ข้อความสั้นลงเป็น "ไม่ระบุเวลา" ทุกแบบ — เลือกตำแหน่ง/สไตล์ที่ชอบ</div>
+
+<div class="grid">
+
+  <!-- 1: current baseline, text simplified -->
+  <div class="cell">
+    <div class="tag">แบบ 1 · เดิม (ข้อความสั้นลง)</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+      <div class="link">ไม่ระบุเวลา</div>
+    </div>
+    <div class="desc">ตำแหน่งเดิม แค่ตัดคำว่า "ล้างเวลา" ออก เหลือ "ไม่ระบุเวลา" คำเดียว กระชับขึ้น แต่ยังเป็นลิงก์แยกอยู่ท้ายสุด</div>
+  </div>
+
+  <!-- 2: third button in the row -->
+  <div class="cell">
+    <div class="tag">แบบ 2 · ปุ่มที่ 3 ในแถวเดียวกัน</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow" style="margin-top:18px">
+        <div class="btn ghost" style="flex:0.8; font-size:11.5px; color:#9A3B33;">ไม่ระบุ</div>
+        <div class="btn ghost" style="flex:1">ยกเลิก</div>
+        <div class="btn solid" style="flex:1">ยืนยัน</div>
+      </div>
+    </div>
+    <div class="desc">รวมเป็นปุ่มที่ 3 อยู่แถวเดียวกับ ยกเลิก/ยืนยัน กดครั้งเดียวจบ ไม่ต้องเลื่อนสายตาไปหาแยกด้านล่าง</div>
+  </div>
+
+  <!-- 3: left-aligned text link next to cancel -->
+  <div class="cell">
+    <div class="tag">แบบ 3 · ลิงก์ชิดซ้ายใต้ยกเลิก</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+      <div style="text-align:left; margin-top:10px;">
+        <span style="color:#9A3B33; font-size:12px; text-decoration:underline; cursor:pointer;">ไม่ระบุเวลา</span>
+      </div>
+    </div>
+    <div class="desc">ชิดซ้ายแทนกึ่งกลาง อ่านเป็นทางเลือกเสริมท้ายสุด (แบบ "secondary action") ไม่แย่งความสนใจจากปุ่มหลัก</div>
+  </div>
+
+  <!-- 4: swap with "ตอนนี้" chip in header -->
+  <div class="cell">
+    <div class="tag">แบบ 4 · สลับตำแหน่งกับ "ตอนนี้"</div>
+    <div class="dialog">
+      <div class="dtitle" style="text-align:center">เลือกเวลาบริจาคโลหิต</div>
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
+        <span class="now-pill" style="position:static; transform:none;">ตอนนี้</span>
+        <span class="now-pill" style="position:static; transform:none; border-color:#D9C7C3; color:#8A7370;">ไม่ระบุ</span>
+      </div>
+      <div class="cols" style="margin-top:14px"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+    </div>
+    <div class="desc">ย้าย "ไม่ระบุ" ขึ้นไปคู่กับ "ตอนนี้" เป็นชิปคู่กันใต้หัวข้อ — สองทางเลือกด่วนอยู่ด้วยกัน</div>
+  </div>
+
+  <!-- 5: small x icon overlapping the value display -->
+  <div class="cell">
+    <div class="tag">แบบ 5 · ไอคอน "×" ที่ตัวเลข</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+        <div style="position:absolute; right:-6px; top:38px; width:22px; height:22px; border-radius:50%; background:#F4EDEA; color:#9A3B33; font-size:13px; display:flex; align-items:center; justify-content:center; font-weight:700;">×</div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+    </div>
+    <div class="desc">ปุ่มกลมเล็ก "×" แปะข้างตัวเลขโดยตรง สื่อว่า "ล้างค่านี้" ชัดเจนแบบเดียวกับช่อง input ทั่วไป แต่ต้องแม่นในการแตะบนจอเล็ก</div>
+  </div>
+
+  <!-- 6: footer note style, small muted text without underline -->
+  <div class="cell">
+    <div class="tag">แบบ 6 · ข้อความเรียบไม่มีขีดเส้นใต้</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+      <div style="text-align:center; margin-top:12px; font-size:11.5px; color:#B39B96; cursor:pointer;">ไม่ระบุเวลา</div>
+    </div>
+    <div class="desc">ตัดขีดเส้นใต้ออก ใช้สีจางกว่าแทน อ่านเป็น "ตัวเลือกรอง" แบบนุ่มนวล ไม่แข่งกับปุ่มยืนยัน</div>
+  </div>
+
+  <!-- 7: toggle switch at top -->
+  <div class="cell">
+    <div class="tag">แบบ 7 · สวิตช์ "ระบุเวลา" ด้านบน</div>
+    <div class="dialog">
+      <div class="dtitle" style="margin-bottom:12px;">เลือกเวลาบริจาคโลหิต</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:#FBF6F5; border-radius:10px; margin-bottom:12px;">
+        <span style="font-size:12.5px; color:#5C4A46;">ระบุเวลา</span>
+        <span style="width:36px; height:20px; border-radius:999px; background:#9A3B33; position:relative; display:inline-block;">
+          <span style="position:absolute; right:2px; top:2px; width:16px; height:16px; border-radius:50%; background:#fff;"></span>
+        </span>
+      </div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+    </div>
+    <div class="desc">กลับหัวความคิด: ปิดสวิตช์ "ระบุเวลา" แล้ววงล้อจะจางลง/ปิดใช้งานทันที ชัดเจนว่ากำลังจะไม่บันทึกเวลา แทนที่จะกดล้างทีหลัง</div>
+  </div>
+
+  <!-- 8: combined with confirm button (secondary variant of confirm) -->
+  <div class="cell">
+    <div class="tag">แบบ 8 · ปุ่มรองใต้ปุ่มยืนยัน</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+      <div class="btn ghost" style="margin-top:10px; border-style:dashed; color:#9A3B33; border-color:#E3C8C3;">บันทึกแบบไม่ระบุเวลา</div>
+    </div>
+    <div class="desc">เพิ่มเป็นปุ่มเต็มความกว้างเส้นประใต้แถวหลัก อธิบายชัดว่ากดแล้วจะ "บันทึกแบบไม่ระบุเวลา" ทันที ไม่ต้องเข้าใจว่าเป็นการล้างค่าก่อน</div>
+  </div>
+
+  <!-- 9: inline right next to hour/minute label row -->
+  <div class="cell">
+    <div class="tag">แบบ 9 · ลิงก์เล็กมุมขวาแถวป้ายกำกับ</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+        <div style="width:64px"></div>
+        <span style="color:#9A3B33; font-size:11px; text-decoration:underline; cursor:pointer;">ไม่ระบุเวลา</span>
+      </div>
+      <div class="wheel-wrap" style="margin-top:6px;"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+    </div>
+    <div class="desc">ซ่อนป้าย ชั่วโมง/นาที ไว้ แล้วแทนที่ด้วยลิงก์เล็กมุมขวาแถวเดียวกัน อยู่ใกล้ตัวเลือกวงล้อ แต่ไม่แย่งพื้นที่ด้านล่าง</div>
+  </div>
+
+  <!-- 10: bottom sheet style pill row, both quick actions -->
+  <div class="cell">
+    <div class="tag">แบบ 10 · แถบปุ่มด่วนล่างสุด (แนะนำ)</div>
+    <div class="dialog">
+      <div class="dtitle">เลือกเวลาบริจาคโลหิต<span class="now-pill">ตอนนี้</span></div>
+      <div class="cols"><div class="col-label">ชั่วโมง</div><div style="width:10px"></div><div class="col-label">นาที</div></div>
+      <div class="wheel-wrap"><div class="hl"></div>
+        <div class="wcol"><div class="wrow active">08</div></div><div class="colon">:</div>
+        <div class="wcol"><div class="wrow active">30</div></div>
+      </div>
+      <div class="btnrow"><div class="btn ghost">ยกเลิก</div><div class="btn solid">ยืนยัน</div></div>
+      <div style="display:flex; justify-content:center; margin-top:10px;">
+        <span style="color:#9A3B33; font-size:12px; font-weight:600; padding:6px 14px; border-radius:999px; background:#FBEAE7; cursor:pointer;">ไม่ระบุเวลา</span>
+      </div>
+    </div>
+    <div class="desc">เป็นชิปพื้นสีอ่อนแทนลิงก์ขีดเส้นใต้ ชัดเจนว่าเป็นปุ่มกดได้ อยู่ตรงกลางเหมือนเดิมแต่ดูตั้งใจออกแบบมากกว่าลิงก์เปล่า ๆ</div>
+  </div>
+
+</div>
+
+</body>
+</html>

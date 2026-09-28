@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>หน้าหลัก — 10 แบบยุคเน็ตยุคแรก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Tahoma&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #008080; font-family: Verdana, sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Press Start 2P', monospace; font-size: 15px; text-align: center; margin: 0 0 10px; color: #FFFF00; text-shadow: 2px 2px 0 #000; }
+  .sub { text-align: center; font-size: 12px; color: #FFF7F5; margin: 0 0 30px; font-family: Verdana, sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 1080px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #C0C0C0; border-radius: 0; overflow: hidden; box-shadow: 0 8px 22px rgba(0,0,0,0.4); border: 2px solid #000; }
+  .tag { text-align: center; font-size: 10px; font-weight: 700; padding: 8px 6px; background: #000080; color: #FFFF00; font-family: 'Press Start 2P', monospace; line-height:1.6; }
+  .desc { font-size: 10.5px; color: #241A18; text-align: center; padding: 8px 10px 0; line-height: 1.5; min-height: 64px; font-family: Verdana, sans-serif; background:#C0C0C0; }
+  .phone { width: 100%; aspect-ratio: 9/17.5; margin-top: 10px; overflow: hidden; position: relative; }
+  .phone-inner { position: absolute; inset: 0; overflow: hidden; padding: 10px; }
+  .ph-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .ph-logo { width:18px; height:18px; background:#9A3B33; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .ph-title { font-size:9px; font-weight:700; }
+  .ph-sub { font-size:6.5px; }
+  marquee { display:block; }
+</style>
+</head>
+<body>
+  <h1>&lt;html&gt; ยุคเน็ตเริ่มต้น &lt;/html&gt;</h1>
+  <p class="sub">สไตล์เว็บ 1.0 / GeoCities / Windows 95 — ย้อนยุคเต็มขั้น 10 แบบ (ข้อมูลตัวอย่างเดียวกัน: 15 ครั้ง, อีก 11 วัน)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const DROP = (fill, w=14,h=17) => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="${fill}"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const HEADER = (c='#000') => `<div class="ph-header"><div class="ph-logo">${DROP('#FFF',9,11)}</div><div><div class="ph-title" style="color:${c}">Blood Journey</div><div class="ph-sub" style="color:${c}">บันทึกบริจาคโลหิต</div></div></div>`;
+const BUTTON3D = (bg='#C0C0C0',text='#000') => `<button style="width:100%;margin-top:8px;padding:8px;background:${bg};border:2px outset #FFF;font-family:'Tahoma',sans-serif;font-size:9px;font-weight:700;color:${text};cursor:pointer;">+ บันทึกบริจาคโลหิต</button>`;
+const RAINBOW_HR = `<div style="height:3px;background:linear-gradient(90deg,red,orange,yellow,green,blue,indigo,violet);margin:6px 0;"></div>`;
+
+const variants = [
+  {
+    label: "1. GEOCITIES STYLE",
+    desc: "พื้นหลังลายกระเบื้องดาว ตัวอักษร Comic Sans สีสันจัดจ้าน มีเส้นรุ้งคั่น badge 'New!' กระพริบ แบบเว็บส่วนตัวยุค 1998",
+    body: `
+      <div style="background:#000033 url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22%3E%3Ctext x=%220%22 y=%2210%22 font-size=%228%22 fill=%22%23FFFF00%22%3E★%3C/text%3E%3C/svg%3E');padding:8px;border:3px ridge #FF00FF;">
+        <div style="text-align:center;font-family:'Comic Sans MS',cursive;font-size:11px;color:#00FFFF;text-shadow:1px 1px 0 #FF00FF;">✦ Blood Journey ✦</div>
+        ${RAINBOW_HR}
+        <div style="text-align:center;color:#FFFF00;font-family:'Comic Sans MS',cursive;font-size:9px;">บริจาคแล้ว <b style="color:#00FF00;">15</b> ครั้ง!!</div>
+        <div style="text-align:center;color:#FF66FF;font-size:7px;font-family:'Comic Sans MS',cursive;">*~*~ ครบกำหนดอีก 11 วัน ~*~*</div>
+        <div style="text-align:center;margin-top:6px;"><span style="background:#FF0000;color:#FFFF00;font-size:7px;padding:2px 6px;border-radius:8px;font-weight:700;">☆NEW☆</span></div>
+        ${BUTTON3D('#FF00FF','#FFFF00')}
+      </div>`,
+  },
+  {
+    label: "2. WINDOWS 95 WINDOW",
+    desc: "จำลองหน้าต่างโปรแกรมวินโดวส์ 95 เต็มรูปแบบ มีแถบชื่อเรื่องสีน้ำเงิน ปุ่ม _ ☐ ✕ และปุ่ม 3 มิตินูนแบบคลาสสิก",
+    body: `
+      <div style="background:#C0C0C0;border:2px outset #FFF;">
+        <div style="background:linear-gradient(90deg,#000080,#1084D0);color:#FFF;font-family:Tahoma,sans-serif;font-size:9px;font-weight:700;padding:3px 5px;display:flex;justify-content:space-between;align-items:center;">
+          <span>bloodjourney.exe</span>
+          <span style="display:flex;gap:2px;"><span style="background:#C0C0C0;border:1px outset #FFF;width:12px;height:11px;text-align:center;color:#000;font-size:8px;line-height:10px;">_</span><span style="background:#C0C0C0;border:1px outset #FFF;width:12px;height:11px;text-align:center;color:#000;font-size:8px;line-height:10px;">✕</span></span>
+        </div>
+        <div style="padding:8px;">
+          ${HEADER('#000')}
+          <div style="border:2px inset #FFF;background:#FFF;padding:6px;font-family:Tahoma,sans-serif;font-size:9px;">
+            บริจาคโลหิตสะสม: <b>15</b> ครั้ง<br/>ครบกำหนดถัดไป: อีก 11 วัน
+          </div>
+          ${BUTTON3D()}
+        </div>
+      </div>`,
+  },
+  {
+    label: "3. HIT COUNTER PAGE",
+    desc: "ตัวนับผู้เข้าชมแบบดิจิทัล 7 หลักคลาสสิกที่ทุกเว็บยุค 90 ต้องมี ใช้แทนจำนวนครั้งบริจาค พื้นหลังดำ ตัวอักษรเขียวจอเทอร์มินัล",
+    body: `
+      <div style="background:#000;border:2px solid #00FF00;padding:10px;text-align:center;">
+        ${HEADER('#00FF00')}
+        <div style="font-family:Verdana;font-size:7px;color:#00FF00;margin-top:6px;">จำนวนครั้งที่บริจาคแล้ว:</div>
+        <div style="display:flex;justify-content:center;gap:2px;margin:6px 0;">
+          ${'0000015'.split('').map(d=>`<span style="background:#001A00;border:1px solid #00FF00;color:#00FF00;font-family:'VT323',monospace;font-size:16px;padding:1px 3px;">${d}</span>`).join('')}
+        </div>
+        <div style="font-family:Verdana;font-size:6.5px;color:#00FF00;">ครบกำหนดครั้งถัดไป: T-11 DAYS</div>
+        ${BUTTON3D('#001A00','#00FF00')}
+      </div>`,
+  },
+  {
+    label: "4. AOL DIAL-UP WELCOME",
+    desc: "หน้าต้อนรับสไตล์ AOL/ผู้ให้บริการอินเทอร์เน็ตยุคโมเด็ม ไอคอนซองจดหมายใหญ่ ปุ่มโตอ่านง่าย ฟอนต์กลมมิตรภาพ",
+    body: `
+      <div style="background:linear-gradient(180deg,#FFFFFF,#CCE5FF);border:3px solid #003399;padding:10px;text-align:center;">
+        <div style="font-family:Verdana;font-weight:700;font-size:12px;color:#003399;">ยินดีต้อนรับ!</div>
+        <div style="font-size:24px;margin:6px 0;">📬</div>
+        <div style="font-family:Verdana;font-size:9px;color:#003399;">คุณมีบันทึกบริจาค <b>15</b> ฉบับ!</div>
+        <div style="font-family:Verdana;font-size:7px;color:#006600;margin-top:4px;">◉ ครบกำหนดครั้งถัดไปในอีก 11 วัน</div>
+        ${BUTTON3D('#FFCC00','#003399')}
+      </div>`,
+  },
+  {
+    label: "5. TABLE LAYOUT + BLUE LINKS",
+    desc: "จัดวางแบบตารางเก่า ฟอนต์ Times New Roman ลิงก์สีน้ำเงินขีดเส้นใต้ พื้นหลังขาวล้วน แบบเว็บไซต์มหาวิทยาลัย/หน่วยงานยุค 1996",
+    body: `
+      <div style="background:#FFF;border:1px solid #000;padding:8px;font-family:'Times New Roman',serif;">
+        <div style="text-align:center;font-size:13px;font-weight:700;text-decoration:underline;">Blood Journey Homepage</div>
+        ${RAINBOW_HR}
+        <table style="width:100%;font-size:9px;border-collapse:collapse;">
+          <tr><td style="padding:3px;">จำนวนครั้งบริจาค:</td><td style="padding:3px;font-weight:700;">15</td></tr>
+          <tr><td style="padding:3px;">ครบกำหนดถัดไป:</td><td style="padding:3px;font-weight:700;">11 วัน</td></tr>
+        </table>
+        <div style="margin-top:6px;font-size:8px;">
+          <a href="#" style="color:#0000EE;text-decoration:underline;">» บันทึกบริจาคโลหิต</a><br/>
+          <a href="#" style="color:#551A8B;text-decoration:underline;">» ดูประวัติทั้งหมด</a>
+        </div>
+      </div>`,
+  },
+  {
+    label: "6. GUESTBOOK / WEBRING",
+    desc: "สไตล์สมุดเยี่ยม (guestbook) พร้อมตรา Web Ring ท้ายหน้า กรอบเส้นประ ตัวอักษรพาสเทล กลิ่นอายเว็บส่วนตัววัยรุ่นยุค 2000",
+    body: `
+      <div style="background:#FFE4F1;border:2px dashed #FF69B4;padding:8px;text-align:center;">
+        ${HEADER('#C71585')}
+        <div style="font-family:'Comic Sans MS',cursive;font-size:9px;color:#C71585;margin-top:4px;">✿ สมุดบันทึกของฉัน ✿</div>
+        <div style="font-family:'Comic Sans MS',cursive;font-size:10px;color:#8B008B;font-weight:700;margin:4px 0;">บริจาคแล้ว 15 ครั้งจ้า~</div>
+        <div style="font-family:'Comic Sans MS',cursive;font-size:7px;color:#8B008B;">อีก 11 วันค่อยมาใหม่นะ :)</div>
+        ${BUTTON3D('#FF69B4','#FFF')}
+        <div style="margin-top:6px;font-size:6px;color:#8B008B;font-family:Verdana;">« WebRing » | Sign my Guestbook</div>
+      </div>`,
+  },
+  {
+    label: "7. ASCII TERMINAL",
+    desc: "หน้าจอเทอร์มินัลข้อความล้วนสไตล์ BBS/MS-DOS ใช้กรอบ ASCII วาดกล่อง ตัวอักษรเขียวบนพื้นดำ ให้ความรู้สึกแฮกเกอร์ยุคก่อนกราฟิก",
+    body: `
+      <div style="background:#000;padding:8px;font-family:'VT323',monospace;color:#00FF00;font-size:11px;line-height:1.35;">
+        +==========================+<br/>
+        &nbsp;BLOOD JOURNEY SYSTEM v1.0<br/>
+        +==========================+<br/>
+        &gt; TOTAL DONATIONS.....: 15<br/>
+        &gt; NEXT ELIGIBLE.......: 11d<br/>
+        &gt; STATUS..............: OK_<br/>
+        +==========================+<br/>
+        <div style="margin-top:4px;background:#00FF00;color:#000;text-align:center;padding:3px;">[ ENTER TO LOG DONATION ]</div>
+      </div>`,
+  },
+  {
+    label: "8. YAHOO! DIRECTORY STYLE",
+    desc: "จำลองหน้าพอร์ทัล/ไดเรกทอรียุคแรกของอินเทอร์เน็ต แถบสีม่วง-แดงสด รายการหมวดหมู่แบบลิงก์เรียงบรรทัด",
+    body: `
+      <div style="background:#FFF;border:1px solid #999;">
+        <div style="background:#6001D2;color:#FFF;padding:6px 8px;font-family:Verdana;font-weight:700;font-size:10px;">Blood Journey!</div>
+        <div style="padding:8px;font-family:Verdana;font-size:8.5px;">
+          <div style="color:#0000EE;text-decoration:underline;padding:3px 0;border-bottom:1px solid #EEE;">▸ สถิติของฉัน (15 ครั้ง)</div>
+          <div style="color:#0000EE;text-decoration:underline;padding:3px 0;border-bottom:1px solid #EEE;">▸ ครบกำหนดถัดไป (11 วัน)</div>
+          <div style="color:#0000EE;text-decoration:underline;padding:3px 0;">▸ บันทึกบริจาคโลหิตใหม่</div>
+        </div>
+        ${BUTTON3D('#FF0000','#FFF')}
+      </div>`,
+  },
+  {
+    label: "9. UNDER CONSTRUCTION",
+    desc: "ธีมป้าย 'กำลังก่อสร้าง' สีเหลืองดำลายทางคลาสสิก พร้อมไอคอนคนงานขุดถนน สื่อว่าเป็นบันทึกที่ยังเติบโตต่อไปเรื่อยๆ",
+    body: `
+      <div style="background:#FFF;border:2px solid #000;">
+        <div style="background:repeating-linear-gradient(45deg,#FFCC00,#FFCC00 8px,#000 8px,#000 16px);height:14px;"></div>
+        <div style="padding:8px;text-align:center;">
+          ${HEADER('#000')}
+          <div style="font-size:20px;margin:4px 0;">🚧</div>
+          <div style="font-family:Verdana;font-weight:700;font-size:10px;">บันทึกแล้ว 15 ครั้ง</div>
+          <div style="font-family:Verdana;font-size:7px;color:#666;">หน้านี้กำลังก่อสร้างต่อ... อีก 11 วัน</div>
+        </div>
+        <div style="background:repeating-linear-gradient(45deg,#FFCC00,#FFCC00 8px,#000 8px,#000 16px);height:14px;"></div>
+        ${BUTTON3D()}
+      </div>`,
+  },
+  {
+    label: "10. STARFIELD PERSONAL PAGE",
+    desc: "พื้นหลังท้องฟ้าดาวระยิบระยับสไตล์โฮมเพจส่วนตัวยุคแรก ตัวอักษรนีออนสีสด กรอบขาวเรืองแสง ให้ความรู้สึกจักรวาลไซเบอร์เก่า",
+    body: `
+      <div style="background:#000014;padding:10px;position:relative;overflow:hidden;border:2px solid #00FFFF;">
+        ${Array.from({length:26}).map(()=>`<div style="position:absolute;width:1.5px;height:1.5px;background:#FFF;left:${Math.random()*100}%;top:${Math.random()*100}%;"></div>`).join('')}
+        <div style="position:relative;text-align:center;">
+          <div style="font-family:'Comic Sans MS',cursive;font-size:12px;color:#00FFFF;text-shadow:0 0 6px #00FFFF;">☆ Blood Journey ☆</div>
+          <div style="font-family:'Comic Sans MS',cursive;font-size:16px;color:#FF00FF;text-shadow:0 0 8px #FF00FF;margin:6px 0;">15 ครั้ง</div>
+          <div style="font-family:'Comic Sans MS',cursive;font-size:7px;color:#FFFF00;">✧ ครบกำหนดอีก 11 วัน ✧</div>
+        </div>
+        ${BUTTON3D('#FF00FF','#FFFF00')}
+      </div>`,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="phone"><div class="phone-inner">${v.body}</div></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

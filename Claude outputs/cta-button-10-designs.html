@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ปุ่มบันทึกบริจาคโลหิต — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 30px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-width: 1180px; margin: 0 auto; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 620px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 46px; }
+  .stage { flex: 1; padding: 22px 16px 24px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 130px; }
+  .card-bg { position: absolute; inset: 10px; border-radius: 14px; background: #F3EAE8; opacity: 0.5; }
+</style>
+</head>
+<body>
+  <h1>ปุ่ม "บันทึกบริจาคโลหิต" แบบใหม่ — 10 แบบ</h1>
+  <p class="sub">ทางเลือกแทนปุ่มยาวเต็มความกว้างเดิม ที่ผู้ใช้รู้สึกว่า "ลก ๆ" (หนักสายตา)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const PLUS = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+const DROP = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const CHEVRON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
+
+const grid = document.getElementById('grid');
+
+const variants = [
+  {
+    label: "1. พิล ไม่เต็มความกว้าง",
+    desc: "รูปทรงเดิม (ไอคอน+ข้อความ) แต่ลดความกว้างลงเหลือเท่าเนื้อหา จัดกึ่งกลาง ไม่ปาดเต็มจอ ลดความรู้สึก 'หนัก'",
+    render: () => `
+      <button style="display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:999px;border:none;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 10px 22px -6px rgba(122,42,35,0.55);color:#FFF7F5;font-family:'Mitr','Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        ${PLUS}บันทึกบริจาคโลหิต
+      </button>`,
+  },
+  {
+    label: "2. FAB วงกลมมุมขวาล่าง",
+    desc: "ปุ่มลอยวงกลม ไอคอน + เท่านั้น ลอยเหนือเนื้อหาตลอดการเลื่อน แตะเพื่อเปิดฟอร์ม คุ้นเคยจากแอป Gmail/Material Design",
+    render: () => `
+      <div style="position:relative;width:100%;height:100px;">
+        <div style="position:absolute;bottom:0;right:6px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 10px 22px -4px rgba(122,42,35,0.55);display:flex;align-items:center;justify-content:center;color:#FFF7F5;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>`,
+  },
+  {
+    label: "3. การ์ดแถวรายการ + ลูกศร",
+    desc: "ดูเป็น 'เมนู' มากกว่าปุ่ม ไอคอนอยู่ในวงกลม พื้นหลังการ์ดขาว มีเส้นขอบบาง ลูกศรบอกว่าแตะแล้วไปต่อ เข้าชุดกับการ์ดรายการอื่นในหน้าแรก",
+    render: () => `
+      <div style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#FFFFFF;border:1px solid #EEDEDA;box-shadow:0 4px 14px rgba(122,42,35,0.06);cursor:pointer;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);display:flex;align-items:center;justify-content:center;color:#FFF7F5;flex-shrink:0;">${PLUS}</div>
+        <div style="flex:1;font-family:'Mitr','Inter',sans-serif;font-size:13.5px;font-weight:600;color:#3A2C29;">บันทึกบริจาคโลหิต</div>
+        <div style="color:#B39B96;">${CHEVRON}</div>
+      </div>`,
+  },
+  {
+    label: "4. ไอคอนวงกลมลอยซ้อนขอบพิล",
+    desc: "วงกลมไอคอนทึบลอยซ้อนขอบซ้ายของแคปซูลข้อความสีอ่อน ให้ความรู้สึกเบากว่าปุ่มไล่เฉดเต็มตัว",
+    render: () => `
+      <div style="display:inline-flex;align-items:center;">
+        <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 8px 18px -4px rgba(122,42,35,0.5);display:flex;align-items:center;justify-content:center;color:#FFF7F5;z-index:1;flex-shrink:0;">${PLUS}</div>
+        <div style="margin-left:-16px;padding:11px 20px 11px 28px;border-radius:999px;background:#F3EAE8;color:#7A3128;font-family:'Mitr','Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">บันทึกบริจาคโลหิต</div>
+      </div>`,
+  },
+  {
+    label: "5. กรอบเปล่า (outline / ghost)",
+    desc: "เส้นขอบสีแดงบาง ไม่มีพื้นหลังทึบ เบาสายตาที่สุดในกลุ่ม เหมาะถ้าอยากลดน้ำหนักภาพรวมของหน้า",
+    render: () => `
+      <button style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:999px;border:1.5px solid #9A3B33;background:#FFFFFF;color:#9A3B33;font-family:'Mitr','Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        ${PLUS}บันทึกบริจาคโลหิต
+      </button>`,
+  },
+  {
+    label: "6. ไทล์สี่เหลี่ยมมน ไอคอนบน-ข้อความล่าง",
+    desc: "จัตุรัสมนขนาดกะทัดรัด ไอคอนใหญ่ด้านบน ป้ายข้อความเล็กด้านล่าง คล้ายปุ่มลัดในแอป ให้ความรู้สึก 'การ์ดเดียว' ไม่ใช่แถบยาว",
+    render: () => `
+      <div style="width:112px;padding:16px 10px;border-radius:20px;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 10px 22px -6px rgba(122,42,35,0.5);display:flex;flex-direction:column;align-items:center;gap:8px;color:#FFF7F5;cursor:pointer;">
+        <div style="width:34px;height:34px;border-radius:11px;background:rgba(255,247,245,0.18);display:flex;align-items:center;justify-content:center;">${PLUS}</div>
+        <div style="font-family:'Mitr','Inter',sans-serif;font-size:11.5px;font-weight:600;text-align:center;line-height:1.3;">บันทึก<br/>บริจาคโลหิต</div>
+      </div>`,
+  },
+  {
+    label: "7. FAB แบบขยาย (extended FAB)",
+    desc: "ลอยมุมขวาล่างเหมือนแบบ 2 แต่มีข้อความกำกับ อ่านชัดกว่า FAB ล้วน โดยยังคง 'ลอย' ไม่ใช่แถบเต็มจอ",
+    render: () => `
+      <div style="position:relative;width:100%;height:100px;">
+        <button style="position:absolute;bottom:0;right:0;display:flex;align-items:center;gap:8px;padding:14px 22px;border-radius:999px;border:none;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 10px 24px -4px rgba(122,42,35,0.55);color:#FFF7F5;font-family:'Mitr','Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">
+          ${PLUS}บันทึกบริจาค
+        </button>
+      </div>`,
+  },
+  {
+    label: "8. ปุ่มแบ่งโซน (split button)",
+    desc: "โซนไอคอนซ้ายกับโซนข้อความขวาคั่นด้วยเส้นจาง ทั้งก้อนยังเป็นปุ่มเดียวกด ได้ทั้งแถบ แต่สายตาแยกฟังก์ชัน 'เพิ่ม' ออกจากป้ายชื่อ",
+    render: () => `
+      <button style="display:inline-flex;align-items:stretch;border-radius:14px;border:none;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 8px 20px -6px rgba(122,42,35,0.5);color:#FFF7F5;font-family:'Mitr','Inter',sans-serif;overflow:hidden;cursor:pointer;">
+        <span style="display:flex;align-items:center;justify-content:center;padding:12px 14px;border-right:1px solid rgba(255,247,245,0.25);">${PLUS}</span>
+        <span style="display:flex;align-items:center;padding:12px 18px;font-size:13.5px;font-weight:600;">บันทึกบริจาคโลหิต</span>
+      </button>`,
+  },
+  {
+    label: "9. การ์ดเส้นประ (dashed, สไตล์ 'เพิ่มใหม่')",
+    desc: "กรอบเส้นประแบบที่ใช้บอก 'ช่องว่างรอเพิ่มรายการ' ในหลายแอป ให้ความรู้สึกเชิญชวนแบบนุ่มนวล ไม่ใช่คำสั่งหนักแน่น",
+    render: () => `
+      <div style="width:100%;padding:16px;border-radius:14px;border:1.5px dashed #D9A9A2;background:#FBF3F1;display:flex;align-items:center;justify-content:center;gap:8px;color:#9A3B33;font-family:'Mitr','Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">
+        ${PLUS}บันทึกบริจาคโลหิต
+      </div>`,
+  },
+  {
+    label: "10. ไอคอนวงกลม + ลิงก์ข้อความใต้ปุ่ม",
+    desc: "ปุ่มไอคอนกลมล้วน ตรงกลาง มีข้อความกำกับเล็กๆ อยู่ใต้ปุ่มแยกต่างหาก (ไม่รวมในปุ่มเดียวกัน) ให้ความรู้สึกเป็นจุด 'เริ่มต้น' ของหน้า",
+    render: () => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:9px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#B24A40 0%,#8A2F28 100%);box-shadow:0 10px 22px -6px rgba(122,42,35,0.5);display:flex;align-items:center;justify-content:center;color:#FFF7F5;cursor:pointer;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:#7A6360;">บันทึกบริจาคโลหิต</div>
+      </div>`,
+  },
+];
+
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="stage">${v.render()}</div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

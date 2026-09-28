@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ตัวเลือกข้อความหน้าโหลด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; color: #241A18; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 900px; margin: 0 auto; }
+  @media (max-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 6px 12px 0; line-height: 1.5; min-height: 44px; }
+  .screen { padding: 30px 14px 26px; display: flex; flex-direction: column; align-items: center; }
+  .icon { width: 60px; height: 60px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 10px 22px rgba(154,59,51,0.14); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .title { font-size: 19px; font-weight: 800; color: #241A18; text-align: center; font-family: 'Mitr', 'Inter', sans-serif; }
+  .subtitle { font-size: 11.5px; font-weight: 500; color: #9A8580; text-align: center; font-family: 'Mitr', 'Inter', sans-serif; }
+</style>
+</head>
+<body>
+  <h1>ตัวเลือกข้อความหัวเรื่อง/รองหัวเรื่อง — 6 แบบ</h1>
+  <p class="sub">ทดลองคำ/การจัดวางแบบต่างๆ เพื่อแก้ความรู้สึก "ไม่สมมาตร" จากสระลอยของภาษาไทย</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const dropSVG = `<svg width="34" height="41" viewBox="0 0 24 24" fill="#9A3B33">
+  <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
+  <path d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <path d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+  <circle cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+  <circle cx="17" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+  <path d="M9 17.6 Q12 20.4 15 17.6" stroke="#FFF7F5" stroke-width="1" fill="none" stroke-linecap="round"/>
+</svg>`;
+
+const variants = [
+  {
+    label: "1. เดิม (ปัจจุบัน)",
+    desc: "บันทึกบริจาคโลหิต — ใช้เทียบฐาน",
+    sub: "บันทึกบริจาคโลหิต",
+    subStyle: "",
+  },
+  {
+    label: "2. เพิ่ม letter-spacing",
+    desc: "คำเดิม แต่ถ่างระยะตัวอักษรเล็กน้อย ช่วยให้สระกระจายตัวดูสมดุลขึ้น",
+    sub: "บันทึกบริจาคโลหิต",
+    subStyle: "letter-spacing: 0.06em;",
+  },
+  {
+    label: "3. คำเต็มเดิม",
+    desc: "บันทึกการบริจาคโลหิต — คำยาวขึ้น สมดุลกว่าเพราะกระจายทั้งสองฝั่งเท่ากันมากขึ้น",
+    sub: "บันทึกการบริจาคโลหิต",
+    subStyle: "",
+  },
+  {
+    label: "4. เว้นวรรคแบ่งความหมาย",
+    desc: "แบ่งเป็นสองคำสั้นด้วยจุด ให้จังหวะอ่านและมองเห็นสมดุลเป็นสองฝั่ง",
+    sub: "บันทึก · บริจาคโลหิต",
+    subStyle: "",
+  },
+  {
+    label: "5. ระยะห่างหัวข้อมากขึ้น",
+    desc: "คำเดิม แต่เพิ่มช่องไฟระหว่างหัวเรื่องกับรองหัวเรื่อง ให้แต่ละบรรทัดมีพื้นที่ของตัวเอง ลดการเทียบกัน",
+    sub: "บันทึกบริจาคโลหิต",
+    subStyle: "",
+    extraGap: true,
+  },
+  {
+    label: "6. ตัวหนาขึ้นเล็กน้อย",
+    desc: "เพิ่มน้ำหนักตัวอักษรจาก 500 เป็น 600 ให้รองหัวเรื่องมีน้ำหนักสายตาใกล้เคียงหัวเรื่องมากขึ้น",
+    sub: "บันทึกบริจาคโลหิต",
+    subStyle: "font-weight: 600;",
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="screen">
+      <div class="icon">${dropSVG}</div>
+      <div class="title" style="margin-bottom: ${v.extraGap ? '12px' : '4px'};">Blood Journey</div>
+      <div class="subtitle" style="${v.subStyle}">${v.sub}</div>
+    </div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Journey — ไอคอนหยดยิ้ม 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #FBF6F5;
+    color: #241A18;
+    font-family: 'Inter', sans-serif;
+    padding: 32px 20px 60px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 36px; }
+  header h1 {
+    font-family: 'Mitr', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  header p { font-size: 13.5px; color: #8A7370; margin: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .card {
+    background: #FFFFFF;
+    border: 1px solid #F0DEDA;
+    border-radius: 18px;
+    padding: 18px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .icon-box {
+    width: 84px;
+    height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card .num {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #9A3B33;
+    background: rgba(154,59,51,0.08);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .card .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ไอคอนหยดเลือดยิ้ม — 10 แบบ</h1>
+    <p>ทุกแบบใช้โทนสีเดียวกับแอป (#9A3B33) ปรับเฉพาะหน้าตา — บอกเลขที่ชอบได้เลย</p>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const W = 96, H = 116;
+// shared droplet path (same silhouette as the app's mark)
+const dropPath = "M48 4 C48 4 8 54 8 78 C8 100 26 116 48 116 C70 116 88 100 88 78 C88 54 48 4 48 4 Z";
+
+function dropSVG(faceSVG, grad) {
+  return `<svg width="84" height="102" viewBox="0 0 96 116" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${grad.id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${grad.from}"/>
+        <stop offset="100%" stop-color="${grad.to}"/>
+      </linearGradient>
+    </defs>
+    <path d="${dropPath}" fill="url(#${grad.id})"/>
+    ${faceSVG}
+  </svg>`;
+}
+
+const maroon = { from: "#B14B41", to: "#7A241D" };
+const cream = "#FFF3EF";
+
+const variants = [
+  {
+    label: "ยิ้มโค้งคลาสสิก (ต้นแบบ)",
+    grad: { id: "g1", ...maroon },
+    face: `
+      <circle cx="34" cy="72" r="3.2" fill="${cream}"/>
+      <circle cx="62" cy="72" r="3.2" fill="${cream}"/>
+      <path d="M32 84 Q48 96 64 84" stroke="${cream}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "ขยิบตา",
+    grad: { id: "g2", ...maroon },
+    face: `
+      <path d="M29 72 Q34 66 39 72" stroke="${cream}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="62" cy="72" r="3.2" fill="${cream}"/>
+      <path d="M32 84 Q48 97 65 82" stroke="${cream}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "ตากลมโต ยิ้มกว้าง",
+    grad: { id: "g3", ...maroon },
+    face: `
+      <circle cx="34" cy="70" r="4.6" fill="${cream}"/>
+      <circle cx="62" cy="70" r="4.6" fill="${cream}"/>
+      <circle cx="35.5" cy="68.5" r="1.6" fill="#7A241D"/>
+      <circle cx="63.5" cy="68.5" r="1.6" fill="#7A241D"/>
+      <path d="M31 83 Q48 99 65 83" stroke="${cream}" stroke-width="4.2" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "ยิ้มแก้มยุ้ย (ตาปิด+แก้มแดง)",
+    grad: { id: "g4", ...maroon },
+    face: `
+      <path d="M29 73 Q34 67 39 73" stroke="${cream}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <path d="M57 73 Q62 67 67 73" stroke="${cream}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="27" cy="82" r="4.5" fill="#F4A6A0" opacity="0.7"/>
+      <circle cx="69" cy="82" r="4.5" fill="#F4A6A0" opacity="0.7"/>
+      <path d="M33 84 Q48 96 63 84" stroke="${cream}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "คาวาอี้ (ตา ^ ^ + ประกาย)",
+    grad: { id: "g5", ...maroon },
+    face: `
+      <path d="M28 73 Q34 66 40 73" stroke="${cream}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M56 73 Q62 66 68 73" stroke="${cream}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M33 85 Q48 94 63 85" stroke="${cream}" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <path d="M20 56 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z" fill="${cream}" opacity="0.85"/>
+    `,
+  },
+  {
+    label: "ยิ้มร่าเห็นฟัน",
+    grad: { id: "g6", ...maroon },
+    face: `
+      <circle cx="34" cy="71" r="3.2" fill="${cream}"/>
+      <circle cx="62" cy="71" r="3.2" fill="${cream}"/>
+      <path d="M30 82 Q48 100 66 82 Q48 88 30 82 Z" fill="${cream}"/>
+    `,
+  },
+  {
+    label: "ง่วงเหงาสบายๆ",
+    grad: { id: "g7", ...maroon },
+    face: `
+      <path d="M28 72 L40 72" stroke="${cream}" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M56 72 L68 72" stroke="${cream}" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M36 85 Q48 91 60 85" stroke="${cream}" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "มินิมอล จุด+เส้น",
+    grad: { id: "g8", ...maroon },
+    face: `
+      <circle cx="35" cy="72" r="2.6" fill="${cream}"/>
+      <circle cx="61" cy="72" r="2.6" fill="${cream}"/>
+      <path d="M35 86 Q48 92 61 86" stroke="${cream}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "ตาโตประกายไฮไลต์",
+    grad: { id: "g9", ...maroon },
+    face: `
+      <circle cx="34" cy="71" r="5" fill="${cream}"/>
+      <circle cx="62" cy="71" r="5" fill="${cream}"/>
+      <circle cx="32.2" cy="69" r="1.4" fill="#FFFFFF"/>
+      <circle cx="60.2" cy="69" r="1.4" fill="#FFFFFF"/>
+      <path d="M32 84 Q48 95 64 84" stroke="${cream}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `,
+  },
+  {
+    label: "เส้นขอบ (outline style)",
+    grad: { id: "g10", from: "#FBF6F5", to: "#FBF6F5" },
+    outline: true,
+    face: `
+      <circle cx="34" cy="72" r="3.2" fill="#9A3B33"/>
+      <circle cx="62" cy="72" r="3.2" fill="#9A3B33"/>
+      <path d="M32 84 Q48 96 64 84" stroke="#9A3B33" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  let svg;
+  if (v.outline) {
+    svg = `<svg width="84" height="102" viewBox="0 0 96 116" xmlns="http://www.w3.org/2000/svg">
+      <path d="${dropPath}" fill="#FFF7F5" stroke="#9A3B33" stroke-width="4"/>
+      ${v.face}
+    </svg>`;
+  } else {
+    svg = dropSVG(v.face, v.grad);
+  }
+  card.innerHTML = `
+    <div class="icon-box">${svg}</div>
+    <span class="num">แบบ ${i + 1}</span>
+    <span class="label">${v.label}</span>
+  `;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แอนิเมชันหน้าตา — หยดยิ้ม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #F3E9E7;
+    font-family: 'Inter', sans-serif;
+    padding: 28px 16px 60px;
+  }
+  h1 {
+    font-family: 'Mitr', sans-serif;
+    font-size: 19px;
+    text-align: center;
+    color: #241A18;
+    margin: 0 0 4px;
+  }
+  .sub {
+    text-align: center;
+    font-size: 12.5px;
+    color: #8A7370;
+    margin: 0 0 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  @media (max-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: #FBF6F5;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 26px rgba(122,42,35,0.10);
+  }
+  .tag {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 8px;
+    background: #9A3B33;
+    color: #FFF7F5;
+  }
+  .desc {
+    font-size: 11px;
+    color: #8A7370;
+    text-align: center;
+    padding: 6px 12px 0;
+    line-height: 1.5;
+  }
+  .screen {
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-icon { width: 92px; height: 92px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 14px 30px rgba(154,59,51,0.14); display: flex; align-items: center; justify-content: center; }
+  .foot { padding: 14px 0 18px; }
+
+  /* --- shared face parts --- */
+  .eye-l, .eye-r { transform-origin: center; }
+  .mouth { transform-origin: 12px 18px; }
+  .blush-l, .blush-r { transform-origin: center; }
+  .drop-svg { transform-origin: 12px 13px; }
+
+  /* A: blink */
+  @keyframes faceBlink {
+    0%, 82%, 100% { transform: scaleY(1); }
+    88% { transform: scaleY(0.12); }
+    94% { transform: scaleY(1); }
+  }
+  .anim-blink .eye-l, .anim-blink .eye-r { animation: faceBlink 3.6s ease-in-out infinite; }
+
+  /* B: breathing */
+  @keyframes faceBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.045); }
+  }
+  .drop-svg.anim-breathe { animation: faceBreathe 2.2s ease-in-out infinite; }
+
+  /* C: gentle wobble */
+  @keyframes faceWobble {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  .drop-svg.anim-wobble { animation: faceWobble 2.4s ease-in-out infinite; }
+
+  /* D: cheerful bounce (whole icon) */
+  @keyframes faceBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .drop-svg.anim-bounce { animation: faceBounce 1.6s cubic-bezier(.34,1.56,.64,1) infinite; }
+
+  /* E: smile pulse (mouth widens slightly) */
+  @keyframes faceSmilePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+  .anim-smile .mouth { animation: faceSmilePulse 2.6s ease-in-out infinite; }
+
+  /* F: combo -- blink + gentle breathe, most natural */
+  .drop-svg.anim-combo { animation: faceBreathe 2.6s ease-in-out infinite; }
+  .anim-combo .eye-l, .anim-combo .eye-r { animation: faceBlink 3.6s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drop-svg, .eye-l, .eye-r, .mouth, .card-icon { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <h1>แอนิเมชันหน้าตาหยดยิ้ม — 6 แบบ</h1>
+  <p class="sub">ลูปซ้ำระหว่างหน้าจอโหลด ทุกแบบใช้หยดยิ้มแบบ 4 เป็นฐาน</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const faceSVG = (cls) => `
+  <svg class="drop-svg ${cls}" width="46" height="56" viewBox="0 0 24 24" fill="#9A3B33">
+    <path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/>
+    <path class="eye-l" d="M8 14.6 Q9.5 13.1 11 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <path class="eye-r" d="M13 14.6 Q14.5 13.1 16 14.6" stroke="#FFF7F5" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <circle class="blush-l" cx="7" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+    <circle class="blush-r" cx="17" cy="17.6" r="1.15" fill="#F4A6A0" opacity="0.85"/>
+    <path class="mouth" d="M9 17.6 Q12 20.4 15 17.6" stroke="#FFF7F5" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>
+`;
+
+const variants = [
+  { cls: "anim-blink",    label: "กระพริบตา",         desc: "ตาปิดวูบแล้วเปิดทุกๆ ~3.6 วิ เหมือนยิ้มมีชีวิตชีวา" },
+  { cls: "anim-breathe",  label: "หายใจเบาๆ",         desc: "ขยาย-หดตัวทั้งไอคอนช้าๆ ให้ความรู้สึกนุ่มนวล สบายตา" },
+  { cls: "anim-wobble",   label: "โยกซ้ายขวา",        desc: "เอียงซ้ายขวาเบาๆ น่ารักแบบทักทาย" },
+  { cls: "anim-bounce",   label: "เด้งขึ้นลง",         desc: "กรอบไอคอนกระเด้งขึ้นลงจังหวะสนุกสนาน" },
+  { cls: "anim-smile",    label: "ยิ้มขยับ",           desc: "ปากขยับกว้างขึ้นเป็นจังหวะ เหมือนยิ้มทักทายซ้ำๆ" },
+  { cls: "anim-combo",    label: "รวมกัน (แนะนำ)",    desc: "หายใจเบาๆ + กระพริบตาเป็นระยะ เป็นธรรมชาติที่สุด" },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="screen"><div class="card-icon">${faceSVG(v.cls)}</div></div>
+    <div class="foot"></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

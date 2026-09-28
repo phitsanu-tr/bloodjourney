@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>หน้าหลัก — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 30px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 1080px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 680px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 56px; }
+  .phone { width: 100%; aspect-ratio: 9/17.5; background: #FFF7F5; margin-top: 12px; overflow: hidden; position: relative; font-family: 'Inter', sans-serif; }
+  .phone-inner { position: absolute; inset: 0; overflow: hidden; padding: 14px 12px; }
+  .ph-header { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+  .ph-logo { width:20px; height:20px; border-radius:6px; background:linear-gradient(135deg,#B24A40,#8A2F28); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .ph-title { font-family:'Mitr',sans-serif; font-size:9px; font-weight:700; line-height:1.2; }
+  .ph-sub { font-size:6.5px; color:#8A7370; }
+</style>
+</head>
+<body>
+  <h1>ออกแบบหน้าหลักใหม่ — 10 แบบ</h1>
+  <p class="sub">สำรวจโครงสร้าง/เลย์เอาต์หน้าหลักทั้งหน้า ไม่ใช่แค่ปุ่มเดียว — ใช้ข้อมูลตัวอย่างเดียวกัน (15 ครั้ง, ครบกำหนดอีก 11 วัน)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const DROP = (fill, w=16,h=19) => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="${fill}"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const PLUS = (c='#FFF7F5',s=10) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+const HEADER = `
+  <div class="ph-header">
+    <div class="ph-logo">${DROP('#FFF7F5',11,13)}</div>
+    <div><div class="ph-title">Blood Journey</div><div class="ph-sub">บันทึกบริจาคโลหิต</div></div>
+  </div>`;
+
+const variants = [
+  {
+    label: "1. โฟกัสตัวเลขใหญ่ ไม่มีการ์ดไล่เฉด",
+    desc: "ตัดพื้นหลังไล่เฉดสีแดงเต็มการ์ดออก เหลือแค่ตัวเลขใหญ่กลางหน้า พื้นขาวล้วน ให้ความรู้สึกสงบ ไม่หนักสายตา เหมาะกับแอปสุขภาพที่เน้นความสบายตา",
+    body: `
+      ${HEADER}
+      <div style="text-align:center;padding:14px 0 10px;">
+        <div style="font-size:8px;color:#8A7370;margin-bottom:2px;">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div style="font-size:38px;font-weight:800;color:#9A3B33;line-height:1;">15</div>
+        <div style="font-size:8px;color:#8A7370;">ครั้ง · ประมาณ 5.3 ลิตร</div>
+      </div>
+      <div style="border-top:1px solid #EEDEDA;border-bottom:1px solid #EEDEDA;padding:8px 0;display:flex;align-items:center;gap:6px;font-size:7px;color:#3A2C29;margin-bottom:10px;">
+        ${DROP('#9A3B33',10,12)}<span>ครบกำหนดครั้งถัดไป: <b>2 ต.ค. 2569</b> (อีก 11 วัน)</span>
+      </div>
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#F7F0EE;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#7A6360;">ภารกิจถัดไป: อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "2. ไทม์ไลน์เส้นทางบริจาค (ตามชื่อแอป)",
+    desc: "แสดงเป็นเส้นทาง (journey) แนวตั้ง จุดที่ผ่านมาแล้วกับจุดถัดไปที่ยังไม่ถึง ตอกย้ำคอนเซปต์ 'การเดินทาง' ตามชื่อแอปโดยตรง",
+    body: `
+      ${HEADER}
+      <div style="font-size:7px;color:#8A7370;margin-bottom:10px;">เส้นทางบริจาคของคุณ · สะสมแล้ว 15 ครั้ง</div>
+      <div style="position:relative;padding-left:14px;">
+        <div style="position:absolute;left:5px;top:4px;bottom:20px;width:2px;background:#EEDEDA;"></div>
+        ${[['ครั้งที่ 14','12 พ.ค. 2569',true],['ครั้งที่ 15 (ล่าสุด)','5 ก.ค. 2569',true],['ครั้งที่ 16 — เป้าหมายถัดไป','ครบกำหนด 2 ต.ค. 2569',false]].map(([t,d,done])=>`
+          <div style="position:relative;padding-bottom:14px;">
+            <div style="position:absolute;left:-14px;top:1px;width:12px;height:12px;border-radius:50%;background:${done?'#9A3B33':'#FFF7F5'};border:2px solid #9A3B33;"></div>
+            <div style="font-size:7px;font-weight:700;color:#3A2C29;">${t}</div>
+            <div style="font-size:6.5px;color:#8A7370;">${d}</div>
+          </div>`).join('')}
+      </div>
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-top:4px;">${PLUS()}บันทึกครั้งใหม่</div>
+    `,
+  },
+  {
+    label: "3. ตารางไทล์สถิติ (bento)",
+    desc: "แบ่งข้อมูลเป็นไทล์ขนาดต่างกัน (bento grid) แทนการ์ดเดียวยาว อ่านสแกนง่าย เหมาะกับผู้ที่อยากเห็นภาพรวมหลายค่าพร้อมกันในสายตาเดียว",
+    body: `
+      ${HEADER}
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:10px;padding:9px;color:#FFF7F5;grid-row:span 2;">
+          <div style="font-size:6.5px;opacity:0.85;">สะสมทั้งหมด</div>
+          <div style="font-size:26px;font-weight:800;line-height:1.1;">15</div>
+          <div style="font-size:6.5px;opacity:0.85;">ครั้ง</div>
+        </div>
+        <div style="background:#F7F0EE;border-radius:10px;padding:8px;">
+          <div style="font-size:6px;color:#8A7370;">โลหิตรวม</div>
+          <div style="font-size:13px;font-weight:700;color:#9A3B33;">≈5.3 ล.</div>
+        </div>
+        <div style="background:#F7F0EE;border-radius:10px;padding:8px;">
+          <div style="font-size:6px;color:#8A7370;">ครั้งถัดไป</div>
+          <div style="font-size:9px;font-weight:700;color:#9A3B33;">อีก 11 วัน</div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#3A2C29;">🏅 อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "4. วงแหวนความคืบหน้า (progress ring)",
+    desc: "ใช้วงแหวนวงกลมแสดงความคืบหน้านับถอยหลังวันครบกำหนดเป็นภาพหลัก แทนตัวเลขล้วน ให้ความรู้สึก 'ใกล้ถึงเป้าหมาย' ชัดเจนกว่าข้อความ",
+    body: `
+      ${HEADER}
+      <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 12px;">
+        <div style="width:88px;height:88px;border-radius:50%;background:conic-gradient(#9A3B33 ${(1-11/90)*360}deg,#F0DAD6 0deg);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+          <div style="width:70px;height:70px;border-radius:50%;background:#FFF7F5;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="font-size:18px;font-weight:800;color:#9A3B33;line-height:1;">11</div>
+            <div style="font-size:6px;color:#8A7370;">วันจนครบกำหนด</div>
+          </div>
+        </div>
+        <div style="font-size:7px;color:#3A2C29;">สะสมแล้ว <b>15 ครั้ง</b> · ครบกำหนด 2 ต.ค. 2569</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#F7F0EE;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#7A6360;">ภารกิจถัดไป: อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "5. การ์ดเดียวรวมทุกอย่าง (unified card)",
+    desc: "รวมสถิติ+วันครบกำหนด+ปุ่มบันทึกไว้ในการ์ดเดียวกันทั้งหมด คั่นด้วยเส้นบางๆ ลดจำนวนกล่องแยกที่ลอยอยู่บนหน้าให้เหลือน้อยที่สุด",
+    body: `
+      ${HEADER}
+      <div style="background:linear-gradient(160deg,#B24A40,#8A2F28);border-radius:14px;padding:12px;color:#FFF7F5;">
+        <div style="font-size:6.5px;opacity:0.85;">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div style="font-size:28px;font-weight:800;line-height:1.1;margin-bottom:8px;">15 <span style="font-size:9px;font-weight:500;">ครั้ง</span></div>
+        <div style="border-top:1px solid rgba(255,247,245,0.25);padding-top:7px;font-size:6.5px;opacity:0.92;margin-bottom:7px;">🕒 ครบกำหนดครั้งถัดไป 2 ต.ค. 2569 (อีก 11 วัน)</div>
+        <div style="border-top:1px solid rgba(255,247,245,0.25);padding-top:7px;font-size:6.5px;opacity:0.92;margin-bottom:9px;">🏅 อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+        <div style="background:#FFF7F5;border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:6px;color:#9A3B33;font-size:7.5px;font-weight:700;justify-content:center;">${PLUS('#9A3B33',10)}บันทึกบริจาคโลหิต</div>
+      </div>
+    `,
+  },
+  {
+    label: "6. เรียบขาวล้วน ไม่มีไล่เฉด",
+    desc: "เอาการ์ดสีแดงพื้นเข้มออกทั้งหมด ใช้พื้นขาว/ครีมกับสีแดงแค่จุดเน้น (ตัวเลข/ไอคอน) เท่านั้น ให้หน้าดูโปร่ง สบายตา ลดความรู้สึกทึบหนัก",
+    body: `
+      ${HEADER}
+      <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:12px;padding:11px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div>
+            <div style="font-size:6.5px;color:#8A7370;">สะสมทั้งหมด</div>
+            <div style="font-size:24px;font-weight:800;color:#9A3B33;line-height:1.1;">15 <span style="font-size:8px;font-weight:500;color:#3A2C29;">ครั้ง</span></div>
+          </div>
+          ${DROP('#F4A6A0',22,26)}
+        </div>
+        <div style="border-top:1px dashed #EEDEDA;margin-top:8px;padding-top:7px;font-size:6.5px;color:#7A6360;">ครบกำหนดครั้งถัดไป <b style="color:#9A3B33">2 ต.ค. 2569</b> (อีก 11 วัน)</div>
+      </div>
+      <div style="background:#9A3B33;border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#3A2C29;">🏅 อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "7. เมนูลิสต์นำ สถิติเป็นแถบบาง",
+    desc: "กลับลำดับความสำคัญ: เอา 'บันทึกบริจาคโลหิต' และเมนูลัดขึ้นก่อนบนสุด ส่วนสถิติสรุปเหลือเป็นแถบบางด้านล่าง (สำหรับคนที่เข้าแอปมาเพื่อ 'บันทึก' เป็นหลัก ไม่ใช่มาดูตัวเลข)",
+    body: `
+      ${HEADER}
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:9px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:8px;font-weight:700;margin-bottom:7px;">${PLUS('#FFF7F5',11)}บันทึกบริจาคโลหิต</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:9px;padding:7px;font-size:6px;color:#7A6360;">📤 ส่งออกข้อมูล</div>
+        <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:9px;padding:7px;font-size:6px;color:#7A6360;">📅 เพิ่มลงปฏิทิน</div>
+      </div>
+      <div style="background:#F7F0EE;border-radius:9px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:6.5px;color:#3A2C29;">
+        <span>สะสม <b>15 ครั้ง</b> · ≈5.3 ล.</span><span style="color:#9A3B33;font-weight:700;">อีก 11 วัน</span>
+      </div>
+    `,
+  },
+  {
+    label: "8. โทนอบอุ่น พาสเทล (soft, ลดความจัดจ้าน)",
+    desc: "ลดความเข้มของสีแดงหลักลง ใช้โทนชมพูอบอุ่น/พาสเทลแทนไล่เฉดเข้มจัด ให้บรรยากาศนุ่มนวลขึ้น ต่างจากปัจจุบันที่ใช้สีแดงเข้มเป็นหลักทั้งหน้า",
+    body: `
+      ${HEADER}
+      <div style="background:#FBE3DF;border-radius:14px;padding:12px;margin-bottom:8px;">
+        <div style="font-size:6.5px;color:#B5615A;">บริจาคโลหิตสะสมทั้งหมด</div>
+        <div style="font-size:26px;font-weight:800;color:#9A3B33;line-height:1.1;">15 <span style="font-size:9px;font-weight:500;">ครั้ง</span></div>
+        <div style="font-size:6.5px;color:#B5615A;margin-top:4px;">ครบกำหนดครั้งถัดไป 2 ต.ค. 2569 (อีก 11 วัน)</div>
+      </div>
+      <div style="background:#FFFFFF;border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#9A3B33;font-size:7.5px;font-weight:700;box-shadow:0 4px 12px rgba(154,59,51,0.12);margin-bottom:8px;">${PLUS('#9A3B33',10)}บันทึกบริจาคโลหิต</div>
+      <div style="background:#FDF1EF;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#8A5C55;">🏅 อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "9. อาร์ตเวิร์กใหญ่นำหน้า (editorial)",
+    desc: "ให้ภาพประกอบ/ไอคอนหยดใหญ่เป็นจุดโฟกัสหลักด้านบนแบบนิตยสาร ข้อความและตัวเลขอยู่ด้านล่างเป็นส่วนสนับสนุน เหมาะกับการสื่ออารมณ์/แรงบันดาลใจมากกว่าตัวเลข",
+    body: `
+      ${HEADER}
+      <div style="text-align:center;padding:6px 0 10px;">
+        ${DROP('#9A3B33',54,66)}
+        <div style="font-size:8px;font-weight:700;color:#3A2C29;margin-top:4px;">ขอบคุณที่เป็นนักให้ 15 ครั้ง</div>
+        <div style="font-size:6.5px;color:#8A7370;">ครบกำหนดครั้งถัดไป 2 ต.ค. 2569 (อีก 11 วัน)</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#B24A40,#8A2F28);border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;justify-content:center;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#F7F0EE;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#7A6360;text-align:center;">อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+  {
+    label: "10. สองคอลัมน์แนวนอน (สถิติ | การกระทำ)",
+    desc: "แบ่งครึ่งบนเป็น 2 คอลัมน์แนวนอน: ซ้ายตัวเลขสะสม ขวาวันครบกำหนด อ่านเทียบกันได้ในแวบเดียว ก่อนต่อด้วยปุ่มและภารกิจด้านล่าง",
+    body: `
+      ${HEADER}
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="flex:1;background:linear-gradient(160deg,#B24A40,#8A2F28);border-radius:11px;padding:9px;color:#FFF7F5;">
+          <div style="font-size:6px;opacity:0.85;">สะสม</div>
+          <div style="font-size:20px;font-weight:800;line-height:1.1;">15</div>
+          <div style="font-size:6px;opacity:0.85;">ครั้ง</div>
+        </div>
+        <div style="flex:1;background:#F7F0EE;border-radius:11px;padding:9px;">
+          <div style="font-size:6px;color:#8A7370;">ครบกำหนด</div>
+          <div style="font-size:12px;font-weight:800;color:#9A3B33;line-height:1.3;margin-top:2px;">อีก 11 วัน</div>
+          <div style="font-size:5.5px;color:#8A7370;">2 ต.ค. 2569</div>
+        </div>
+      </div>
+      <div style="background:#9A3B33;border-radius:9px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#FFF7F5;font-size:7.5px;font-weight:700;margin-bottom:8px;">${PLUS()}บันทึกบริจาคโลหิต</div>
+      <div style="background:#FFFFFF;border:1px solid #EEDEDA;border-radius:9px;padding:8px 10px;font-size:6.5px;color:#3A2C29;">🏅 อีก 1 ครั้ง ถึง "เข็มที่ระลึก 16"</div>
+    `,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="phone"><div class="phone-inner">${v.body}</div></div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

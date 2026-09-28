@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loading text animation - 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" />
+<style>
+  :root {
+    --red: #9A3B33;
+    --red-dark: #8A2F28;
+    --bg: #FBF6F5;
+    --muted: #9A8580;
+    --ink: #241A18;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Mitr', 'Inter', sans-serif;
+    background: #F2E9E7;
+    color: var(--ink);
+    padding: 28px 16px 60px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  p.sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 10px 26px -12px rgba(122,42,35,0.25), 0 0 0 1px #F0DEDA;
+    overflow: hidden;
+  }
+  .card-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #F0DEDA;
+  }
+  .card-label .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--red);
+    color: #FFF7F5;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .card-label .name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+  }
+  .card-label button {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--red);
+    background: #FFF7F5;
+    border: 1px solid #E3C8C3;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .card-label button:active { background: #F5E4E1; }
+  .stage {
+    height: 230px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .icon-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .orbit {
+    position: absolute;
+    inset: 0;
+    animation: spin 2s linear infinite;
+  }
+  .orbit .dot {
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: #FFFFFF;
+    box-shadow: 0 10px 20px rgba(154,59,51,0.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-box svg { width: 26px; height: 32px; }
+  .title {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    white-space: nowrap;
+  }
+  .subtitle {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    background: var(--red);
+    margin-left: 2px;
+    animation: blink 0.8s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 1. fade-in */
+  .anim-fadein .title, .anim-fadein .subtitle { opacity: 0; }
+  .anim-fadein.play .title { animation: fadeIn 0.6s ease forwards; }
+  .anim-fadein.play .subtitle { animation: fadeIn 0.6s ease forwards; animation-delay: 0.05s; }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* 2. fade-up */
+  .anim-fadeup .title, .anim-fadeup .subtitle { opacity: 0; transform: translateY(10px); }
+  .anim-fadeup.play .title { animation: fadeUp 0.55s cubic-bezier(.2,.7,.3,1) forwards; }
+  .anim-fadeup.play .subtitle { animation: fadeUp 0.55s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: 0.08s; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* 3. fade-down */
+  .anim-fadedown .title, .anim-fadedown .subtitle { opacity: 0; transform: translateY(-10px); }
+  .anim-fadedown.play .title { animation: fadeDown 0.55s cubic-bezier(.2,.7,.3,1) forwards; }
+  .anim-fadedown.play .subtitle { animation: fadeDown 0.55s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: 0.08s; }
+  @keyframes fadeDown { to { opacity: 1; transform: translateY(0); } }
+
+  /* 4. stagger fade-up (bigger delay gap) */
+  .anim-stagger .title, .anim-stagger .subtitle { opacity: 0; transform: translateY(12px); }
+  .anim-stagger.play .title { animation: fadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards; }
+  .anim-stagger.play .subtitle { animation: fadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: 0.35s; }
+
+  /* 5. scale-in pop */
+  .anim-scale .title, .anim-scale .subtitle { opacity: 0; transform: scale(0.85); }
+  .anim-scale.play .title { animation: scaleIn 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .anim-scale.play .subtitle { animation: scaleIn 0.45s cubic-bezier(.34,1.56,.64,1) forwards; animation-delay: 0.1s; }
+  @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+
+  /* 6. bounce overshoot */
+  .anim-bounce .title, .anim-bounce .subtitle { opacity: 0; transform: translateY(16px); }
+  .anim-bounce.play .title { animation: bounceUp 0.7s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .anim-bounce.play .subtitle { animation: bounceUp 0.6s cubic-bezier(.34,1.56,.64,1) forwards; animation-delay: 0.12s; }
+  @keyframes bounceUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* 9. breathing / pulse (loops continuously) */
+  .anim-breathe .title, .anim-breathe .subtitle { opacity: 0; }
+  .anim-breathe.play .title { animation: fadeIn 0.5s ease forwards, breathe 1.8s ease-in-out 0.6s infinite; }
+  .anim-breathe.play .subtitle { animation: fadeIn 0.5s ease forwards, breathe 1.8s ease-in-out 0.6s infinite; }
+  @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  /* 10. shimmer sweep */
+  .anim-shimmer .title, .anim-shimmer .subtitle { opacity: 0; }
+  .anim-shimmer.play .title, .anim-shimmer.play .subtitle { animation: fadeIn 0.4s ease forwards; }
+  .anim-shimmer.play .title {
+    background: linear-gradient(90deg, var(--ink) 40%, #E3A79C 50%, var(--ink) 60%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeIn 0.4s ease forwards, shimmer 1.8s ease-in-out 0.5s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .footer-note {
+    max-width: 1200px;
+    margin: 30px auto 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+  <h1>ตัวอย่าง animation ตัวหนังสือหน้า Loading — 10 แบบ</h1>
+  <p class="sub">กดปุ่ม "เล่นซ้ำ" ที่การ์ดไหนก็ได้เพื่อดูอีกครั้ง — ทุกการ์ดเล่นอัตโนมัติตอนเปิดหน้า</p>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="footer-note">หน้านี้เป็นตัวอย่างสำหรับดูเปรียบเทียบเท่านั้น ยังไม่ใช่โค้ดที่ใช้จริงในแอป</p>
+
+<script>
+const droplet = `<svg viewBox="0 0 24 24" fill="#9A3B33"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+
+const variants = [
+  { id: "fadein", name: "Fade-in เรียบง่าย", loop: false },
+  { id: "fadeup", name: "Fade + เลื่อนขึ้น", loop: false },
+  { id: "fadedown", name: "Fade + เลื่อนลง", loop: false },
+  { id: "stagger", name: "Stagger (หัวข้อก่อน, subtitle ตามหลัง)", loop: false },
+  { id: "scale", name: "Scale-in (pop เบาๆ)", loop: false },
+  { id: "bounce", name: "Bounce overshoot", loop: false },
+  { id: "typewriter", name: "Typewriter (พิมพ์ทีละตัว)", loop: false, custom: true },
+  { id: "wave", name: "Fade เป็นช่วงๆ (wave)", loop: false, custom: true },
+  { id: "breathe", name: "Breathing / pulse (วนต่อเนื่อง)", loop: true },
+  { id: "shimmer", name: "Shimmer sweep (วนต่อเนื่อง)", loop: true },
+];
+
+const grid = document.getElementById("grid");
+
+variants.forEach((v, i) => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="card-label">
+      <span class="name"><span class="num">${i + 1}</span>${v.name}</span>
+      <button data-id="${v.id}">↻ เล่นซ้ำ</button>
+    </div>
+    <div class="stage anim-${v.id}" id="stage-${v.id}">
+      <div class="icon-wrap">
+        <div class="orbit"><div class="dot"></div></div>
+        <div class="icon-box">${droplet}</div>
+      </div>
+      <div class="title" id="title-${v.id}">BloodJourney</div>
+      <div class="subtitle" id="sub-${v.id}">บันทึกการบริจาคโลหิตของคุณ</div>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+const TITLE_TEXT = "BloodJourney";
+const SUB_CHUNKS = ["บันทึก", "การบริจาคโลหิต", "ของคุณ"];
+
+function runTypewriter(stage) {
+  const titleEl = stage.querySelector(".title");
+  const subEl = stage.querySelector(".subtitle");
+  titleEl.innerHTML = '<span class="cursor"></span>';
+  subEl.style.opacity = 0;
+  subEl.textContent = SUB_CHUNKS.join("");
+  let i = 0;
+  const interval = setInterval(() => {
+    i++;
+    titleEl.innerHTML = TITLE_TEXT.slice(0, i) + '<span class="cursor"></span>';
+    if (i >= TITLE_TEXT.length) {
+      clearInterval(interval);
+      setTimeout(() => {
+        titleEl.innerHTML = TITLE_TEXT;
+        subEl.style.transition = "opacity 0.4s ease";
+        subEl.style.opacity = 1;
+      }, 250);
+    }
+  }, 65);
+}
+
+function runWave(stage) {
+  const subEl = stage.querySelector(".subtitle");
+  const titleEl = stage.querySelector(".title");
+  titleEl.style.opacity = 0;
+  titleEl.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+  titleEl.style.transform = "translateY(8px)";
+  requestAnimationFrame(() => {
+    titleEl.style.opacity = 1;
+    titleEl.style.transform = "translateY(0)";
+  });
+  subEl.innerHTML = SUB_CHUNKS.map(chunk => `<span style="opacity:0;display:inline-block;transition:opacity .4s ease, transform .4s ease;transform:translateY(6px)">${chunk}</span>`).join("");
+  const spans = subEl.querySelectorAll("span");
+  spans.forEach((span, idx) => {
+    setTimeout(() => {
+      span.style.opacity = 1;
+      span.style.transform = "translateY(0)";
+    }, 300 + idx * 180);
+  });
+}
+
+function play(id) {
+  const stage = document.getElementById("stage-" + id);
+  stage.classList.remove("play");
+  if (id === "typewriter") { runTypewriter(stage); return; }
+  if (id === "wave") { runWave(stage); return; }
+  // force reflow so re-adding the class restarts the CSS animation
+  void stage.offsetWidth;
+  stage.classList.add("play");
+}
+
+variants.forEach(v => play(v.id));
+
+grid.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-id]");
+  if (!btn) return;
+  play(btn.dataset.id);
+});
+</script>
+</body>
+</html>
