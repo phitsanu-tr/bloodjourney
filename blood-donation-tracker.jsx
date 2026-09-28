@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.63";
+const APP_VERSION = "1.0.64";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4766,13 +4766,6 @@ function AppInner() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
-              {/* The header icon and the home tab's avatar/greeting row used to
-                  both open the same profile dialog -- two tap targets for one
-                  destination. Design "5" from a 10-variant exploration resolves
-                  it the other way round from design 6: this header icon is now
-                  the single entry point into the profile, and the avatar/
-                  greeting row below is display-only info (still has its own
-                  separate photo-menu interaction on the avatar itself). */}
               <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
                 <User size={19} color="#9A3B33" />
               </button>
@@ -4788,11 +4781,6 @@ function AppInner() {
         <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
-              {/* Avatar/greeting row (design "5" from a 10-variant exploration)
-                  -- this row is display-only info now; the header's own
-                  "โปรไฟล์ของฉัน" icon above is the single entry point into the
-                  profile dialog. The avatar keeps its own separate photo-menu
-                  interaction, which is unrelated to opening the profile. */}
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="รูปโปรไฟล์"
@@ -4829,9 +4817,9 @@ function AppInner() {
                 </div>
                 <div style={{ minWidth: 0 }}>
                   {nickname ? (
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4 }}>
+                    <button onClick={openProfile} style={{ display: "block", background: "none", border: "none", padding: "4px 0", margin: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2C29", textAlign: "left", lineHeight: 1.4 }}>
                       สวัสดี, คุณ{/^[A-Za-z]/.test(nickname.trim()) ? " " : ""}{nickname}
-                    </div>
+                    </button>
                   ) : totalCount === 0 ? (
                     // Only asks "have you donated today?" for someone with genuinely
                     // no history at all -- previously this greeting showed for anyone
@@ -4873,8 +4861,10 @@ function AppInner() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", marginTop: 8 }}>
-                      <Plus size={11} /> เพิ่มข้อมูลโปรไฟล์
+                    <div style={{ marginTop: 8 }}>
+                      <button onClick={openProfile} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, background: "none", color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", cursor: "pointer", fontFamily: "inherit" }}>
+                        <Plus size={11} /> เพิ่มข้อมูลโปรไฟล์
+                      </button>
                     </div>
                   )}
                 </div>
