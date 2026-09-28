@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, ChevronDown, Check } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.73";
+const APP_VERSION = "1.0.74";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2408,6 +2408,12 @@ function AppInner() {
   const reminderLastTouchRef = useRef(0);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
+  // Custom year picker (design "2" from year-picker-8-designs.html) replacing
+  // the native <select>, whose popup looked completely different on iOS
+  // (anchored menu) vs Android (centered dialog with system-green radios).
+  const [showYearMenu, setShowYearMenu] = useState(false);
+  const yearMenuRef = useRef(null);
+  const yearTriggerRef = useRef(null);
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
   const [historyVisibleCount, setHistoryVisibleCount] = useState(HISTORY_PAGE_SIZE);
   const fileInputRef = useRef(null);
@@ -2699,6 +2705,7 @@ function AppInner() {
       // popups whose only other dismissal is a non-focusable click-outside
       // backdrop — a keyboard-only user opening either had no way to close
       // it without picking an option. Escape now closes these too.
+      setShowYearMenu(false);
       setShowPhotoMenu(false);
       setOpenActionMenuId(null);
       setShowStorageDegradedModal(false);
@@ -4362,6 +4369,30 @@ function AppInner() {
     const set = new Set(donations.map(d => String(buddhistYear(d.date))));
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [donations]);
+  // Record counts per Buddhist year for the year picker, respecting the
+  // current type filter so the numbers match what picking that year shows.
+  const historyYearCounts = useMemo(() => {
+    const counts = { all: 0 };
+    donations.forEach(d => {
+      if (historyTypeFilter !== "all" && (d.type || DEFAULT_DONATION_TYPE) !== historyTypeFilter) return;
+      const y = String(buddhistYear(d.date));
+      counts[y] = (counts[y] || 0) + 1;
+      counts.all += 1;
+    });
+    return counts;
+  }, [donations, historyTypeFilter]);
+  // On open: move focus to the selected option (keyboard/screen readers),
+  // and if the menu would run under the bottom nav, scroll it into view.
+  useEffect(() => {
+    if (!showYearMenu) return;
+    const menu = yearMenuRef.current;
+    if (!menu) return;
+    const sel = menu.querySelector('[aria-selected="true"]') || menu.querySelector('[role="option"]');
+    try { sel?.focus({ preventScroll: true }); } catch (e) {}
+    const r = menu.getBoundingClientRect();
+    const limit = window.innerHeight - 96;
+    if (r.bottom > limit) window.scrollBy({ top: r.bottom - limit, behavior: "smooth" });
+  }, [showYearMenu]);
 
   // Maps each donation id to its overall sequence number ("ครั้งที่ N"),
   // counting the carried-over starting count first, then each in-app record
@@ -5345,19 +5376,48 @@ function AppInner() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
                 {historyYears.length > 1 && (
-                  // The select itself is a transparent, borderless 44px-tall tap
-                  // target; the visible 28px bordered box is drawn behind it, so
-                  // it looks exactly as before but is easier to hit.
-                  <div style={{ position: "relative", display: "inline-flex", margin: "-8px 0" }}>
-                    <span aria-hidden="true" style={{ position: "absolute", inset: "8px 0", border: "1px solid #E3C8C3", borderRadius: 8, background: "#FFFFFF", pointerEvents: "none" }} />
-                    <select
-                      aria-label="กรองตามปี"
-                      value={historyYearFilter}
-                      onChange={(e) => setHistoryYearFilter(e.target.value)}
-                      style={{ position: "relative", fontSize: 12, border: "1px solid transparent", borderRadius: 8, padding: "13px 8px", color: "#5C4A46", background: "transparent", fontFamily: "inherit", cursor: "pointer" }}>
-                      <option value="all">ทุกปี</option>
-                      {historyYears.map(y => <option key={y} value={y}>ปี {y}</option>)}
-                    </select>
+                  <div style={{ position: "relative" }}>
+                    <button ref={yearTriggerRef} onClick={() => setShowYearMenu(v => !v)}
+                      aria-label={`กรองตามปี: ${historyYearFilter === "all" ? "ทุกปี" : `ปี ${historyYearFilter}`}`} aria-haspopup="listbox" aria-expanded={showYearMenu}
+                      style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontFamily: "inherit", color: "#5C4A46", background: "#FFFFFF",
+                        border: `1px solid ${showYearMenu ? "#9A3B33" : "#E3C8C3"}`, boxShadow: showYearMenu ? "0 0 0 3px rgba(154,59,51,0.12)" : "none",
+                        borderRadius: 8, padding: "5px 8px 5px 10px", lineHeight: 1.35, cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s" }}>
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -2px" }} />
+                      {historyYearFilter === "all" ? "ทุกปี" : `ปี ${historyYearFilter}`}
+                      <ChevronDown size={13} style={{ transition: "transform 0.15s", transform: showYearMenu ? "rotate(180deg)" : "none" }} />
+                    </button>
+                    {showYearMenu && (
+                      <>
+                        <div onClick={() => setShowYearMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
+                        <div ref={yearMenuRef} role="listbox" aria-label="เลือกปี"
+                          onKeyDown={(e) => {
+                            const opts = [...e.currentTarget.querySelectorAll('[role="option"]')];
+                            const i = opts.indexOf(document.activeElement);
+                            if (e.key === "ArrowDown") { e.preventDefault(); opts[Math.min(opts.length - 1, i + 1)]?.focus(); }
+                            else if (e.key === "ArrowUp") { e.preventDefault(); opts[Math.max(0, i - 1)]?.focus(); }
+                            else if (e.key === "Tab") { setShowYearMenu(false); }
+                          }}
+                          style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 56, minWidth: 196, maxHeight: 320, overflowY: "auto",
+                            background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 10px 28px rgba(90,50,45,0.18)", padding: 6, animation: "fadeSwap 0.15s ease" }}>
+                          {["all", ...historyYears].map((y) => {
+                            const selected = historyYearFilter === y;
+                            // Years with no records for the current type filter stay
+                            // pickable but read as muted.
+                            const empty = !historyYearCounts[y];
+                            return (
+                              <button key={y} role="option" aria-selected={selected}
+                                onClick={() => { setHistoryYearFilter(y); setShowYearMenu(false); try { yearTriggerRef.current?.focus({ preventScroll: true }); } catch (e) {} }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", minHeight: 44, padding: "0 10px 0 12px", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                                  background: selected ? "#F3EAE8" : "transparent", color: selected ? "#9A3B33" : empty ? "#7A6360" : "#3A2C29", fontSize: 13, fontWeight: selected ? 600 : 400 }}>
+                                <span style={{ flex: 1 }}>{y === "all" ? "ทุกปี" : `ปี ${y}`}</span>
+                                <span style={{ fontSize: 11, color: "#7A6360", fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>{historyYearCounts[y] || 0} ครั้ง</span>
+                                <span style={{ width: 14, display: "flex", justifyContent: "center" }}>{selected && <Check size={14} />}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
