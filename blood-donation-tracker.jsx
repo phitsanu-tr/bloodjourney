@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.100";
+const APP_VERSION = "1.0.101";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2199,9 +2199,26 @@ function initialTabFromUrl() {
   }
 }
 
+// Set just before the "อัปเดต" reload so the new version opens straight on
+// the same tab and scroll position, without the splash screen. Only honoured
+// for 30s so a stale entry can never hijack a normal later launch.
+const RESUME_KEY = "bj:resumeAfterUpdate";
+function readResumeAfterUpdate() {
+  try {
+    const raw = window.sessionStorage.getItem(RESUME_KEY);
+    if (!raw) return null;
+    const r = JSON.parse(raw);
+    if (!r || typeof r.at !== "number" || Date.now() - r.at > 30000) return null;
+    return r;
+  } catch (e) {
+    return null;
+  }
+}
+
 function AppInner() {
+  const [resumeAfterUpdate] = useState(readResumeAfterUpdate);
   const [phase, setPhase] = useState("loading"); // loading | consent | app | error
-  const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge | eligibility | faq
+  const [tab, setTab] = useState(() => (resumeAfterUpdate && VALID_TABS.includes(resumeAfterUpdate.tab) ? resumeAfterUpdate.tab : initialTabFromUrl())); // home | dashboard | missions | knowledge | eligibility | faq
   const [nickname, setNickname] = useState("");
   const [photo, setPhoto] = useState("");
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
@@ -2529,7 +2546,8 @@ function AppInner() {
   const [headerVisible, setHeaderVisible] = useState(true);
   // Pull to refresh (design "3" from refresh-update-designs.html: arrow +
   // "ดึงลงเพื่อรีเฟรช" -> "ปล่อยเพื่อรีเฟรช" -> "กำลังโหลด…"). Data is local, so
-  // what a refresh really brings is the newest app version. Touch only, only
+  // a refresh re-reads storage in place (load({ soft: true }), no splash) and
+  // checks for a newer app version at the same time. Touch only, only
   // from the very top of the page, and never while a dialog, sheet or popup
   // menu is open (a reload there would throw away what was being typed).
   // The content column moves via direct style writes (no re-render per
@@ -2541,6 +2559,8 @@ function AppInner() {
   const ptrIndRef = useRef(null);
   const ptrBlockRef = useRef(false);
   const ptrStateRef = useRef("pull");
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
   const lastScrollYRef = useRef(0);
   useEffect(() => {
     if (phase !== "app" || anyModalOpen) return;
@@ -2595,16 +2615,25 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const load = useCallback(async () => {
-    setPhase("loading");
-    setError("");
+  // load({ soft: true }) is the pull-to-refresh path: re-reads everything
+  // from storage and redraws in place -- no splash, no phase change, no
+  // minimum wait. (A plain load() -- first open, the error screen's retry,
+  // after deleting all data -- still goes through the splash.)
+  const load = useCallback(async (opts) => {
+    const soft = !!(opts && opts.soft === true);
+    if (!soft) {
+      setPhase("loading");
+      setError("");
+    }
     // Reading from localStorage below is essentially instant, so without a
     // floor here the "loading" phase (and its splash screen) would resolve
     // and get replaced within a handful of milliseconds — long before a
     // single frame of it actually gets painted to the screen. finishLoading
     // tops that up to MIN_LOADING_MS so the splash is actually visible, but
     // never adds delay on top of a load that's already slower than that.
-    const MIN_LOADING_MS = 3000; // 3 full loops of the 1s breathe/blink icon animation below
+    // 3 full loops of the 1s breathe/blink icon animation below -- skipped for
+    // a soft refresh and right after an "อัปเดต" reload (no splash then).
+    const MIN_LOADING_MS = soft || resumeAfterUpdate ? 0 : 3000;
     const loadStartedAt = Date.now();
     const finishLoading = async (nextPhase) => {
       const elapsed = Date.now() - loadStartedAt;
@@ -2625,7 +2654,7 @@ function AppInner() {
     // paths below from ever fighting over which phase should win.
     let settled = false;
     const timeoutId = setTimeout(() => {
-      if (settled) return;
+      if (settled || soft) return;
       settled = true;
       setError("ใช้เวลาโหลดนานผิดปกติ ลองใหม่อีกครั้ง");
       setPhase("error");
@@ -2718,13 +2747,21 @@ function AppInner() {
       settled = true;
       clearTimeout(timeoutId);
       await finishLoading("app");
+      if (!soft && resumeAfterUpdate) {
+        try { window.sessionStorage.removeItem(RESUME_KEY); } catch (e) {}
+        const y = Number(resumeAfterUpdate.y) || 0;
+        if (y > 0) setTimeout(() => window.scrollTo(0, y), 50);
+      }
     } catch (e) {
       if (settled) return;
       settled = true;
       clearTimeout(timeoutId);
-      setPhase("error");
+      if (!soft) setPhase("error");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
   useEffect(() => { load(); }, [load]);
 
@@ -2795,6 +2832,11 @@ function AppInner() {
   // only when the donor taps "อัปเดต"; ✕ hides it until the app is reopened.
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updateDismissed, setUpdateDismissed] = useState(false);
+  const checkUpdateRef = useRef(null);
+  const reloadForUpdate = () => {
+    try { window.sessionStorage.setItem(RESUME_KEY, JSON.stringify({ tab, y: Math.round(window.scrollY || 0), at: Date.now() })); } catch (e) {}
+    window.location.reload();
+  };
   useEffect(() => {
     if (isNativeApp || typeof document === "undefined") return;
     const entryRe = /\/assets\/index-[^/"]+\.js/;
@@ -2802,28 +2844,30 @@ function AppInner() {
     if (!current) return;
     const currentPath = new URL(current, window.location.href).pathname;
     let stopped = false;
-    const check = async () => {
-      if (stopped || document.visibilityState === "hidden") return;
+    const check = async (force) => {
+      if (stopped || (!force && document.visibilityState === "hidden")) return false;
       try {
         // Same URL as the page itself (no cache-busting query, so the
         // service worker keeps one cached copy of it rather than one per
         // check); cache: "no-store" makes it skip the HTTP cache.
         const res = await fetch(new URL(window.location.pathname, window.location.origin).toString(), { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) return false;
         const html = await res.text();
         const m = html.match(/src="([^"]*\/assets\/index-[^"]+\.js)"/);
-        if (!m) return;
+        if (!m) return false;
         const latestPath = new URL(m[1], window.location.href).pathname;
-        if (!stopped && latestPath !== currentPath) setUpdateAvailable(true);
+        if (!stopped && latestPath !== currentPath) { setUpdateAvailable(true); return true; }
       } catch (e) {
         // Offline or blocked -- try again next time.
       }
+      return false;
     };
+    checkUpdateRef.current = check;
     const first = setTimeout(check, 5000);
     const every = setInterval(check, 30 * 60 * 1000);
     const onVis = () => { if (document.visibilityState === "visible") check(); };
     document.addEventListener("visibilitychange", onVis);
-    return () => { stopped = true; clearTimeout(first); clearInterval(every); document.removeEventListener("visibilitychange", onVis); };
+    return () => { stopped = true; checkUpdateRef.current = null; clearTimeout(first); clearInterval(every); document.removeEventListener("visibilitychange", onVis); };
   }, []);
 
   // Warm the dashboard chart's chunk well after the first screen is up
@@ -2931,7 +2975,17 @@ function AppInner() {
       if (dist >= PTR_THRESHOLD) {
         setState("load");
         paint(48, true);
-        setTimeout(() => window.location.reload(), 350);
+        const minShow = new Promise((r) => setTimeout(r, 600));
+        const refresh = loadRef.current({ soft: true }).catch(() => {});
+        const upd = checkUpdateRef.current ? checkUpdateRef.current(true) : Promise.resolve(false);
+        Promise.all([minShow, refresh, upd]).then(([, , found]) => {
+          paint(0, true);
+          setState("pull");
+          if (found) {
+            setUpdateDismissed(false);
+            if (tabRef.current !== "home") showToast("success", "มีเวอร์ชันใหม่ของแอป กดอัปเดตได้ที่หน้าหลัก");
+          }
+        });
       } else {
         paint(0, true);
         setState("pull");
@@ -4767,6 +4821,9 @@ function AppInner() {
     return null;
   }, [form.date, form.type, donations, editingId, effectiveCycleDays, effectiveComponentCycleDays]);
 
+  if (phase === "loading" && resumeAfterUpdate) {
+    return <div style={{ minHeight: "100vh", background: "#FBF6F5" }} />;
+  }
   if (phase === "loading") {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
@@ -5513,7 +5570,7 @@ function AppInner() {
                         <>
                           <Sparkles size={15} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
                           <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#3A2C29" }}>มีเวอร์ชันใหม่ของแอป</span>
-                          <button onClick={() => window.location.reload()}
+                          <button onClick={reloadForUpdate}
                             style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
                             อัปเดต
