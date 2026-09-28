@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.69";
+const APP_VERSION = "1.0.70";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2395,6 +2395,10 @@ function AppInner() {
   // print as a standalone 3-line paragraph on every load; now it's tucked
   // behind a small (i) toggle right next to the countdown text it explains.
   const [showCycleInfo, setShowCycleInfo] = useState(false);
+  // Which slide of the home-tab reminder carousel is in view (drives the
+  // dots under it). Updated from the scroller's own scroll position.
+  const [reminderIdx, setReminderIdx] = useState(0);
+  const reminderScrollerRef = useRef(null);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
@@ -5099,89 +5103,128 @@ function AppInner() {
                   the backup banner, the eligibility warning and the calendar
                   prompt used to stack as up to three separate cards between
                   the CTA and the mission card, pushing the history section
-                  entirely below the first screen. Now only the single most
-                  important one shows, as a one-line row; finishing or
-                  dismissing it (✕) reveals the next. Order: backup (real
-                  data-loss risk) > eligibility warning > calendar prompt.
-                  Dots show how many are queued. */}
+                  entirely below the first screen. They now share one slot,
+                  most important first -- backup (real data-loss risk) >
+                  eligibility warning > calendar prompt -- as a horizontal
+                  swipe carousel (CSS scroll-snap, so it follows the finger
+                  natively). Each slide is slightly narrower than the slot so
+                  the next one peeks in at the edge, hinting it can be swiped;
+                  dots on each slide show "i of n". Finishing or dismissing
+                  (✕) a slide removes it from the queue. */}
               {(() => {
                 const queue = [];
                 if (needsBackupReminder) queue.push("backup");
                 if (showEligibilityWarning) queue.push("eligibility");
                 if (effectiveLastDateStr && !isEligible && !reminderDismissed) queue.push("calendar");
                 if (queue.length === 0) return null;
-                const current = queue[0];
-                const isWarn = current !== "calendar";
-                const dots = queue.length > 1 && (
-                  <span role="img" aria-label={`เรื่องที่ 1 จาก ${queue.length}`} style={{ display: "inline-flex", gap: 4, marginLeft: 6, verticalAlign: "middle" }}>
-                    {queue.map((k, i) => <span key={k} style={{ width: 5, height: 5, borderRadius: "50%", background: i === 0 ? "#9A3B33" : "#E3C8C3" }} />)}
-                  </span>
-                );
+                const multi = queue.length > 1;
+                const activeIdx = Math.min(reminderIdx, queue.length - 1);
                 const closeBtn = (onClick) => (
                   <button onClick={onClick} aria-label="เตือนทีหลัง"
                     style={{ flexShrink: 0, width: 36, height: 36, margin: -7, marginLeft: 0, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <X size={13} />
                   </button>
                 );
-                return (
-                  <div key={current} style={{ background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: current === "eligibility" ? "flex-start" : "center", gap: 8, marginBottom: 16, position: "relative", minHeight: 50, animation: "fadeSwap 0.3s ease" }}>
-                    {current === "backup" && (
-                      <>
-                        <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
-                        <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูล{dots}</span>
-                        <button onClick={() => openBackupRestore("export", { fromHome: true })}
-                          style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                          <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
-                          <Download size={13} /> สำรองเลย
-                        </button>
-                        {closeBtn(snoozeBackupReminder)}
-                      </>
-                    )}
-                    {current === "eligibility" && (
-                      <>
-                        <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0, marginTop: 2 }} />
-                        <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#8A6A45", lineHeight: 1.6 }}>
-                          {ageOutOfRange && `อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ (${MIN_AGE}-${MAX_AGE} ปี) `}
-                          {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
-                          ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง{dots}
-                        </span>
-                        {closeBtn(dismissEligibilityWarning)}
-                      </>
-                    )}
-                    {current === "calendar" && (
-                      <>
-                        <Calendar size={14} color="#9A3B33" style={{ flexShrink: 0 }} />
-                        <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#5C4A46" }}>ให้เตือนเมื่อบริจาคได้อีกครั้งไหม{dots}</span>
-                        {/* The pill itself stays 28px tall visually; the transparent
-                            span extends its tap area to 44px without changing layout. */}
-                        <button onClick={handleAddToCalendar}
-                          style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F3EAE8", color: "#9A3B33", cursor: "pointer" }}>
-                          <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -4px" }} />
-                          เพิ่มลงปฏิทิน
-                        </button>
-                        {closeBtn(dismissCalendarReminder)}
-                      {showCalendarChoice && (
+                const slide = (kind, idx) => {
+                  const isWarn = kind !== "calendar";
+                  return (
+                    <div key={kind} aria-label={multi ? `เรื่องที่ ${idx + 1} จาก ${queue.length}` : undefined} role={multi ? "group" : undefined} style={{
+                      flex: multi ? "0 0 calc(100% - 16px)" : "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
+                      background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
+                      padding: "10px 12px", display: "flex", alignItems: kind === "eligibility" ? "flex-start" : "center", gap: 6, minHeight: 50,
+                    }}>
+                      {kind === "backup" && (
                         <>
-                          {/* Backdrop to close the popover on an outside tap — sits above the
-                              card but below the popover itself. */}
-                          <div onClick={() => setShowCalendarChoice(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
-                          <div style={{
-                            position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 41,
-                            background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12,
-                            boxShadow: "0 10px 28px rgba(90,50,45,0.16)", padding: 6, minWidth: 190,
-                          }}>
-                            <div style={{ fontSize: 10.5, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
-                            <button onClick={addToCalendarGoogle} style={{
-                              width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
-                              background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
-                            }}>Google Calendar</button>
-                            <button onClick={addToCalendarIcs} style={{
-                              width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
-                              background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
-                            }}>ไฟล์ .ics (Apple Calendar / อื่น ๆ)</button>
-                          </div>
+                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูล</span>
+                          <button onClick={() => openBackupRestore("export", { fromHome: true })}
+                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
+                            <Download size={13} /> สำรองเลย
+                          </button>
+                          {closeBtn(snoozeBackupReminder)}
                         </>
                       )}
+                      {kind === "eligibility" && (
+                        <>
+                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0, marginTop: 2 }} />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#8A6A45", lineHeight: 1.6 }}>
+                            {ageOutOfRange && `อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ (${MIN_AGE}-${MAX_AGE} ปี) `}
+                            {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
+                            ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง
+                          </span>
+                          {closeBtn(dismissEligibilityWarning)}
+                        </>
+                      )}
+                      {kind === "calendar" && (
+                        <>
+                          <Calendar size={14} color="#9A3B33" style={{ flexShrink: 0 }} />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#5C4A46" }}>ให้เตือนเมื่อบริจาคได้อีกครั้งไหม</span>
+                          {/* The pill itself stays 28px tall visually; the transparent
+                              span extends its tap area to 44px without changing layout. */}
+                          <button onClick={handleAddToCalendar}
+                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F3EAE8", color: "#9A3B33", cursor: "pointer" }}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -4px" }} />
+                            เพิ่มลงปฏิทิน
+                          </button>
+                          {closeBtn(dismissCalendarReminder)}
+                        </>
+                      )}
+                    </div>
+                  );
+                };
+                return (
+                  <div style={{ position: "relative", marginBottom: 16 }}>
+                    {/* Vertical padding + matching negative margin give the
+                        44px tap areas room inside the scroller, which clips
+                        anything that overflows it. */}
+                    <div ref={reminderScrollerRef} className="no-scrollbar" role="region" aria-label={multi ? `การแจ้งเตือน ${queue.length} เรื่อง ปัดซ้ายขวาเพื่อดูเรื่องอื่น` : "การแจ้งเตือน"}
+                      onScroll={(e) => {
+                        const el = e.currentTarget;
+                        const first = el.children[0];
+                        if (!first) return;
+                        const step = first.getBoundingClientRect().width + 8;
+                        const i = Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollLeft / step)));
+                        if (i !== reminderIdx) setReminderIdx(i);
+                      }}
+                      style={{ display: "flex", gap: 8, overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", padding: "8px 0", margin: "-8px 0" }}>
+                      {queue.map((k, i) => slide(k, i))}
+                    </div>
+                    {/* Shared dots under the carousel (kept out of the slides
+                        so they don't squeeze each slide's text onto a second
+                        line). Tapping a dot jumps to that slide. */}
+                    {multi && (
+                      <div style={{ display: "flex", justifyContent: "center", gap: 2, marginTop: 4, marginBottom: -6 }}>
+                        {queue.map((k, i) => (
+                          <button key={k} aria-label={`ไปเรื่องที่ ${i + 1}`} aria-current={i === activeIdx ? "true" : undefined}
+                            onClick={() => { const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
+                            style={{ padding: 5, border: "none", background: "none", cursor: "pointer", display: "flex" }}>
+                            <span style={{ width: i === activeIdx ? 14 : 6, height: 6, borderRadius: 3, background: i === activeIdx ? "#9A3B33" : "#E3C8C3", transition: "width 0.2s ease, background 0.2s ease" }} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Calendar picker lives outside the scroller: an overflow-x
+                        container also clips vertically, which would cut this
+                        popover off below the slide. */}
+                    {showCalendarChoice && queue.includes("calendar") && (
+                      <>
+                        <div onClick={() => setShowCalendarChoice(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                        <div style={{
+                          position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 41,
+                          background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12,
+                          boxShadow: "0 10px 28px rgba(90,50,45,0.16)", padding: 6, minWidth: 190,
+                        }}>
+                          <div style={{ fontSize: 10.5, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
+                          <button onClick={addToCalendarGoogle} style={{
+                            width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
+                            background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                          }}>Google Calendar</button>
+                          <button onClick={addToCalendarIcs} style={{
+                            width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
+                            background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                          }}>ไฟล์ .ics (Apple Calendar / อื่น ๆ)</button>
+                        </div>
                       </>
                     )}
                   </div>
