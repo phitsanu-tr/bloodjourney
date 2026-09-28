@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.65";
+const APP_VERSION = "1.0.66";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5149,15 +5149,42 @@ function AppInner() {
               {stats.nextAchievement ? (
                 <button onClick={() => setTab("missions")}
                   style={{ display: "block", width: "100%", textAlign: "left", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", marginBottom: 26, cursor: "pointer", fontFamily: "inherit" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#9A3B33", marginBottom: 8 }}>
-                    <Award size={14} style={{ flexShrink: 0 }} /> ภารกิจถัดไป
-                  </div>
-                  <div style={{ fontSize: 12.5, color: "#5C4A46", marginBottom: 8 }}>
-                    อีก {stats.nextAchievement.threshold - totalCount} ครั้ง ถึง "{stats.nextAchievement.title}"
-                  </div>
-                  <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}"`} aria-valuemin={0} aria-valuemax={stats.nextAchievement.threshold} aria-valuenow={Math.min(totalCount, stats.nextAchievement.threshold)} style={{ height: 6, borderRadius: 3, background: "#F3EAE8", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.min(100, (totalCount / stats.nextAchievement.threshold) * 100)}%`, background: "#9A3B33", borderRadius: 3 }} />
-                  </div>
+                  {/* Design "D" from a ring-variant exploration: the old thin
+                      progress bar looked identical to the hero card's waiting-
+                      period bar despite meaning something different. Now the
+                      reward name leads, "อีก N ครั้ง" sits under it, and a ring
+                      with the explicit "done/goal" count sits on the right. */}
+                  {(() => {
+                    const goal = stats.nextAchievement.threshold;
+                    const done = Math.min(totalCount, goal);
+                    const size = 54, stroke = 5, r = (size - stroke) / 2, circ = 2 * Math.PI * r;
+                    const frac = goal > 0 ? done / goal : 0;
+                    const label = `${done}/${goal}`;
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#9A3B33", marginBottom: 7 }}>
+                            <Award size={14} style={{ flexShrink: 0 }} /> ภารกิจถัดไป
+                          </div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", lineHeight: 1.35 }}>{stats.nextAchievement.title}</div>
+                          <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>อีก {goal - totalCount} ครั้ง</div>
+                        </div>
+                        <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}" ${done} จาก ${goal} ครั้ง`} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}
+                          style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+                          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+                            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F3EAE8" strokeWidth={stroke} />
+                            {frac > 0 && (
+                              <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#9A3B33" strokeWidth={stroke} strokeLinecap="round"
+                                strokeDasharray={`${circ * frac} ${circ}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+                            )}
+                          </svg>
+                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: label.length > 5 ? 10.5 : 12.5, fontWeight: 700, color: "#9A3B33", fontVariantNumeric: "tabular-nums" }}>
+                            {done}<span style={{ color: "#7A6360", fontWeight: 600 }}>/{goal}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </button>
               ) : totalCount > 0 ? (
                 // All achievements unlocked — replace the teaser card with a
