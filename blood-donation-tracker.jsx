@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.70";
+const APP_VERSION = "1.0.71";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3731,12 +3731,20 @@ function AppInner() {
     showToast("success", "ได้เลย เดี๋ยวเตือนอีกทีนะ");
   };
 
-  const dismissEligibilityWarning = async () => {
+
+  // Per-item dismissals for the home reminder carousel, where the age and
+  // weight warnings are now two separate slides -- each only records its own
+  // value, so dismissing one doesn't silence the other.
+  const dismissAgeWarning = async () => {
     const ageVal = age === "" ? null : Number(age);
-    const weightVal = weight === "" ? null : Number(weight);
     setDismissedEligibilityAge(ageVal);
+    await persistUiMeta({ dismissedEligibilityAge: ageVal });
+    showToast("success", "ได้เลย เดี๋ยวเตือนอีกทีถ้าข้อมูลเปลี่ยน");
+  };
+  const dismissWeightWarning = async () => {
+    const weightVal = weight === "" ? null : Number(weight);
     setDismissedEligibilityWeight(weightVal);
-    await persistUiMeta({ dismissedEligibilityAge: ageVal, dismissedEligibilityWeight: weightVal });
+    await persistUiMeta({ dismissedEligibilityWeight: weightVal });
     showToast("success", "ได้เลย เดี๋ยวเตือนอีกทีถ้าข้อมูลเปลี่ยน");
   };
 
@@ -4182,7 +4190,6 @@ function AppInner() {
   const weightBelowMin = weight !== "" && Number(weight) < MIN_WEIGHT;
   const ageWarningDismissed = age !== "" && Number(age) === dismissedEligibilityAge;
   const weightWarningDismissed = weight !== "" && Number(weight) === dismissedEligibilityWeight;
-  const showEligibilityWarning = (ageOutOfRange && !ageWarningDismissed) || (weightBelowMin && !weightWarningDismissed);
 
   // Feeds the "เช็คคุณสมบัติก่อนบริจาค" (?tab=eligibility) page — reuses the
   // same profile fields and next-eligible-date math already computed above
@@ -5114,7 +5121,8 @@ function AppInner() {
               {(() => {
                 const queue = [];
                 if (needsBackupReminder) queue.push("backup");
-                if (showEligibilityWarning) queue.push("eligibility");
+                if (ageOutOfRange && !ageWarningDismissed) queue.push("age");
+                if (weightBelowMin && !weightWarningDismissed) queue.push("weight");
                 if (effectiveLastDateStr && !isEligible && !reminderDismissed) queue.push("calendar");
                 if (queue.length === 0) return null;
                 const multi = queue.length > 1;
@@ -5131,7 +5139,7 @@ function AppInner() {
                     <div key={kind} aria-label={multi ? `เรื่องที่ ${idx + 1} จาก ${queue.length}` : undefined} role={multi ? "group" : undefined} style={{
                       flex: multi ? "0 0 calc(100% - 16px)" : "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
                       background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
-                      padding: "10px 12px", display: "flex", alignItems: kind === "eligibility" ? "flex-start" : "center", gap: 6, minHeight: 50,
+                      padding: "10px 12px", display: "flex", alignItems: "center", gap: 6, minHeight: 50,
                     }}>
                       {kind === "backup" && (
                         <>
@@ -5145,15 +5153,24 @@ function AppInner() {
                           {closeBtn(snoozeBackupReminder)}
                         </>
                       )}
-                      {kind === "eligibility" && (
+                      {(kind === "age" || kind === "weight") && (
+                        // Age and weight used to share one two-to-three-line
+                        // slide (text + "ให้เจ้าหน้าที่...ประเมินสิทธิ์จริง"), which
+                        // made every slide in the carousel that tall. Now each is
+                        // its own one-line slide with a "ดูเกณฑ์" button to the
+                        // criteria (top of the knowledge tab, whose footer
+                        // already says the staff make the real call).
                         <>
-                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0, marginTop: 2 }} />
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#8A6A45", lineHeight: 1.6 }}>
-                            {ageOutOfRange && `อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ (${MIN_AGE}-${MAX_AGE} ปี) `}
-                            {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
-                            ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง
+                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>
+                            {kind === "age" ? `อายุอยู่นอกเกณฑ์ทั่วไป (${MIN_AGE}–${MAX_AGE} ปี)` : `น้ำหนักต่ำกว่าเกณฑ์ทั่วไป (${MIN_WEIGHT} กก.)`}
                           </span>
-                          {closeBtn(dismissEligibilityWarning)}
+                          <button onClick={() => { setTab("knowledge"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F7E2D0", color: "#7A4A1D", cursor: "pointer" }}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
+                            ดูเกณฑ์
+                          </button>
+                          {closeBtn(kind === "age" ? dismissAgeWarning : dismissWeightWarning)}
                         </>
                       )}
                       {kind === "calendar" && (
