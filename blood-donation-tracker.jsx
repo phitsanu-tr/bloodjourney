@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.80";
+const APP_VERSION = "1.0.81";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2704,8 +2704,8 @@ function AppInner() {
   // so React removes it from the DOM the instant it closes. Rather than
   // threading a "closing" state through every dialog, watch for a dialog
   // node being removed and put a static, non-interactive clone of it back
-  // for 0.16s while it fades out and sinks 8px (matching the 0.2s rise-in in
-  // the CSS above). The clone has no role/ARIA and can't be tapped, and it's
+  // for ~0.3s while it fades out and sinks 8px (same timings as the filter
+  // sheet's close -- see the CSS above). The clone has no role/ARIA and can't be tapped, and it's
   // skipped entirely with prefers-reduced-motion.
   useEffect(() => {
     if (typeof MutationObserver === "undefined") return;
@@ -2727,7 +2727,7 @@ function AppInner() {
             clone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
             clone.classList.add("dlg-exit-clone");
             document.body.appendChild(clone);
-            setTimeout(() => clone.remove(), 200);
+            setTimeout(() => clone.remove(), 320);
           }
         }
       }
@@ -4676,9 +4676,13 @@ function AppInner() {
         @keyframes dlgScrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes dlgPanelOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px); } }
         [role="dialog"][aria-modal="true"]:not([data-own-motion]) { animation: dlgScrimIn 0.2s ease; }
-        [role="dialog"][aria-modal="true"]:not([data-own-motion]) > :first-child { animation: dlgPanelIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .dlg-exit-clone { animation: dlgScrimOut 0.16s ease forwards; pointer-events: none !important; }
-        .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
+        /* Timings match the filter sheet exactly (per user request), so every
+           overlay in the app opens and closes at the same speed: backdrop in
+           0.2s, panel in 0.22s; panel out 0.16s (same ease-in curve as the
+           sheet's slide-down), backdrop out 0.26s starting 0.04s later. */
+        [role="dialog"][aria-modal="true"]:not([data-own-motion]) > :first-child { animation: dlgPanelIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .dlg-exit-clone { animation: dlgScrimOut 0.26s ease 0.04s forwards; pointer-events: none !important; }
+        .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.16s cubic-bezier(0.5, 0, 0.9, 0.6) forwards; }
         @media (prefers-reduced-motion: reduce) {
           [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
         }
