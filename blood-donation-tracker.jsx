@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.79";
+const APP_VERSION = "1.0.80";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2700,6 +2700,42 @@ function AppInner() {
     return () => clearInterval(id);
   }, [tab, showCalendarChoice]);
 
+  // Exit animation for centered dialogs: each one is rendered conditionally,
+  // so React removes it from the DOM the instant it closes. Rather than
+  // threading a "closing" state through every dialog, watch for a dialog
+  // node being removed and put a static, non-interactive clone of it back
+  // for 0.16s while it fades out and sinks 8px (matching the 0.2s rise-in in
+  // the CSS above). The clone has no role/ARIA and can't be tapped, and it's
+  // skipped entirely with prefers-reduced-motion.
+  useEffect(() => {
+    if (typeof MutationObserver === "undefined") return;
+    const obs = new MutationObserver((mutations) => {
+      let reduce = false;
+      try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+      if (reduce) return;
+      for (const m of mutations) {
+        for (const node of m.removedNodes) {
+          if (!(node instanceof HTMLElement) || node.classList.contains("dlg-exit-clone")) continue;
+          const dialogs = node.matches('[role="dialog"][aria-modal="true"]') ? [node] : [...node.querySelectorAll('[role="dialog"][aria-modal="true"]')];
+          for (const d of dialogs) {
+            if (d.hasAttribute("data-own-motion")) continue;
+            const clone = d.cloneNode(true);
+            clone.removeAttribute("role");
+            clone.removeAttribute("aria-modal");
+            clone.removeAttribute("aria-label");
+            clone.setAttribute("aria-hidden", "true");
+            clone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+            clone.classList.add("dlg-exit-clone");
+            document.body.appendChild(clone);
+            setTimeout(() => clone.remove(), 200);
+          }
+        }
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
+
   // close any open modal with Escape for keyboard users
   useEffect(() => {
     const onKey = (e) => {
@@ -4628,6 +4664,24 @@ function AppInner() {
         }
         @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes sheetDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
+        /* Centered dialogs (design "2" from form-dialog-motion-7-designs.html):
+           the dimmed backdrop fades in while the panel fades in and rises
+           14px (0.2s). Every role="dialog" overlay in the app is a backdrop
+           div whose first child is the panel, so this applies app-wide;
+           the filter sheet opts out (data-own-motion) since it has its own
+           slide. The matching exit is done by cloning the dialog as it
+           unmounts -- see the dialog-exit effect in AppInner. */
+        @keyframes dlgScrimIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes dlgPanelIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @keyframes dlgScrimOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes dlgPanelOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px); } }
+        [role="dialog"][aria-modal="true"]:not([data-own-motion]) { animation: dlgScrimIn 0.2s ease; }
+        [role="dialog"][aria-modal="true"]:not([data-own-motion]) > :first-child { animation: dlgPanelIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .dlg-exit-clone { animation: dlgScrimOut 0.16s ease forwards; pointer-events: none !important; }
+        .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
+        @media (prefers-reduced-motion: reduce) {
+          [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
+        }
         @keyframes scrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
@@ -5418,7 +5472,7 @@ function AppInner() {
                   <>
                     <div onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", zIndex: 70,
                       animation: filterSheetClosing ? "scrimOut 0.26s ease 0.04s forwards" : "fadeSwap 0.2s ease", pointerEvents: filterSheetClosing ? "none" : "auto" }} />
-                    <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ"
+                    <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ" data-own-motion=""
                       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
                       <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderRadius: "20px 20px 0 0", boxShadow: "0 -10px 30px rgba(36,26,24,0.2)",
                         padding: "10px 20px calc(24px + env(safe-area-inset-bottom))", pointerEvents: filterSheetClosing ? "none" : "auto",
