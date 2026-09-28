@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.85";
+const APP_VERSION = "1.0.86";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2086,7 +2086,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 11.5 : 15, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 9, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: 10, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -2406,6 +2406,9 @@ function AppInner() {
   // prefers-reduced-motion, while the calendar picker is open, when the page
   // is in the background, or off the home tab.
   const reminderLastTouchRef = useRef(0);
+  // Auto-advance plays through the queue once (ending back on the first
+  // slide) and then stops; swiping and the dots keep working.
+  const reminderAutoStepsRef = useRef(0);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   // Bottom sheet holding the history type + year filters (see the
@@ -2692,9 +2695,11 @@ function AppInner() {
       if (document.hidden || showCalendarChoice) return;
       if (Date.now() - reminderLastTouchRef.current < 8000) return;
       if (el.contains(document.activeElement)) return;
+      if (reminderAutoStepsRef.current >= el.children.length) return;
       const step = el.clientWidth + 8;
       const cur = Math.round(el.scrollLeft / step);
       const next = (cur + 1) % el.children.length;
+      reminderAutoStepsRef.current += 1;
       el.scrollTo({ left: next * step, behavior: "smooth" });
     }, 5000);
     return () => clearInterval(id);
@@ -4174,10 +4179,16 @@ function AppInner() {
   // Same auto-rotation for the home-tab summary card's countdownTab, on its
   // own independent 30s timer — this card cycles/overrides separately from
   // the dashboard card above.
+  // Once the user taps a type tab themselves, auto-rotation stops for the
+  // rest of the session -- it used to keep going (and the 30s timer wasn't
+  // reset), so a tap could be flipped back a second later.
+  const countdownManualRef = useRef(false);
   useEffect(() => {
     if (!hasBothDonationTypes || tab !== "home") return;
     setCountdownTab(prev => prev || soonestDonationType);
+    if (countdownManualRef.current) return;
     const id = setInterval(() => {
+      if (countdownManualRef.current) { clearInterval(id); return; }
       setCountdownTab(prev => (prev === "component" ? "whole" : "component"));
     }, 30000);
     return () => clearInterval(id);
@@ -5035,8 +5046,9 @@ function AppInner() {
                   primary action further down than they deserve given they're
                   the most important things on this tab. */}
               <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,247,245,0.08)" style={{ position: "absolute", top: -10, right: 120 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,247,245,0.07)" style={{ position: "absolute", bottom: 8, left: -4 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+                {/* Two decorative droplets that sat half outside the card edge
+                    (top, bottom-left) were removed -- clipped, they read as
+                    broken images. The remaining ones sit fully inside. */}
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,247,245,0.06)" style={{ position: "absolute", bottom: 55, left: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative", zIndex: 1 }}>
                   {totalCount === 0 ? (
@@ -5071,7 +5083,7 @@ function AppInner() {
                         which type is active -- so this tab strip carries the same
                         color signal as the rest of the tab. */}
                     {["whole", "component"].map((t) => (
-                      <button key={t} onClick={() => setCountdownTab(t)}
+                      <button key={t} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
                         style={{
                           position: "relative", display: "flex", alignItems: "center", gap: 6,
                           padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
@@ -5364,7 +5376,11 @@ function AppInner() {
                 );
               })()}
 
-              {stats.nextAchievement ? (
+              {/* Hidden for a brand-new user (totalCount === 0): an empty
+                  "หยดแรก 0/1" ring was one more "you haven't started yet"
+                  message on a screen already saying that with the welcome
+                  card and the CTA. Appears from the first record onward. */}
+              {stats.nextAchievement && totalCount > 0 ? (
                 <button onClick={() => setTab("missions")}
                   style={{ display: "block", width: "100%", textAlign: "left", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", marginBottom: 26, cursor: "pointer", fontFamily: "inherit" }}>
                   {/* Design "D" from a ring-variant exploration: the old thin
