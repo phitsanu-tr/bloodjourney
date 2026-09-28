@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.92";
+const APP_VERSION = "1.0.93";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4520,8 +4520,9 @@ function AppInner() {
 
   const visibleHistory = filteredHistory.slice(0, historyVisibleCount);
 
-  // Plain-text year dividers ("2569 · 2 ครั้ง") -- design 1 from
-  // history-year-dividers-7-designs.html without its hairline. (Tried the
+  // Year dividers -- design 3 from history-year-dividers-7-designs.html:
+  // big faded year on the left, "N ครั้ง" on the right. (Earlier: design 1
+  // without its hairline.) (Tried the
   // design 5 timeline rail first; user preferred this.) Counts come from the whole
   // filtered list (not just the loaded page) so "· N ครั้ง" is the year's
   // real total under the active type filter. Shown whenever the list has
@@ -5602,9 +5603,9 @@ function AppInner() {
                   return (
                   <React.Fragment key={d.id}>
                   {newYear && (
-                    <div role="heading" aria-level={3} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, margin: i === 0 ? "0 2px" : "10px 2px 0" }}>
-                      <span style={{ fontWeight: 600, color: "#3A2C29" }}>{y}</span>
-                      <span style={{ color: "#7A6360", fontSize: 12 }}>· {historyYearCounts[y]} ครั้ง</span>
+                    <div role="heading" aria-level={3} aria-label={`ปี ${y} · ${historyYearCounts[y]} ครั้ง`} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, margin: i === 0 ? "2px 2px 0" : "12px 2px 0" }}>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: "#D9B3AD", letterSpacing: 0.5, lineHeight: 1 }}>{y}</span>
+                      <span style={{ color: "#7A6360", fontSize: 12 }}>{historyYearCounts[y]} ครั้ง</span>
                     </div>
                   )}
                   <HistoryRow
