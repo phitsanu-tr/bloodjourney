@@ -1,11 +1,39 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import liff from "@line/liff";
+// @line/liff and recharts are loaded on demand (their own chunks) instead of
+// being bundled into the main file -- together they were a large part of a
+// ~980KB main bundle, slow to open in LINE on mobile data. liff is only ever
+// used inside LINE (main.jsx loads and inits it there before render, so by
+// the time anyone taps, this import resolves instantly); recharts is only
+// the dashboard's yearly chart.
+const openInExternalBrowser = (url) =>
+  import("@line/liff").then(({ default: liff }) => liff.openWindow({ url, external: true }));
+
+const YearAreaChart = React.lazy(() => import("recharts").then((R) => ({
+  default: function YearAreaChart({ data }) {
+    return (
+      <R.ResponsiveContainer width="100%" height="100%">
+        <R.AreaChart data={data} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="yearAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#9A3B33" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#9A3B33" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <R.CartesianGrid strokeDasharray="3 3" stroke="#EEDEDA" vertical={false} />
+          <R.XAxis dataKey="year" tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={{ stroke: "#EEDEDA" }} tickLine={false} />
+          <R.YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={false} tickLine={false} width={24} />
+          <R.Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #EEDEDA" }} formatter={(v) => [`${v} ครั้ง`, ""]} labelFormatter={(l) => `ปี ${l}`} />
+          <R.Area type="monotone" dataKey="count" stroke="#9A3B33" strokeWidth={2.5} fill="url(#yearAreaGrad)" dot={{ r: 4, fill: "#9A3B33", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+        </R.AreaChart>
+      </R.ResponsiveContainer>
+    );
+  },
+})));
 
 // True only when running inside the packaged iOS/Android app shell (Capacitor
 // WebView), never inside the LINE LIFF web build — used to route persistence
@@ -29,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.97";
+const APP_VERSION = "1.0.98";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -1157,7 +1185,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               {THAI_WEEKDAYS_SHORT.map((w, i) => {
                 const isWeekend = i === 5 || i === 6;
                 return (
-                  <div key={w} style={{ textAlign: "center", fontSize: 10.5, color: isWeekend ? "#9A3B33" : "#7A6360", fontWeight: isWeekend ? 700 : 600, padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
+                  <div key={w} style={{ textAlign: "center", fontSize: 11.5, color: isWeekend ? "#9A3B33" : "#7A6360", fontWeight: isWeekend ? 700 : 600, padding: "4px 0", fontFamily: "'Mitr', 'Inter', sans-serif" }}>{w}</div>
                 );
               })}
             </div>
@@ -2086,7 +2114,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 11.5 : 15, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 10, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -2108,7 +2136,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           </div>
         )}
         {d.loggedAt && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#7A6360", marginTop: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>
             <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
           </div>
         )}
@@ -2365,6 +2393,8 @@ function AppInner() {
   // still gates the auto-select-textarea effect below and is kept true
   // whenever this hub's export tab is open.
   const [showBackupRestore, setShowBackupRestore] = useState(false);
+  const showBackupRestoreRef = useRef(false);
+  showBackupRestoreRef.current = showBackupRestore;
   const [backupRestoreTab, setBackupRestoreTab] = useState("export");
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
@@ -2741,6 +2771,23 @@ function AppInner() {
     return () => obs.disconnect();
   }, []);
 
+  // Warm the dashboard chart's chunk well after the first screen is up
+  // (8s, then whenever the browser is idle), so switching to แดชบอร์ด later
+  // draws the chart at once and it lands in the service worker cache for
+  // offline opens -- without competing with the first load on slow mobile
+  // data. Skipped when the phone asks to save data; the chart then simply
+  // loads when the dashboard is opened.
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.connection && navigator.connection.saveData) return;
+    let idleId = null;
+    const warm = () => { import("recharts").catch(() => {}); };
+    const t = setTimeout(() => {
+      if (typeof window.requestIdleCallback === "function") idleId = window.requestIdleCallback(warm, { timeout: 5000 });
+      else warm();
+    }, 8000);
+    return () => { clearTimeout(t); if (idleId != null && window.cancelIdleCallback) window.cancelIdleCallback(idleId); };
+  }, []);
+
   // close any open modal with Escape for keyboard users
   useEffect(() => {
     const onKey = (e) => {
@@ -2769,6 +2816,16 @@ function AppInner() {
       setShowPhotoMenu(false);
       setOpenActionMenuId(null);
       setShowStorageDegradedModal(false);
+      setShowCalendarChoice(false);
+      // The backup/restore hub was missing from this list, so Escape left it
+      // open. Closing it goes through the same path as its ✕ (back to
+      // Settings unless it was opened from home) -- but only when it's
+      // actually open, or this would pop Settings open on every Escape.
+      if (showBackupRestoreRef.current) {
+        setShowBackupRestore(false);
+        if (!backupOpenedFromHomeRef.current) setShowSettings(true);
+        backupOpenedFromHomeRef.current = false;
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -3812,7 +3869,7 @@ function AppInner() {
       // no field names or values in the clear, just `?dl=1&d=<token>`.
       const token = await encodeShareToken(payload);
       const url = `${window.location.origin}${window.location.pathname}?dl=1&d=${token}`;
-      liff.openWindow({ url, external: true });
+      await openInExternalBrowser(url);
     } catch (e) {
       showToast("error", "เปิดเบราว์เซอร์ภายนอกไม่สำเร็จ");
     }
@@ -4240,7 +4297,7 @@ function AppInner() {
     const details = "แจ้งเตือนจากแอป Blood Journey — วันที่คำนวณจากรอบบริจาคที่ตั้งไว้ กรุณายึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาคจริง";
     const calendarUrl = buildGoogleCalendarUrl(nextEligible, title, details);
     if (isLineInAppBrowser) {
-      liff.openWindow({ url: calendarUrl, external: true });
+      openInExternalBrowser(calendarUrl).catch(() => window.open(calendarUrl, "_blank"));
     } else {
       window.open(calendarUrl, "_blank");
     }
@@ -4266,7 +4323,7 @@ function AppInner() {
       params.set("date", dateToLocalStr(nextEligible));
       params.set("title", title);
       const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-      liff.openWindow({ url, external: true });
+      openInExternalBrowser(url).catch(() => window.open(url, "_blank"));
       return;
     }
     try {
@@ -4931,7 +4988,7 @@ function AppInner() {
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>Blood Journey</div>
-                <div style={{ fontSize: 10.5, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
+                <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
@@ -5078,7 +5135,7 @@ function AppInner() {
                       <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>บริจาคโลหิตสะสมทั้งหมด</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
                         <div style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 18, fontWeight: 500 }}> ครั้ง</span></div>
-                        <span style={{ fontSize: 10.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)" }}>≈ {estLiters} ลิตร</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)" }}>≈ {estLiters} ลิตร</span>
                       </div>
                     </div>
                   )}
@@ -5110,7 +5167,7 @@ function AppInner() {
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
                         {t === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[t]}
                         <span style={{
-                          fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
+                          fontSize: 11, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
                           background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           transition: "background 0.35s ease, color 0.35s ease",
@@ -5212,7 +5269,7 @@ function AppInner() {
                   </div>
                 )}
                 {showCycleInfo && (effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
-                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 10.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 11.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
                     คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
                     เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค
                   </div>
@@ -5406,7 +5463,7 @@ function AppInner() {
                           background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12,
                           boxShadow: "0 10px 28px rgba(90,50,45,0.16)", padding: 6, minWidth: 190,
                         }}>
-                          <div style={{ fontSize: 10.5, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
+                          <div style={{ fontSize: 11.5, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
                           <button onClick={addToCalendarGoogle} style={{
                             width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
                             background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
@@ -5458,7 +5515,7 @@ function AppInner() {
                                 strokeDasharray={`${circ * frac} ${circ}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
                             )}
                           </svg>
-                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: label.length > 5 ? 10.5 : 12.5, fontWeight: 700, color: "#9A3B33", fontVariantNumeric: "tabular-nums" }}>
+                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: label.length > 5 ? 11 : 12.5, fontWeight: 700, color: "#9A3B33", fontVariantNumeric: "tabular-nums" }}>
                             {done}<span style={{ color: "#7A6360", fontWeight: 600 }}>/{goal}</span>
                           </div>
                         </div>
@@ -5508,7 +5565,7 @@ function AppInner() {
                         border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, borderRadius: 9, padding: "5px 10px" }}>
                       <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -2px" }} />
                       <SlidersHorizontal size={13} /> ตัวกรอง
-                      {on && <span style={{ background: "#9A3B33", color: "#FFFFFF", fontSize: 10, fontWeight: 700, borderRadius: 9, padding: "0 6px", lineHeight: "16px" }}>{activeCount}</span>}
+                      {on && <span style={{ background: "#9A3B33", color: "#FFFFFF", fontSize: 11, fontWeight: 700, borderRadius: 9, padding: "0 6px", lineHeight: "17px" }}>{activeCount}</span>}
                     </button>
                   );
                 })()}
@@ -5678,7 +5735,7 @@ function AppInner() {
                     <div style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
-                        <div style={{ fontSize: 8, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                        <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         {/* "ทั้งหมด" with both types carried over shows the combined total plus
@@ -5711,7 +5768,7 @@ function AppInner() {
                           </div>
                         )}
                         {startingCountUpdatedAt && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#B7A5A1", marginTop: 4 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#7A6360", marginTop: 4 }}>
                             <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", startingCountUpdatedAt)}
                           </div>
                         )}
@@ -5854,10 +5911,10 @@ function AppInner() {
                       </div>
                       {hasBothDonationTypes && (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#B39B96", whiteSpace: "nowrap" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
                             <Droplet size={10} color="#B39B96" style={{ flexShrink: 0 }} /> โลหิตรวม 1 ครั้ง ≈ 3 คน
                           </span>
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#B39B96", whiteSpace: "nowrap" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
                             <Droplets size={10} color="#B39B96" style={{ flexShrink: 0 }} /> พลาสมา/เกล็ดเลือด 1 ครั้ง ≈ 1 คน
                           </span>
                         </div>
@@ -5879,12 +5936,12 @@ function AppInner() {
                       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 11.5, color: "#5C4A46" }}>
                         <Droplet size={11} color="#9A3B33" style={{ flexShrink: 0 }} />
                         <span style={{ whiteSpace: "nowrap" }}>โลหิตรวม <b style={{ fontSize: 13, color: "#3A2C29" }}>{stats.avgGapWhole ?? "—"}{stats.avgGapWhole != null ? " วัน" : ""}</b></span>
-                        {stats.lastGapWhole != null ? <span style={{ fontSize: 10.5, color: "#B39B96", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapWhole} วัน)</span> : null}
+                        {stats.lastGapWhole != null ? <span style={{ fontSize: 11.5, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapWhole} วัน)</span> : null}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 11.5, color: "#5C4A46" }}>
                         <Droplets size={11} color="#9A3B33" style={{ flexShrink: 0 }} />
                         <span style={{ whiteSpace: "nowrap" }}>พลาสมา/เกล็ดเลือด <b style={{ fontSize: 13, color: "#3A2C29" }}>{stats.avgGapComponent ?? "—"}{stats.avgGapComponent != null ? " วัน" : ""}</b></span>
-                        {stats.lastGapComponent != null ? <span style={{ fontSize: 10.5, color: "#B39B96", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapComponent} วัน)</span> : null}
+                        {stats.lastGapComponent != null ? <span style={{ fontSize: 11.5, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapComponent} วัน)</span> : null}
                       </div>
                     </div>
                   ) : (
@@ -5922,7 +5979,7 @@ function AppInner() {
                       <div style={{ fontSize: 11.5, color: "#5C4A46" }}>
                         <span style={{ color: "#7A6360", fontWeight: 600 }}>ปีนี้</span> <b style={{ color: "#3A2C29" }}>{stats.thisYearCount} ครั้ง</b>
                       </div>
-                      <div style={{ fontSize: 10.5, color: "#B39B96", marginTop: 2 }}>
+                      <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>
                         ห่างจากสถิติ {stats.busiestCount - stats.thisYearCount} ครั้ง
                       </div>
                     </div>
@@ -5947,7 +6004,7 @@ function AppInner() {
                         }}>
                           {stats.thisYearCount >= stats.lastYearCount ? "▲" : "▼"} {stats.thisYearCount >= stats.lastYearCount ? "+" : ""}{stats.thisYearCount - stats.lastYearCount} จากปี {buddhistYear(new Date()) - 1}
                         </div>
-                        <div style={{ fontSize: 10.5, color: "#7A6360", marginTop: 5 }}>ปีก่อน: {stats.lastYearCount} ครั้ง</div>
+                        <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 5 }}>ปีก่อน: {stats.lastYearCount} ครั้ง</div>
                       </div>
                     ) : (
                       <div style={{ fontSize: 11, color: "#B39B96", textAlign: "right", maxWidth: 130, lineHeight: 1.5 }}>ปีก่อนหน้ายังไม่มีข้อมูลให้เทียบ</div>
@@ -5963,29 +6020,17 @@ function AppInner() {
                 ) : (
                   <div ref={yearChartScrollRef} className="no-scrollbar" style={{ width: "100%", height: 180, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                     <div style={{ width: stats.yearData.length > YEAR_CHART_VISIBLE_COUNT ? `${Math.round((stats.yearData.length / YEAR_CHART_VISIBLE_COUNT) * 100)}%` : "100%", minWidth: "100%", height: "100%" }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={stats.yearData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="yearAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#9A3B33" stopOpacity={0.35} />
-                              <stop offset="100%" stopColor="#9A3B33" stopOpacity={0.02} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#EEDEDA" vertical={false} />
-                          <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={{ stroke: "#EEDEDA" }} tickLine={false} />
-                          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={false} tickLine={false} width={24} />
-                          <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #EEDEDA" }} formatter={(v) => [`${v} ครั้ง`, ""]} labelFormatter={(l) => `ปี ${l}`} />
-                          <Area type="monotone" dataKey="count" stroke="#9A3B33" strokeWidth={2.5} fill="url(#yearAreaGrad)" dot={{ r: 4, fill: "#9A3B33", strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                        </AreaChart>
-                      </ResponsiveContainer>
+                      <React.Suspense fallback={<div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#7A6360" }}>กำลังโหลดกราฟ…</div>}>
+                        <YearAreaChart data={stats.yearData} />
+                      </React.Suspense>
                     </div>
                   </div>
                 )}
                 {stats.yearData.length > YEAR_CHART_VISIBLE_COUNT && (
-                  <div style={{ textAlign: "center", fontSize: 10, color: "#B39B96", marginTop: 2 }}>← เลื่อนดูปีก่อนหน้าได้</div>
+                  <div style={{ textAlign: "center", fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>← เลื่อนดูปีก่อนหน้าได้</div>
                 )}
                 {startingCountNum > 0 && (
-                  <p style={{ fontSize: 10.5, color: "#B39B96", margin: "8px 4px 4px", lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 11.5, color: "#7A6360", margin: "8px 4px 4px", lineHeight: 1.5 }}>
                     * ไม่รวมยอดสะสมยกมา {startingCountNum} ครั้ง เนื่องจากไม่มีวันที่รายครั้งให้แสดงในกราฟ (แต่รวมอยู่ในจำนวนครั้งสะสมและปริมาณโลหิตด้านบนแล้ว)
                   </p>
                 )}
@@ -6032,7 +6077,7 @@ function AppInner() {
                           </svg>
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>{total}</div>
-                            <div style={{ fontSize: 9, color: "#7A6360" }}>ครั้ง</div>
+                            <div style={{ fontSize: 11, color: "#7A6360" }}>ครั้ง</div>
                           </div>
                         </div>
                         <div style={{ flex: 1 }}>
@@ -6057,7 +6102,7 @@ function AppInner() {
                   {topLocations.map((loc, i) => (
                     <div key={loc.location} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: i === topLocations.length - 1 ? "none" : "1px solid #F3E7E4" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: "#F3EAE8", color: "#9A3B33", fontSize: 10.5, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+                        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: "#F3EAE8", color: "#9A3B33", fontSize: 11.5, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
                         <span style={{ fontSize: 12.5, color: "#3A2C29", wordBreak: "break-word" }}>{loc.location}</span>
                       </div>
                       <span style={{ fontSize: 12, color: "#7A6360", flexShrink: 0, marginLeft: 8 }}>{loc.count} ครั้ง</span>
@@ -6149,7 +6194,7 @@ function AppInner() {
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
                         {isNext && (
-                          <span style={{ position: "absolute", top: -8, left: 12, fontSize: 9.5, fontWeight: 700, color: "#FFF7F5", background: "#9A3B33", padding: "2px 8px", borderRadius: 10, whiteSpace: "nowrap" }}>ถัดไป</span>
+                          <span style={{ position: "absolute", top: -8, left: 12, fontSize: 11, fontWeight: 700, color: "#FFF7F5", background: "#9A3B33", padding: "2px 8px", borderRadius: 10, whiteSpace: "nowrap" }}>ถัดไป</span>
                         )}
                         <div style={{ height: 40, display: "flex", alignItems: "center", marginBottom: 10 }}>
                           {unlocked ? (
@@ -6192,7 +6237,7 @@ function AppInner() {
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
                         {isNext && (
-                          <span style={{ position: "absolute", top: -8, left: 12, fontSize: 9.5, fontWeight: 700, color: "#FFF7F5", background: "#9A3B33", padding: "2px 8px", borderRadius: 10, whiteSpace: "nowrap" }}>ถัดไป</span>
+                          <span style={{ position: "absolute", top: -8, left: 12, fontSize: 11, fontWeight: 700, color: "#FFF7F5", background: "#9A3B33", padding: "2px 8px", borderRadius: 10, whiteSpace: "nowrap" }}>ถัดไป</span>
                         )}
                         <div style={{ height: 40, display: "flex", alignItems: "center", marginBottom: 10 }}>
                           {unlocked ? (
@@ -6902,7 +6947,7 @@ function AppInner() {
               </button>
               <div title="ช่องทางนี้ยังไม่เปิดให้ใช้งานในตอนนี้" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 8px", fontSize: 13.5, color: "#B7A5A1", cursor: "default" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Mail size={16} color="#B7A5A1" /> ส่งความคิดเห็น / แจ้งปัญหา</span>
-                <span style={{ fontSize: 10.5, background: "#F3E7E4", color: "#9A8480", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
+                <span style={{ fontSize: 11.5, background: "#F3E7E4", color: "#9A8480", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
               </div>
             </div>
           </div>

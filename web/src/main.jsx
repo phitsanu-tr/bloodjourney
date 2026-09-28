@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import liff from "@line/liff";
 import { Capacitor } from "@capacitor/core";
 import App from "./App.jsx";
 import DownloadPage from "./DownloadPage.jsx";
@@ -72,12 +71,20 @@ async function bootstrap() {
     return;
   }
 
-  if (!isNativeApp) {
+  // @line/liff is its own chunk, loaded only when actually inside LINE
+  // (LINE's in-app browser / LIFF put "Line/" or "LIFF/" in the user
+  // agent). Everywhere else -- a regular browser tab or the installed PWA --
+  // liff.init() used to be attempted anyway and always failed, so skipping
+  // it there changes nothing except not downloading the SDK. Inside LINE it
+  // is still loaded and initialised before render, exactly as before, so
+  // liff.openWindow() is ready the moment the app appears.
+  const inLine = /Line\/|LIFF\//.test(navigator.userAgent || "");
+  if (!isNativeApp && inLine) {
     try {
+      const { default: liff } = await import("@line/liff");
       await liff.init({ liffId: LIFF_ID });
     } catch (err) {
-      // Expected whenever this is opened outside LINE (direct browser visit,
-      // PWA launch from the home screen, etc.) — not an error case anymore.
+      // Init can still fail (e.g. network) -- the app renders regardless.
     }
   }
 
