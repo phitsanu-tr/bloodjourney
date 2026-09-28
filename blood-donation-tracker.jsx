@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.67";
+const APP_VERSION = "1.0.68";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3384,18 +3384,26 @@ function AppInner() {
   // the whole page. Now we always show an on-screen preview the user can
   // copy manually, and only attempt the real download as a best-effort
   // bonus wrapped in its own try/catch.
+  // Records that a backup actually left the app. Previously exportData()
+  // did this the moment the export preview merely *opened*, so just peeking
+  // at the export hub and closing it silenced the home-tab "ยังไม่ได้สำรอง
+  // ข้อมูล" banner without anything being saved. Now it's only called once
+  // a file save/share or a copy has actually succeeded.
+  const markBackedUp = async () => {
+    try {
+      await storage.set("backupMeta", JSON.stringify({ lastExportCount: donations.length, lastExportAt: new Date().toISOString() }));
+      setLastExportCount(donations.length);
+      setBackupSnoozeCount(null);
+      await persistUiMeta({ backupSnoozeCount: null });
+    } catch (e) {}
+  };
+
   const exportData = async () => {
     try {
       const payload = { nickname, age, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
       setShowExportPreview(true);
-      try {
-        await storage.set("backupMeta", JSON.stringify({ lastExportCount: donations.length, lastExportAt: new Date().toISOString() }));
-        setLastExportCount(donations.length);
-        setBackupSnoozeCount(null);
-        await persistUiMeta({ backupSnoozeCount: null });
-      } catch (e) {}
     } catch (e) {
       showToast("error", "เตรียมข้อมูลส่งออกไม่สำเร็จ ลองอีกครั้ง");
     }
@@ -3418,6 +3426,7 @@ function AppInner() {
         const base64Data = btoa(unescape(encodeURIComponent(exportJsonText)));
         await nativeSaveAndShare({ base64Data, filename, mimeType: "application/json", dialogTitle: "บันทึกไฟล์สำรองข้อมูล" });
         showToast("success", "เปิดเมนูบันทึก/แชร์ไฟล์แล้ว");
+        markBackedUp();
       } catch (e) {
         showToast("error", "บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด \"คัดลอกข้อความ\" แทน");
       }
@@ -3429,6 +3438,7 @@ function AppInner() {
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title: "Blood Journey - ข้อมูลสำรอง" });
           showToast("success", "เปิดเมนูแชร์ไฟล์แล้ว — เลือก \"บันทึกลงไฟล์\" หรือส่งเก็บไว้กับตัวเองได้เลย");
+          markBackedUp();
           return;
         }
       }
@@ -3460,6 +3470,9 @@ function AppInner() {
         showToast("success", "ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ ให้กด \"คัดลอกข้อความ\" แล้ววางเก็บเองแทน");
       } else {
         showToast("success", "เริ่มดาวน์โหลดไฟล์แล้ว");
+        // Only outside LINE -- inside LINE this click can be a silent no-op,
+        // so it isn't counted as a confirmed backup there.
+        markBackedUp();
       }
     } catch (e) {
       showToast("error", "ดาวน์โหลดไฟล์อัตโนมัติไม่ได้ในหน้านี้ — คัดลอกข้อความด้านล่างไปเก็บเองแทนได้เลย");
@@ -3474,6 +3487,7 @@ function AppInner() {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(exportJsonText);
         showToast("success", "คัดลอกข้อมูลแล้ว — วางเก็บไว้ในไฟล์ข้อความหรือโน้ตของคุณได้เลย");
+        markBackedUp();
         return;
       }
     } catch (e) {}
@@ -3489,6 +3503,7 @@ function AppInner() {
         const ok = document.execCommand && document.execCommand("copy");
         if (ok) {
           showToast("success", "คัดลอกข้อมูลแล้ว — วางเก็บไว้ในไฟล์ข้อความหรือโน้ตของคุณได้เลย");
+          markBackedUp();
           return;
         }
       }
