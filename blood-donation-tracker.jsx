@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.82";
+const APP_VERSION = "1.0.83";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4890,19 +4890,15 @@ function AppInner() {
               when there's no notch to clear. Keep this in sync with the
               app-shell's compensating top padding above if it changes. */}
           <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", position: "relative", overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
-            {/* The app's decorative droplet watermark (drawn once, fixed to
-                the viewport, at zIndex:-1) used to be visible right through
-                the header back when the header had no background of its own
-                and simply scrolled away as normal content. Now that the
-                header is its own solid, opaque, position:fixed bar (needed
-                so scrolled-past content doesn't show through it illegibly),
-                it sits ABOVE that watermark layer and blocks it in this one
-                spot. Redrawing the same two top-corner droplets here,
-                confined to the header's own box via overflow:hidden,
-                restores the original look without giving up the opaque
-                background scrolled content needs. */}
-            <svg width="90" height="109" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", top: -20, right: -10, pointerEvents: "none" }} aria-hidden="true"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-            <svg width="30" height="36" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: 40, right: 90, pointerEvents: "none" }} aria-hidden="true"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+            {/* The header is an opaque fixed bar sitting above the app's
+                background layer, so it blocks the top-right glow there. Redraw
+                that same glow here (identical size/offset -- both this bar and
+                the background layer are the same 420px-max column starting at
+                the top of the viewport), clipped by overflow:hidden, so it
+                continues seamlessly across the header's bottom edge. (Used to
+                redraw two droplets for the same reason, back when the
+                background was droplets; those clashed with the glow.) */}
+            <div aria-hidden="true" style={{ position: "absolute", width: 320, height: 320, right: -120, top: -110, borderRadius: "50%", pointerEvents: "none", background: "radial-gradient(circle, rgba(214,120,108,0.22) 0%, rgba(214,120,108,0) 70%)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 9, position: "relative" }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
