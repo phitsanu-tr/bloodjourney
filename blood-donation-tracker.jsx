@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.66";
+const APP_VERSION = "1.0.67";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3870,7 +3870,12 @@ function AppInner() {
   // an import tab. Reuses exportData/exportJsonText and
   // pasteImportText/confirmPasteImport exactly as before — only the entry
   // point and the surrounding chrome changed.
-  const openBackupRestore = (tab) => {
+  // Remembers where the hub was opened from, so closing it returns there:
+  // Settings when opened from the Settings rows, or straight back to the
+  // home tab when opened from the home "ยังไม่ได้สำรองข้อมูล" banner.
+  const backupOpenedFromHomeRef = useRef(false);
+  const openBackupRestore = (tab, { fromHome = false } = {}) => {
+    backupOpenedFromHomeRef.current = fromHome;
     setShowSettings(false);
     setError("");
     setBackupRestoreTab(tab);
@@ -3896,7 +3901,8 @@ function AppInner() {
   const closeBackupRestore = () => {
     setShowBackupRestore(false);
     setShowExportPreview(false);
-    setShowSettings(true);
+    if (!backupOpenedFromHomeRef.current) setShowSettings(true);
+    backupOpenedFromHomeRef.current = false;
   };
 
   const confirmPasteImport = async () => {
@@ -4982,8 +4988,14 @@ function AppInner() {
                         // Eligible again -- previously the card stopped at this
                         // one line with nothing to do next. Links straight to the
                         // existing "เตรียมตัวก่อนบริจาค" tips on the knowledge tab.
+                        // Headline sized/weighted the same as the waiting state's
+                        // "อีก N วัน" -- being eligible again is the best news this
+                        // card ever shows, and it used to be the quietest line.
                         <>
-                          <div>บริจาคได้แล้ววันนี้</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>บริจาคได้แล้ววันนี้</div>
+                          {hasBothDonationTypes && (
+                            <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>สำหรับ{DONATION_TYPE_LABELS[activeCountdownType]}</div>
+                          )}
                           <button
                             onClick={() => {
                               setTab("knowledge");
@@ -5000,7 +5012,10 @@ function AppInner() {
                         // line). Now it leads, with the exact date underneath.
                         <>
                           <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</div>
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาคได้อีกครั้ง {toBuddhistDate(nextEligible)}</div>
+                          {/* With two donation types the countdown depends on which tab is
+                              selected -- name the type here so the date can't be
+                              misread as the other type's. */}
+                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง {toBuddhistDate(nextEligible)}</div>
                         </>
                       )
                     ) : hasBothDonationTypes || totalCount > 0 ? (
@@ -5125,7 +5140,7 @@ function AppInner() {
                           {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
                           ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง
                         </div>
-                        <button onClick={dismissEligibilityWarning} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+                        <button onClick={dismissEligibilityWarning} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, margin: "-4px 0 -12px", background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" }}>
                           เตือนทีหลัง
                         </button>
                       </div>
@@ -5136,10 +5151,22 @@ function AppInner() {
                       <AlertTriangle size={16} color="#B5651D" style={{ marginTop: 2, flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12.5, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
-                        <div style={{ fontSize: 11.5, color: "#8A6A45", marginTop: 2, lineHeight: 1.5 }}>ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น ส่งออกไฟล์ที่หน้าตั้งค่าเพื่อป้องกันข้อมูลหาย</div>
-                        <button onClick={snoozeBackupReminder} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
-                          เตือนทีหลัง
-                        </button>
+                        <div style={{ fontSize: 11.5, color: "#8A6A45", marginTop: 2, lineHeight: 1.5 }}>ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น สำรองไว้เผื่อเปลี่ยนเครื่องหรือข้อมูลหาย</div>
+                        {/* Previously this banner only told the user to go find
+                            export in Settings themselves, with "เตือนทีหลัง" as the
+                            only button. Now the primary action opens the export
+                            hub directly (closing it returns here, not to
+                            Settings), and "เตือนทีหลัง" gets a 44px tap area. */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10, flexWrap: "wrap" }}>
+                          <button onClick={() => openBackupRestore("export", { fromHome: true })}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 36, padding: "0 14px", borderRadius: 10, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", position: "relative" }}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-4px 0" }} />
+                            <Download size={14} /> สำรองข้อมูลตอนนี้
+                          </button>
+                          <button onClick={snoozeBackupReminder} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, margin: "-4px 0", background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" }}>
+                            เตือนทีหลัง
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
