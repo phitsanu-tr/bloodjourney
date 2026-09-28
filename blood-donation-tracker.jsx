@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.78";
+const APP_VERSION = "1.0.79";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2415,6 +2415,12 @@ function AppInner() {
   // sheet drops away quickly (0.16s) while the dimmed backdrop fades a beat
   // behind it, then unmounts. With prefers-reduced-motion it just closes.
   const [filterSheetClosing, setFilterSheetClosing] = useState(false);
+  // Draft filters edited inside the sheet. The list behind no longer
+  // updates on every chip tap -- the draft is only committed to
+  // historyTypeFilter/historyYearFilter when "เสร็จ" is pressed; ✕, a
+  // backdrop tap or Escape close the sheet and discard the draft.
+  const [draftTypeFilter, setDraftTypeFilter] = useState("all");
+  const [draftYearFilter, setDraftYearFilter] = useState("all");
   const filterCloseTimerRef = useRef(null);
   const closeFilterSheet = () => {
     let reduce = false;
@@ -5368,9 +5374,10 @@ function AppInner() {
                   the type chips and the year dropdown that used to sit here
                   are combined behind one "ตัวกรอง" button, whose badge shows
                   how many filters are active. It opens a bottom sheet with
-                  type chips and year chips; each tap applies immediately
-                  (the list behind updates live and the sheet header shows
-                  the resulting count), no confirm button. */}
+                  type chips and year chips. Taps only change a draft (the
+                  header previews the resulting count, or "ไม่มีรายการ" in red
+                  when it would be empty); "เสร็จ" applies it, while ✕ /
+                  backdrop / Escape discard it. */}
               {totalCount > 0 && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
@@ -5378,7 +5385,7 @@ function AppInner() {
                   const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
                   const on = activeCount > 0;
                   return (
-                    <button onClick={() => { clearTimeout(filterCloseTimerRef.current); setFilterSheetClosing(false); setShowFilterSheet(true); }} aria-haspopup="dialog"
+                    <button onClick={() => { clearTimeout(filterCloseTimerRef.current); setFilterSheetClosing(false); setDraftTypeFilter(historyTypeFilter); setDraftYearFilter(historyYearFilter); setShowFilterSheet(true); }} aria-haspopup="dialog"
                       aria-label={on ? `ตัวกรอง (ใช้อยู่ ${activeCount} อย่าง)` : "ตัวกรอง"}
                       style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, lineHeight: 1.35, fontFamily: "inherit", cursor: "pointer",
                         color: on ? "#9A3B33" : "#5C4A46", fontWeight: on ? 600 : 400, background: on ? "#FBF1EF" : "#FFFFFF",
@@ -5393,7 +5400,18 @@ function AppInner() {
               )}
 
               {showFilterSheet && (() => {
-                const shownCount = filteredHistory.length + (historyYearFilter === "all" ? displayedStartingCount : 0);
+                // Count the draft selection would show (records + carry-over
+                // when "ทุกปี"), so the header previews the result before
+                // "เสร็จ" applies it.
+                const draftRecords = donations.filter(d =>
+                  (draftTypeFilter === "all" || (d.type || DEFAULT_DONATION_TYPE) === draftTypeFilter)
+                  && (draftYearFilter === "all" || String(buddhistYear(d.date)) === draftYearFilter)).length;
+                const draftCarry = draftYearFilter !== "all" ? 0
+                  : draftTypeFilter === "whole" ? startingCountWholeNum
+                  : draftTypeFilter === "component" ? startingCountComponentNum
+                  : startingCountNum;
+                const shownCount = draftRecords + draftCarry;
+                const draftActive = draftTypeFilter !== "all" || draftYearFilter !== "all";
                 const chipBase = { position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, padding: "7px 14px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer" };
                 const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
                 return (
@@ -5408,17 +5426,19 @@ function AppInner() {
                         <div style={{ width: 38, height: 4, borderRadius: 2, background: "#E3C8C3", margin: "0 auto 12px" }} />
                         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
                           <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
-                          <div aria-live="polite" style={{ fontSize: 12, color: "#7A6360", marginLeft: 8 }}>{shownCount} ครั้ง</div>
+                          <div aria-live="polite" style={{ fontSize: 12, marginLeft: 8, color: shownCount === 0 ? "#B3261E" : "#7A6360", fontWeight: shownCount === 0 ? 600 : 400 }}>
+                            {shownCount === 0 ? "ไม่มีรายการ" : `${shownCount} ครั้ง`}
+                          </div>
                           {/* One-tap reset back to ทั้งหมด + ทุกปี; only shown while a
                               filter is actually active. */}
-                          {(historyTypeFilter !== "all" || historyYearFilter !== "all") && (
-                            <button onClick={() => { setHistoryTypeFilter("all"); setHistoryYearFilter("all"); }}
+                          {draftActive && (
+                            <button onClick={() => { setDraftTypeFilter("all"); setDraftYearFilter("all"); }}
                               style={{ marginLeft: "auto", minHeight: 44, margin: "-11px 4px -11px auto", padding: "0 8px", border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
                               ล้างตัวกรอง
                             </button>
                           )}
                           <button onClick={closeFilterSheet} aria-label="ปิด"
-                            style={{ marginLeft: "auto", width: 44, height: 44, margin: (historyTypeFilter !== "all" || historyYearFilter !== "all") ? "-11px -11px -11px 0" : "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            style={{ marginLeft: "auto", width: 44, height: 44, margin: draftActive ? "-11px -11px -11px 0" : "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <X size={19} />
                           </button>
                         </div>
@@ -5432,9 +5452,9 @@ function AppInner() {
                                 { key: "component", label: DONATION_TYPE_LABELS.component },
                               ].map(({ key, label }) => {
                                 const tint = key === "all" ? { bg: "#F3EAE8", text: "#9A3B33" } : DONATION_TYPE_TINT[key];
-                                const selected = historyTypeFilter === key;
+                                const selected = draftTypeFilter === key;
                                 return (
-                                  <button key={key} role="radio" aria-checked={selected} onClick={() => setHistoryTypeFilter(key)}
+                                  <button key={key} role="radio" aria-checked={selected} onClick={() => setDraftTypeFilter(key)}
                                     style={{ ...chipBase, fontWeight: 600, border: "none", color: selected ? "#FFF7F5" : tint.text, background: selected ? tint.text : tint.bg }}>
                                     {hit}
                                     {key === "component" ? <Droplets size={12} /> : key === "whole" ? <Droplet size={12} /> : null}
@@ -5450,9 +5470,9 @@ function AppInner() {
                             <div style={{ fontSize: 12, color: "#7A6360", margin: "0 0 8px" }}>ปี</div>
                             <div role="radiogroup" aria-label="ปี" style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 220, overflowY: "auto", padding: 2, margin: -2 }}>
                               {["all", ...historyYears].map((y) => {
-                                const selected = historyYearFilter === y;
+                                const selected = draftYearFilter === y;
                                 return (
-                                  <button key={y} role="radio" aria-checked={selected} onClick={() => setHistoryYearFilter(y)}
+                                  <button key={y} role="radio" aria-checked={selected} onClick={() => setDraftYearFilter(y)}
                                     style={{ ...chipBase, fontWeight: selected ? 600 : 400, border: `1px solid ${selected ? "#3A2C29" : "#E3C8C3"}`,
                                       background: selected ? "#3A2C29" : "#FFFFFF", color: selected ? "#FFF7F5" : "#5C4A46" }}>
                                     {hit}
@@ -5463,10 +5483,8 @@ function AppInner() {
                             </div>
                           </>
                         )}
-                        {/* "เสร็จ" (design "6" from filter-sheet-buttons-6-designs.html):
-                            filters already apply instantly, so this just closes the
-                            sheet -- there's nothing to confirm or cancel. */}
-                        <button onClick={closeFilterSheet}
+                        {/* "เสร็จ" applies the draft filters, then closes. */}
+                        <button onClick={() => { setHistoryTypeFilter(draftTypeFilter); setHistoryYearFilter(draftYearFilter); closeFilterSheet(); }}
                           style={{ width: "100%", marginTop: 20, minHeight: 46, border: "none", borderRadius: 12, background: "#9A3B33", color: "#FFF7F5", fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                           เสร็จ
                         </button>
