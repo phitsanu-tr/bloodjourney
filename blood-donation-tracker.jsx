@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, ChevronDown, Check } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.75";
+const APP_VERSION = "1.0.76";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2408,12 +2408,9 @@ function AppInner() {
   const reminderLastTouchRef = useRef(0);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
-  // Custom year picker (design "2" from year-picker-8-designs.html) replacing
-  // the native <select>, whose popup looked completely different on iOS
-  // (anchored menu) vs Android (centered dialog with system-green radios).
-  const [showYearMenu, setShowYearMenu] = useState(false);
-  const yearMenuRef = useRef(null);
-  const yearTriggerRef = useRef(null);
+  // Bottom sheet holding the history type + year filters (see the
+  // "ตัวกรอง" button above the history list).
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
   const [historyVisibleCount, setHistoryVisibleCount] = useState(HISTORY_PAGE_SIZE);
   const fileInputRef = useRef(null);
@@ -2445,7 +2442,7 @@ function AppInner() {
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
-    || showBackupRestore || showShareCard;
+    || showBackupRestore || showShareCard || showFilterSheet;
   useEffect(() => {
     if (anyModalOpen) {
       scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
@@ -2705,7 +2702,7 @@ function AppInner() {
       // popups whose only other dismissal is a non-focusable click-outside
       // backdrop — a keyboard-only user opening either had no way to close
       // it without picking an option. Escape now closes these too.
-      setShowYearMenu(false);
+      setShowFilterSheet(false);
       setShowPhotoMenu(false);
       setOpenActionMenuId(null);
       setShowStorageDegradedModal(false);
@@ -4369,30 +4366,6 @@ function AppInner() {
     const set = new Set(donations.map(d => String(buddhistYear(d.date))));
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [donations]);
-  // Record counts per Buddhist year for the year picker, respecting the
-  // current type filter so the numbers match what picking that year shows.
-  const historyYearCounts = useMemo(() => {
-    const counts = { all: 0 };
-    donations.forEach(d => {
-      if (historyTypeFilter !== "all" && (d.type || DEFAULT_DONATION_TYPE) !== historyTypeFilter) return;
-      const y = String(buddhistYear(d.date));
-      counts[y] = (counts[y] || 0) + 1;
-      counts.all += 1;
-    });
-    return counts;
-  }, [donations, historyTypeFilter]);
-  // On open: move focus to the selected option (keyboard/screen readers),
-  // and if the menu would run under the bottom nav, scroll it into view.
-  useEffect(() => {
-    if (!showYearMenu) return;
-    const menu = yearMenuRef.current;
-    if (!menu) return;
-    const sel = menu.querySelector('[aria-selected="true"]') || menu.querySelector('[role="option"]');
-    try { sel?.focus({ preventScroll: true }); } catch (e) {}
-    const r = menu.getBoundingClientRect();
-    const limit = window.innerHeight - 96;
-    if (r.bottom > limit) window.scrollBy({ top: r.bottom - limit, behavior: "smooth" });
-  }, [showYearMenu]);
 
   // Maps each donation id to its overall sequence number ("ครั้งที่ N"),
   // counting the carried-over starting count first, then each in-app record
@@ -4631,6 +4604,7 @@ function AppInner() {
         select {
           font-family: inherit;
         }
+        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -5372,97 +5346,100 @@ function AppInner() {
                   brand-new user (totalCount === 0): an empty "ประวัติ" section
                   saying "กดปุ่มด้านบนเพื่อเริ่มบันทึก" was the fourth nudge on
                   one screen telling them the same thing as the CTA. */}
+              {/* History filter (design "2" from history-filter-8-designs.html):
+                  the type chips and the year dropdown that used to sit here
+                  are combined behind one "ตัวกรอง" button, whose badge shows
+                  how many filters are active. It opens a bottom sheet with
+                  type chips and year chips; each tap applies immediately
+                  (the list behind updates live and the sheet header shows
+                  the resulting count), no confirm button. */}
               {totalCount > 0 && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
-                {historyYears.length > 1 && (
-                  <div style={{ position: "relative" }}>
-                    <button ref={yearTriggerRef} onClick={() => setShowYearMenu(v => !v)}
-                      aria-label={`กรองตามปี: ${historyYearFilter === "all" ? "ทุกปี" : `ปี ${historyYearFilter}`}`} aria-haspopup="listbox" aria-expanded={showYearMenu}
-                      style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontFamily: "inherit", color: "#5C4A46", background: "#FFFFFF",
-                        border: `1px solid ${showYearMenu ? "#9A3B33" : "#E3C8C3"}`, boxShadow: showYearMenu ? "0 0 0 3px rgba(154,59,51,0.12)" : "none",
-                        borderRadius: 8, padding: "5px 8px 5px 10px", lineHeight: 1.35, cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s" }}>
+                {(hasBothDonationTypes || historyYears.length > 1) && (() => {
+                  const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
+                  const on = activeCount > 0;
+                  return (
+                    <button onClick={() => setShowFilterSheet(true)} aria-haspopup="dialog"
+                      aria-label={on ? `ตัวกรอง (ใช้อยู่ ${activeCount} อย่าง)` : "ตัวกรอง"}
+                      style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, lineHeight: 1.35, fontFamily: "inherit", cursor: "pointer",
+                        color: on ? "#9A3B33" : "#5C4A46", fontWeight: on ? 600 : 400, background: on ? "#FBF1EF" : "#FFFFFF",
+                        border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, borderRadius: 9, padding: "5px 10px" }}>
                       <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -2px" }} />
-                      {historyYearFilter === "all" ? "ทุกปี" : `ปี ${historyYearFilter}`}
-                      <ChevronDown size={13} style={{ transition: "transform 0.15s", transform: showYearMenu ? "rotate(180deg)" : "none" }} />
+                      <SlidersHorizontal size={13} /> ตัวกรอง
+                      {on && <span style={{ background: "#9A3B33", color: "#FFFFFF", fontSize: 10, fontWeight: 700, borderRadius: 9, padding: "0 6px", lineHeight: "16px" }}>{activeCount}</span>}
                     </button>
-                    {showYearMenu && (
-                      <>
-                        <div onClick={() => setShowYearMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                        <div ref={yearMenuRef} role="listbox" aria-label="เลือกปี"
-                          onKeyDown={(e) => {
-                            const opts = [...e.currentTarget.querySelectorAll('[role="option"]')];
-                            const i = opts.indexOf(document.activeElement);
-                            if (e.key === "ArrowDown") { e.preventDefault(); opts[Math.min(opts.length - 1, i + 1)]?.focus(); }
-                            else if (e.key === "ArrowUp") { e.preventDefault(); opts[Math.max(0, i - 1)]?.focus(); }
-                            else if (e.key === "Tab") { setShowYearMenu(false); }
-                          }}
-                          style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 56, minWidth: 196, maxHeight: 320, overflowY: "auto",
-                            background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 10px 28px rgba(90,50,45,0.18)", padding: 6, animation: "fadeSwap 0.15s ease" }}>
-                          {["all", ...historyYears].map((y) => {
-                            const selected = historyYearFilter === y;
-                            // Years with no records for the current type filter stay
-                            // pickable but read as muted.
-                            // "ทุกปี" includes the carried-over starting count (for the
-                            // current type filter) so it matches the hero card's total
-                            // and what the list shows when picked; individual years
-                            // can't, since the carry-over has no date.
-                            const count = y === "all" ? (historyYearCounts.all || 0) + displayedStartingCount : (historyYearCounts[y] || 0);
-                            const empty = !count;
-                            return (
-                              <button key={y} role="option" aria-selected={selected}
-                                onClick={() => { setHistoryYearFilter(y); setShowYearMenu(false); try { yearTriggerRef.current?.focus({ preventScroll: true }); } catch (e) {} }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", minHeight: 44, padding: "0 10px 0 12px", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-                                  background: selected ? "#F3EAE8" : "transparent", color: selected ? "#9A3B33" : empty ? "#7A6360" : "#3A2C29", fontSize: 13, fontWeight: selected ? 600 : 400 }}>
-                                <span style={{ flex: 1 }}>{y === "all" ? "ทุกปี" : `ปี ${y}`}</span>
-                                <span style={{ fontSize: 11, color: "#7A6360", fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>{count} ครั้ง</span>
-                                <span style={{ width: 14, display: "flex", justifyContent: "center" }}>{selected && <Check size={14} />}</span>
-                              </button>
-                            );
-                          })}
-                          {displayedStartingCount > 0 && (
-                            <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, padding: "8px 12px 4px", marginTop: 4, borderTop: "1px solid #F3EAE8" }}>
-                              รวมยอดยกมา {displayedStartingCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>ที่ไม่ได้ระบุปี</span>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
               </div>
               )}
 
-              {hasBothDonationTypes && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                  {[
-                    { key: "all", label: "ทั้งหมด" },
-                    { key: "whole", label: DONATION_TYPE_LABELS.whole },
-                    { key: "component", label: DONATION_TYPE_LABELS.component },
-                  ].map(({ key, label }) => {
-                    // Match this filter pill's color to the same per-type tint
-                    // used on each history card's own type badge (DONATION_TYPE_TINT),
-                    // so "whole"/"component" are told apart by color here too, not
-                    // just by icon shape. "all" keeps the original neutral red scheme
-                    // since it has no single donation type to tint toward.
-                    const tint = key === "all" ? { bg: "#F3EAE8", text: "#9A3B33" } : DONATION_TYPE_TINT[key];
-                    const selected = historyTypeFilter === key;
-                    return (
-                      <button key={key} onClick={() => setHistoryTypeFilter(key)}
-                        style={{
-                          position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
-                          fontFamily: "inherit", border: "none", cursor: "pointer",
-                          color: selected ? "#FFF7F5" : tint.text,
-                          background: selected ? tint.text : tint.bg,
-                        }}>
-                        <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
-                        {key === "component" ? <Droplets size={11} style={{ flexShrink: 0 }} /> : key === "whole" ? <Droplet size={11} style={{ flexShrink: 0 }} /> : null}
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              {showFilterSheet && (() => {
+                const shownCount = filteredHistory.length + (historyYearFilter === "all" ? displayedStartingCount : 0);
+                const chipBase = { position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, padding: "7px 14px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer" };
+                const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
+                return (
+                  <>
+                    <div onClick={() => setShowFilterSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", zIndex: 70, animation: "fadeSwap 0.2s ease" }} />
+                    <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ"
+                      style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+                      <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderRadius: "20px 20px 0 0", boxShadow: "0 -10px 30px rgba(36,26,24,0.2)",
+                        padding: "10px 20px calc(24px + env(safe-area-inset-bottom))", pointerEvents: "auto", animation: "sheetUp 0.22s ease" }}>
+                        <div style={{ width: 38, height: 4, borderRadius: 2, background: "#E3C8C3", margin: "0 auto 12px" }} />
+                        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
+                          <div aria-live="polite" style={{ fontSize: 12, color: "#7A6360", marginLeft: 8 }}>{shownCount} ครั้ง</div>
+                          <button onClick={() => setShowFilterSheet(false)} aria-label="ปิด"
+                            style={{ marginLeft: "auto", width: 44, height: 44, margin: "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <X size={19} />
+                          </button>
+                        </div>
+                        {hasBothDonationTypes && (
+                          <>
+                            <div style={{ fontSize: 12, color: "#7A6360", margin: "0 0 8px" }}>ประเภท</div>
+                            <div role="radiogroup" aria-label="ประเภท" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                              {[
+                                { key: "all", label: "ทั้งหมด" },
+                                { key: "whole", label: DONATION_TYPE_LABELS.whole },
+                                { key: "component", label: DONATION_TYPE_LABELS.component },
+                              ].map(({ key, label }) => {
+                                const tint = key === "all" ? { bg: "#F3EAE8", text: "#9A3B33" } : DONATION_TYPE_TINT[key];
+                                const selected = historyTypeFilter === key;
+                                return (
+                                  <button key={key} role="radio" aria-checked={selected} onClick={() => setHistoryTypeFilter(key)}
+                                    style={{ ...chipBase, fontWeight: 600, border: "none", color: selected ? "#FFF7F5" : tint.text, background: selected ? tint.text : tint.bg }}>
+                                    {hit}
+                                    {key === "component" ? <Droplets size={12} /> : key === "whole" ? <Droplet size={12} /> : null}
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+                        {historyYears.length > 1 && (
+                          <>
+                            <div style={{ fontSize: 12, color: "#7A6360", margin: "0 0 8px" }}>ปี</div>
+                            <div role="radiogroup" aria-label="ปี" style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 220, overflowY: "auto", padding: 2, margin: -2 }}>
+                              {["all", ...historyYears].map((y) => {
+                                const selected = historyYearFilter === y;
+                                return (
+                                  <button key={y} role="radio" aria-checked={selected} onClick={() => setHistoryYearFilter(y)}
+                                    style={{ ...chipBase, fontWeight: selected ? 600 : 400, border: `1px solid ${selected ? "#3A2C29" : "#E3C8C3"}`,
+                                      background: selected ? "#3A2C29" : "#FFFFFF", color: selected ? "#FFF7F5" : "#5C4A46" }}>
+                                    {hit}
+                                    {y === "all" ? "ทุกปี" : y}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* Whenever the carried-over starting-count summary card below is
                   about to render for the active filter (displayedStartingCount > 0,
