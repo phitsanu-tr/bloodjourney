@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.58";
+const APP_VERSION = "1.0.59";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2093,11 +2093,8 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
           <Calendar size={14} color="#9A3B33" /> {toBuddhistDate(d.date)}{d.time ? ` เวลา ${d.time} น.` : ""}
         </div>
-        {/* The leading droplet icon that used to sit here duplicated the same
-            whole/component signal the pill right next to it already carries
-            (now doubly so with the color-matched order badge above) -- one
-            clear signal instead of the same one said twice. */}
-        <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
+          {d.type === "component" ? <Droplets size={13} color="#7A6360" style={{ flexShrink: 0 }} /> : <Droplet size={13} color="#7A6360" style={{ flexShrink: 0 }} />}
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
         {d.location && (
@@ -2110,6 +2107,11 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
             <StickyNote size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {d.note}
           </div>
         )}
+        {d.loggedAt && (
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#8A7370", marginTop: 6 }}>
+            <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
+          </div>
+        )}
       </div>
       <div style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
@@ -2118,7 +2120,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 168 }}>
+            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
               <button onClick={onEdit} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
@@ -2128,16 +2130,6 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
               <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
-              {/* "บันทึกเมื่อ" used to always print under the card body -- low-
-                  contrast, and not something most people need to see at a
-                  glance every time. Moved here as a quiet, non-interactive
-                  footer line inside the same menu that already holds the
-                  card's other secondary actions. */}
-              {d.loggedAt && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", fontSize: 11, color: "#7A6360", borderTop: "1px solid #F3E7E4", background: "#FBF6F5" }}>
-                  <Clock size={12} style={{ flexShrink: 0 }} color="#9A8480" /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
-                </div>
-              )}
             </div>
           </>
         )}
