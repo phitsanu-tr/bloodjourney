@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.76";
+const APP_VERSION = "1.0.77";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5389,8 +5389,16 @@ function AppInner() {
                         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
                           <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
                           <div aria-live="polite" style={{ fontSize: 12, color: "#7A6360", marginLeft: 8 }}>{shownCount} ครั้ง</div>
+                          {/* One-tap reset back to ทั้งหมด + ทุกปี; only shown while a
+                              filter is actually active. */}
+                          {(historyTypeFilter !== "all" || historyYearFilter !== "all") && (
+                            <button onClick={() => { setHistoryTypeFilter("all"); setHistoryYearFilter("all"); }}
+                              style={{ marginLeft: "auto", minHeight: 44, margin: "-11px 4px -11px auto", padding: "0 8px", border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
+                              ล้างตัวกรอง
+                            </button>
+                          )}
                           <button onClick={() => setShowFilterSheet(false)} aria-label="ปิด"
-                            style={{ marginLeft: "auto", width: 44, height: 44, margin: "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            style={{ marginLeft: "auto", width: 44, height: 44, margin: (historyTypeFilter !== "all" || historyYearFilter !== "all") ? "-11px -11px -11px 0" : "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <X size={19} />
                           </button>
                         </div>
@@ -5435,6 +5443,13 @@ function AppInner() {
                             </div>
                           </>
                         )}
+                        {/* "เสร็จ" (design "6" from filter-sheet-buttons-6-designs.html):
+                            filters already apply instantly, so this just closes the
+                            sheet -- there's nothing to confirm or cancel. */}
+                        <button onClick={() => setShowFilterSheet(false)}
+                          style={{ width: "100%", marginTop: 20, minHeight: 46, border: "none", borderRadius: 12, background: "#9A3B33", color: "#FFF7F5", fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                          เสร็จ
+                        </button>
                       </div>
                     </div>
                   </>
