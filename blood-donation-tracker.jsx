@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Circle } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.96";
+const APP_VERSION = "1.0.97";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -3150,23 +3150,6 @@ function AppInner() {
   // veteran donors who don't remember any specific date to invent one just
   // to submit the form. Once either a donation or a starting count exists,
   // "+" just opens the normal form directly — no more choice screen.
-  // New-user "เริ่มต้นใช้งาน" checklist (design 5 from
-  // new-user-home-7-designs.html), shown under the CTA while there's no
-  // record and no carried-over count. Steps 1-2 both create data, which ends
-  // the new-user state and hides the card; step 3 (reading the criteria) is
-  // the only one that can be ticked while it's visible, so it's remembered
-  // with a small non-personal flag.
-  const [criteriaSeen, setCriteriaSeen] = useState(false);
-  useEffect(() => {
-    storage.get("criteriaSeen").then(r => { if (r && r.value === "1") setCriteriaSeen(true); }).catch(() => {});
-  }, []);
-  const openCriteriaFromChecklist = () => {
-    setCriteriaSeen(true);
-    storage.set("criteriaSeen", "1").catch(() => {});
-    setTab("knowledge");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleAddButtonClick = () => {
     if (donations.length === 0 && startingCountNum === 0) {
       setShowOnboardingChoice(true);
@@ -5260,43 +5243,37 @@ function AppInner() {
                 <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
               </button>
 
-              {donations.length === 0 && startingCountNum === 0 && (() => {
-                const steps = [
-                  { title: "บันทึกการบริจาคครั้งล่าสุด", sub: "ใช้ปุ่มด้านบน", done: false },
-                  { title: "เคยบริจาคก่อนหน้านั้น? กรอกยอดสะสม", sub: "ไม่บังคับ", done: false, onClick: chooseHasStartingCount },
-                  { title: "เช็คเกณฑ์ก่อนไปบริจาค", sub: "อ่าน 2 นาที", done: criteriaSeen, onClick: openCriteriaFromChecklist },
-                ];
-                const doneCount = steps.filter(x => x.done).length;
-                return (
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: "14px 16px 4px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
-                        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>เริ่มต้นใช้งาน</h2>
-                        <span style={{ fontSize: 11.5, color: "#7A6360" }} aria-label={`ทำแล้ว ${doneCount} จาก ${steps.length} ขั้นตอน`}>{doneCount}/{steps.length}</span>
-                      </div>
-                      {steps.map((st, i) => {
-                        const inner = (
-                          <>
-                            {st.done ? <CheckCircle2 size={18} color="#2E7D4F" style={{ flexShrink: 0 }} aria-hidden="true" /> : <Circle size={18} color="#D9B3AD" style={{ flexShrink: 0 }} aria-hidden="true" />}
-                            <span style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-                              <span style={{ display: "block", fontSize: 13, color: st.done ? "#7A6360" : "#3A2C29" }}>{st.title}</span>
-                              <span style={{ display: "block", fontSize: 11, color: "#7A6360" }}>{st.done ? "เรียบร้อย" : st.sub}</span>
-                            </span>
-                            {st.onClick && <ChevronRight size={15} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />}
-                          </>
-                        );
-                        const rowStyle = { width: "100%", display: "flex", gap: 10, alignItems: "center", minHeight: 52, padding: "8px 0", borderTop: i ? "1px solid #F3E7E4" : "none", background: "none", borderLeft: "none", borderRight: "none", borderBottom: "none", fontFamily: "inherit", color: "inherit" };
-                        return st.onClick
-                          ? <button key={i} onClick={st.onClick} style={{ ...rowStyle, cursor: "pointer" }}>{inner}</button>
-                          : <div key={i} style={rowStyle}>{inner}</div>;
-                      })}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 11.5, color: "#7A6360" }}>
-                      <Lock size={13} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์
-                    </div>
+              {/* New-user shortcuts (design 1 from new-user-home-7-designs.html;
+                  briefly tried the design 5 checklist): the two other ways to
+                  start besides recording one donation -- entering a carried-over
+                  count, or restoring a backup from an old phone -- plus the
+                  local-only privacy note. Hidden as soon as there's a record or
+                  a carried-over count. */}
+              {donations.length === 0 && startingCountNum === 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, overflow: "hidden" }}>
+                    {[
+                      { Icon: Trophy, title: "เคยบริจาคมาก่อน?", sub: "กรอกจำนวนครั้งที่ผ่านมา นับต่อจากนั้นเลย", onClick: chooseHasStartingCount },
+                      { Icon: Upload, title: "ย้ายมาจากเครื่องเก่า?", sub: "กู้คืนประวัติจากไฟล์สำรอง", onClick: () => openBackupRestore("import", { fromHome: true }) },
+                    ].map(({ Icon, title, sub, onClick }, i) => (
+                      <button key={title} onClick={onClick}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", background: "none", border: "none", borderTop: i ? "1px solid #F3E7E4" : "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                        <span style={{ width: 34, height: 34, borderRadius: 10, background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={17} color="#9A3B33" aria-hidden="true" />
+                        </span>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
+                          <span style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginTop: 1 }}>{sub}</span>
+                        </span>
+                        <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
+                      </button>
+                    ))}
                   </div>
-                );
-              })()}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 11.5, color: "#7A6360" }}>
+                    <Lock size={13} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์
+                  </div>
+                </div>
+              )}
 
               {/* Reminder slot (design "3" from home-reminders-8-designs.html):
                   the backup banner, the eligibility warning and the calendar
