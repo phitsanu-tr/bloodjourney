@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.93";
+const APP_VERSION = "1.0.94";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5604,7 +5604,7 @@ function AppInner() {
                   <React.Fragment key={d.id}>
                   {newYear && (
                     <div role="heading" aria-level={3} aria-label={`ปี ${y} · ${historyYearCounts[y]} ครั้ง`} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, margin: i === 0 ? "2px 2px 0" : "12px 2px 0" }}>
-                      <span style={{ fontSize: 24, fontWeight: 600, color: "#D9B3AD", letterSpacing: 0.5, lineHeight: 1 }}>{y}</span>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: "#B0807A", letterSpacing: 0.5, lineHeight: 1 }}>{y}</span>
                       <span style={{ color: "#7A6360", fontSize: 12 }}>{historyYearCounts[y]} ครั้ง</span>
                     </div>
                   )}
