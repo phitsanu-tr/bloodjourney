@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.60";
+const APP_VERSION = "1.0.61";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4939,11 +4939,12 @@ function AppInner() {
                     ))}
                   </div>
                 ) : totalCount > 0 ? (
+                  // Only one donation type exists here, so this pill's own count
+                  // chip would just repeat the big "N ครั้ง" number shown right
+                  // above -- dropped the chip and kept only the type name, which
+                  // is the one thing this pill actually adds.
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
                     {activeCountdownType === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[activeCountdownType]}
-                    <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: DONATION_TYPE_TINT[activeCountdownType].bg, color: DONATION_TYPE_TINT[activeCountdownType].text }}>
-                      {activeCountdownType === "component" ? componentTotalCount : wholeTotalCount}
-                    </span>
                   </div>
                 ) : (
                   // Brand-new user with no history yet -- previously this was an
