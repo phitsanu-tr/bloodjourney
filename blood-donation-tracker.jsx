@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.81";
+const APP_VERSION = "1.0.82";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4621,13 +4621,13 @@ function AppInner() {
   return (
     <div style={{ fontFamily: "'Mitr', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
       <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: 420, maxWidth: "100%", height: "100%", zIndex: -1, overflow: "hidden", pointerEvents: "none" }}>
-        <svg width="90" height="109" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", top: -20, right: -10 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="30" height="36" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: 40, right: 90 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="46" height="56" viewBox="0 0 24 24" fill="rgba(154,59,51,0.07)" style={{ position: "absolute", top: 90, right: 24 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="24" height="29" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", top: "38%", left: -8 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="60" height="73" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", bottom: 80, left: -20 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="20" height="24" viewBox="0 0 24 24" fill="rgba(154,59,51,0.06)" style={{ position: "absolute", bottom: 160, right: 30 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-        <svg width="34" height="41" viewBox="0 0 24 24" fill="rgba(154,59,51,0.05)" style={{ position: "absolute", bottom: -10, right: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+        {/* Background (design "A" from background-alt-8-designs.html): two
+            soft pink glows fading to nothing -- top-right and mid-left --
+            in place of the 7 faint droplets, several of which were cut off
+            by the screen edge and looked like broken images. A radial
+            gradient has no hard edge, so being partly off-screen is fine. */}
+        <div style={{ position: "absolute", width: 320, height: 320, right: -120, top: -110, borderRadius: "50%", background: "radial-gradient(circle, rgba(214,120,108,0.22) 0%, rgba(214,120,108,0) 70%)" }} />
+        <div style={{ position: "absolute", width: 300, height: 300, left: -140, top: "48%", borderRadius: "50%", background: "radial-gradient(circle, rgba(214,120,108,0.16) 0%, rgba(214,120,108,0) 70%)" }} />
       </div>
       <style>{`
         /* Mitr is now loaded from a <link> in index.html's <head> instead of
