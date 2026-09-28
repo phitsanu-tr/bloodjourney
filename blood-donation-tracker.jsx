@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.98";
+const APP_VERSION = "1.0.99";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2527,6 +2527,20 @@ function AppInner() {
   // while any modal has the page scroll-locked (anyModalOpen above) since
   // window.scrollY doesn't meaningfully change then anyway.
   const [headerVisible, setHeaderVisible] = useState(true);
+  // Pull to refresh (design "3" from refresh-update-designs.html: arrow +
+  // "ดึงลงเพื่อรีเฟรช" -> "ปล่อยเพื่อรีเฟรช" -> "กำลังโหลด…"). Data is local, so
+  // what a refresh really brings is the newest app version. Touch only, only
+  // from the very top of the page, and never while a dialog, sheet or popup
+  // menu is open (a reload there would throw away what was being typed).
+  // The content column moves via direct style writes (no re-render per
+  // finger move); React state only tracks the three text states.
+  const PTR_THRESHOLD = 70;
+  const PTR_MAX = 110;
+  const [ptrState, setPtrState] = useState("pull"); // "pull" | "ready" | "load"
+  const ptrShellRef = useRef(null);
+  const ptrIndRef = useRef(null);
+  const ptrBlockRef = useRef(false);
+  const ptrStateRef = useRef("pull");
   const lastScrollYRef = useRef(0);
   useEffect(() => {
     if (phase !== "app" || anyModalOpen) return;
@@ -2830,6 +2844,70 @@ function AppInner() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Popups that aren't role="dialog" (row "⋮" menus, photo menu, calendar
+  // choice) and the inline carried-over-count editor also block the pull.
+  ptrBlockRef.current = !!(openActionMenuId || showPhotoMenu || showCalendarChoice || showFilterSheet || editingStartingCount);
+  useEffect(() => {
+    if (phase !== "app") return;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let y0 = null, x0 = 0, engaged = false, dist = 0;
+    const paint = (d, animate) => {
+      dist = d;
+      const shell = ptrShellRef.current, ind = ptrIndRef.current;
+      const tr = animate && !reduce ? "transform 0.25s cubic-bezier(.2,.8,.2,1)" : "none";
+      if (shell) { shell.style.transition = tr; shell.style.transform = d > 0 ? `translateY(${d}px)` : ""; }
+      if (ind) {
+        ind.style.transition = animate && !reduce ? "opacity 0.2s, transform 0.25s cubic-bezier(.2,.8,.2,1)" : "none";
+        ind.style.opacity = String(Math.min(1, d / (PTR_THRESHOLD * 0.6)));
+        ind.style.transform = `translate(-50%, ${Math.max(0, d / 2 - 12)}px)`;
+      }
+    };
+    const setState = (st) => { if (ptrStateRef.current !== st) { ptrStateRef.current = st; setPtrState(st); } };
+    const blocked = () => ptrBlockRef.current || !!document.querySelector('[role="dialog"]') || ptrStateRef.current === "load";
+    const onStart = (e) => {
+      if (e.touches.length !== 1 || window.scrollY > 0 || blocked()) { y0 = null; return; }
+      y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; engaged = false;
+    };
+    const onMove = (e) => {
+      if (y0 == null) return;
+      const dy = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+      if (!engaged) {
+        if (Math.abs(dx) > Math.abs(dy) || dy < 0) { if (Math.abs(dx) > 8 || dy < -8) y0 = null; return; }
+        if (dy < 8 || window.scrollY > 0) return;
+        engaged = true;
+      }
+      if (e.cancelable) e.preventDefault();
+      const d = Math.min(Math.max(0, dy - 8) * 0.5, PTR_MAX);
+      paint(d, false);
+      setState(d >= PTR_THRESHOLD ? "ready" : "pull");
+    };
+    const onEnd = () => {
+      if (y0 == null) return;
+      y0 = null;
+      if (!engaged) return;
+      engaged = false;
+      if (dist >= PTR_THRESHOLD) {
+        setState("load");
+        paint(48, true);
+        setTimeout(() => window.location.reload(), 350);
+      } else {
+        paint(0, true);
+        setState("pull");
+      }
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    window.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+      window.removeEventListener("touchcancel", onEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const giveConsent = async () => {
     setSaving(true);
@@ -4730,6 +4808,9 @@ function AppInner() {
            index.html for the full explanation. .no-scrollbar itself stays
            here since it's only ever applied to elements this component
            renders, so it doesn't have the same early-return gap. */
+        /* The app has its own pull-to-refresh; this stops Chrome on Android
+           from running its built-in one on top of it. */
+        html, body { overscroll-behavior-y: contain; }
         .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
@@ -4745,6 +4826,7 @@ function AppInner() {
         select {
           font-family: inherit;
         }
+        @keyframes ptrSpin { to { transform: rotate(360deg); } }
         @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes sheetDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
         /* Centered dialogs (design "2" from form-dialog-motion-7-designs.html):
@@ -5004,7 +5086,24 @@ function AppInner() {
       )}
 
       {phase === "app" && (
-        <div className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
+        <div ref={ptrIndRef} role="status" aria-live="polite"
+          style={{ position: "fixed", left: "50%", top: "calc(60px + env(safe-area-inset-top))", transform: "translate(-50%, 0)", zIndex: 39, opacity: 0, pointerEvents: "none",
+            display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#7A6360", whiteSpace: "nowrap" }}>
+          {ptrState === "load" ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={{ animation: "ptrSpin 0.8s linear infinite" }}>
+              <circle cx="12" cy="12" r="9" fill="none" stroke="#9A3B33" strokeWidth="2.6" strokeLinecap="round" pathLength="100" strokeDasharray="70 100" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+              style={{ transition: "transform 0.18s", transform: ptrState === "ready" ? "rotate(180deg)" : "none" }}>
+              <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
+            </svg>
+          )}
+          <span>{ptrState === "load" ? "กำลังโหลด…" : ptrState === "ready" ? "ปล่อยเพื่อรีเฟรช" : "ดึงลงเพื่อรีเฟรช"}</span>
+        </div>
+      )}
+      {phase === "app" && (
+        <div ref={ptrShellRef} className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
