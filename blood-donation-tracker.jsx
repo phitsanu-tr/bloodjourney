@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.56";
+const APP_VERSION = "1.0.57";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2387,6 +2387,10 @@ function AppInner() {
   // picking one automatically — non-native builds only, since the native
   // app's OS share sheet already lets the user pick their calendar app.
   const [showCalendarChoice, setShowCalendarChoice] = useState(false);
+  // Collapsed by default -- the "คำนวณจากเกณฑ์...วันต่อครั้ง" disclaimer used to
+  // print as a standalone 3-line paragraph on every load; now it's tucked
+  // behind a small (i) toggle right next to the countdown text it explains.
+  const [showCycleInfo, setShowCycleInfo] = useState(false);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
@@ -4876,37 +4880,12 @@ function AppInner() {
                   </div>
                 </div>
               )}
-              {(showEligibilityWarning || needsBackupReminder) && (
-                <div style={{ background: "#FDF0E6", border: "1px solid #F0D9BE", borderRadius: 14, padding: "12px 14px", marginBottom: 16 }}>
-                  {showEligibilityWarning && (
-                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start", ...(needsBackupReminder ? { paddingBottom: 10, borderBottom: "1px solid #F0D9BE", marginBottom: 10 } : {}) }}>
-                      <AlertTriangle size={16} color="#B5651D" style={{ marginTop: 2, flexShrink: 0 }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 11.5, color: "#8A6A45", lineHeight: 1.6 }}>
-                          {ageOutOfRange && `อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ (${MIN_AGE}-${MAX_AGE} ปี) `}
-                          {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
-                          ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง
-                        </div>
-                        <button onClick={dismissEligibilityWarning} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
-                          เตือนทีหลัง
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {needsBackupReminder && (
-                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <AlertTriangle size={16} color="#B5651D" style={{ marginTop: 2, flexShrink: 0 }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
-                        <div style={{ fontSize: 11.5, color: "#8A6A45", marginTop: 2, lineHeight: 1.5 }}>ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น ส่งออกไฟล์ที่หน้าตั้งค่าเพื่อป้องกันข้อมูลหาย</div>
-                        <button onClick={snoozeBackupReminder} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
-                          เตือนทีหลัง
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Hero summary card moved directly under the (critical-only)
+                  storage banner -- the eligibility/backup-reminder banner and
+                  the main "บันทึกบริจาคโลหิต" CTA used to sit between this
+                  card and the top of the screen, pushing the card and the
+                  primary action further down than they deserve given they're
+                  the most important things on this tab. */}
               <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,247,245,0.08)" style={{ position: "absolute", top: -10, right: 120 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,247,245,0.07)" style={{ position: "absolute", bottom: 8, left: -4 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -4976,7 +4955,7 @@ function AppInner() {
                       ? <Info size={18} />
                       : isEligible ? <CheckCircle2 size={18} /> : <Clock size={18} />}
                   </span>
-                  <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease" }}>
+                  <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1 }}>
                     {effectiveLastDateStr ? (
                       isEligible
                         ? "บริจาคได้แล้ววันนี้"
@@ -4987,15 +4966,49 @@ function AppInner() {
                         : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[activeCountdownType]}ในระบบ`
                     ) : "ยังไม่มีประวัติ — เริ่มบันทึกครั้งแรกได้เลย"}
                   </div>
+                  {/* Disclosure toggle for the "คำนวณจากเกณฑ์...วันต่อครั้ง" note --
+                      previously a standalone 3-line paragraph printed under the card
+                      on every load; same info now sits one tap away, right next to
+                      the countdown text it explains, instead of always taking up
+                      space by default. */}
+                  {(effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
+                    <button onClick={() => setShowCycleInfo(v => !v)} aria-label={showCycleInfo ? "ซ่อนรายละเอียดการคำนวณ" : "ดูรายละเอียดการคำนวณ"} aria-expanded={showCycleInfo}
+                      style={{ flexShrink: 0, width: 28, height: 28, margin: "-5px -6px -5px 0", borderRadius: "50%", border: "none", background: "none", color: "rgba(255,247,245,0.7)", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Info size={15} />
+                    </button>
+                  )}
                 </div>
+                {showCycleInfo && (effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 10.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
+                    คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
+                    เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค
+                  </div>
+                )}
               </div>
 
-              {(effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
-                <p style={{ fontSize: 11.5, color: "#8A7370", margin: "0 0 16px", padding: "0 4px", lineHeight: 1.6 }}>
-                  คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
-                  เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค
-                </p>
-              )}
+              {/* Row-style CTA (design "3" from a 10-variant exploration) in
+                  place of the old full-width solid button -- reads as a
+                  menu-style list item that matches the other white/bordered
+                  cards on this tab (next-achievement card just below,
+                  history rows further down) instead of a heavy standalone
+                  bar of color. The icon badge keeps the gradient accent so
+                  it still reads as the primary action; the chevron signals
+                  "tap to continue" the way the rest of the app's row items
+                  do. Moved directly under the hero card (was previously
+                  pushed down below the disclaimer paragraph and the
+                  calendar-reminder card) since this is the single most
+                  important action on the tab. */}
+              <button onClick={handleAddButtonClick}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: 14,
+                  background: "#FFFFFF", border: "1px solid #EEDEDA", boxShadow: "0 4px 14px rgba(122,42,35,0.06)",
+                  marginBottom: 16, cursor: "pointer", fontFamily: "inherit" }}>
+                <span style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF7F5", flexShrink: 0 }}>
+                  <Plus size={18} />
+                </span>
+                <span style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
+                <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
+              </button>
 
               {effectiveLastDateStr && !isEligible && !reminderDismissed && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 16, position: "relative" }}>
@@ -5034,26 +5047,46 @@ function AppInner() {
                 </div>
               )}
 
-              {/* Row-style CTA (design "3" from a 10-variant exploration) in
-                  place of the old full-width solid button -- reads as a
-                  menu-style list item that matches the other white/bordered
-                  cards on this tab (next-achievement card just below,
-                  history rows further down) instead of a heavy standalone
-                  bar of color. The icon badge keeps the gradient accent so
-                  it still reads as the primary action; the chevron signals
-                  "tap to continue" the way the rest of the app's row items
-                  do. */}
-              <button onClick={handleAddButtonClick}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: 14,
-                  background: "#FFFFFF", border: "1px solid #EEDEDA", boxShadow: "0 4px 14px rgba(122,42,35,0.06)",
-                  marginBottom: 26, cursor: "pointer", fontFamily: "inherit" }}>
-                <span style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF7F5", flexShrink: 0 }}>
-                  <Plus size={18} />
-                </span>
-                <span style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
-                <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
-              </button>
+              {/* Eligibility/backup-reminder banner -- moved down here, below
+                  the hero card, the primary CTA, and the calendar-reminder
+                  card, instead of sitting at the very top of the tab. These
+                  are worth surfacing but aren't as time-critical as seeing
+                  your own donation status and the main action, so they no
+                  longer compete with those for the first thing the user
+                  sees. (The storageDegraded banner above is the one
+                  exception that stays at the very top -- that one is about
+                  real, in-progress data loss.) */}
+              {(showEligibilityWarning || needsBackupReminder) && (
+                <div style={{ background: "#FDF0E6", border: "1px solid #F0D9BE", borderRadius: 14, padding: "12px 14px", marginBottom: 26 }}>
+                  {showEligibilityWarning && (
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start", ...(needsBackupReminder ? { paddingBottom: 10, borderBottom: "1px solid #F0D9BE", marginBottom: 10 } : {}) }}>
+                      <AlertTriangle size={16} color="#B5651D" style={{ marginTop: 2, flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11.5, color: "#8A6A45", lineHeight: 1.6 }}>
+                          {ageOutOfRange && `อายุที่กรอกอยู่นอกเกณฑ์ทั่วไปที่บริจาคได้ (${MIN_AGE}-${MAX_AGE} ปี) `}
+                          {weightBelowMin && `น้ำหนักที่กรอกต่ำกว่าเกณฑ์ขั้นต่ำทั่วไป (${MIN_WEIGHT} กก.) `}
+                          ให้เจ้าหน้าที่ ณ จุดบริจาคเป็นผู้ประเมินสิทธิ์จริงอีกครั้ง
+                        </div>
+                        <button onClick={dismissEligibilityWarning} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+                          เตือนทีหลัง
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {needsBackupReminder && (
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <AlertTriangle size={16} color="#B5651D" style={{ marginTop: 2, flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
+                        <div style={{ fontSize: 11.5, color: "#8A6A45", marginTop: 2, lineHeight: 1.5 }}>ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น ส่งออกไฟล์ที่หน้าตั้งค่าเพื่อป้องกันข้อมูลหาย</div>
+                        <button onClick={snoozeBackupReminder} style={{ marginTop: 8, background: "none", border: "none", padding: 0, color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+                          เตือนทีหลัง
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {stats.nextAchievement ? (
                 <button onClick={() => setTab("missions")}
