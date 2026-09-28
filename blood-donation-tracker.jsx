@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.102";
+const APP_VERSION = "1.0.103";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5200,7 +5200,7 @@ function AppInner() {
                         </span>
                       )}
                       <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, margin: -7, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: -11, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
                         {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
                     </div>
@@ -5560,11 +5560,15 @@ function AppInner() {
                         so they don't squeeze each slide's text onto a second
                         line). Tapping a dot jumps to that slide. */}
                     {multi && (
-                      <div style={{ display: "flex", justifyContent: "center", gap: 2, marginTop: 4, marginBottom: -6 }}>
+                      <div style={{ display: "flex", justifyContent: "center", gap: 0, marginTop: 12, marginBottom: 2 }}>
                         {queue.map((k, i) => (
                           <button key={k} aria-label={`ไปเรื่องที่ ${i + 1}`} aria-current={i === activeIdx ? "true" : undefined}
                             onClick={() => { reminderLastTouchRef.current = Date.now(); const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
-                            style={{ padding: "12px 5px", margin: "-7px 0", border: "none", background: "none", cursor: "pointer", display: "flex" }}>
+                            // Each dot's tap area is a 44px-tall tile, the tiles
+                            // touching edge to edge (no dead gaps between dots);
+                            // the dots themselves keep their size, just a little
+                            // more space between them (was 26x30 / 16x30 taps).
+                            style={{ padding: "19px 10px", margin: "-19px 0", border: "none", background: "none", cursor: "pointer", display: "flex" }}>
                             <span style={{ width: i === activeIdx ? 14 : 6, height: 6, borderRadius: 3, background: i === activeIdx ? "#9A3B33" : "#E3C8C3", transition: "width 0.2s ease, background 0.2s ease" }} />
                           </button>
                         ))}
