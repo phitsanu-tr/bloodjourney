@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.101";
+const APP_VERSION = "1.0.102";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2199,26 +2199,9 @@ function initialTabFromUrl() {
   }
 }
 
-// Set just before the "อัปเดต" reload so the new version opens straight on
-// the same tab and scroll position, without the splash screen. Only honoured
-// for 30s so a stale entry can never hijack a normal later launch.
-const RESUME_KEY = "bj:resumeAfterUpdate";
-function readResumeAfterUpdate() {
-  try {
-    const raw = window.sessionStorage.getItem(RESUME_KEY);
-    if (!raw) return null;
-    const r = JSON.parse(raw);
-    if (!r || typeof r.at !== "number" || Date.now() - r.at > 30000) return null;
-    return r;
-  } catch (e) {
-    return null;
-  }
-}
-
 function AppInner() {
-  const [resumeAfterUpdate] = useState(readResumeAfterUpdate);
   const [phase, setPhase] = useState("loading"); // loading | consent | app | error
-  const [tab, setTab] = useState(() => (resumeAfterUpdate && VALID_TABS.includes(resumeAfterUpdate.tab) ? resumeAfterUpdate.tab : initialTabFromUrl())); // home | dashboard | missions | knowledge | eligibility | faq
+  const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge | eligibility | faq
   const [nickname, setNickname] = useState("");
   const [photo, setPhoto] = useState("");
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
@@ -2546,8 +2529,9 @@ function AppInner() {
   const [headerVisible, setHeaderVisible] = useState(true);
   // Pull to refresh (design "3" from refresh-update-designs.html: arrow +
   // "ดึงลงเพื่อรีเฟรช" -> "ปล่อยเพื่อรีเฟรช" -> "กำลังโหลด…"). Data is local, so
-  // a refresh re-reads storage in place (load({ soft: true }), no splash) and
-  // checks for a newer app version at the same time. Touch only, only
+  // a refresh re-reads storage in place (load({ soft: true }), no splash).
+  // (An automatic "มีเวอร์ชันใหม่" slide was tried in v1.0.100-101 and
+  // removed on request.) Touch only, only
   // from the very top of the page, and never while a dialog, sheet or popup
   // menu is open (a reload there would throw away what was being typed).
   // The content column moves via direct style writes (no re-render per
@@ -2559,8 +2543,6 @@ function AppInner() {
   const ptrIndRef = useRef(null);
   const ptrBlockRef = useRef(false);
   const ptrStateRef = useRef("pull");
-  const tabRef = useRef(tab);
-  tabRef.current = tab;
   const lastScrollYRef = useRef(0);
   useEffect(() => {
     if (phase !== "app" || anyModalOpen) return;
@@ -2632,8 +2614,8 @@ function AppInner() {
     // tops that up to MIN_LOADING_MS so the splash is actually visible, but
     // never adds delay on top of a load that's already slower than that.
     // 3 full loops of the 1s breathe/blink icon animation below -- skipped for
-    // a soft refresh and right after an "อัปเดต" reload (no splash then).
-    const MIN_LOADING_MS = soft || resumeAfterUpdate ? 0 : 3000;
+    // a soft refresh (no splash then).
+    const MIN_LOADING_MS = soft ? 0 : 3000;
     const loadStartedAt = Date.now();
     const finishLoading = async (nextPhase) => {
       const elapsed = Date.now() - loadStartedAt;
@@ -2747,11 +2729,6 @@ function AppInner() {
       settled = true;
       clearTimeout(timeoutId);
       await finishLoading("app");
-      if (!soft && resumeAfterUpdate) {
-        try { window.sessionStorage.removeItem(RESUME_KEY); } catch (e) {}
-        const y = Number(resumeAfterUpdate.y) || 0;
-        if (y > 0) setTimeout(() => window.scrollTo(0, y), 50);
-      }
     } catch (e) {
       if (settled) return;
       settled = true;
@@ -2820,54 +2797,6 @@ function AppInner() {
     });
     obs.observe(document.body, { childList: true, subtree: true });
     return () => obs.disconnect();
-  }, []);
-
-  // "มีเวอร์ชันใหม่" slide (design 2 from refresh-update-designs.html: first
-  // slide of the home reminder carousel). The web build's index.html names
-  // its hashed entry script (/assets/index-<hash>.js); a fresh copy of
-  // index.html naming a different file means a newer version is live. Checked
-  // a few seconds after opening, whenever the app comes back to the
-  // foreground, and every 30 minutes. Never on the packaged native app or the
-  // dev server (no hashed entry script). The app never reloads by itself --
-  // only when the donor taps "อัปเดต"; ✕ hides it until the app is reopened.
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [updateDismissed, setUpdateDismissed] = useState(false);
-  const checkUpdateRef = useRef(null);
-  const reloadForUpdate = () => {
-    try { window.sessionStorage.setItem(RESUME_KEY, JSON.stringify({ tab, y: Math.round(window.scrollY || 0), at: Date.now() })); } catch (e) {}
-    window.location.reload();
-  };
-  useEffect(() => {
-    if (isNativeApp || typeof document === "undefined") return;
-    const entryRe = /\/assets\/index-[^/"]+\.js/;
-    const current = [...document.querySelectorAll("script[src]")].map(el => el.src).find(src => entryRe.test(src));
-    if (!current) return;
-    const currentPath = new URL(current, window.location.href).pathname;
-    let stopped = false;
-    const check = async (force) => {
-      if (stopped || (!force && document.visibilityState === "hidden")) return false;
-      try {
-        // Same URL as the page itself (no cache-busting query, so the
-        // service worker keeps one cached copy of it rather than one per
-        // check); cache: "no-store" makes it skip the HTTP cache.
-        const res = await fetch(new URL(window.location.pathname, window.location.origin).toString(), { cache: "no-store" });
-        if (!res.ok) return false;
-        const html = await res.text();
-        const m = html.match(/src="([^"]*\/assets\/index-[^"]+\.js)"/);
-        if (!m) return false;
-        const latestPath = new URL(m[1], window.location.href).pathname;
-        if (!stopped && latestPath !== currentPath) { setUpdateAvailable(true); return true; }
-      } catch (e) {
-        // Offline or blocked -- try again next time.
-      }
-      return false;
-    };
-    checkUpdateRef.current = check;
-    const first = setTimeout(check, 5000);
-    const every = setInterval(check, 30 * 60 * 1000);
-    const onVis = () => { if (document.visibilityState === "visible") check(); };
-    document.addEventListener("visibilitychange", onVis);
-    return () => { stopped = true; checkUpdateRef.current = null; clearTimeout(first); clearInterval(every); document.removeEventListener("visibilitychange", onVis); };
   }, []);
 
   // Warm the dashboard chart's chunk well after the first screen is up
@@ -2977,14 +2906,9 @@ function AppInner() {
         paint(48, true);
         const minShow = new Promise((r) => setTimeout(r, 600));
         const refresh = loadRef.current({ soft: true }).catch(() => {});
-        const upd = checkUpdateRef.current ? checkUpdateRef.current(true) : Promise.resolve(false);
-        Promise.all([minShow, refresh, upd]).then(([, , found]) => {
+        Promise.all([minShow, refresh]).then(() => {
           paint(0, true);
           setState("pull");
-          if (found) {
-            setUpdateDismissed(false);
-            if (tabRef.current !== "home") showToast("success", "มีเวอร์ชันใหม่ของแอป กดอัปเดตได้ที่หน้าหลัก");
-          }
         });
       } else {
         paint(0, true);
@@ -4821,9 +4745,6 @@ function AppInner() {
     return null;
   }, [form.date, form.type, donations, editingId, effectiveCycleDays, effectiveComponentCycleDays]);
 
-  if (phase === "loading" && resumeAfterUpdate) {
-    return <div style={{ minHeight: "100vh", background: "#FBF6F5" }} />;
-  }
   if (phase === "loading") {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
@@ -5544,7 +5465,6 @@ function AppInner() {
                   (✕) a slide removes it from the queue. */}
               {(() => {
                 const queue = [];
-                if (updateAvailable && !updateDismissed) queue.push("update");
                 if (needsBackupReminder) queue.push("backup");
                 if (ageOutOfRange && !ageWarningDismissed) queue.push("age");
                 if (weightBelowMin && !weightWarningDismissed) queue.push("weight");
@@ -5566,18 +5486,6 @@ function AppInner() {
                       background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
                       padding: "10px 12px", display: "flex", alignItems: "center", gap: 6, minHeight: 50,
                     }}>
-                      {kind === "update" && (
-                        <>
-                          <Sparkles size={15} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#3A2C29" }}>มีเวอร์ชันใหม่ของแอป</span>
-                          <button onClick={reloadForUpdate}
-                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
-                            <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
-                            อัปเดต
-                          </button>
-                          {closeBtn(() => setUpdateDismissed(true))}
-                        </>
-                      )}
                       {kind === "backup" && (
                         <>
                           <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
