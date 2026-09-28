@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.71";
+const APP_VERSION = "1.0.72";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2399,6 +2399,13 @@ function AppInner() {
   // dots under it). Updated from the scroller's own scroll position.
   const [reminderIdx, setReminderIdx] = useState(0);
   const reminderScrollerRef = useRef(null);
+  // Auto-advance for that carousel: every 5s, move to the next slide (looping
+  // back to the first). Any touch/click/hover/keyboard focus inside it pauses
+  // auto-advance until 8s after the last interaction, so it never slides out
+  // from under someone reading or about to tap. Skipped entirely with
+  // prefers-reduced-motion, while the calendar picker is open, when the page
+  // is in the background, or off the home tab.
+  const reminderLastTouchRef = useRef(0);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
@@ -2648,6 +2655,25 @@ function AppInner() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (tab !== "home") return;
+    let reduce = false;
+    try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (reduce) return;
+    const id = setInterval(() => {
+      const el = reminderScrollerRef.current;
+      if (!el || el.children.length < 2) return;
+      if (document.hidden || showCalendarChoice) return;
+      if (Date.now() - reminderLastTouchRef.current < 8000) return;
+      if (el.contains(document.activeElement)) return;
+      const step = el.clientWidth + 8;
+      const cur = Math.round(el.scrollLeft / step);
+      const next = (cur + 1) % el.children.length;
+      el.scrollTo({ left: next * step, behavior: "smooth" });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [tab, showCalendarChoice]);
 
   // close any open modal with Escape for keyboard users
   useEffect(() => {
@@ -5114,9 +5140,10 @@ function AppInner() {
                   most important first -- backup (real data-loss risk) >
                   eligibility warning > calendar prompt -- as a horizontal
                   swipe carousel (CSS scroll-snap, so it follows the finger
-                  natively). Each slide is slightly narrower than the slot so
-                  the next one peeks in at the edge, hinting it can be swiped;
-                  dots on each slide show "i of n". Finishing or dismissing
+                  natively), auto-advancing every 5s (see reminderLastTouchRef).
+                  Slides are full width (the earlier "peek" of the next slide
+                  was removed per user feedback); the dots under it show
+                  position and can be tapped. Finishing or dismissing
                   (✕) a slide removes it from the queue. */}
               {(() => {
                 const queue = [];
@@ -5137,7 +5164,7 @@ function AppInner() {
                   const isWarn = kind !== "calendar";
                   return (
                     <div key={kind} aria-label={multi ? `เรื่องที่ ${idx + 1} จาก ${queue.length}` : undefined} role={multi ? "group" : undefined} style={{
-                      flex: multi ? "0 0 calc(100% - 16px)" : "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
+                      flex: "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
                       background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
                       padding: "10px 12px", display: "flex", alignItems: "center", gap: 6, minHeight: 50,
                     }}>
@@ -5196,6 +5223,10 @@ function AppInner() {
                         44px tap areas room inside the scroller, which clips
                         anything that overflows it. */}
                     <div ref={reminderScrollerRef} className="no-scrollbar" role="region" aria-label={multi ? `การแจ้งเตือน ${queue.length} เรื่อง ปัดซ้ายขวาเพื่อดูเรื่องอื่น` : "การแจ้งเตือน"}
+                      onPointerDown={() => { reminderLastTouchRef.current = Date.now(); }}
+                      onTouchStart={() => { reminderLastTouchRef.current = Date.now(); }}
+                      onMouseMove={() => { reminderLastTouchRef.current = Date.now(); }}
+                      onWheel={() => { reminderLastTouchRef.current = Date.now(); }}
                       onScroll={(e) => {
                         const el = e.currentTarget;
                         const first = el.children[0];
@@ -5214,7 +5245,7 @@ function AppInner() {
                       <div style={{ display: "flex", justifyContent: "center", gap: 2, marginTop: 4, marginBottom: -6 }}>
                         {queue.map((k, i) => (
                           <button key={k} aria-label={`ไปเรื่องที่ ${i + 1}`} aria-current={i === activeIdx ? "true" : undefined}
-                            onClick={() => { const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
+                            onClick={() => { reminderLastTouchRef.current = Date.now(); const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
                             style={{ padding: 5, border: "none", background: "none", cursor: "pointer", display: "flex" }}>
                             <span style={{ width: i === activeIdx ? 14 : 6, height: 6, borderRadius: 3, background: i === activeIdx ? "#9A3B33" : "#E3C8C3", transition: "width 0.2s ease, background 0.2s ease" }} />
                           </button>
