@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, ChevronLeft, SlidersHorizontal } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.104";
+const APP_VERSION = "1.0.105";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -6680,16 +6680,16 @@ function AppInner() {
         const empty = <span style={{ color: "#B7A5A1" }}>ยังไม่ได้กรอก</span>;
         const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || DONOR_TYPES[0]).label;
         const groups = [
-          [
-            { key: "first", label: "ชื่อ", value: firstName || empty },
-            { key: "last", label: "นามสกุล", value: lastName || empty },
-            { key: "age", label: "อายุ", value: age !== "" && age != null ? `${age} ปี` : empty },
-            { key: "weight", label: "น้ำหนัก", value: weight !== "" && weight != null ? `${weight} กก.` : empty },
-          ],
-          [
-            { key: "bloodType", label: "หมู่โลหิต", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : empty },
-            { key: "donorType", label: "ประเภทผู้บริจาค", value: donorLabel },
-          ],
+          { title: "ข้อมูลส่วนตัว", rows: [
+            { key: "first", Icon: User, label: "ชื่อ", value: firstName || empty },
+            { key: "last", Icon: Users, label: "นามสกุล", value: lastName || empty },
+            { key: "age", Icon: Cake, label: "อายุ", value: age !== "" && age != null ? `${age} ปี` : empty },
+            { key: "weight", Icon: Weight, label: "น้ำหนัก", value: weight !== "" && weight != null ? `${weight} กก.` : empty },
+          ] },
+          { title: "สำหรับการบริจาค", rows: [
+            { key: "bloodType", Icon: Droplet, label: "หมู่โลหิต", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : empty },
+            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", value: donorLabel },
+          ] },
         ];
         const titles = { first: "ชื่อ", last: "นามสกุล", age: "อายุ", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" };
         const f = profileEditField;
@@ -6697,31 +6697,39 @@ function AppInner() {
         const chip = (on) => ({ minHeight: 44, minWidth: 56, padding: "0 16px", borderRadius: 22, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
         return (
-          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" data-own-motion
-            style={{ position: "fixed", inset: 0, zIndex: 60, background: "#FBF6F5", overflowY: "auto", animation: "fadeSwap 0.18s ease" }}>
-            <div style={{ maxWidth: 420, margin: "0 auto", padding: "calc(env(safe-area-inset-top) + 4px) 0 calc(env(safe-area-inset-bottom) + 28px)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, height: 52, padding: "0 8px" }}>
-                <button onClick={closeProfile} aria-label="กลับ"
-                  style={{ width: 44, height: 44, border: "none", background: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#3A2C29", cursor: "pointer", padding: 0 }}>
-                  <ChevronLeft size={22} />
+          <>
+          {/* Profile (design 3 from profile-box-rows-designs.html): the same
+              centered box as ตั้งค่า -- title + ✕, small red group labels,
+              white row cards with an icon per row -- listing each field; a
+              row opens the one-field sheet below. The box itself has no text
+              inputs, so the keyboard can never cover it. (A full-screen page
+              version, v1.0.104, didn't match the app's other dialogs.) */}
+          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน"
+            onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
+            style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+            <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
+                <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
+                  <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
+                  <X size={19} />
                 </button>
-                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>โปรไฟล์ของฉัน</h2>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "4px 20px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="เปลี่ยนรูปโปรไฟล์"
-                    style={{ width: 64, height: 64, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
+                    style={{ width: 52, height: 52, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : firstName ? (
-                      <span style={{ fontSize: 26, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0]}</span>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0]}</span>
                     ) : (
-                      <User size={26} color="#9A3B33" />
+                      <User size={22} color="#9A3B33" />
                     )}
                   </button>
-                  <div aria-hidden="true" style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: "#9A3B33", border: "3px solid #FBF6F5", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                    <Camera size={11} color="#FFF7F5" />
+                  <div aria-hidden="true" style={{ position: "absolute", bottom: -2, right: -2, width: 20, height: 20, borderRadius: "50%", background: "#9A3B33", border: "2px solid #FBF6F5", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                    <Camera size={10} color="#FFF7F5" />
                   </div>
                   {showPhotoMenu && (
                     <>
@@ -6743,7 +6751,7 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 17, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nickname.trim() || "โปรไฟล์ของฉัน"}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nickname.trim() || "ยังไม่ได้ใส่ชื่อ"}</div>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy}
                     style={{ position: "relative", marginTop: 2, padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
                     <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
@@ -6752,22 +6760,27 @@ function AppInner() {
                 </div>
               </div>
 
-              {groups.map((rows, gi) => (
-                <div key={gi} style={{ margin: "0 16px 14px", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, overflow: "hidden" }}>
-                  {rows.map((r, ri) => (
-                    <button key={r.key} onClick={() => openProfileField(r.key)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 54, padding: "0 14px", background: "none", border: "none", borderTop: ri ? "1px solid #F3E7E4" : "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
-                      <span style={{ fontSize: 14, color: "#3A2C29", flexShrink: 0 }}>{r.label}</span>
-                      <span style={{ marginLeft: "auto", fontSize: 14, color: "#7A6360", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.value}</span>
-                      <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
-                    </button>
-                  ))}
+              {groups.map((g, gi) => (
+                <div key={g.title}>
+                  <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>{g.title}</div>
+                  <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 4px", marginBottom: gi === groups.length - 1 ? 14 : 18 }}>
+                    {g.rows.map((r, ri) => (
+                      <button key={r.key} onClick={() => openProfileField(r.key)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 46, padding: "0 8px", background: "none", border: "none", borderBottom: ri < g.rows.length - 1 ? "1px solid #F3E7E4" : "none", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
+                        <r.Icon size={16} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
+                        <span style={{ flexShrink: 0 }}>{r.label}</span>
+                        <span style={{ marginLeft: "auto", color: "#7A6360", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.value}</span>
+                        <ChevronRight size={15} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, margin: "6px 20px 0", fontSize: 11.5, color: "#7A6360" }}>
-                <Lock size={13} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360" }}>
+                <Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น
               </div>
             </div>
+          </div>
 
             {f && (
               <div role="dialog" aria-modal="true" aria-label={`แก้ไข${titles[f]}`} data-own-motion
@@ -6833,7 +6846,7 @@ function AppInner() {
                 </div>
               </div>
             )}
-          </div>
+          </>
         );
       })()}
 
