@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.94";
+const APP_VERSION = "1.0.95";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5061,10 +5061,9 @@ function AppInner() {
                   primary action further down than they deserve given they're
                   the most important things on this tab. */}
               <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
-                {/* Two decorative droplets that sat half outside the card edge
-                    (top, bottom-left) were removed -- clipped, they read as
-                    broken images. The remaining ones sit fully inside. */}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,247,245,0.06)" style={{ position: "absolute", bottom: 55, left: 60 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
+                {/* Decorative background droplets removed: two sat half outside
+                    the card edge (read as broken images) and the last faint one
+                    sat behind "อีก N วัน" (removed on user request). */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative", zIndex: 1 }}>
                   {totalCount === 0 ? (
                     // Brand-new user -- a giant "0 ครั้ง" read as a score of zero
