@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, ChevronLeft, SlidersHorizontal } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.103";
+const APP_VERSION = "1.0.104";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2265,6 +2265,11 @@ function AppInner() {
   const [showProfile, setShowProfile] = useState(false);
   const [profileDraft, setProfileDraft] = useState({ nicknameFirst: "", nicknameLast: "", age: "", weight: "", bloodType: "", donorType: DEFAULT_DONOR_TYPE, photo: null });
   const [profileError, setProfileError] = useState("");
+  // Profile page (design 3 from profile-mobile-5-designs.html): a full-screen
+  // list of rows; tapping a row opens a small bottom sheet that edits just
+  // that one field and saves it straight away. null = no sheet open.
+  const [profileEditField, setProfileEditField] = useState(null); // "first" | "last" | "age" | "weight" | "bloodType" | "donorType"
+  const [profileSheetBottom, setProfileSheetBottom] = useState(0);
   const [donations, setDonations] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -2816,11 +2821,22 @@ function AppInner() {
     return () => { clearTimeout(t); if (idleId != null && window.cancelIdleCallback) window.cancelIdleCallback(idleId); };
   }, []);
 
+  useEffect(() => {
+    if (!profileEditField || typeof window === "undefined" || !window.visualViewport) { setProfileSheetBottom(0); return; }
+    const vv = window.visualViewport;
+    const update = () => setProfileSheetBottom(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
+  }, [profileEditField]);
+
   // close any open modal with Escape for keyboard users
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
       setShowProfile(false);
+      setProfileEditField(null);
       setShowForm(false);
       setShowSettings(false);
       setShowPrivacy(false);
@@ -3127,7 +3143,9 @@ function AppInner() {
     // after the async resize below, which can have changed (e.g. the modal
     // was opened or closed while the resize was still in flight) and would
     // otherwise send the photo down the wrong path (immediate persist vs draft).
-    const editingInModal = showProfile;
+    // The profile page no longer has a whole-form draft (each field saves on
+    // its own), so a new photo is saved straight away from anywhere.
+    const editingInModal = false;
     const editSession = profileEditSessionRef.current;
     setShowPhotoMenu(false);
     if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || "")) {
@@ -3158,10 +3176,6 @@ function AppInner() {
 
   const removePhoto = async () => {
     setShowPhotoMenu(false);
-    if (showProfile) {
-      setProfileDraft(f => ({ ...f, photo: "" }));
-      return;
-    }
     setPhotoBusy(true);
     try {
       await persistPhoto("");
@@ -3174,6 +3188,17 @@ function AppInner() {
   };
 
   const openProfile = () => {
+    setProfileEditField(null);
+    setShowPhotoMenu(false);
+    profileOpenerRef.current = document.activeElement;
+    profileEditSessionRef.current += 1;
+    setShowProfile(true);
+  };
+
+  // Opens the one-field sheet with a fresh draft of the *current* saved
+  // values, so saving it (saveProfile writes the whole draft) only ever
+  // changes the field being edited.
+  const openProfileField = (field) => {
     const nicknameParts = nickname.trim().split(/\s+/).filter(Boolean);
     setProfileDraft({
       nicknameFirst: nicknameParts[0] || "",
@@ -3185,9 +3210,7 @@ function AppInner() {
     });
     setProfileError("");
     setShowPhotoMenu(false);
-    profileOpenerRef.current = document.activeElement;
-    profileEditSessionRef.current += 1;
-    setShowProfile(true);
+    setProfileEditField(field);
   };
 
   // Shared close path for the X button and the click-outside backdrop — both
@@ -3198,6 +3221,7 @@ function AppInner() {
   // the modal closed.
   const closeProfile = () => {
     setShowPhotoMenu(false);
+    setProfileEditField(null);
     setShowProfile(false);
     profileOpenerRef.current?.focus?.();
   };
@@ -3262,8 +3286,8 @@ function AppInner() {
       setWeight(cleaned.weight);
       setBloodType(cleaned.bloodType);
       setDonorType(cleaned.donorType);
-      closeProfile();
-      showToast("success", "บันทึกโปรไฟล์แล้ว");
+      setProfileEditField(null);
+      showToast("success", "บันทึกแล้ว");
     } catch (e) {
       setProfileError("บันทึกโปรไฟล์ไม่สำเร็จ ลองอีกครั้ง");
     } finally {
@@ -5214,8 +5238,6 @@ function AppInner() {
                   )}
                 </div>
               </div>
-              <input ref={photoCameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
-              <input ref={photoGalleryInputRef} type="file" accept="image/*" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
               {storageDegraded && (
                 // Persistent — deliberately no "เตือนทีหลัง" dismiss, unlike
                 // the other banners below, since the risk here is real data
@@ -6644,37 +6666,75 @@ function AppInner() {
         </div>
       )}
 
-      {showProfile && (
-        <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 20px 28px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+      {phase === "app" && (
+        <>
+          <input ref={photoCameraInputRef} type="file" accept="image/*" capture="user" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
+          <input ref={photoGalleryInputRef} type="file" accept="image/*" onChange={handlePhotoFileSelected} style={{ display: "none" }} />
+        </>
+      )}
+
+      {showProfile && (() => {
+        const nameParts = nickname.trim().split(/\s+/).filter(Boolean);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ");
+        const empty = <span style={{ color: "#B7A5A1" }}>ยังไม่ได้กรอก</span>;
+        const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || DONOR_TYPES[0]).label;
+        const groups = [
+          [
+            { key: "first", label: "ชื่อ", value: firstName || empty },
+            { key: "last", label: "นามสกุล", value: lastName || empty },
+            { key: "age", label: "อายุ", value: age !== "" && age != null ? `${age} ปี` : empty },
+            { key: "weight", label: "น้ำหนัก", value: weight !== "" && weight != null ? `${weight} กก.` : empty },
+          ],
+          [
+            { key: "bloodType", label: "หมู่โลหิต", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : empty },
+            { key: "donorType", label: "ประเภทผู้บริจาค", value: donorLabel },
+          ],
+        ];
+        const titles = { first: "ชื่อ", last: "นามสกุล", age: "อายุ", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" };
+        const f = profileEditField;
+        const inputStyle = { width: "100%", height: 48, padding: "0 14px", borderRadius: 12, border: "1px solid #9A3B33", boxShadow: "0 0 0 3px rgba(154,59,51,0.12)", fontSize: 16, fontFamily: "inherit", background: "#FFFFFF", color: "#3A2C29", outline: "none" };
+        const chip = (on) => ({ minHeight: 44, minWidth: 56, padding: "0 16px", borderRadius: 22, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+          border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
+        return (
+          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" data-own-motion
+            style={{ position: "fixed", inset: 0, zIndex: 60, background: "#FBF6F5", overflowY: "auto", animation: "fadeSwap 0.18s ease" }}>
+            <div style={{ maxWidth: 420, margin: "0 auto", padding: "calc(env(safe-area-inset-top) + 4px) 0 calc(env(safe-area-inset-bottom) + 28px)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, height: 52, padding: "0 8px" }}>
+                <button onClick={closeProfile} aria-label="กลับ"
+                  style={{ width: 44, height: 44, border: "none", background: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#3A2C29", cursor: "pointer", padding: 0 }}>
+                  <ChevronLeft size={22} />
+                </button>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>โปรไฟล์ของฉัน</h2>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "4px 20px 18px" }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="รูปโปรไฟล์"
-                    style={{ width: 52, height: 52, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1, flexShrink: 0 }}>
-                    {profileDraft.photo ? (
-                      <img src={profileDraft.photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (profileDraft.nicknameFirst || profileDraft.nicknameLast) ? (
-                      <span style={{ fontSize: 18, fontWeight: 700, color: "#9A3B33" }}>{[...(profileDraft.nicknameFirst || profileDraft.nicknameLast).trim()][0]}</span>
+                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="เปลี่ยนรูปโปรไฟล์"
+                    style={{ width: 64, height: 64, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
+                    {photo ? (
+                      <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : firstName ? (
+                      <span style={{ fontSize: 26, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0]}</span>
                     ) : (
-                      <User size={22} color="#9A3B33" />
+                      <User size={26} color="#9A3B33" />
                     )}
                   </button>
-                  <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: "50%", background: "#9A3B33", border: "2px solid #FBF6F5", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                    <Camera size={9} color="#FFF7F5" />
+                  <div aria-hidden="true" style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: "#9A3B33", border: "3px solid #FBF6F5", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                    <Camera size={11} color="#FFF7F5" />
                   </div>
-                  {showPhotoMenu && showProfile && (
+                  {showPhotoMenu && (
                     <>
                       <div onClick={() => setShowPhotoMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 180 }}>
-                        <button onClick={() => { setShowPhotoMenu(false); photoCameraInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
+                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 190 }}>
+                        <button onClick={() => { setShowPhotoMenu(false); photoCameraInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
                           <Camera size={15} color="#9A3B33" /> ถ่ายรูปใหม่
                         </button>
-                        <button onClick={() => { setShowPhotoMenu(false); photoGalleryInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
+                        <button onClick={() => { setShowPhotoMenu(false); photoGalleryInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
                           <ImageIcon size={15} color="#9A3B33" /> เลือกจากคลังภาพ
                         </button>
-                        {profileDraft.photo && (
-                          <button onClick={removePhoto} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", textAlign: "left" }}>
+                        {photo && (
+                          <button onClick={removePhoto} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit", textAlign: "left" }}>
                             <Trash2 size={15} color="#B3261E" /> ลบรูปโปรไฟล์
                           </button>
                         )}
@@ -6683,90 +6743,99 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
-                  <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 1 }}>แก้ไขข้อมูลส่วนตัว</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nickname.trim() || "โปรไฟล์ของฉัน"}</div>
+                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy}
+                    style={{ position: "relative", marginTop: 2, padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                    <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
+                    {photoBusy ? "กำลังประมวลผลรูป..." : "เปลี่ยนรูป"}
+                  </button>
                 </div>
               </div>
-              <button onClick={closeProfile} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, color: "#3A2C29" }}><X size={20} /></button>
-            </div>
-            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: 14, marginBottom: 14 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#9A3B33", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><User size={13} /> ข้อมูลส่วนตัว</div>
-              <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ชื่อ</label>
-                  {/* No autoFocus: opening this dialog (via the profile icon/menu) shouldn't
-                      itself pop the keyboard on this field before the user has tapped
-                      anything -- same reasoning as the quick-entry count input above. */}
-                  <input ref={nicknameFirstInputRef} type="text" value={profileDraft.nicknameFirst}
-                    onChange={handleNameFieldChange("nicknameFirst", nicknameFirstInputRef)}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>นามสกุล</label>
-                  <input ref={nicknameLastInputRef} type="text" value={profileDraft.nicknameLast}
-                    onChange={handleNameFieldChange("nicknameLast", nicknameLastInputRef)}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>อายุ (ปี)</label>
-                  <input type="number" min="0" max="120" step="1" value={profileDraft.age}
-                    onChange={(e) => setProfileDraft(f => ({ ...f, age: e.target.value }))}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>น้ำหนัก (กก.)</label>
-                  <input type="number" min="0" max="300" step="0.1" value={profileDraft.weight}
-                    onChange={(e) => setProfileDraft(f => ({ ...f, weight: e.target.value }))}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                </div>
-              </div>
-            </div>
-            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: 14, marginBottom: 20 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#9A3B33", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Droplets size={13} /> สำหรับการบริจาค</div>
-              <div style={{ marginBottom: 10 }}>
-                <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 8 }}>หมู่โลหิต</label>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {BLOOD_TYPES.map((bt) => (
-                    <button key={bt} onClick={() => setProfileDraft(f => ({ ...f, bloodType: f.bloodType === bt ? "" : bt }))}
-                      aria-pressed={profileDraft.bloodType === bt}
-                      style={{
-                        padding: "8px 16px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                        border: profileDraft.bloodType === bt ? "1px solid #9A3B33" : "1px solid #E3C8C3",
-                        background: profileDraft.bloodType === bt ? "#9A3B33" : "#FFFFFF",
-                        color: profileDraft.bloodType === bt ? "#FFF7F5" : "#3A2C29",
-                      }}>
-                      {bt === "ไม่ทราบ" ? "ไม่ระบุ" : bt}
+
+              {groups.map((rows, gi) => (
+                <div key={gi} style={{ margin: "0 16px 14px", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, overflow: "hidden" }}>
+                  {rows.map((r, ri) => (
+                    <button key={r.key} onClick={() => openProfileField(r.key)}
+                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 54, padding: "0 14px", background: "none", border: "none", borderTop: ri ? "1px solid #F3E7E4" : "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                      <span style={{ fontSize: 14, color: "#3A2C29", flexShrink: 0 }}>{r.label}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 14, color: "#7A6360", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.value}</span>
+                      <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
                     </button>
                   ))}
                 </div>
-              </div>
-              <div>
-                <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 8 }}>ประเภทผู้บริจาค <span style={{ color: "#B7A5A1" }}>(สำหรับเข็ม/เหรียญในหน้าภารกิจ)</span></label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  {DONOR_TYPES.map((dt) => (
-                    <button key={dt.key} onClick={() => setProfileDraft(f => ({ ...f, donorType: dt.key }))}
-                      aria-pressed={profileDraft.donorType === dt.key}
-                      style={{
-                        flex: 1, padding: "9px 0", borderRadius: 20, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
-                        border: profileDraft.donorType === dt.key ? "1px solid #9A3B33" : "1px solid #E3C8C3",
-                        background: profileDraft.donorType === dt.key ? "#9A3B33" : "#FFFFFF",
-                        color: profileDraft.donorType === dt.key ? "#FFF7F5" : "#3A2C29",
-                      }}>
-                      {dt.label}
-                    </button>
-                  ))}
-                </div>
+              ))}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, margin: "6px 20px 0", fontSize: 11.5, color: "#7A6360" }}>
+                <Lock size={13} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์
               </div>
             </div>
-            {profileError && <div style={{ color: "#B3261E", fontSize: 12.5, marginBottom: 10 }} role="alert">{profileError}</div>}
-            <button onClick={saveProfile} disabled={saving || photoBusy} className="btn-primary" style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", opacity: (saving || photoBusy) ? 0.7 : 1 }}>
-              {saving ? "กำลังบันทึก..." : photoBusy ? "กำลังประมวลผลรูป..." : "บันทึกโปรไฟล์"}
-            </button>
+
+            {f && (
+              <div role="dialog" aria-modal="true" aria-label={`แก้ไข${titles[f]}`} data-own-motion
+                onClick={(e) => { if (e.target === e.currentTarget) setProfileEditField(null); }}
+                style={{ position: "fixed", inset: 0, zIndex: 61, background: "rgba(36,26,24,0.45)", animation: "fadeSwap 0.2s ease" }}>
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: profileSheetBottom, maxWidth: 420, margin: "0 auto", background: "#FBF6F5", borderRadius: "20px 20px 0 0", padding: "0 16px calc(env(safe-area-inset-bottom) + 18px)", boxShadow: "0 -8px 24px rgba(36,26,24,0.2)", animation: "sheetUp 0.22s cubic-bezier(.2,.8,.2,1)" }}>
+                  <div aria-hidden="true" style={{ width: 40, height: 5, borderRadius: 3, background: "#D9C4BF", margin: "8px auto 2px" }} />
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <button onClick={() => setProfileEditField(null)} style={{ minHeight: 44, padding: "0 4px", border: "none", background: "none", color: "#7A6360", fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+                    <b style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29" }}>{titles[f]}</b>
+                    <button onClick={saveProfile} disabled={saving} style={{ minHeight: 44, padding: "0 4px", border: "none", background: "none", color: "#9A3B33", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>{saving ? "กำลังบันทึก..." : "บันทึก"}</button>
+                  </div>
+                  <form onSubmit={(e) => { e.preventDefault(); saveProfile(); }} style={{ marginTop: 8 }}>
+                    {(f === "first" || f === "last") && (
+                      <input ref={f === "first" ? nicknameFirstInputRef : nicknameLastInputRef} type="text" autoFocus enterKeyHint="done"
+                        aria-label={titles[f]} placeholder={f === "first" ? "ชื่อ" : "นามสกุล (ไม่บังคับ)"}
+                        value={f === "first" ? profileDraft.nicknameFirst : profileDraft.nicknameLast}
+                        onChange={handleNameFieldChange(f === "first" ? "nicknameFirst" : "nicknameLast", f === "first" ? nicknameFirstInputRef : nicknameLastInputRef)}
+                        style={inputStyle} />
+                    )}
+                    {(f === "age" || f === "weight") && (
+                      <div style={{ position: "relative" }}>
+                        <input type="text" autoFocus enterKeyHint="done" inputMode={f === "age" ? "numeric" : "decimal"} aria-label={titles[f]}
+                          value={profileDraft[f]}
+                          onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, "").slice(0, 5); setProfileDraft(d => ({ ...d, [f]: f === "age" ? v.replace(/\./g, "") : v })); }}
+                          style={{ ...inputStyle, paddingRight: 48 }} />
+                        <span style={{ position: "absolute", right: 14, top: 0, bottom: 0, display: "flex", alignItems: "center", fontSize: 13, color: "#7A6360", pointerEvents: "none" }}>{f === "age" ? "ปี" : "กก."}</span>
+                      </div>
+                    )}
+                    {f === "bloodType" && (
+                      <div role="radiogroup" aria-label="หมู่โลหิต" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {BLOOD_TYPES.map((bt) => (
+                          <button type="button" key={bt} role="radio" aria-checked={profileDraft.bloodType === bt}
+                            onClick={() => setProfileDraft(d => ({ ...d, bloodType: bt }))} style={chip(profileDraft.bloodType === bt)}>
+                            {bt === "ไม่ทราบ" ? "ไม่ระบุ" : bt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {f === "donorType" && (
+                      <div role="radiogroup" aria-label="ประเภทผู้บริจาค" style={{ display: "flex", background: "#F3EAE8", borderRadius: 12, padding: 3 }}>
+                        {DONOR_TYPES.map((dt) => {
+                          const on = profileDraft.donorType === dt.key;
+                          return (
+                            <button type="button" key={dt.key} role="radio" aria-checked={on} onClick={() => setProfileDraft(d => ({ ...d, donorType: dt.key }))}
+                              style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                                background: on ? "#FFFFFF" : "transparent", color: on ? "#9A3B33" : "#7A6360", boxShadow: on ? "0 1px 4px rgba(36,26,24,0.12)" : "none" }}>
+                              {dt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p style={{ fontSize: 11.5, color: "#7A6360", margin: "8px 2px 0", lineHeight: 1.5 }}>
+                      {f === "age" ? `เกณฑ์ทั่วไปของผู้บริจาค: ${MIN_AGE}–${MAX_AGE} ปี`
+                        : f === "weight" ? `เกณฑ์ทั่วไปของผู้บริจาค: ${MIN_WEIGHT} กก. ขึ้นไป`
+                        : f === "donorType" ? "ใช้เลือกชุดเข็ม/เหรียญที่ระลึกในหน้าภารกิจ"
+                        : f === "last" ? "ไม่บังคับ" : " "}
+                    </p>
+                    {profileError && <div style={{ color: "#B3261E", fontSize: 12.5, marginTop: 6 }} role="alert">{profileError}</div>}
+                    <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {showForm && (
         <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>

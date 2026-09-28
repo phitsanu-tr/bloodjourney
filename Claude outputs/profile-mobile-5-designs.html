@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>หน้าโปรไฟล์บนมือถือ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --red:#9A3B33; --line:#EEDEDA; --line2:#E3C8C3; --soft:#F3EAE8; --bg:#FBF6F5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding-inline: 16px; padding-block: 24px 60px; }
+  h1 { font-size: 21px; font-weight: 600; text-align: center; margin: 0 0 4px; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; max-width: 680px; margin: 0 auto 20px; line-height: 1.6; }
+  .issues { max-width: 760px; margin: 0 auto 28px; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.7; color: #5C4A46; }
+  .issues h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; }
+  .issues ol { margin: 0; padding-left: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+  .panel { width: 320px; max-width: 100%; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 100px; }
+  .phone { position: relative; width: 320px; max-width: 100%; height: 660px; border: 8px solid #2B201E; border-radius: 34px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+  .status { height: 22px; flex-shrink: 0; }
+  .scroll { flex: 1; overflow-y: auto; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+  .sticky-bottom { flex-shrink: 0; padding: 10px 16px 16px; background: rgba(251,246,245,.94); border-top: 1px solid var(--line); }
+  .btn { width: 100%; min-height: 48px; border: none; border-radius: 14px; background: var(--red); color: #FFF7F5; font: inherit; font-size: 15px; font-weight: 600; }
+  .ghost { background: none; border: none; font: inherit; color: var(--red); font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 4px; }
+  .muted-btn { color: var(--mut); font-weight: 500; }
+  .sec { margin: 0 16px 14px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .sec-t { font-size: 12.5px; font-weight: 600; color: var(--red); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
+  .lab { display: block; font-size: 12.5px; color: var(--mut); margin: 0 0 6px; }
+  .inp { width: 100%; height: 48px; border: 1px solid var(--line2); border-radius: 12px; background: #fff; padding: 0 14px; font: inherit; font-size: 16px; color: var(--ink2); display: flex; align-items: center; }
+  .inp.ph { color: #B7A5A1; }
+  .field + .field { margin-top: 12px; }
+  .unit { margin-left: auto; color: var(--mut); font-size: 13px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { min-height: 44px; min-width: 56px; padding: 0 16px; border-radius: 22px; border: 1px solid var(--line2); background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink2); display: inline-flex; align-items: center; justify-content: center; }
+  .chip.on { background: var(--red); border-color: var(--red); color: #FFF7F5; }
+  .seg { display: flex; background: var(--soft); border-radius: 12px; padding: 3px; }
+  .seg span { flex: 1; min-height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--mut); }
+  .seg span.on { background: #fff; color: var(--red); box-shadow: 0 1px 4px rgba(36,26,24,.12); }
+  .hint { font-size: 11.5px; color: var(--mut); margin: 6px 0 0; line-height: 1.5; }
+  .avatar { width: 88px; height: 88px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; color: var(--red); position: relative; }
+  .cam { position: absolute; right: -2px; bottom: -2px; width: 30px; height: 30px; border-radius: 50%; background: var(--red); border: 3px solid var(--bg); display: flex; align-items: center; justify-content: center; }
+  .hl { outline: 2px dashed #C9776D; outline-offset: 3px; border-radius: 12px; }
+  svg.i { flex-shrink: 0; }
+
+  /* 1 bottom sheet */
+  .dim { position: absolute; inset: 0; background: rgba(36,26,24,.45); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 46px; background: var(--bg); border-radius: 20px 20px 0 0; display: flex; flex-direction: column; box-shadow: 0 -8px 24px rgba(36,26,24,.2); }
+  .grab { width: 40px; height: 5px; border-radius: 3px; background: #D9C4BF; margin: 8px auto 2px; }
+  .sheet-h { display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--line); }
+  .sheet-h b { font-size: 15.5px; font-weight: 600; }
+
+  /* 2 full page */
+  .topbar { display: flex; align-items: center; gap: 6px; padding: 4px 8px; height: 52px; flex-shrink: 0; }
+  .topbar b { font-size: 16px; font-weight: 600; flex: 1; }
+  .iconbtn { width: 44px; height: 44px; border: none; background: none; display: flex; align-items: center; justify-content: center; color: var(--ink2); }
+
+  /* 3 list rows */
+  .rows { margin: 0 16px 14px; background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 14px; }
+  .row + .row { border-top: 1px solid #F3E7E4; }
+  .row .k { font-size: 14px; color: var(--ink2); }
+  .row .v { margin-left: auto; font-size: 14px; color: var(--mut); }
+  .row .v.em { color: #B7A5A1; }
+  .mini-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg); border-radius: 20px 20px 0 0; padding: 0 16px 18px; box-shadow: 0 -8px 24px rgba(36,26,24,.25); }
+
+  /* 4 big controls */
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper .sb { width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--line2); background: #fff; font-size: 22px; color: var(--red); display: flex; align-items: center; justify-content: center; font-weight: 500; }
+  .stepper .val { flex: 1; height: 48px; border-radius: 14px; background: var(--soft); display: flex; align-items: baseline; justify-content: center; gap: 4px; padding-top: 9px; font-size: 22px; font-weight: 700; color: var(--ink2); }
+  .stepper .val small { font-size: 12px; font-weight: 500; color: var(--mut); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tile { height: 56px; border-radius: 14px; border: 1px solid var(--line2); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; color: var(--ink2); }
+  .tile.on { background: var(--red); border-color: var(--red); color: #FFF7F5; }
+  .tile.sm { font-size: 13.5px; font-weight: 600; }
+
+  /* 5 donor card */
+  .dcard { margin: 4px 16px 14px; border-radius: 18px; padding: 16px; color: #FFF7F5; background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 10px 24px -8px rgba(122,42,35,.5); position: relative; overflow: hidden; }
+  .dcard .top { display: flex; align-items: center; gap: 12px; }
+  .dcard .av { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,247,245,.18); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; position: relative; flex-shrink: 0; }
+  .dcard .bt { margin-left: auto; width: 56px; height: 56px; border-radius: 16px; background: #FFF7F5; color: var(--red); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+  .dcard .bt b { font-size: 22px; } .dcard .bt i { font-style: normal; font-size: 10px; margin-top: 3px; color: var(--mut); }
+  .dcard .facts { display: flex; gap: 8px; margin-top: 14px; }
+  .dcard .facts span { background: rgba(255,247,245,.16); border-radius: 20px; padding: 4px 11px; font-size: 12px; font-weight: 600; }
+  .note { max-width: 760px; margin: 32px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.7; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; }
+  .note p { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<h1>หน้าโปรไฟล์ แบบใหม่สำหรับมือถือ</h1>
+<p class="lead">ข้อมูลตัวอย่าง: ต้น อายุ 34 ปี น้ำหนัก 62 กก. หมู่โลหิต O บุคคลทั่วไป ใช้สีและตัวอักษรเดียวกับแอป ช่องกรอกทุกช่องสูง 48px และตัวหนังสือในช่อง 16px (iPhone จะไม่ซูมจอเองตอนแตะ)</p>
+
+<div class="issues">
+  <h2>ปัญหาของหน้าเดิมบนมือถือ (จากการเปิดดูในแอปจริง)</h2>
+  <ol>
+    <li>เป็นกล่องลอยกลางจอ สูง 618px บน iPhone SE เกือบเต็มจอพอดี พอคีย์บอร์ดขึ้น (ราว 300px) ปุ่ม “บันทึกโปรไฟล์” จะโดนบัง และกล่องเลื่อนดูไม่ได้</li>
+    <li>แตะพื้นที่มืดนอกกล่องแล้วปิดทันที ข้อมูลที่พิมพ์ค้างหายโดยไม่ถาม — บนมือถือพลาดแตะง่าย</li>
+    <li>ปุ่ม ✕ ปิด แตะได้แค่ 32×25px เล็กกว่าที่ควร (44px)</li>
+    <li>ตัวหนังสือในช่องกรอก 14px — iPhone จะซูมหน้าจอเองทุกครั้งที่แตะช่อง (ต้อง 16px ขึ้นไปถึงไม่ซูม)</li>
+    <li>ชื่อ/นามสกุล กับอายุ/น้ำหนัก วางคู่กันในแถวเดียว ช่องแคบ และคีย์บอร์ดตัวเลขไม่ได้กำหนดให้ขึ้นแบบตัวเลขล้วน</li>
+    <li>รูปโปรไฟล์เล็ก (52px) และต้องเดาว่าแตะที่รูปเพื่อเปลี่ยน</li>
+  </ol>
+</div>
+
+<div class="grid">
+
+  <!-- 1 -->
+  <div class="panel">
+    <span class="tag">แบบ 1</span>
+    <p class="name">แผ่นเลื่อนขึ้นจากล่าง</p>
+    <p class="desc">แผ่นสูงเกือบเต็มจอเลื่อนขึ้นจากด้านล่าง แบบเดียวกับแผ่นตัวกรองในแอป หัวแผ่นค้างอยู่บนสุด มี “ยกเลิก” กับ “บันทึก” เลื่อนเนื้อหาได้แม้คีย์บอร์ดขึ้น ปุ่มบันทึกอยู่บนหัวจึงไม่โดนคีย์บอร์ดบัง เปลี่ยนจากของเดิมน้อยที่สุด</p>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-h hl"><button class="ghost muted-btn">ยกเลิก</button><b>โปรไฟล์ของฉัน</b><button class="ghost">บันทึก</button></div>
+        <div class="scroll" style="padding-top:14px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:14px">
+            <div class="avatar" style="width:72px;height:72px;font-size:28px">ต<span class="cam" style="width:26px;height:26px"><svg class="i" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span></div>
+            <span style="font-size:12.5px;color:var(--red);font-weight:600">เปลี่ยนรูป</span>
+          </div>
+          <div class="sec">
+            <p class="sec-t">ข้อมูลส่วนตัว</p>
+            <div class="field"><span class="lab">ชื่อ</span><div class="inp">ต้น</div></div>
+            <div class="field"><span class="lab">นามสกุล (ไม่บังคับ)</span><div class="inp ph">นามสกุล</div></div>
+            <div class="field" style="display:flex;gap:10px">
+              <div style="flex:1"><span class="lab">อายุ</span><div class="inp">34<span class="unit">ปี</span></div></div>
+              <div style="flex:1"><span class="lab">น้ำหนัก</span><div class="inp">62<span class="unit">กก.</span></div></div>
+            </div>
+          </div>
+          <div class="sec">
+            <p class="sec-t">สำหรับการบริจาค</p>
+            <span class="lab">หมู่โลหิต</span>
+            <div class="chips"><span class="chip">A</span><span class="chip">B</span><span class="chip">AB</span><span class="chip on">O</span><span class="chip">ไม่ระบุ</span></div>
+            <span class="lab" style="margin-top:14px">ประเภทผู้บริจาค</span>
+            <div class="seg"><span class="on">บุคคลทั่วไป</span><span>พระภิกษุสงฆ์</span></div>
+            <p class="hint">ใช้เลือกชุดเข็ม/เหรียญในหน้าภารกิจ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="panel">
+    <span class="tag">แบบ 2</span>
+    <p class="name">หน้าเต็มจอ ปุ่มบันทึกติดล่าง</p>
+    <p class="desc">เป็นหน้าเต็มจอแบบแอปทั่วไป มีลูกศรย้อนกลับด้านบน รูปโปรไฟล์ใหญ่อยู่กลาง มีคำว่า “เปลี่ยนรูป” ชัดเจน ปุ่ม “บันทึกโปรไฟล์” ติดอยู่ด้านล่างเสมอ ใกล้นิ้วโป้ง และจะเลื่อนขึ้นอยู่เหนือคีย์บอร์ด</p>
+    <div class="phone">
+      <div class="status"></div>
+      <div class="topbar"><button class="iconbtn" aria-label="กลับ"><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><b>โปรไฟล์ของฉัน</b></div>
+      <div class="scroll">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin:6px 0 18px">
+          <div class="avatar hl">ต<span class="cam"><svg class="i" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span></div>
+          <span style="font-size:13px;color:var(--red);font-weight:600">เปลี่ยนรูป</span>
+        </div>
+        <div class="sec">
+          <p class="sec-t">ข้อมูลส่วนตัว</p>
+          <div class="field"><span class="lab">ชื่อ</span><div class="inp">ต้น</div></div>
+          <div class="field"><span class="lab">นามสกุล (ไม่บังคับ)</span><div class="inp ph">นามสกุล</div></div>
+          <div class="field"><span class="lab">อายุ</span><div class="inp">34<span class="unit">ปี</span></div></div>
+          <div class="field"><span class="lab">น้ำหนัก</span><div class="inp">62<span class="unit">กก.</span></div></div>
+        </div>
+        <div class="sec">
+          <p class="sec-t">สำหรับการบริจาค</p>
+          <span class="lab">หมู่โลหิต</span>
+          <div class="chips"><span class="chip">A</span><span class="chip">B</span><span class="chip">AB</span><span class="chip on">O</span><span class="chip">ไม่ระบุ</span></div>
+          <span class="lab" style="margin-top:14px">ประเภทผู้บริจาค</span>
+          <div class="seg"><span class="on">บุคคลทั่วไป</span><span>พระภิกษุสงฆ์</span></div>
+        </div>
+      </div>
+      <div class="sticky-bottom hl" style="outline-offset:-4px"><button class="btn">บันทึกโปรไฟล์</button></div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="panel">
+    <span class="tag">แบบ 3</span>
+    <p class="name">รายการแตะแก้ทีละข้อ</p>
+    <p class="desc">หน้าแสดงข้อมูลเป็นแถว ๆ แบบหน้าตั้งค่าในมือถือ แตะแถวไหนก็มีแผ่นเล็กเลื่อนขึ้นมาให้แก้เฉพาะข้อนั้น แล้วบันทึกทันที ไม่มีฟอร์มยาว ไม่มีปุ่มบันทึกรวม เห็นข้อมูลทั้งหมดในจอเดียว (ในภาพคือกำลังแก้น้ำหนัก)</p>
+    <div class="phone">
+      <div class="status"></div>
+      <div class="topbar"><button class="iconbtn" aria-label="กลับ"><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><b>โปรไฟล์ของฉัน</b></div>
+      <div class="scroll">
+        <div style="display:flex;align-items:center;gap:14px;margin:4px 16px 16px">
+          <div class="avatar" style="width:64px;height:64px;font-size:26px">ต<span class="cam" style="width:24px;height:24px"><svg class="i" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span></div>
+          <div><div style="font-size:17px;font-weight:600">ต้น</div><div style="font-size:12.5px;color:var(--red);font-weight:600;margin-top:2px">เปลี่ยนรูป</div></div>
+        </div>
+        <div class="rows hl">
+          <div class="row"><span class="k">ชื่อ</span><span class="v">ต้น</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+          <div class="row"><span class="k">นามสกุล</span><span class="v em">ยังไม่ได้กรอก</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+          <div class="row"><span class="k">อายุ</span><span class="v">34 ปี</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+          <div class="row"><span class="k">น้ำหนัก</span><span class="v">62 กก.</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="k">หมู่โลหิต</span><span class="v">O</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+          <div class="row"><span class="k">ประเภทผู้บริจาค</span><span class="v">บุคคลทั่วไป</span><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B7A5A1" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+        </div>
+      </div>
+      <div class="dim" style="top:0"></div>
+      <div class="mini-sheet">
+        <div class="grab"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between"><button class="ghost muted-btn">ยกเลิก</button><b style="font-size:15px;font-weight:600">น้ำหนัก</b><button class="ghost">บันทึก</button></div>
+        <div class="inp" style="margin-top:8px;border-color:var(--red);box-shadow:0 0 0 3px rgba(154,59,51,.12)">62<span class="unit">กก.</span></div>
+        <p class="hint">เกณฑ์ทั่วไปของผู้บริจาค: 45 กก. ขึ้นไป</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="panel">
+    <span class="tag">แบบ 4</span>
+    <p class="name">ปุ่มใหญ่ ไม่ต้องพิมพ์</p>
+    <p class="desc">อายุและน้ำหนักปรับด้วยปุ่ม − / + ขนาดใหญ่ (แตะที่ตัวเลขเพื่อพิมพ์เองก็ได้) หมู่โลหิตเป็นช่องใหญ่ 3 คอลัมน์ ประเภทผู้บริจาคเป็นสวิตช์สองฝั่ง แทบไม่ต้องใช้คีย์บอร์ดเลย เหมาะกับผู้สูงอายุที่สุด</p>
+    <div class="phone">
+      <div class="status"></div>
+      <div class="topbar"><button class="iconbtn" aria-label="กลับ"><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><b>โปรไฟล์ของฉัน</b></div>
+      <div class="scroll">
+        <div class="sec">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div class="avatar" style="width:56px;height:56px;font-size:22px">ต<span class="cam" style="width:22px;height:22px;border-width:2px"><svg class="i" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFF7F5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span></div>
+            <div style="flex:1"><span class="lab">ชื่อ</span><div class="inp">ต้น</div></div>
+          </div>
+          <span class="lab">อายุ</span>
+          <div class="stepper hl"><span class="sb">−</span><span class="val">34<small>ปี</small></span><span class="sb">+</span></div>
+          <span class="lab" style="margin-top:12px">น้ำหนัก</span>
+          <div class="stepper"><span class="sb">−</span><span class="val">62<small>กก.</small></span><span class="sb">+</span></div>
+        </div>
+        <div class="sec">
+          <span class="lab">หมู่โลหิต</span>
+          <div class="tiles hl"><span class="tile">A</span><span class="tile">B</span><span class="tile">AB</span><span class="tile on">O</span><span class="tile sm" style="grid-column:span 2">ไม่ทราบ / ไม่ระบุ</span></div>
+          <span class="lab" style="margin-top:14px">ประเภทผู้บริจาค</span>
+          <div class="seg"><span class="on">บุคคลทั่วไป</span><span>พระภิกษุสงฆ์</span></div>
+        </div>
+      </div>
+      <div class="sticky-bottom"><button class="btn">บันทึกโปรไฟล์</button></div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="panel">
+    <span class="tag">แบบ 5</span>
+    <p class="name">บัตรผู้บริจาคด้านบน</p>
+    <p class="desc">ด้านบนเป็นบัตรผู้บริจาคสีแดงแบบเดียวกับการ์ดใหญ่หน้าหลัก เปลี่ยนตามทันทีที่แก้ข้อมูลข้างล่าง ได้เห็นผลลัพธ์ระหว่างกรอก และต่อยอดเป็นฟีเจอร์ “บัตรผู้บริจาค” ที่เคยคุยไว้ได้ ฟอร์มข้างล่างเหมือนแบบ 2</p>
+    <div class="phone">
+      <div class="status"></div>
+      <div class="topbar"><button class="iconbtn" aria-label="กลับ"><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><b>โปรไฟล์ของฉัน</b></div>
+      <div class="scroll">
+        <div class="dcard hl">
+          <div class="top">
+            <div class="av">ต<span class="cam" style="width:22px;height:22px;border-width:2px;border-color:#9A3B33;background:#FFF7F5;right:-4px;bottom:-4px"><svg class="i" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span></div>
+            <div><div style="font-size:11.5px;opacity:.85">ผู้บริจาคโลหิต</div><div style="font-size:18px;font-weight:600">ต้น</div></div>
+            <div class="bt"><b>O</b><i>หมู่โลหิต</i></div>
+          </div>
+          <div class="facts"><span>34 ปี</span><span>62 กก.</span><span>บุคคลทั่วไป</span></div>
+        </div>
+        <div class="sec">
+          <div class="field"><span class="lab">ชื่อ</span><div class="inp">ต้น</div></div>
+          <div class="field" style="display:flex;gap:10px">
+            <div style="flex:1"><span class="lab">อายุ</span><div class="inp">34<span class="unit">ปี</span></div></div>
+            <div style="flex:1"><span class="lab">น้ำหนัก</span><div class="inp">62<span class="unit">กก.</span></div></div>
+          </div>
+        </div>
+        <div class="sec">
+          <span class="lab">หมู่โลหิต</span>
+          <div class="chips"><span class="chip">A</span><span class="chip">B</span><span class="chip">AB</span><span class="chip on">O</span><span class="chip">ไม่ระบุ</span></div>
+          <span class="lab" style="margin-top:14px">ประเภทผู้บริจาค</span>
+          <div class="seg"><span class="on">บุคคลทั่วไป</span><span>พระภิกษุสงฆ์</span></div>
+        </div>
+      </div>
+      <div class="sticky-bottom"><button class="btn">บันทึกโปรไฟล์</button></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <h2>เหมือนกันทุกแบบ</h2>
+  <p>ถ้ามีข้อมูลที่แก้ค้างอยู่แล้วกดปิดหรือย้อนกลับ จะถามก่อนว่า “ทิ้งการแก้ไขไหม” ไม่หายเงียบ ๆ อีก ช่องอายุและน้ำหนักเปิดคีย์บอร์ดตัวเลขทันที ปุ่มทุกปุ่มแตะได้อย่างน้อย 44px</p>
+  <p>ข้อมูลที่เก็บยังเหมือนเดิมทุกอย่าง (ชื่อ นามสกุล อายุ น้ำหนัก หมู่โลหิต ประเภทผู้บริจาค รูป) ไม่เพิ่มช่องใหม่</p>
+</div>
+</body>
+</html>
