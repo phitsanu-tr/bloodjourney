@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.57";
+const APP_VERSION = "1.0.58";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2074,24 +2074,31 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // whole openActionMenuId string) precisely so that opening the menu on ONE
 // row doesn't also cause every other row's memo comparison to fail.
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onEdit, onShare, onDelete }) {
+  // Single source of truth for this row's per-type tint -- used for both the
+  // type pill and the order-number badge below, so the badge shape now tells
+  // whole/component apart by color too instead of always being maroon.
+  const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
   return (
     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
-          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
+          <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill={tint.text} />
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 11.5 : 15, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 7.5, color: "#FFF7F5", opacity: 0.85, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: 9, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
           <Calendar size={14} color="#9A3B33" /> {toBuddhistDate(d.date)}{d.time ? ` เวลา ${d.time} น.` : ""}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
-          {d.type === "component" ? <Droplets size={13} color="#7A6360" style={{ flexShrink: 0 }} /> : <Droplet size={13} color="#7A6360" style={{ flexShrink: 0 }} />}
-          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"].bg, color: DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"].text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
+        {/* The leading droplet icon that used to sit here duplicated the same
+            whole/component signal the pill right next to it already carries
+            (now doubly so with the color-matched order badge above) -- one
+            clear signal instead of the same one said twice. */}
+        <div style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
         {d.location && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: "#7A6360", marginTop: 5, wordBreak: "break-word" }}>
@@ -2103,11 +2110,6 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
             <StickyNote size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {d.note}
           </div>
         )}
-        {d.loggedAt && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#B7A5A1", marginTop: 6 }}>
-            <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
-          </div>
-        )}
       </div>
       <div style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
@@ -2116,7 +2118,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 168 }}>
               <button onClick={onEdit} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
@@ -2126,6 +2128,16 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
               <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
+              {/* "บันทึกเมื่อ" used to always print under the card body -- low-
+                  contrast, and not something most people need to see at a
+                  glance every time. Moved here as a quiet, non-interactive
+                  footer line inside the same menu that already holds the
+                  card's other secondary actions. */}
+              {d.loggedAt && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", fontSize: 11, color: "#7A6360", borderTop: "1px solid #F3E7E4", background: "#FBF6F5" }}>
+                  <Clock size={12} style={{ flexShrink: 0 }} color="#9A8480" /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -4909,30 +4921,35 @@ function AppInner() {
 
                 {hasBothDonationTypes ? (
                   <div style={{ display: "flex", gap: 6, marginTop: 6, position: "relative", zIndex: 1 }}>
+                    {/* Selected pill's text/count now tints per donation type (matching
+                        the same DONATION_TYPE_TINT used on the history filters and
+                        cards below) instead of always reading maroon regardless of
+                        which type is active -- so this tab strip carries the same
+                        color signal as the rest of the tab. */}
                     {["whole", "component"].map((t) => (
                       <button key={t} onClick={() => setCountdownTab(t)}
                         style={{
                           display: "flex", alignItems: "center", gap: 6,
                           padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
                           background: activeCountdownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
-                          color: activeCountdownType === t ? "#9A3B33" : "#FFF7F5",
+                          color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           fontWeight: activeCountdownType === t ? 600 : 400,
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>
                         {t === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[t]}
                         <span style={{
                           fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
-                          background: activeCountdownType === t ? "#F6EBE9" : "rgba(255,247,245,0.22)",
-                          color: activeCountdownType === t ? "#9A3B33" : "#FFF7F5",
+                          background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
+                          color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>{t === "component" ? componentTotalCount : wholeTotalCount}</span>
                       </button>
                     ))}
                   </div>
                 ) : totalCount > 0 ? (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: "#9A3B33", position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
                     {activeCountdownType === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[activeCountdownType]}
-                    <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: "#F6EBE9", color: "#9A3B33" }}>
+                    <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600, background: DONATION_TYPE_TINT[activeCountdownType].bg, color: DONATION_TYPE_TINT[activeCountdownType].text }}>
                       {activeCountdownType === "component" ? componentTotalCount : wholeTotalCount}
                     </span>
                   </div>
@@ -4978,6 +4995,18 @@ function AppInner() {
                     </button>
                   )}
                 </div>
+                {/* Visual progress through the current waiting period -- previously
+                    only the "อีก N วัน" text conveyed this, with no sense of how far
+                    along the wait actually is. Only makes sense once there's an
+                    actual last-donation date to count from and the donor isn't
+                    already eligible again. */}
+                {effectiveLastDateStr && !isEligible && daysLeft > 0 && (
+                  <div key={`${activeCountdownType}-progress`} role="progressbar" aria-label="ความคืบหน้าของช่วงพักฟื้นก่อนบริจาคครั้งถัดไป"
+                    aria-valuemin={0} aria-valuemax={activeCycleDays} aria-valuenow={Math.max(0, activeCycleDays - daysLeft)}
+                    style={{ marginTop: 10, height: 5, borderRadius: 3, background: "rgba(255,247,245,0.2)", overflow: "hidden", position: "relative", zIndex: 1, animation: "fadeSwap 0.4s ease" }}>
+                    <div style={{ height: "100%", width: `${Math.min(100, Math.max(0, ((activeCycleDays - daysLeft) / activeCycleDays) * 100))}%`, background: "#FFF7F5", borderRadius: 3, transition: "width 0.35s ease" }} />
+                  </div>
+                )}
                 {showCycleInfo && (effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 10.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
                     คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
@@ -5168,7 +5197,7 @@ function AppInner() {
                   this empty-state message steps aside instead of showing a redundant
                   second explanation above it. */}
               {filteredHistory.length === 0 && !(historyYearFilter === "all" && displayedStartingCount > 0) && (
-                <div style={{ textAlign: "center", padding: "36px 0", color: "#B39B96", fontSize: 13.5 }}>
+                <div style={{ textAlign: "center", padding: "36px 0", color: "#8A7370", fontSize: 13.5 }}>
                   {(() => {
                     if (donations.length === 0) return "ยังไม่มีรายการ กดปุ่มด้านบนเพื่อเริ่มบันทึก";
                     if (historyTypeFilter !== "all" && historyYearFilter !== "all") return `ไม่มีรายการ${DONATION_TYPE_LABELS[historyTypeFilter]}ในปีที่เลือก`;
@@ -5936,15 +5965,15 @@ function AppInner() {
       {phase === "app" && (
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40 }}>
           <div style={{ width: "100%", maxWidth: 420, background: "#FFFFFF", borderTop: "1px solid #EEDEDA", display: "flex", padding: "8px 20px calc(8px + env(safe-area-inset-bottom))" }}>
-            <button onClick={() => setTab("home")} aria-label="หน้าหลัก" aria-current={tab === "home" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "home" ? "#9A3B33" : "#B39B96" }}>
+            <button onClick={() => setTab("home")} aria-label="หน้าหลัก" aria-current={tab === "home" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "home" ? "#9A3B33" : "#8A7370" }}>
               <Home size={19} />
               <span style={{ fontSize: 11, fontWeight: 600 }}>หน้าหลัก</span>
             </button>
-            <button onClick={() => setTab("dashboard")} aria-label="แดชบอร์ด" aria-current={tab === "dashboard" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "dashboard" ? "#9A3B33" : "#B39B96" }}>
+            <button onClick={() => setTab("dashboard")} aria-label="แดชบอร์ด" aria-current={tab === "dashboard" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "dashboard" ? "#9A3B33" : "#8A7370" }}>
               <BarChart3 size={19} />
               <span style={{ fontSize: 11, fontWeight: 600 }}>แดชบอร์ด</span>
             </button>
-            <button onClick={() => setTab("missions")} aria-label={hasNewAchievement ? "ภารกิจ (มีความสำเร็จใหม่)" : "ภารกิจ"} aria-current={tab === "missions" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "missions" ? "#9A3B33" : "#B39B96" }}>
+            <button onClick={() => setTab("missions")} aria-label={hasNewAchievement ? "ภารกิจ (มีความสำเร็จใหม่)" : "ภารกิจ"} aria-current={tab === "missions" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "missions" ? "#9A3B33" : "#8A7370" }}>
               <div style={{ position: "relative" }}>
                 <Trophy size={19} />
                 {hasNewAchievement && (
@@ -5953,7 +5982,7 @@ function AppInner() {
               </div>
               <span style={{ fontSize: 11, fontWeight: 600 }}>ภารกิจ</span>
             </button>
-            <button onClick={() => setTab("knowledge")} aria-label="ให้ความรู้" aria-current={tab === "knowledge" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "knowledge" ? "#9A3B33" : "#B39B96" }}>
+            <button onClick={() => setTab("knowledge")} aria-label="ให้ความรู้" aria-current={tab === "knowledge" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "knowledge" ? "#9A3B33" : "#8A7370" }}>
               <BookOpen size={19} />
               <span style={{ fontSize: 11, fontWeight: 600 }}>ให้ความรู้</span>
             </button>
