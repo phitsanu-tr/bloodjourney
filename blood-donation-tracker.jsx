@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.87";
+const APP_VERSION = "1.0.88";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4520,7 +4520,7 @@ function AppInner() {
 
   const visibleHistory = filteredHistory.slice(0, historyVisibleCount);
 
-  // Year dividers on a left timeline rail (design 5 from
+  // Year dividers on a left timeline rail (design 5 + 1 hairline, from
   // history-year-dividers-7-designs.html). Counts come from the whole
   // filtered list (not just the loaded page) so "· N ครั้ง" is the year's
   // real total under the active type filter. Only shown while the list
@@ -5607,6 +5607,8 @@ function AppInner() {
                       <span aria-hidden="true" style={{ position: "absolute", left: -24, top: "50%", width: 12, height: 12, marginTop: -9, borderRadius: "50%", background: "#9A3B33", border: "3px solid #FBF6F5", boxSizing: "content-box" }} />
                       <span style={{ fontWeight: 600, color: "#3A2C29" }}>{y}</span>
                       <span style={{ color: "#7A6360", fontSize: 12 }}>· {historyYearCounts[y]} ครั้ง</span>
+                      {/* Design 1's hairline, running to the right edge (5 + 1 mix). */}
+                      <span aria-hidden="true" style={{ flex: 1, height: 1, marginLeft: 4, background: "#E3C8C3" }} />
                     </div>
                   )}
                   <HistoryRow
