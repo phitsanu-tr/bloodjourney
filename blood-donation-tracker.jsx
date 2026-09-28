@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.90";
+const APP_VERSION = "1.0.92";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4520,17 +4520,19 @@ function AppInner() {
 
   const visibleHistory = filteredHistory.slice(0, historyVisibleCount);
 
-  // Year dividers on a left timeline rail (design 5 from
-  // history-year-dividers-7-designs.html). Counts come from the whole
+  // Plain-text year dividers ("2569 · 2 ครั้ง") -- design 1 from
+  // history-year-dividers-7-designs.html without its hairline. (Tried the
+  // design 5 timeline rail first; user preferred this.) Counts come from the whole
   // filtered list (not just the loaded page) so "· N ครั้ง" is the year's
-  // real total under the active type filter. Only shown while the list
-  // actually spans 2+ years and no single year is filtered.
+  // real total under the active type filter. Shown whenever the list has
+  // records -- including while a year/type filter is active and when the
+  // list covers a single year (user asked for it to show under filters too).
   const historyYearCounts = useMemo(() => {
     const counts = {};
     filteredHistory.forEach(d => { const y = buddhistYear(d.date); counts[y] = (counts[y] || 0) + 1; });
     return counts;
   }, [filteredHistory]);
-  const showHistoryYearDividers = historyYearFilter === "all" && Object.keys(historyYearCounts).length > 1;
+  const showHistoryYearDividers = filteredHistory.length > 0;
 
   // Exact same-date match against another existing record — this is a hard
   // block (not just a warning): the user confirmed donating twice on the
@@ -5593,18 +5595,14 @@ function AppInner() {
                 </div>
               )}
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, ...(showHistoryYearDividers ? { position: "relative", paddingLeft: 22 } : null) }}>
-                {showHistoryYearDividers && (
-                  <div aria-hidden="true" style={{ position: "absolute", left: 6, top: 8, bottom: 8, width: 2, borderRadius: 2, background: "#EAD3CE" }} />
-                )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {visibleHistory.map((d, i) => {
                   const y = buddhistYear(d.date);
                   const newYear = showHistoryYearDividers && (i === 0 || buddhistYear(visibleHistory[i - 1].date) !== y);
                   return (
                   <React.Fragment key={d.id}>
                   {newYear && (
-                    <div role="heading" aria-level={3} style={{ position: "relative", display: "flex", alignItems: "center", gap: 6, fontSize: 13, marginTop: i === 0 ? 0 : 10 }}>
-                      <span aria-hidden="true" style={{ position: "absolute", left: -21, top: "50%", width: 12, height: 12, marginTop: -6, borderRadius: "50%", background: "#9A3B33" }} />
+                    <div role="heading" aria-level={3} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, margin: i === 0 ? "0 2px" : "10px 2px 0" }}>
                       <span style={{ fontWeight: 600, color: "#3A2C29" }}>{y}</span>
                       <span style={{ color: "#7A6360", fontSize: 12 }}>· {historyYearCounts[y]} ครั้ง</span>
                     </div>
