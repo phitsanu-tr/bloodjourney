@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.72";
+const APP_VERSION = "1.0.73";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -4981,7 +4981,7 @@ function AppInner() {
                 </div>
 
                 {hasBothDonationTypes ? (
-                  <div style={{ display: "flex", gap: 6, marginTop: 6, position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "flex", gap: 6, marginTop: 6, position: "relative", zIndex: 2 }}>
                     {/* Selected pill's text/count now tints per donation type (matching
                         the same DONATION_TYPE_TINT used on the history filters and
                         cards below) instead of always reading maroon regardless of
@@ -4990,13 +4990,15 @@ function AppInner() {
                     {["whole", "component"].map((t) => (
                       <button key={t} onClick={() => setCountdownTab(t)}
                         style={{
-                          display: "flex", alignItems: "center", gap: 6,
+                          position: "relative", display: "flex", alignItems: "center", gap: 6,
                           padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
                           background: activeCountdownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           fontWeight: activeCountdownType === t ? 600 : 400,
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>
+                        {/* Invisible 44px-tall tap area; pill keeps its 30px look. */}
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
                         {t === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[t]}
                         <span style={{
                           fontSize: 10, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
@@ -5067,7 +5069,7 @@ function AppInner() {
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be
                               misread as the other type's. */}
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง {toBuddhistDate(nextEligible)}</div>
+                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span></div>
                         </>
                       )
                     ) : hasBothDonationTypes || totalCount > 0 ? (
@@ -5156,7 +5158,7 @@ function AppInner() {
                 const activeIdx = Math.min(reminderIdx, queue.length - 1);
                 const closeBtn = (onClick) => (
                   <button onClick={onClick} aria-label="เตือนทีหลัง"
-                    style={{ flexShrink: 0, width: 36, height: 36, margin: -7, marginLeft: 0, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    style={{ flexShrink: 0, width: 44, height: 44, margin: -11, marginLeft: -4, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <X size={13} />
                   </button>
                 );
@@ -5246,7 +5248,7 @@ function AppInner() {
                         {queue.map((k, i) => (
                           <button key={k} aria-label={`ไปเรื่องที่ ${i + 1}`} aria-current={i === activeIdx ? "true" : undefined}
                             onClick={() => { reminderLastTouchRef.current = Date.now(); const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
-                            style={{ padding: 5, border: "none", background: "none", cursor: "pointer", display: "flex" }}>
+                            style={{ padding: "12px 5px", margin: "-7px 0", border: "none", background: "none", cursor: "pointer", display: "flex" }}>
                             <span style={{ width: i === activeIdx ? 14 : 6, height: 6, borderRadius: 3, background: i === activeIdx ? "#9A3B33" : "#E3C8C3", transition: "width 0.2s ease, background 0.2s ease" }} />
                           </button>
                         ))}
@@ -5343,14 +5345,20 @@ function AppInner() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
                 {historyYears.length > 1 && (
-                  <select
-                    aria-label="กรองตามปี"
-                    value={historyYearFilter}
-                    onChange={(e) => setHistoryYearFilter(e.target.value)}
-                    style={{ fontSize: 12, border: "1px solid #E3C8C3", borderRadius: 8, padding: "5px 8px", color: "#5C4A46", background: "#FFFFFF" }}>
-                    <option value="all">ทุกปี</option>
-                    {historyYears.map(y => <option key={y} value={y}>ปี {y}</option>)}
-                  </select>
+                  // The select itself is a transparent, borderless 44px-tall tap
+                  // target; the visible 28px bordered box is drawn behind it, so
+                  // it looks exactly as before but is easier to hit.
+                  <div style={{ position: "relative", display: "inline-flex", margin: "-8px 0" }}>
+                    <span aria-hidden="true" style={{ position: "absolute", inset: "8px 0", border: "1px solid #E3C8C3", borderRadius: 8, background: "#FFFFFF", pointerEvents: "none" }} />
+                    <select
+                      aria-label="กรองตามปี"
+                      value={historyYearFilter}
+                      onChange={(e) => setHistoryYearFilter(e.target.value)}
+                      style={{ position: "relative", fontSize: 12, border: "1px solid transparent", borderRadius: 8, padding: "13px 8px", color: "#5C4A46", background: "transparent", fontFamily: "inherit", cursor: "pointer" }}>
+                      <option value="all">ทุกปี</option>
+                      {historyYears.map(y => <option key={y} value={y}>ปี {y}</option>)}
+                    </select>
+                  </div>
                 )}
               </div>
               )}
@@ -5372,11 +5380,12 @@ function AppInner() {
                     return (
                       <button key={key} onClick={() => setHistoryTypeFilter(key)}
                         style={{
-                          display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
+                          position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
                           fontFamily: "inherit", border: "none", cursor: "pointer",
                           color: selected ? "#FFF7F5" : tint.text,
                           background: selected ? tint.text : tint.bg,
                         }}>
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
                         {key === "component" ? <Droplets size={11} style={{ flexShrink: 0 }} /> : key === "whole" ? <Droplet size={11} style={{ flexShrink: 0 }} /> : null}
                         {label}
                       </button>
