@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.77";
+const APP_VERSION = "1.0.78";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2411,6 +2411,22 @@ function AppInner() {
   // Bottom sheet holding the history type + year filters (see the
   // "ตัวกรอง" button above the history list).
   const [showFilterSheet, setShowFilterSheet] = useState(false);
+  // Exit animation (design "2" from filter-sheet-exit-7-designs.html): the
+  // sheet drops away quickly (0.16s) while the dimmed backdrop fades a beat
+  // behind it, then unmounts. With prefers-reduced-motion it just closes.
+  const [filterSheetClosing, setFilterSheetClosing] = useState(false);
+  const filterCloseTimerRef = useRef(null);
+  const closeFilterSheet = () => {
+    let reduce = false;
+    try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (reduce) { setShowFilterSheet(false); return; }
+    setFilterSheetClosing(true);
+    clearTimeout(filterCloseTimerRef.current);
+    filterCloseTimerRef.current = setTimeout(() => {
+      setShowFilterSheet(false);
+      setFilterSheetClosing(false);
+    }, 300);
+  };
   const [historyTypeFilter, setHistoryTypeFilter] = useState("all");
   const [historyVisibleCount, setHistoryVisibleCount] = useState(HISTORY_PAGE_SIZE);
   const fileInputRef = useRef(null);
@@ -2702,7 +2718,7 @@ function AppInner() {
       // popups whose only other dismissal is a non-focusable click-outside
       // backdrop — a keyboard-only user opening either had no way to close
       // it without picking an option. Escape now closes these too.
-      setShowFilterSheet(false);
+      closeFilterSheet();
       setShowPhotoMenu(false);
       setOpenActionMenuId(null);
       setShowStorageDegradedModal(false);
@@ -4605,6 +4621,8 @@ function AppInner() {
           font-family: inherit;
         }
         @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes sheetDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
+        @keyframes scrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -5360,7 +5378,7 @@ function AppInner() {
                   const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
                   const on = activeCount > 0;
                   return (
-                    <button onClick={() => setShowFilterSheet(true)} aria-haspopup="dialog"
+                    <button onClick={() => { clearTimeout(filterCloseTimerRef.current); setFilterSheetClosing(false); setShowFilterSheet(true); }} aria-haspopup="dialog"
                       aria-label={on ? `ตัวกรอง (ใช้อยู่ ${activeCount} อย่าง)` : "ตัวกรอง"}
                       style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, lineHeight: 1.35, fontFamily: "inherit", cursor: "pointer",
                         color: on ? "#9A3B33" : "#5C4A46", fontWeight: on ? 600 : 400, background: on ? "#FBF1EF" : "#FFFFFF",
@@ -5380,11 +5398,13 @@ function AppInner() {
                 const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
                 return (
                   <>
-                    <div onClick={() => setShowFilterSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", zIndex: 70, animation: "fadeSwap 0.2s ease" }} />
+                    <div onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", zIndex: 70,
+                      animation: filterSheetClosing ? "scrimOut 0.26s ease 0.04s forwards" : "fadeSwap 0.2s ease", pointerEvents: filterSheetClosing ? "none" : "auto" }} />
                     <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ"
                       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
                       <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", borderRadius: "20px 20px 0 0", boxShadow: "0 -10px 30px rgba(36,26,24,0.2)",
-                        padding: "10px 20px calc(24px + env(safe-area-inset-bottom))", pointerEvents: "auto", animation: "sheetUp 0.22s ease" }}>
+                        padding: "10px 20px calc(24px + env(safe-area-inset-bottom))", pointerEvents: filterSheetClosing ? "none" : "auto",
+                        animation: filterSheetClosing ? "sheetDown 0.16s cubic-bezier(0.5, 0, 0.9, 0.6) forwards" : "sheetUp 0.22s ease" }}>
                         <div style={{ width: 38, height: 4, borderRadius: 2, background: "#E3C8C3", margin: "0 auto 12px" }} />
                         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
                           <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
@@ -5397,7 +5417,7 @@ function AppInner() {
                               ล้างตัวกรอง
                             </button>
                           )}
-                          <button onClick={() => setShowFilterSheet(false)} aria-label="ปิด"
+                          <button onClick={closeFilterSheet} aria-label="ปิด"
                             style={{ marginLeft: "auto", width: 44, height: 44, margin: (historyTypeFilter !== "all" || historyYearFilter !== "all") ? "-11px -11px -11px 0" : "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <X size={19} />
                           </button>
@@ -5446,7 +5466,7 @@ function AppInner() {
                         {/* "เสร็จ" (design "6" from filter-sheet-buttons-6-designs.html):
                             filters already apply instantly, so this just closes the
                             sheet -- there's nothing to confirm or cancel. */}
-                        <button onClick={() => setShowFilterSheet(false)}
+                        <button onClick={closeFilterSheet}
                           style={{ width: "100%", marginTop: 20, minHeight: 46, border: "none", borderRadius: 12, background: "#9A3B33", color: "#FFF7F5", fontFamily: "inherit", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                           เสร็จ
                         </button>
