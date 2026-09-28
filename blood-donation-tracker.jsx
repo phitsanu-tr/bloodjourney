@@ -29,7 +29,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.74";
+const APP_VERSION = "1.0.75";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -5403,18 +5403,28 @@ function AppInner() {
                             const selected = historyYearFilter === y;
                             // Years with no records for the current type filter stay
                             // pickable but read as muted.
-                            const empty = !historyYearCounts[y];
+                            // "ทุกปี" includes the carried-over starting count (for the
+                            // current type filter) so it matches the hero card's total
+                            // and what the list shows when picked; individual years
+                            // can't, since the carry-over has no date.
+                            const count = y === "all" ? (historyYearCounts.all || 0) + displayedStartingCount : (historyYearCounts[y] || 0);
+                            const empty = !count;
                             return (
                               <button key={y} role="option" aria-selected={selected}
                                 onClick={() => { setHistoryYearFilter(y); setShowYearMenu(false); try { yearTriggerRef.current?.focus({ preventScroll: true }); } catch (e) {} }}
                                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", minHeight: 44, padding: "0 10px 0 12px", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", textAlign: "left",
                                   background: selected ? "#F3EAE8" : "transparent", color: selected ? "#9A3B33" : empty ? "#7A6360" : "#3A2C29", fontSize: 13, fontWeight: selected ? 600 : 400 }}>
                                 <span style={{ flex: 1 }}>{y === "all" ? "ทุกปี" : `ปี ${y}`}</span>
-                                <span style={{ fontSize: 11, color: "#7A6360", fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>{historyYearCounts[y] || 0} ครั้ง</span>
+                                <span style={{ fontSize: 11, color: "#7A6360", fontWeight: 400, fontVariantNumeric: "tabular-nums" }}>{count} ครั้ง</span>
                                 <span style={{ width: 14, display: "flex", justifyContent: "center" }}>{selected && <Check size={14} />}</span>
                               </button>
                             );
                           })}
+                          {displayedStartingCount > 0 && (
+                            <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, padding: "8px 12px 4px", marginTop: 4, borderTop: "1px solid #F3EAE8" }}>
+                              รวมยอดยกมา {displayedStartingCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>ที่ไม่ได้ระบุปี</span>
+                            </div>
+                          )}
                         </div>
                       </>
                     )}
