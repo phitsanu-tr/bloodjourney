@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.143";
+const APP_VERSION = "1.0.144";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7318,12 +7318,16 @@ function AppInner() {
         };
         const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165", donorId: "ดูได้จากบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
-        const rhLabel = bloodRh === "+" ? "Rh+" : bloodRh === "-" ? "Rh−" : "";
+        // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
+        const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
         const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่และ Rh")
-          : <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          : <span style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
               {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
-              {rhLabel && <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 8px", borderRadius: 11, background: "#9A3B33", color: "#FFF7F5", fontSize: 12, fontWeight: 600 }}>{rhLabel}</span>}
-              {bloodRh === "unknown" && <span style={{ fontSize: 12.5, color: "#7A6360" }}>Rh ไม่ทราบ</span>}
+              {rhSign && (
+                <span aria-label={bloodRh === "+" ? "Rh บวก" : "Rh ลบ"} style={{ fontFamily: "'Mitr', 'Inter', sans-serif", fontSize: 15, fontWeight: 500 }}>
+                  Rh<sup aria-hidden="true" style={{ fontSize: "0.78em", lineHeight: 0, position: "relative", top: "-0.2em", marginLeft: 1 }}>{rhSign}</sup>
+                </span>
+              )}
             </span>;
         const paused = isRemindPaused(remindPauseUntil);
         const bloodVolumeL = estimateBloodVolumeL(gender, height, weight);
