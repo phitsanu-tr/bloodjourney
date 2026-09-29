@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.159";
+const APP_VERSION = "1.0.160";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7356,7 +7356,6 @@ function AppInner() {
               )}
             </span>;
         const paused = isRemindPaused(remindPauseUntil);
-        const bloodVolumeL = estimateBloodVolumeL(gender, height, weight);
         const groups = [
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
@@ -7369,12 +7368,7 @@ function AppInner() {
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "picker", unit: "พ.ศ." },
             { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "picker", unit: "กก." },
             { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "picker", unit: "ซม." },
-          ], footer: bloodVolumeL ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7A6360", background: "#FDF6F4", margin: "0 -12px", padding: "9px 12px", borderTop: "1px solid #F3E7E4", borderRadius: "0 0 12px 12px" }}>
-              <Droplet size={14} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
-              <span>เลือดในร่างกายประมาณ <b style={{ color: "#9A3B33" }}>{bloodVolumeL.toFixed(1)} ลิตร</b></span>
-            </div>
-          ) : null },
+          ] },
           { title: "สำหรับการบริจาค", rows: [
             { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาคโลหิต", kind: "id" },
             { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
