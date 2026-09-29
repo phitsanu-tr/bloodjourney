@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.169";
+const APP_VERSION = "1.0.170";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7622,7 +7622,7 @@ function AppInner() {
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
                                       onClick={() => {
                                         // Tapping the chosen group again takes it back off (nothing selected).
-                                        if (on) { commitProfile({ bloodType: "", bloodRh: "" }, "blood"); return; } // Rh means little without the group, so it goes too
+                                        if (on) { commitProfile({ bloodType: "", bloodRh: "" }, "blood"); closeBloodSoon(true); return; } // Rh means little without the group, so it goes too
                                         commitProfile({ bloodType: bt }, "blood");
                                         if (bloodRh) closeBloodSoon(true);
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
@@ -7649,7 +7649,7 @@ function AppInner() {
                                     <button key={v} role="radio" aria-checked={on}
                                       onClick={() => {
                                         // Tapping the chosen Rh again takes it back off.
-                                        if (on) { commitProfile({ bloodRh: "" }, "blood"); return; }
+                                        if (on) { commitProfile({ bloodRh: "" }, "blood"); closeBloodSoon(true); return; }
                                         commitProfile({ bloodRh: v }, "blood");
                                         if (bloodType) closeBloodSoon(true);
                                       }}
