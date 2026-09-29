@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.133";
+const APP_VERSION = "1.0.134";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2582,7 +2582,7 @@ function shuffledDigits() {
   return d;
 }
 // ---- PIN keypad, lock screen and set-up dialog (app-pin-lock-designs.html) ----
-function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false, keyBg = "#FFFFFF" }) {
+function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false }) {
   const [v, setV] = useState("");
   const vRef = useRef("");
   // Digits are laid out in a random order (like a banking keypad) so the
@@ -2610,26 +2610,26 @@ function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
-  const keyStyle = { height: 54, borderRadius: 16, background: keyBg, border: "1px solid #EEDEDA", fontSize: 21, fontWeight: 600, color: "#3A2C29", fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "manipulation" };
+  const keyStyle = { width: 72, height: 72, borderRadius: "50%", background: "#F5EBE8", border: "none", fontSize: 27, fontWeight: 500, color: "#3A2C29", fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "manipulation", padding: 0 };
   return (
     <div>
       <style>{`@keyframes bjPinShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } } @media (prefers-reduced-motion: reduce) { .bj-pin-dots { animation: none !important; } }`}</style>
+      {!hideKeys && (
       <div className="bj-pin-dots" role="img" aria-label={`กรอกแล้ว ${v.length} จาก ${PIN_LENGTH} หลัก`}
-        style={{ display: "flex", gap: 12, justifyContent: "center", margin: "16px 0 8px", animation: bad ? "bjPinShake 0.4s" : "none" }}>
+        style={{ display: "flex", gap: 16, justifyContent: "center", margin: "20px 0 4px", animation: bad ? "bjPinShake 0.4s" : "none" }}>
         {Array.from({ length: PIN_LENGTH }, (_, k) => (
-          <span key={k} style={{ width: 14, height: 14, borderRadius: "50%", boxSizing: "border-box",
-            border: `2px solid ${bad ? "#B3261E" : k < v.length ? "#9A3B33" : "#D9C3BE"}`,
-            background: k < v.length ? (bad ? "#B3261E" : "#9A3B33") : "transparent" }} />
+          <span key={k} style={{ width: 12, height: 12, borderRadius: "50%", background: bad ? "#B3261E" : k < v.length ? "#3A2C29" : "#E6D3CF" }} />
         ))}
       </div>
+      )}
       {!hideKeys && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, margin: "14px 6px 4px", maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 72px)", gap: "14px 18px", justifyContent: "center", margin: "22px 0 8px" }}>
           {order.slice(0, 9).map((n) => (
             <button key={n} type="button" onClick={() => press(n)} disabled={busy} aria-label={n} style={keyStyle}>{n}</button>
           ))}
           <span />
           <button type="button" onClick={() => press(order[9])} disabled={busy} aria-label={order[9]} style={keyStyle}>{order[9]}</button>
-          <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", border: "none", fontSize: 16, fontWeight: 500, color: "#7A6360" }}>ลบ</button>
+          <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", fontSize: 14, fontWeight: 500, color: "#7A6360" }}>ลบ</button>
         </div>
       )}
     </div>
@@ -2657,14 +2657,12 @@ function LockScreen({ onUnlock, onForget }) {
     }
   };
   return (
-    <div role="dialog" aria-modal="true" aria-label="ใส่ PIN เพื่อเปิดแอป" style={{ position: "fixed", inset: 0, zIndex: 200, background: "#FBF6F5", overflowY: "auto", display: "flex", justifyContent: "center", fontFamily: "'Mitr', 'Inter', sans-serif", color: "#241A18" }}>
+    <div role="dialog" aria-modal="true" aria-label="ใส่ PIN เพื่อเปิดแอป" style={{ position: "fixed", inset: 0, zIndex: 200, background: "#FFFFFF", overflowY: "auto", display: "flex", justifyContent: "center", fontFamily: "'Mitr', 'Inter', sans-serif", color: "#241A18" }}>
       <div style={{ width: "100%", maxWidth: 380, padding: "56px 24px 32px", textAlign: "center", margin: "auto 0" }}>
-        <div style={{ width: 56, height: 56, borderRadius: 18, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 6px 14px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
-          <Droplet size={28} color="#FFF7F5" />
-        </div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>Blood Journey</div>
-        <p aria-live="polite" style={{ fontSize: 12.5, margin: "4px 0 0", minHeight: 20, color: bad ? "#B3261E" : "#7A6360" }}>
-          {bad ? "PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง" : busy ? "กำลังตรวจสอบ…" : "ใส่ PIN เพื่อเปิดแอป"}
+        <Droplet size={26} color="#B24A40" fill="#B24A40" aria-hidden="true" />
+        <div style={{ fontSize: 19, fontWeight: 600, color: "#3A2C29", marginTop: 12 }}>ใส่ PIN</div>
+        <p aria-live="polite" style={{ fontSize: 12.5, margin: "4px 0 0", minHeight: 20, color: "#B3261E" }}>
+          {bad ? "PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง" : busy ? <span style={{ color: "#7A6360" }}>กำลังตรวจสอบ…</span> : ""}
         </p>
         <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} onComplete={submit} />
         <button type="button" onClick={() => { setForgotAck(false); setShowForgot(true); }}
@@ -2752,33 +2750,28 @@ function PinFlowDialog({ mode, onClose, onVerify, onSubmit }) {
   };
   return (
     <div role="dialog" aria-modal="true" aria-label={title} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 55, padding: 20 }}>
-      <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "92vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <div style={{ fontSize: 15.5, fontWeight: 700 }}>{title}</div>
-          <button onClick={onClose} disabled={busy} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+      <div className="no-scrollbar" style={{ background: "#FFFFFF", width: "100%", maxWidth: 380, borderRadius: 26, padding: "18px 20px 24px", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+          <button onClick={onClose} disabled={busy} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 4 }}><X size={19} /></button>
         </div>
-        {steps.length > 1 && (
-          <div aria-hidden="true" style={{ display: "flex", gap: 6, justifyContent: "center", margin: "0 0 8px" }}>
-            {steps.map((_, k) => <span key={k} style={{ width: 22, height: 4, borderRadius: 2, background: k <= si ? "#9A3B33" : "#EEDEDA" }} />)}
-          </div>
+        {!ready && (
+          <div style={{ textAlign: "center", fontSize: 19, fontWeight: 600, color: "#3A2C29", margin: "10px 0 0" }}>{heading}</div>
         )}
-        <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "14px 12px 12px" }}>
-        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "2px 0 2px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>{ready && <Check size={18} color="#2E7D4F" aria-hidden="true" />}{ready ? "ยืนยัน PIN สำเร็จ" : heading}</div>
-        {sub && !ready && <p style={{ textAlign: "center", fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "0 8px" }}>{sub}</p>}
+        {sub && !ready && <p style={{ textAlign: "center", fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "4px 8px 0" }}>{sub}</p>}
         <div aria-live="polite" style={{ textAlign: "center", fontSize: 12.5, color: "#B3261E", minHeight: msg ? 20 : 0, margin: msg ? "6px 8px 0" : 0 }}>{msg}</div>
-        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} keyBg="#FBF6F5" />
-        </div>
+        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} />
         {ready && (
-          <>
-            <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", margin: "10px 0 12px", textAlign: "left" }}>
-              <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div><b style={{ color: "#3A2C29" }}>ลืม PIN = เปิดข้อมูลในเครื่องไม่ได้</b><br />ผู้พัฒนากู้ให้ไม่ได้ ต้องล้างข้อมูลแล้วนำเข้าจากไฟล์สำรอง <b>ควรสำรองข้อมูลไว้ก่อน</b></div>
+          <div style={{ textAlign: "center" }}>
+            <div aria-hidden="true" style={{ width: 84, height: 84, borderRadius: "50%", background: "#E6F3EA", display: "flex", alignItems: "center", justifyContent: "center", margin: "22px auto 16px" }}>
+              <Check size={40} color="#2E7D4F" strokeWidth={3} />
             </div>
-            <button type="button" onClick={finish} disabled={busy} className="btn-primary"
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: busy ? "wait" : "pointer", opacity: busy ? 0.6 : 1 }}>
-              <Check size={17} /> {busy ? "กำลังทำงาน…" : mode === "change" ? "บันทึก PIN ใหม่" : "เปิดล็อกแอป"}
+            <div style={{ fontSize: 19, fontWeight: 600, color: "#3A2C29" }}>ยืนยัน PIN สำเร็จ</div>
+            <div style={{ fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "8px 12px 0" }}>ลืม PIN แล้วกู้ข้อมูลในเครื่องไม่ได้<br />ควรสำรองข้อมูลไว้ก่อน</div>
+            <button type="button" onClick={finish} disabled={busy}
+              style={{ display: "block", width: "100%", padding: "14px 0", borderRadius: 999, border: "none", background: "#9A3B33", color: "#FFF7F5", fontFamily: "inherit", fontSize: 14.5, fontWeight: 600, cursor: busy ? "wait" : "pointer", opacity: busy ? 0.6 : 1, marginTop: 30 }}>
+              {busy ? "กำลังทำงาน…" : mode === "change" ? "บันทึก PIN ใหม่" : "เปิดล็อกแอป"}
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -8407,10 +8400,9 @@ function AppInner() {
                 <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>ความปลอดภัย</div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px", marginBottom: lockEnabled ? 8 : 6 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: lockEnabled ? "1px solid #F3E7E4" : "none" }}>
-                    <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Lock size={17} color="#9A3B33" /></span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ล็อกแอปด้วย PIN</div>
-                      <div style={{ fontSize: 11.5, color: lockEnabled ? "#2E7D4F" : "#7A6360" }}>{lockEnabled ? "เปิดอยู่ · ข้อมูลในเครื่องเข้ารหัสแล้ว" : "ไม่บังคับ · เข้ารหัสข้อมูลในเครื่องด้วย"}</div>
+                      <div style={{ fontSize: 11.5, color: lockEnabled ? "#2E7D4F" : "#7A6360" }}>{lockEnabled ? "เปิดอยู่ · ข้อมูลในเครื่องเข้ารหัสแล้ว" : "เข้ารหัสข้อมูลในเครื่อง ไม่บังคับ"}</div>
                     </div>
                     <button type="button" role="switch" aria-checked={lockEnabled} aria-label="ล็อกแอปด้วย PIN" onClick={() => setPinFlow(lockEnabled ? "disable" : "enable")}
                       style={{ width: 44, height: 26, borderRadius: 13, border: "none", background: lockEnabled ? "#9A3B33" : "#D9C3BE", position: "relative", cursor: "pointer", flexShrink: 0, padding: 0 }}>
@@ -8436,7 +8428,7 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.6, margin: "0 4px 18px" }}>
-                  {lockEnabled ? "การเข้ารหัสใช้ AES-256 และกุญแจจาก PIN ในเครื่องนี้เท่านั้น ลืม PIN แล้วกู้ให้ไม่ได้ ควรมีไฟล์สำรองไว้" : "ตอนนี้ข้อมูลเก็บในเครื่องคุณเท่านั้น แต่ไม่ได้เข้ารหัส ถ้าเปิดล็อก คนที่หยิบเครื่องคุณไปจะเปิดดูข้อมูลไม่ได้"}
+                  {lockEnabled ? "การเข้ารหัสใช้ AES-256 และกุญแจจาก PIN ในเครื่องนี้เท่านั้น ลืม PIN แล้วกู้ให้ไม่ได้ ควรมีไฟล์สำรองไว้" : "ตอนนี้ข้อมูลในเครื่องไม่ได้เข้ารหัส ถ้าเปิดล็อก คนที่หยิบเครื่องคุณไปจะเปิดดูข้อมูลไม่ได้"}
                 </div>
               </>
             )}
