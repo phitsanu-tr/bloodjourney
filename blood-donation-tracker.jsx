@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.178";
+const APP_VERSION = "1.0.179";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7673,11 +7673,11 @@ function AppInner() {
                               )}
                               {pickerPanel(r.key)}
                               {(() => {
-                                // "ล้างค่า" appears as soon as the scale moves (or a value is already saved). It sits
-                                // beside the big number (absolute), so showing it never moves the layout.
+                                // "ล้างค่า" appears as soon as the scale moves (or a value is already saved). Its slot
+                                // (bottom-right under the scale) is always reserved so the layout doesn't jump.
                                 const canClear = committed[r.key] !== "" || (pickerPreview && pickerPreview.key === r.key);
                                 return (
-                                  <div style={{ position: "absolute", right: 0, top: isCriteriaRow ? 46 : 22 }}>
+                                  <div style={{ display: "flex", justifyContent: "flex-end", minHeight: 16 }}>
                                     <button tabIndex={canClear ? 0 : -1} aria-hidden={canClear ? undefined : "true"}
                                       onClick={() => {
                                         clearTimeout(pickerCloseTimer); pickerDirtyKey = null;
