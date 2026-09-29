@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.116";
+const APP_VERSION = "1.0.117";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7074,7 +7074,11 @@ function AppInner() {
                   <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9A3B33", margin: "0 0 6px 2px" }}>{g.title}</div>
                   <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px" }}>
                 {g.rows.map((r, ri, all) => {
-                  const itemStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "9px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
+                  // The tint while editing sits 4px inside the row on every side:
+                  // 4px from the card edge (card padding 12 - margin 8) and 4px
+                  // from the row's top/bottom (row padding 4 + item padding 5 =
+                  // the old 9px, so row height is unchanged).
+                  const itemStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "5px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
                   const iconEl = (
                     <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <r.Icon size={17} color="#9A3B33" />
@@ -7095,7 +7099,7 @@ function AppInner() {
                     : hint && <span style={{ flexShrink: 0, fontSize: 11, color: hint.color, whiteSpace: "nowrap" }}>{hint.text}</span>;
                   const isOpen = profileOpenChoice === r.key;
                   return (
-                    <div key={r.key} data-prow={r.key} style={{ borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                    <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       {r.kind === "choice" || r.kind === "action" ? (
                         <>
                           <button onClick={r.kind === "action" ? r.onClick : () => setProfileOpenChoice(o => (o === r.key ? null : r.key))} aria-expanded={r.kind === "choice" ? isOpen : undefined}
