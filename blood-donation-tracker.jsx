@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.129";
+const APP_VERSION = "1.0.130";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2573,7 +2573,7 @@ function initialTabFromUrl() {
 }
 
 // ---- PIN keypad, lock screen and set-up dialog (app-pin-lock-designs.html) ----
-function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false }) {
+function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false, keyBg = "#FFFFFF" }) {
   const [v, setV] = useState("");
   const vRef = useRef("");
   useEffect(() => { vRef.current = ""; setV(""); }, [clearKey]);
@@ -2597,7 +2597,7 @@ function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
-  const keyStyle = { height: 54, borderRadius: 16, background: "#FFFFFF", border: "1px solid #EEDEDA", fontSize: 21, fontWeight: 600, color: "#3A2C29", fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "manipulation" };
+  const keyStyle = { height: 54, borderRadius: 16, background: keyBg, border: "1px solid #EEDEDA", fontSize: 21, fontWeight: 600, color: "#3A2C29", fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "manipulation" };
   return (
     <div>
       <style>{`@keyframes bjPinShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } } @media (prefers-reduced-motion: reduce) { .bj-pin-dots { animation: none !important; } }`}</style>
@@ -2749,10 +2749,12 @@ function PinFlowDialog({ mode, onClose, onVerify, onSubmit }) {
             {steps.map((_, k) => <span key={k} style={{ width: 22, height: 4, borderRadius: 2, background: k <= si ? "#9A3B33" : "#EEDEDA" }} />)}
           </div>
         )}
-        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "6px 0 2px" }}>{ready ? "PIN ตรงกันแล้ว" : heading}</div>
+        <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "14px 12px 12px" }}>
+        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "2px 0 2px" }}>{ready ? "PIN ตรงกันแล้ว" : heading}</div>
         {sub && !ready && <p style={{ textAlign: "center", fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "0 8px" }}>{sub}</p>}
         <div aria-live="polite" style={{ textAlign: "center", fontSize: 12.5, color: "#B3261E", minHeight: msg ? 20 : 0, margin: msg ? "6px 8px 0" : 0 }}>{msg}</div>
-        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} />
+        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} keyBg="#FBF6F5" />
+        </div>
         {ready && (
           <>
             <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", margin: "10px 0 12px", textAlign: "left" }}>
