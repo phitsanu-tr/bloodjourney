@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ปุ่มตัวกรองประวัติ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 30px; max-width: 720px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 64px; margin: 0; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .scaler { width: calc(390px * 0.66); height: calc(640px * 0.66); overflow: hidden; border-radius: 20px; box-shadow: 0 0 0 1px #E3C8C3; }
+  .phone { width: 390px; height: 640px; transform: scale(0.66); transform-origin: 0 0; background: #FBF6F5; position: relative; overflow: hidden; padding: 24px 20px; }
+
+  .mission { height: 94px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 26px; padding: 13px 15px; }
+  .mission .h { font-size: 12px; font-weight: 600; color: #9A3B33; } .mission .t { font-size: 14px; font-weight: 700; margin-top: 7px; } .mission .s { font-size: 12px; color: #7A6360; }
+  .hhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; position: relative; }
+  .htitle { font-size: 14px; font-weight: 600; color: #3A2C29; }
+  .sel { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #5C4A46; background: #fff; border: 1px solid #E3C8C3; border-radius: 8px; padding: 5px 8px 5px 10px; }
+  .sel.open { border-color: #9A3B33; box-shadow: 0 0 0 3px rgba(154,59,51,.12); }
+  .chev { width: 12px; height: 12px; }
+  .chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .chip { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+  .c-all { background: #9A3B33; color: #FFF7F5; } .c-w { background: #F3EAE8; color: #9A3B33; } .c-c { background: #EFE3F0; color: #6B3E78; }
+  .row { height: 95px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 10px; display: flex; gap: 14px; padding: 14px 16px; }
+  .drop { width: 34px; height: 42px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9A3B33; flex-shrink: 0; }
+  .row .d { font-size: 14px; font-weight: 700; } .row .p { margin-top: 6px; width: 70px; height: 20px; border-radius: 20px; background: #F3EAE8; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(36,26,24,.45); z-index: 5; }
+  .pop { position: absolute; z-index: 6; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; box-shadow: 0 10px 28px rgba(90,50,45,.18); padding: 6px; }
+  .opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; color: #3A2C29; }
+  .opt.on { background: #F3EAE8; color: #9A3B33; font-weight: 600; }
+  .ck { color: #9A3B33; font-weight: 700; }
+  .cnt { font-size: 11px; color: #7A6360; font-variant-numeric: tabular-nums; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #FBF6F5; border-radius: 20px 20px 0 0; padding: 10px 20px 26px; box-shadow: 0 -10px 30px rgba(36,26,24,.2); }
+  .grab { width: 38px; height: 4px; border-radius: 2px; background: #E3C8C3; margin: 0 auto 12px; }
+  .sh-title { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .sh-title span { font-size: 18px; color: #7A6360; font-weight: 400; }
+  .strip { margin: 10px 14px 0; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; padding: 10px 12px; }
+  .strip .lb { font-size: 10px; color: #7A6360; margin-bottom: 6px; }
+  .fbtn { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#5C4A46; background:#fff; border:1px solid #E3C8C3; border-radius:9px; padding:5px 10px; }
+  .fbtn.on { border-color:#9A3B33; color:#9A3B33; background:#FBF1EF; font-weight:600; }
+  .badge { background:#9A3B33; color:#fff; font-size:10px; font-weight:700; border-radius:9px; padding:0 6px; line-height:16px; }
+  .tchip { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; background:#F3EAE8; color:#9A3B33; }
+  .seg { display:flex; background:#F3E7E4; border-radius:11px; padding:3px; }
+  .seg span { flex:1; text-align:center; font-size:12px; padding:8px 0; border-radius:9px; color:#5C4A46; }
+  .seg span.on { background:#fff; color:#9A3B33; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .ychip { font-size:12px; padding:7px 13px; border-radius:20px; border:1px solid #E3C8C3; background:#fff; color:#5C4A46; }
+  .ychip.on { background:#3A2C29; border-color:#3A2C29; color:#FFF7F5; font-weight:600; }
+  .lbl { font-size:12px; color:#7A6360; margin:4px 0 7px; }
+  .cta { background:#9A3B33; color:#FFF7F5; text-align:center; border-radius:12px; padding:12px; font-size:13px; font-weight:600; }
+  .ghost { border:1px solid #E3C8C3; color:#9A3B33; text-align:center; border-radius:12px; padding:12px; font-size:13px; font-weight:600; background:#fff; }
+  .hl { outline: 2px dashed #D98C84; outline-offset: 3px; }
+</style>
+</head>
+<body>
+  <h1>รวมประเภท + ปีเป็นปุ่ม "ตัวกรอง" — 8 แบบ</h1>
+  <p class="sub">ทุกแบบเน้นใช้ง่าย: ตัวกรองรวมอยู่ในปุ่มเดียว แต่ละแบบมีแถบเล็กด้านบนโชว์ "ตอนปิด" ขณะมีตัวกรองอยู่ (กรองโลหิตรวม ปี 2569) และจอโทรศัพท์โชว์ "ตอนเปิด" ตัวอย่าง: 15 รายการ ปี 2569–2556</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const YEARS = [['2569', 3], ['2568', 4], ['2567', 3], ['2566', 3], ['2557', 1], ['2556', 1]];
+const FUN = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>`;
+const mission = `<div class="mission"><div class="h">🏅 ภารกิจถัดไป</div><div class="t">เข็มที่ระลึก ครั้งที่ 24</div><div class="s">อีก 8 ครั้ง</div></div>`;
+const rows = [['4 ก.ค. 2569'], ['12 มี.ค. 2569'], ['3 ธ.ค. 2568']].map(([d]) => `<div class="row"><div class="drop"></div><div><div class="d">${d}</div><div class="p"></div></div></div>`).join('');
+const head = (right) => `<div class="hhead"><div class="htitle">ประวัติบริจาคโลหิต</div>${right}</div>`;
+const typeChips = (sel = 'all') => `<div class="chips" style="margin-bottom:6px;">${[['all','ทั้งหมด','c-all'],['w','โลหิตรวม','c-w'],['c','พลาสมา/เกล็ดเลือด','c-c']].map(([k,l,c]) => `<span class="chip ${c}" style="padding:7px 13px;font-size:12px;${k===sel ? (k==='all' ? '' : k==='w' ? 'background:#9A3B33;color:#FFF7F5;' : 'background:#6B3E78;color:#fff;') : (k==='all' ? 'background:#F3EAE8;color:#9A3B33;' : '')}">${l}</span>`).join('')}</div>`;
+const yearChips = (sel = 'all') => `<div style="display:flex;flex-wrap:wrap;gap:6px;">${[['all','ทุกปี'], ...YEARS.map(([y]) => [y, y])].map(([k,l]) => `<span class="ychip ${k===sel ? 'on' : ''}">${l}</span>`).join('')}</div>`;
+const sheet = (inner, title = 'ตัวกรอง') => `<div class="scrim"></div><div class="sheet hl"><div class="grab"></div><div class="sh-title">${title}<span>✕</span></div>${inner}</div>`;
+const strip = (html) => `<div class="strip"><div class="lb">ตอนปิด (กรองอยู่: โลหิตรวม · ปี 2569)</div>${html}</div>`;
+const stripHead = (right, below = '') => `<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;font-weight:600;">ประวัติบริจาคโลหิต</span>${right}</div>${below}`;
+
+const variants = [
+  { label: '1. แบบที่ส่งมา (ตั้งต้น)',
+    desc: 'แผ่นเดียวมีประเภท + ปี กด "แสดง N รายการ" เพื่อใช้ ปุ่มด้านบนเขียน "ตัวกรอง" เฉย ๆ ตอนปิดไม่รู้ว่ากรองอะไรอยู่',
+    strip: stripHead(`<span class="fbtn">${FUN} ตัวกรอง</span>`),
+    body: () => mission + head(`<span class="fbtn hl">${FUN} ตัวกรอง</span>`) + rows + sheet(`<div class="lbl">ประเภท</div>${typeChips()}<div class="lbl">ปี</div>${yearChips()}<div class="cta" style="margin-top:16px;">แสดง 15 รายการ</div>`) },
+  { label: '2. กดแล้วมีผลทันที ไม่ต้องกดยืนยัน',
+    desc: 'ตัดปุ่ม "แสดง N รายการ" ออก แตะชิปแล้วรายการด้านหลังเปลี่ยนทันที จำนวนรายการขึ้นที่หัวแผ่น ปิดด้วย ✕ หรือแตะนอกแผ่น ขั้นตอนน้อยสุด',
+    strip: stripHead(`<span class="fbtn on">${FUN} ตัวกรอง <span class="badge">2</span></span>`),
+    body: () => mission + head(`<span class="fbtn on hl">${FUN} ตัวกรอง <span class="badge">2</span></span>`) + rows + sheet(`<div class="lbl">ประเภท</div>${typeChips('w')}<div class="lbl">ปี</div>${yearChips('2569')}`, 'ตัวกรอง <small style="font-size:12px;font-weight:400;color:#7A6360;margin-left:6px;">2 รายการ</small>') },
+  { label: '3. ปุ่มบอกว่ากรองอะไรอยู่',
+    desc: 'ตอนปิด ปุ่มเปลี่ยนข้อความเป็นสิ่งที่กรองอยู่จริง เช่น "โลหิตรวม · 2569" แทนคำว่า "ตัวกรอง" เห็นทันทีโดยไม่ต้องเปิด (แผ่นเหมือนแบบ 2)',
+    strip: stripHead(`<span class="fbtn on">${FUN} โลหิตรวม · 2569</span>`),
+    body: () => mission + head(`<span class="fbtn on hl">${FUN} โลหิตรวม · 2569</span>`) + rows + sheet(`<div class="lbl">ประเภท</div>${typeChips('w')}<div class="lbl">ปี</div>${yearChips('2569')}`, 'ตัวกรอง <small style="font-size:12px;font-weight:400;color:#7A6360;margin-left:6px;">2 รายการ</small>') },
+  { label: '4. ชิปสรุปใต้หัวข้อ กด ✕ ลบได้',
+    desc: 'ตอนปิด ใต้หัวข้อมีชิปเล็กของตัวกรองที่ใช้อยู่ แต่ละอันมี ✕ เอาออกได้เลยโดยไม่ต้องเปิดแผ่น ไม่มีตัวกรองก็ไม่มีแถวนี้',
+    strip: stripHead(`<span class="fbtn on">${FUN} ตัวกรอง</span>`, `<div style="display:flex;gap:6px;margin-top:8px;"><span class="tchip">โลหิตรวม ✕</span><span class="tchip">ปี 2569 ✕</span></div>`),
+    body: () => mission + head(`<span class="fbtn on">${FUN} ตัวกรอง</span>`) + `<div class="hl" style="display:flex;gap:6px;margin:-2px 0 12px;"><span class="tchip">โลหิตรวม ✕</span><span class="tchip">ปี 2569 ✕</span></div>` + rows },
+  { label: '5. ประเภทเป็นแถบสามช่อง + ปีเป็นรายการ',
+    desc: 'ประเภทเป็นแถบสลับสามช่องเท่ากัน ปีเป็นรายการพร้อมจำนวนครั้ง (เหมือนเมนูปีตอนนี้) อ่านง่าย ไม่ต้องกวาดตาหาชิป',
+    strip: stripHead(`<span class="fbtn on">${FUN} โลหิตรวม · 2569</span>`),
+    body: () => mission + head(`<span class="fbtn on">${FUN} โลหิตรวม · 2569</span>`) + rows + sheet(`<div class="lbl">ประเภท</div><div class="seg"><span>ทั้งหมด</span><span class="on">โลหิตรวม</span><span>พลาสมา</span></div><div class="lbl" style="margin-top:12px;">ปี</div>
+      ${[['ทุกปี', 16, false], ['ปี 2569', 2, true], ['ปี 2568', 4, false], ['ปี 2567', 3, false]].map(([l, c, on]) => `<div class="opt ${on ? 'on' : ''}"><span style="flex:1">${l}</span><span class="cnt">${c} ครั้ง</span><span class="ck" style="width:14px">${on ? '✓' : ''}</span></div>`).join('')}<div class="cnt" style="text-align:center;padding-top:4px;">เลื่อนดูปีอื่น ⌄</div>`) },
+  { label: '6. มีปุ่ม "ล้าง" คู่กับ "แสดงผล"',
+    desc: 'เหมือนแบบ 1 แต่มีปุ่ม "ล้างตัวกรอง" ข้างปุ่มยืนยัน กลับไปดูทั้งหมดได้ในแตะเดียว เหมาะถ้าชอบกดยืนยันก่อนค่อยเห็นผล',
+    strip: stripHead(`<span class="fbtn on">${FUN} ตัวกรอง <span class="badge">2</span></span>`),
+    body: () => mission + head(`<span class="fbtn on">${FUN} ตัวกรอง <span class="badge">2</span></span>`) + rows + sheet(`<div class="lbl">ประเภท</div>${typeChips('w')}<div class="lbl">ปี</div>${yearChips('2569')}<div class="hl" style="display:flex;gap:10px;margin-top:16px;"><div class="ghost" style="flex:1;">ล้างตัวกรอง</div><div class="cta" style="flex:2;">แสดง 2 รายการ</div></div>`) },
+  { label: '7. แผงเปิดใต้ปุ่ม (ไม่มีพื้นหลังมืด)',
+    desc: 'ไม่ใช้แผ่นจากด้านล่าง แต่กางแผงเล็กใต้ปุ่มแทน หน้าไม่มืด ยังเห็นรายการเปลี่ยนตามทันที เหมือนเมนูปีตอนนี้แต่มีประเภทอยู่ด้วย',
+    strip: stripHead(`<span class="fbtn on">${FUN} โลหิตรวม · 2569</span>`),
+    body: () => mission + head(`<span class="fbtn on open">${FUN} โลหิตรวม · 2569</span>`) + rows + `<div class="pop hl" style="top:${24 + 120 + 32}px;right:20px;left:40px;padding:12px;"><div class="lbl" style="margin-top:0">ประเภท</div><div class="seg"><span>ทั้งหมด</span><span class="on">โลหิตรวม</span><span>พลาสมา</span></div><div class="lbl" style="margin-top:12px;">ปี</div>${yearChips('2569')}</div>` },
+  { label: '8. คงชิปประเภทไว้ ย้ายแค่ปีเข้าปุ่ม',
+    desc: 'ทางกลาง: ประเภท (ใช้บ่อย) ยังเป็นชิปบนหน้าเหมือนเดิม ปุ่มขวาใช้เลือกปีอย่างเดียว เปลี่ยนน้อยสุดจากตอนนี้ แต่ยังเป็นสองจุด',
+    strip: stripHead(`<span class="fbtn on">ปี 2569 ⌄</span>`, `<div style="display:flex;gap:6px;margin-top:8px;"><span class="chip c-all" style="background:#F3EAE8;color:#9A3B33;">ทั้งหมด</span><span class="chip" style="background:#9A3B33;color:#FFF7F5;">โลหิตรวม</span><span class="chip c-c">พลาสมา</span></div>`),
+    body: () => mission + head(`<span class="fbtn on">ปี 2569 ⌄</span>`) + `<div class="chips"><span class="chip c-all" style="background:#F3EAE8;color:#9A3B33;">ทั้งหมด</span><span class="chip" style="background:#9A3B33;color:#FFF7F5;">โลหิตรวม</span><span class="chip c-c">พลาสมา/เกล็ดเลือด</span></div>` + rows },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p>${strip(v.strip)}
+    <div class="stage"><div class="scaler"><div class="phone">${v.body()}</div></div></div>`;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

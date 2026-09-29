@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ยอดยกมาในเมนูปี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 30px; max-width: 720px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 64px; margin: 0; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .scaler { width: calc(390px * 0.66); height: calc(640px * 0.66); overflow: hidden; border-radius: 20px; box-shadow: 0 0 0 1px #E3C8C3; }
+  .phone { width: 390px; height: 640px; transform: scale(0.66); transform-origin: 0 0; background: #FBF6F5; position: relative; overflow: hidden; padding: 24px 20px; }
+
+  .mission { height: 94px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 26px; padding: 13px 15px; }
+  .mission .h { font-size: 12px; font-weight: 600; color: #9A3B33; } .mission .t { font-size: 14px; font-weight: 700; margin-top: 7px; } .mission .s { font-size: 12px; color: #7A6360; }
+  .hhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; position: relative; }
+  .htitle { font-size: 14px; font-weight: 600; color: #3A2C29; }
+  .sel { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #5C4A46; background: #fff; border: 1px solid #E3C8C3; border-radius: 8px; padding: 5px 8px 5px 10px; }
+  .sel.open { border-color: #9A3B33; box-shadow: 0 0 0 3px rgba(154,59,51,.12); }
+  .chev { width: 12px; height: 12px; }
+  .chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .chip { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+  .c-all { background: #9A3B33; color: #FFF7F5; } .c-w { background: #F3EAE8; color: #9A3B33; } .c-c { background: #EFE3F0; color: #6B3E78; }
+  .row { height: 95px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 10px; display: flex; gap: 14px; padding: 14px 16px; }
+  .drop { width: 34px; height: 42px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9A3B33; flex-shrink: 0; }
+  .row .d { font-size: 14px; font-weight: 700; } .row .p { margin-top: 6px; width: 70px; height: 20px; border-radius: 20px; background: #F3EAE8; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(36,26,24,.45); z-index: 5; }
+  .pop { position: absolute; z-index: 6; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; box-shadow: 0 10px 28px rgba(90,50,45,.18); padding: 6px; }
+  .opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; color: #3A2C29; }
+  .opt.on { background: #F3EAE8; color: #9A3B33; font-weight: 600; }
+  .ck { color: #9A3B33; font-weight: 700; }
+  .cnt { font-size: 11px; color: #7A6360; font-variant-numeric: tabular-nums; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #FBF6F5; border-radius: 20px 20px 0 0; padding: 10px 20px 26px; box-shadow: 0 -10px 30px rgba(36,26,24,.2); }
+  .grab { width: 38px; height: 4px; border-radius: 2px; background: #E3C8C3; margin: 0 auto 12px; }
+  .sh-title { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .sh-title span { font-size: 18px; color: #7A6360; font-weight: 400; }
+  .note { font-size: 11px; color: #7A6360; padding: 8px 12px 6px; border-top: 1px solid #F3EAE8; margin-top: 4px; line-height: 1.5; }
+  .muted-row { display:flex; justify-content:space-between; padding: 10px 12px; font-size: 13px; color:#7A6360; border-top:1px dashed #E3C8C3; margin-top:4px; }
+  .carry { height: 64px; background: #F7F0EE; border: 1px dashed #E3C8C3; border-radius: 14px; margin-bottom: 10px; display:flex; align-items:center; gap:12px; padding: 0 16px; font-size: 13px; color:#5C4A46; }
+  .hl { outline: 2px dashed #D98C84; outline-offset: 3px; }
+</style>
+</head>
+<body>
+  <h1>เมนูปีเมื่อมียอดยกมา — ตัวอย่าง</h1>
+  <p class="sub">ข้อมูลตัวอย่าง: ยอดยกมา 12 ครั้ง (โลหิตรวม) + บันทึกในแอป 4 ครั้ง (ปี 2569 ×2, 2568, 2567) การ์ดแดงขึ้น 16 ครั้ง ทุกภาพเปิดเมนูปีค้างไว้ เส้นประชี้จุดที่ต่างจากตอนนี้</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const CHEV = `<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>`;
+const hero = (n = 16) => `<div style="height:92px;border-radius:18px;background:linear-gradient(135deg,#B24A40,#8A2F28);color:#FFF7F5;padding:14px 18px;margin-bottom:22px;"><div style="font-size:12px;opacity:.85;">บริจาคโลหิตสะสมทั้งหมด</div><div style="font-size:38px;font-weight:700;line-height:1.1;">${n} <small style="font-size:16px;font-weight:500;">ครั้ง</small></div></div>`;
+const chips = (sel = 'all') => `<div class="chips">${[['all','ทั้งหมด','c-all'],['w','โลหิตรวม','c-w'],['c','พลาสมา/เกล็ดเลือด','c-c']].map(([k,l,c]) => `<span class="chip ${c}" style="${k===sel ? (k==='c' ? 'background:#6B3E78;color:#FFF7F5;' : k==='w' ? 'background:#9A3B33;color:#FFF7F5;' : '') : (k==='all' ? 'background:#F3EAE8;color:#9A3B33;' : '')}">${l}</span>`).join('')}</div>`;
+const rows = [['4 ก.ค. 2569'], ['12 มี.ค. 2569'], ['3 ธ.ค. 2568']].map(([d]) => `<div class="row"><div class="drop"></div><div><div class="d">${d}</div><div class="p"></div></div></div>`).join('');
+const head = (label='ทุกปี') => `<div class="hhead"><div class="htitle">ประวัติบริจาคโลหิต</div><span class="sel open">${label} ${CHEV}</span></div>`;
+const opt = (l, c, on = false, hl = false, muted = false) => `<div class="opt ${on ? 'on' : ''} ${hl ? 'hl' : ''}" style="${muted ? 'color:#7A6360;' : ''}"><span style="flex:1">${l}</span><span class="cnt">${c} ครั้ง</span><span style="width:14px" class="ck">${on ? '✓' : ''}</span></div>`;
+const years = (vals) => [['ปี 2569', vals[0]], ['ปี 2568', vals[1]], ['ปี 2567', vals[2]]].map(([l, c]) => opt(l, c, false, false, c === 0)).join('');
+const pop = (inner) => `<div class="pop" style="top:${24 + 92 + 22 + 30}px;right:20px;min-width:220px;max-width:240px;">${inner}</div>`;
+
+const variants = [
+  { label: 'ตอนนี้ (อ้างอิง)', ref: true,
+    desc: '"ทุกปี" ขึ้น 4 ครั้ง ไม่ตรงกับ 16 ครั้งในการ์ดแดง ไม่มีอะไรบอกว่าอีก 12 ครั้งอยู่ตรงไหน',
+    body: () => hero() + head() + chips() + rows + pop(opt('ทุกปี', 4, true) + years([2, 1, 1])) },
+  { label: 'ที่เสนอ: ทุกปีรวมยอดยกมา + หมายเหตุ',
+    desc: '"ทุกปี" ขึ้น 16 ครั้งตรงกับการ์ดแดง แต่ละปีนับเฉพาะที่บันทึก ท้ายเมนูมีบรรทัดเล็กอธิบายว่ามียอดยกมา 12 ครั้งที่ไม่ได้ระบุปี (กดไม่ได้)',
+    body: () => hero() + head() + chips() + rows + pop(opt('ทุกปี', 16, true, true) + years([2, 1, 1]) + `<div class="note hl">รวมยอดยกมา 12 ครั้งที่ไม่ได้ระบุปี</div>`) },
+  { label: 'ทางเลือก: ยอดยกมาเป็นแถวในเมนู',
+    desc: 'แทนหมายเหตุด้วยแถวสีจาง "ยอดยกมา (ไม่ระบุปี) 12 ครั้ง" เรียงต่อท้ายปี ผลรวมทุกแถวเท่ากับ "ทุกปี" พอดี แต่แถวนี้ดูเหมือนกดได้ทั้งที่กดไม่ได้',
+    body: () => hero() + head() + chips() + rows + pop(opt('ทุกปี', 16, true, true) + years([2, 1, 1]) + `<div class="muted-row hl"><span>ยอดยกมา (ไม่ระบุปี)</span><span class="cnt">12 ครั้ง</span></div>`) },
+  { label: 'ทางเลือก: ยอดยกมาเลือกได้',
+    desc: 'ยอดยกมาเป็นตัวเลือกจริงอีกตัว กดแล้วรายการแสดงแค่การ์ดยอดยกมา ครบทุกกรณี แต่เพิ่มความซับซ้อน และการดูยอดยกมาอย่างเดียวไม่ค่อยมีประโยชน์',
+    body: () => hero() + head() + chips() + rows + pop(opt('ทุกปี', 16, true, true) + years([2, 1, 1]) + opt('ยอดยกมา', 12, false, true)) },
+  { label: 'ที่เสนอ + กรองพลาสมาอยู่',
+    desc: 'ตัวอย่างนี้ยอดยกมาเป็นโลหิตรวมทั้งหมด พอกรอง "พลาสมา/เกล็ดเลือด" ตัวเลขทั้งเมนูนับเฉพาะพลาสมา (0) หมายเหตุหายไปเอง เพราะไม่มียอดยกมาของประเภทนี้',
+    body: () => hero() + head() + chips('c') + `<div style="text-align:center;padding:36px 0;color:#7A6360;font-size:13.5px;">ไม่มีรายการพลาสมา/เกล็ดเลือด</div>` + pop(opt('ทุกปี', 0, true, false, true) + years([0, 0, 0])) },
+  { label: 'ที่เสนอ + กรองโลหิตรวมอยู่',
+    desc: 'กรอง "โลหิตรวม" ซึ่งเป็นประเภทเดียวกับยอดยกมา ตัวเลขเท่ากับกรณีทั้งหมด หมายเหตุยังอยู่',
+    body: () => hero() + head() + chips('w') + rows + pop(opt('ทุกปี', 16, true) + years([2, 1, 1]) + `<div class="note">รวมยอดยกมา 12 ครั้งที่ไม่ได้ระบุปี</div>`) },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<div class="tag" style="${v.ref ? 'background:#7A6360' : ''}">${v.label}</div><p class="desc">${v.desc}</p>
+    <div class="stage"><div class="scaler"><div class="phone">${v.body()}</div></div></div>`;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

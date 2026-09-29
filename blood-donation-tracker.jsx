@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.125";
+const APP_VERSION = "1.0.126";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1303,9 +1303,15 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
 // header (format, KDF settings, salt, IV) is not secret. The header's
 // app/format/version are bound in as additional authenticated data, so
 // editing them makes decryption fail instead of silently proceeding.
-const BACKUP_FORMAT_VERSION = 2;
+// v3 = minified JSON, deflate-compressed before encryption (much shorter file);
+// v2 files (no compression) still open.
+const BACKUP_FORMAT_VERSION = 3;
 const BACKUP_KDF_ITERATIONS = 600000;
-const BACKUP_AAD = new TextEncoder().encode(`BloodJourney|backup|${BACKUP_FORMAT_VERSION}`);
+const backupAad = (v) => new TextEncoder().encode(`BloodJourney|backup|${v}`);
+const canCompressBackup = () => typeof CompressionStream !== "undefined" && typeof DecompressionStream !== "undefined" && typeof Response !== "undefined";
+async function pipeBackupBytes(u8, stream) {
+  return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(stream)).arrayBuffer());
+}
 const backupCryptoError = (code) => Object.assign(new Error(code), { code });
 const canEncryptBackup = () => typeof crypto !== "undefined" && !!crypto.subtle && typeof crypto.getRandomValues === "function";
 const bytesToB64 = (u8) => {
@@ -1327,13 +1333,23 @@ async function encryptBackupText(plainText, password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveBackupKey(password, salt, BACKUP_KDF_ITERATIONS, "encrypt");
-  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: BACKUP_AAD }, key, new TextEncoder().encode(plainText));
-  return JSON.stringify({
+  let text = plainText;
+  try { text = JSON.stringify(JSON.parse(plainText)); } catch (e) {}
+  let bytes = new TextEncoder().encode(text);
+  let compress = "";
+  if (canCompressBackup()) {
+    try { bytes = await pipeBackupBytes(bytes, new CompressionStream("deflate-raw")); compress = "deflate-raw"; }
+    catch (e) { bytes = new TextEncoder().encode(text); }
+  }
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: backupAad(BACKUP_FORMAT_VERSION) }, key, bytes);
+  const header = {
     app: "BloodJourney", format: "backup", version: BACKUP_FORMAT_VERSION, encrypted: true,
     kdf: { name: "PBKDF2-SHA256", iterations: BACKUP_KDF_ITERATIONS, salt: bytesToB64(salt) },
     cipher: { name: "AES-256-GCM", iv: bytesToB64(iv) },
-    data: bytesToB64(new Uint8Array(ct)),
-  }, null, 2);
+  };
+  if (compress) header.compress = compress;
+  header.data = bytesToB64(new Uint8Array(ct));
+  return JSON.stringify(header);
 }
 // The parsed header when `text` is an encrypted backup, otherwise null.
 function readEncryptedBackup(text) {
@@ -1352,7 +1368,7 @@ async function decryptBackupText(header, password) {
   try {
     iterations = Number(header && header.kdf && header.kdf.iterations);
     // Capped so a hand-made file can't make the phone grind for minutes.
-    if (header.version !== BACKUP_FORMAT_VERSION || !Number.isInteger(iterations) || iterations < 100000 || iterations > 2000000) throw new Error("x");
+    if ((header.version !== 2 && header.version !== 3) || (header.compress && header.compress !== "deflate-raw") || !Number.isInteger(iterations) || iterations < 100000 || iterations > 2000000) throw new Error("x");
     salt = b64ToBytes(header.kdf.salt);
     iv = b64ToBytes(header.cipher.iv);
     data = b64ToBytes(header.data);
@@ -1362,10 +1378,14 @@ async function decryptBackupText(header, password) {
   }
   const key = await deriveBackupKey(password, salt, iterations, "decrypt");
   try {
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: BACKUP_AAD }, key, data);
+    let plain = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: backupAad(header.version) }, key, data));
+    if (header.compress) {
+      if (!canCompressBackup()) throw backupCryptoError("UNSUPPORTED");
+      plain = await pipeBackupBytes(plain, new DecompressionStream("deflate-raw"));
+    }
     return new TextDecoder().decode(plain);
   } catch (e) {
-    throw backupCryptoError("BAD_PASSWORD");
+    throw e && e.code === "UNSUPPORTED" ? e : backupCryptoError("BAD_PASSWORD");
   }
 }
 // Random passphrase for the "สร้างรหัสให้" button: 5 words out of 2,048 (11 bits

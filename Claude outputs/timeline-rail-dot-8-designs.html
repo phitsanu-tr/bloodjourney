@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เส้นเวลาและจุดปี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --red:#9A3B33; --line:#EEDEDA; --soft:#F3EAE8; --bg:#FBF6F5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding: 24px 16px 60px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; text-align: center; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; margin: 0 auto 24px; max-width: 640px; line-height: 1.6; }
+  .grid { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+  .panel { width: 340px; max-width: 100%; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 60px; }
+  .phone { width: 340px; max-width: 100%; height: 640px; background: var(--bg); border-radius: 30px; border: 8px solid #2B201E; overflow-y: auto; position: relative; scrollbar-width: none; }
+  .phone::-webkit-scrollbar { display: none; }
+  .scr { padding: 18px 16px 30px; }
+  .sechead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .sechead h3 { margin: 0; font-size: 15.5px; font-weight: 600; color: var(--ink2); }
+  .fbtn { border: 1px solid #E3C8C3; background: #fff; border-radius: 10px; padding: 6px 11px; font: inherit; font-size: 12.5px; color: #5C4A46; display: flex; gap: 6px; align-items: center; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  /* real HistoryRow, same values as the app */
+  .row { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 13px 15px; display: flex; gap: 12px; align-items: flex-start; }
+  .drop { width: 46px; height: 56px; position: relative; flex-shrink: 0; }
+  .drop svg { position: absolute; inset: 0; }
+  .drop .n { position: absolute; inset: 6px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF7F5; }
+  .drop .n b { font-size: 15px; font-weight: 800; line-height: 1.1; }
+  .drop .n i { font-style: normal; font-size: 10px; opacity: .9; margin-top: 1px; }
+  .body { flex: 1; min-width: 0; }
+  .date { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink2); }
+  .chipline { display: flex; align-items: center; gap: 7px; margin-top: 4px; }
+  .chip { font-size: 11px; background: var(--soft); color: var(--red); padding: 3px 9px; border-radius: 20px; font-weight: 600; }
+  .chip.p { background: #FBEFD9; color: #8A5A12; }
+  .logged { font-size: 10.5px; color: var(--mut); margin-top: 6px; }
+  .more { color: var(--red); font-weight: 700; font-size: 16px; line-height: 1; padding-top: 2px; }
+  .carry { background: #F7F0EE; border: 1px dashed #E3C8C3; border-radius: 14px; padding: 13px 15px; font-size: 13px; color: #5C4A46; }
+  .carry b { color: var(--ink2); }
+  .hl { outline: 2px dashed #C9776D; outline-offset: 3px; border-radius: 8px; }
+
+  .tl { position: relative; padding-left: 22px; }
+  .tl::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: #EAD3CE; }
+  .yh { position: relative; display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: 10px; min-height: 20px; }
+  .yh.first { margin-top: 0; }
+  .yh b { font-weight: 600; color: var(--ink2); }
+  .yh span.c { color: var(--mut); font-size: 12px; }
+  .node { position: absolute; top: 50%; display: block; }
+  .rw { position: relative; }
+  .hlw { outline: 2px dashed #C9776D; outline-offset: 4px; border-radius: 10px; }
+  /* 4 dotted rail */
+  .v4::before { width: 0; background: none; border-left: 2px dotted #D9B3AD; left: 6px; }
+  /* 5 pill on rail */
+  .v5 { padding-left: 34px; } .v5::before { left: 24px; }
+  .v5 .yh { padding-left: 24px; }
+  /* 6 gradient rail */
+  .v6::before { background: linear-gradient(#C9776D, #F3E4E1); }
+  /* 8 soft thick rail */
+  .v8::before { width: 3px; left: 5.5px; background: #F1E1DE; }
+  .note { max-width: 720px; margin: 36px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.7; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; }
+  .note p { margin: 0; }
+</style>
+</head>
+<body>
+<h1>เส้นเวลาและจุดหัวปี</h1>
+<p class="lead">แบบ 1 คือหน้าตาในแอปตอนนี้ แบบ 2–8 ปรับเส้นด้านซ้ายกับจุดหัวปี การ์ดรายการเหมือนเดิมทุกแบบ เลื่อนในจอเพื่อดูปีถัดไปได้</p>
+<div class="grid" id="grid"></div>
+<div class="note"><h2>เหมือนกันทุกแบบ</h2><p>เส้นเวลากับหัวปีจะโชว์เฉพาะตอนประวัติมีตั้งแต่ 2 ปีขึ้นไปและไม่ได้กรองปีเดียว จำนวนครั้งนับทั้งปีตามประเภทที่กรองอยู่</p></div>
+<script>
+const DROP = '<svg width="46" height="56" viewBox="0 0 46 56" fill="none"><path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33"/></svg>';
+const CAL = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
+const DRP = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A6360" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>';
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+const FILT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5C4A46" stroke-width="2" stroke-linecap="round"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>';
+
+const YEARS = [
+  { y: 2569, items: [[8, "19 ส.ค. 2569"], [7, "21 พ.ค. 2569"]] },
+  { y: 2568, items: [[6, "10 ก.พ. 2569".replace("2569","2568"), ], [5, "2 พ.ย. 2568"], [4, "4 ส.ค. 2568", "p"], [3, "26 เม.ย. 2568"]] },
+  { y: 2567, items: [[2, "16 ม.ค. 2567"], [1, "8 ต.ค. 2567"]] },
+];
+// keep dates consistent with their year
+YEARS[1].items[0][1] = "10 ก.พ. 2568";
+YEARS[2].items = [[2, "16 ธ.ค. 2567"], [1, "8 ต.ค. 2567"]];
+
+const row = ([n, date, t]) => `<div class="row"><div class="drop">${DROP}<div class="n"><b>${n}</b><i>ครั้งที่</i></div></div>
+  <div class="body"><div class="date">${CAL} ${date}</div>
+  <div class="chipline">${DRP}<span class="chip ${t ? 'p' : ''}">${t ? 'พลาสมา/เกล็ดเลือด' : 'โลหิตรวม'}</span></div>
+  <div class="logged">บันทึกเมื่อสักครู่</div></div><div class="more">⋮</div></div>`;
+const carry = `<div class="carry"><b>ยอดยกมา 12 ครั้ง</b> · บริจาคก่อนเริ่มใช้แอป</div>`;
+const head = `<div class="sechead"><h3>ประวัติบริจาคโลหิต</h3><button class="fbtn">${FILT} ตัวกรอง</button></div>`;
+const RED = "#9A3B33";
+// node(w,h,inner,style): centred on the rail (x = 7px inside .tl => -15px from the header's left edge)
+const node = (w, h, style = "", inner = "", cx = -15) => `<span class="node" style="width:${w}px;height:${h}px;left:${cx - w / 2}px;margin-top:${-h / 2}px;${style}">${inner}</span>`;
+const DROPN = '<svg width="12" height="15" viewBox="0 0 24 30"><path d="M12 1C12 1 22 13.5 22 19.5A10 10 0 0 1 2 19.5C2 13.5 12 1 12 1Z" fill="#9A3B33"/></svg>';
+const V = [
+  { name: "แบบตอนนี้", desc: "เส้นทึบสีชมพูอ่อน จุดแดงทึบ 12px ไว้เทียบกับแบบอื่น",
+    cls: "", nd: () => node(12, 12, `border-radius:50%;background:${RED}`) },
+  { name: "วงแหวนกลวง", desc: "จุดเป็นวงแหวนแดง ข้างในสีพื้น ดูเบาและโปร่งกว่า เหมือนหมุดบนแผนที่เส้นทาง",
+    cls: "", nd: () => node(12, 12, `border-radius:50%;background:#FBF6F5;border:2.5px solid ${RED};box-sizing:border-box`) },
+  { name: "หยดเลือดแทนจุด", desc: "หัวปีเป็นหยดเลือดเล็ก ๆ เข้ากับแอป แต่การ์ดรายการมีหยดเลือดใหญ่อยู่แล้ว อาจดูซ้ำกันนิดหนึ่ง",
+    cls: "", nd: () => node(12, 15, "", DROPN) },
+  { name: "เส้นประ", desc: "เส้นเวลาเป็นจุดไข่ปลา จุดหัวปีเล็กลงเหลือ 10px ดูเป็นเส้นทางเดินมากขึ้น และเบากว่าเส้นทึบ",
+    cls: "v4", nd: () => node(10, 10, `border-radius:50%;background:${RED}`) },
+  { name: "ป้ายปีบนเส้น", desc: "ตัวเลขปีอยู่ในป้ายแดงที่วางทับเส้น เห็นปีชัดที่สุด แต่การ์ดจะแคบลงอีกราว 12px",
+    cls: "v5", yh: (g) => `<span class="node" style="left:-34px;margin-top:-11px;height:22px;width:50px;justify-content:center;border-radius:11px;background:${RED};color:#FFF7F5;font-size:12px;font-weight:600;display:flex;align-items:center">${g.y}</span><span class="c">${g.items.length} ครั้ง</span>` },
+  { name: "ไล่สีตามเวลา", desc: "เส้นเข้มด้านบน (ปีล่าสุด) แล้วจางลงเรื่อย ๆ จุดของปีเก่าก็จางลงด้วย บอกความใหม่-เก่าได้ด้วยสี",
+    cls: "v6", nd: (i) => node(12, 12, `border-radius:50%;background:${RED};opacity:${[1, .6, .38][i]}`) },
+  { name: "จุดเล็กทุกรายการ", desc: "นอกจากจุดหัวปี ทุกการ์ดมีจุดเล็กสีจางบนเส้นด้วย เส้นเลยดูเชื่อมกับรายการ เหมือนเส้นทางที่ผ่านทุกครั้งที่บริจาค",
+    cls: "", nd: () => node(12, 12, `border-radius:50%;background:${RED}`), rowDot: true },
+  { name: "จุดมีวงเรือง", desc: "จุดแดงเล็กลงนิด มีวงชมพูจางรอบนอก เส้นหนาขึ้นแต่สีอ่อนลง ดูนุ่มนวลขึ้น",
+    cls: "v8", nd: () => node(10, 10, `border-radius:50%;background:${RED};box-shadow:0 0 0 4px #F3DCD8`) },
+];
+const list = (v) => `<div class="tl ${v.cls}"><div class="list">${YEARS.map((g, i) => {
+  const yh = v.yh ? v.yh(g) : `${v.nd(i)}<b>${g.y}</b><span class="c">· ${g.items.length} ครั้ง</span>`;
+  const rows = g.items.map(it => v.rowDot ? `<div class="rw">${node(6, 6, "border-radius:50%;background:#DDB8B2;top:34px", "", -15)}${row(it)}</div>` : row(it)).join('');
+  return `<div class="yh ${i ? '' : 'first'}">${yh}</div>${rows}`;
+}).join('')}${carry}</div></div>`;
+document.getElementById('grid').innerHTML = V.map((v, i) => `<div class="panel"><span class="tag">แบบ ${i + 1}</span><p class="name">${v.name}</p><p class="desc">${v.desc}</p><div class="phone"><div class="scr">${head}${list(v)}</div></div></div>`).join('');
+</script>
+</body>
+</html>

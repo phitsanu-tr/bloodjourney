@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>การ์ดเตือนหน้าหลัก — 8 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 30px; max-width: 720px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .panel.ref .tag { background: #7A6360; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 64px; margin: 0; }
+  .metric { text-align: center; font-size: 11px; font-weight: 700; margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+  .metric.good { color: #2E7D4F; } .metric.bad { color: #B3261E; } .metric.mid { color: #9A6A1D; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .scaler { width: calc(390px * 0.66); height: calc(844px * 0.66); overflow: hidden; border-radius: 22px; box-shadow: 0 0 0 1px #E3C8C3; }
+
+  /* Real 390x844 phone, scaled down */
+  .phone { width: 390px; height: 844px; transform: scale(0.66); transform-origin: 0 0; background: #FBF6F5; position: relative; overflow: hidden; }
+  .hdr { position: absolute; top: 0; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: #FBF6F5; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 9px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg,#B24A40,#8A2F28); }
+  .bname { font-size: 14px; font-weight: 700; line-height: 1.25; } .bsub { font-size: 10.5px; color: #7A6360; }
+  .hic { display: flex; gap: 16px; } .hic i { width: 19px; height: 19px; border: 2px solid #9A3B33; border-radius: 50%; display: block; }
+  .content { position: absolute; top: 84px; left: 20px; right: 20px; }
+  .greet { height: 58px; margin-bottom: 20px; display: flex; gap: 14px; align-items: center; }
+  .av { width: 44px; height: 44px; border-radius: 50%; background: #F3EAE8; }
+  .gt { font-size: 14px; font-weight: 600; } .gp { display: flex; gap: 8px; margin-top: 8px; } .gp span { width: 44px; height: 18px; border-radius: 20px; background: #F3EAE8; }
+  .hero { height: 244px; margin-bottom: 16px; border-radius: 20px; background: linear-gradient(135deg,#B24A40,#8A2F28); color: #FFF7F5; padding: 22px; box-shadow: 0 14px 32px -8px rgba(122,42,35,.55); }
+  .hero .l { font-size: 13px; opacity: .85; } .hero .n { font-size: 46px; font-weight: 700; line-height: 1.1; } .hero .n small { font-size: 18px; font-weight: 500; }
+  .hero .pill { display: inline-block; margin-top: 6px; background: #FFF7F5; color: #9A3B33; border-radius: 20px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; }
+  .hero .dv { border-top: 1px solid rgba(255,247,245,.25); margin: 10px 0 12px; }
+  .hero .cd { font-size: 16px; font-weight: 700; } .hero .dt { font-size: 11.5px; color: rgba(255,247,245,.85); }
+  .hero .bar { height: 5px; border-radius: 3px; background: rgba(255,247,245,.2); margin-top: 10px; } .hero .bar i { display: block; width: 22%; height: 100%; background: #FFF7F5; border-radius: 3px; }
+  .hero .cal { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 11.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .cta { height: 68px; margin-bottom: 16px; background: #fff; border: 1px solid #EEDEDA; border-radius: 16px; display: flex; align-items: center; gap: 14px; padding: 0 16px; font-size: 14px; font-weight: 600; }
+  .cta b { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg,#B24A40,#8A2F28); color: #FFF7F5; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 400; }
+  .card { background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; }
+  .calcard { height: 50px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 11.5px; color: #5C4A46; }
+  .btn-soft { margin-left: auto; background: #F3EAE8; color: #9A3B33; border-radius: 8px; padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .btn-solid { background: #9A3B33; color: #FFF7F5; border-radius: 9px; padding: 6px 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .x { color: #7A6360; font-size: 14px; padding: 0 4px; }
+  .warn { background: #FDF0E6; border: 1px solid #F0D9BE; border-radius: 14px; }
+  .banner { height: 129px; margin-bottom: 26px; padding: 12px 14px; display: flex; gap: 10px; }
+  .banner .t { font-size: 12.5px; font-weight: 600; color: #7A4A1D; } .banner .s { font-size: 11.5px; color: #8A6A45; line-height: 1.5; margin-top: 2px; }
+  .ico { width: 16px; height: 16px; flex-shrink: 0; border-radius: 4px; }
+  .ico.w { background: #E4A56A; } .ico.c { background: #C9A7A2; }
+  .mission { height: 94px; margin-bottom: 26px; padding: 13px 15px; display: flex; align-items: center; gap: 12px; }
+  .mission .h { font-size: 12px; font-weight: 600; color: #9A3B33; } .mission .ti { font-size: 14px; font-weight: 700; margin-top: 7px; } .mission .s { font-size: 12px; color: #7A6360; }
+  .ring { width: 54px; height: 54px; margin-left: auto; border-radius: 50%; border: 5px solid #F3EAE8; border-top-color: #9A3B33; border-right-color: #9A3B33; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: #9A3B33; }
+  .hist { font-size: 14px; font-weight: 600; margin-bottom: 10px; height: 22px; }
+  .hrow { height: 95px; margin-bottom: 10px; display: flex; gap: 14px; padding: 14px 16px; }
+  .drop { width: 34px; height: 42px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9A3B33; flex-shrink: 0; }
+  .hrow .d { font-size: 14px; font-weight: 700; } .hrow .p { margin-top: 6px; width: 70px; height: 20px; border-radius: 20px; background: #F3EAE8; }
+  .nav { position: absolute; left: 0; right: 0; top: 772px; bottom: 0; background: #fff; border-top: 1px solid #EEDEDA; display: flex; justify-content: space-around; padding-top: 14px; z-index: 3; }
+  .nav i { width: 22px; height: 22px; border-radius: 6px; background: #EADCD9; display: block; } .nav i:first-child { background: #9A3B33; }
+  .fold { position: absolute; left: 0; right: 0; top: 772px; border-top: 3px dashed #D98C84; z-index: 4; }
+  .hl { outline: 2px dashed #D98C84; outline-offset: 3px; }
+
+  /* variant helpers */
+  .row1 { height: 50px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 11.5px; }
+  .todo { margin-bottom: 16px; overflow: hidden; }
+  .todo .row1 + .row1 { border-top: 1px solid #F3EAE8; }
+  .chips { display: flex; gap: 8px; margin-bottom: 16px; }
+  .chip { flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .dots { display: flex; gap: 4px; margin-left: 4px; } .dots i { width: 5px; height: 5px; border-radius: 50%; background: #E3C8C3; display: block; } .dots i.on { background: #9A3B33; }
+  .count { background: #9A3B33; color: #fff; border-radius: 10px; font-size: 10.5px; font-weight: 700; padding: 1px 7px; }
+</style>
+</head>
+<body>
+  <h1>การ์ดเตือนบนหน้าหลัก — 8 แบบ</h1>
+  <p class="sub">จำลองจอ iPhone ขนาดทั่วไป (390×844) ด้วยขนาดจริงของแต่ละบล็อกที่วัดจากแอป กรณีมีทั้งเตือนปฏิทินและเตือนสำรองข้อมูล
+    เส้นประแดงคือขอบบนของแถบเมนูล่าง อะไรที่อยู่ใต้เส้นต้องเลื่อนถึงจะเห็น ตัวเลขใต้คำอธิบายคือระยะที่ "ประวัติบริจาคโลหิต" เริ่มต้น ซึ่งวัดจากหน้าที่แสดงอยู่จริง</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const greet = `<div class="greet"><div class="av"></div><div><div class="gt">สวัสดี, คุณพิษณุ</div><div class="gp"><span></span><span></span><span></span></div></div></div>`;
+const hero = (withCal = false) => `<div class="hero"${withCal ? ' style="height:262px"' : ''}>
+  <div class="l">บริจาคโลหิตสะสมทั้งหมด</div><div class="n">3 <small>ครั้ง</small></div><span class="pill">โลหิตรวม</span>
+  <div class="dv"></div><div class="cd">อีก 70 วัน</div><div class="dt">บริจาคได้อีกครั้ง 7 ธ.ค. 2569</div>
+  ${withCal ? `<div class="cal hl">📅 เพิ่มลงปฏิทิน</div>` : ''}
+  <div class="bar"><i></i></div></div>`;
+const cta = `<div class="cta"><b>+</b>บันทึกบริจาคโลหิต</div>`;
+const calCard = `<div class="card calcard"><span class="ico c"></span>ให้เตือนเมื่อบริจาคได้อีกครั้งไหม<span class="btn-soft">เพิ่มลงปฏิทิน</span><span class="x">✕</span></div>`;
+const bigBanner = `<div class="warn banner"><span class="ico w"></span><div><div class="t">ยังไม่ได้สำรองข้อมูลนานแล้วนะ</div>
+  <div class="s">ข้อมูลของคุณถูกเก็บในเครื่องนี้เท่านั้น สำรองไว้เผื่อเปลี่ยนเครื่องหรือข้อมูลหาย</div>
+  <div style="display:flex;align-items:center;gap:16px;margin-top:10px;"><span class="btn-solid" style="padding:9px 14px;">⬇ สำรองข้อมูลตอนนี้</span><span style="font-size:11.5px;font-weight:600;color:#9A3B33;text-decoration:underline;">เตือนทีหลัง</span></div></div></div>`;
+const slimBackup = (mb = 26) => `<div class="warn row1 hl" style="margin-bottom:${mb}px;"><span class="ico w"></span><span style="color:#7A4A1D;font-weight:600;">ยังไม่ได้สำรองข้อมูล</span><span class="btn-solid" style="margin-left:auto;">สำรองเลย</span><span class="x">✕</span></div>`;
+const mission = `<div class="card mission"><div><div class="h">🏅 ภารกิจถัดไป</div><div class="ti">เข็มที่ระลึก ครั้งที่ 7</div><div class="s">อีก 4 ครั้ง</div></div><div class="ring">3/7</div></div>`;
+const missionSlim = `<div class="card hl" style="height:50px;margin-bottom:26px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:12px;"><span style="color:#9A3B33;font-weight:600;">🏅 อีก 4 ครั้ง</span><span style="font-weight:600;">ถึงเข็มที่ระลึก ครั้งที่ 7</span><span style="margin-left:auto;color:#9A3B33;font-weight:700;">3/7</span></div>`;
+const history = `<div class="hist" data-hist>ประวัติบริจาคโลหิต</div>
+  ${[['3', '8 ก.ย. 2569'], ['2', '21 พ.ค. 2569'], ['1', '21 ม.ค. 2569']].map(([n, d]) => `<div class="card hrow"><div class="drop"></div><div><div class="d">${d}</div><div class="p"></div></div></div>`).join('')}`;
+
+const variants = [
+  { ref: true, label: 'แบบปัจจุบัน (อ้างอิง)',
+    desc: 'เตือนปฏิทิน 50px + แบนเนอร์สำรองข้อมูล 129px + ภารกิจ 94px เรียงกันใต้ปุ่มบันทึก ประวัติหลุดจอแรกไปทั้งก้อน',
+    body: () => calCard + bigBanner + mission },
+  { label: '1. แบนเนอร์สำรองข้อมูลเหลือบรรทัดเดียว',
+    desc: 'เหลือ "ยังไม่ได้สำรองข้อมูล" + ปุ่ม "สำรองเลย" + ✕ (เตือนทีหลัง) สูงเท่าการ์ดปฏิทิน ประหยัดราว 80px เปลี่ยนน้อยสุด',
+    body: () => calCard + slimBackup() + mission },
+  { label: '2. รวมสองเตือนเป็นการ์ดเดียว',
+    desc: 'การ์ดเดียวมีสองแถว แยกด้วยเส้นบาง แต่ละแถวมีปุ่มของตัวเอง แถวสำรองข้อมูลพื้นส้มอ่อนให้รู้ว่าเร่งกว่า',
+    body: () => `<div class="card todo hl"><div class="row1" style="background:#FDF0E6;"><span class="ico w"></span><span style="color:#7A4A1D;font-weight:600;">ยังไม่ได้สำรองข้อมูล</span><span class="btn-solid" style="margin-left:auto;">สำรองเลย</span><span class="x">✕</span></div>
+      <div class="row1" style="color:#5C4A46;"><span class="ico c"></span>เตือนเมื่อบริจาคได้อีกครั้ง<span class="btn-soft">เพิ่มลงปฏิทิน</span><span class="x">✕</span></div></div>` + mission },
+  { label: '3. โชว์เตือนได้ครั้งละใบ',
+    desc: 'โชว์เฉพาะเรื่องที่สำคัญสุดก่อน (สำรองข้อมูล) ทำเสร็จหรือกด ✕ แล้วใบถัดไป (ปฏิทิน) ค่อยขึ้นมาแทน จุดเล็ก ๆ บอกว่ามีอีกกี่เรื่อง',
+    body: () => `<div class="warn row1 hl" style="margin-bottom:16px;"><span class="ico w"></span><span style="color:#7A4A1D;font-weight:600;">ยังไม่ได้สำรองข้อมูล</span><span class="dots"><i class="on"></i><i></i></span><span class="btn-solid" style="margin-left:auto;">สำรองเลย</span><span class="x">✕</span></div>` + mission },
+  { label: '4. ย้ายเตือนปฏิทินเข้าการ์ดแดง',
+    desc: 'ลิงก์ "เพิ่มลงปฏิทิน" อยู่ใต้วันที่บริจาคได้อีกครั้งในการ์ดแดงเลย (ตรงกับเรื่องที่เตือนพอดี) การ์ดปฏิทินแยกหายไป แบนเนอร์สำรองเป็นบรรทัดเดียว',
+    heroCal: true,
+    body: () => slimBackup() + mission },
+  { label: '5. ปุ่มลัดสองปุ่มเคียงกัน',
+    desc: 'ใต้ปุ่มบันทึกมีปุ่มเตี้ยสองปุ่มวางคู่กัน "สำรองข้อมูล" (สีส้ม) กับ "เพิ่มลงปฏิทิน" กินที่แถวเดียว แต่คำอธิบายสั้นลงมาก',
+    body: () => `<div class="chips hl"><span class="chip warn" style="color:#7A4A1D;">⬇ สำรองข้อมูล</span><span class="chip card" style="color:#9A3B33;">📅 เพิ่มลงปฏิทิน</span></div>` + mission },
+  { label: '6. รวมเป็นแถว "สิ่งที่ควรทำ" กดเปิดดู',
+    desc: 'เหลือแถวเดียว "สิ่งที่ควรทำ 2 เรื่อง" กดแล้วกางออกเป็นรายการ ประหยัดที่มาก แต่เรื่องสำรองข้อมูลอาจถูกมองข้าม',
+    body: () => `<div class="card row1 hl" style="margin-bottom:16px;font-weight:600;color:#3A2C29;"><span class="ico w"></span>สิ่งที่ควรทำ<span class="count">2</span><span style="margin-left:auto;color:#7A6360;">›</span></div>` + mission },
+  { label: '7. แบบ 4 + ภารกิจแบบย่อ',
+    desc: 'ปฏิทินอยู่ในการ์ดแดง สำรองข้อมูลบรรทัดเดียว และการ์ดภารกิจย่อเหลือแถวเดียว (ยังมี 3/7) ประหยัดที่มากสุด แต่เปลี่ยนการ์ดภารกิจที่เพิ่งทำเสร็จ',
+    heroCal: true,
+    body: () => slimBackup() + missionSlim },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel' + (v.ref ? ' ref' : '');
+  panel.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p><p class="metric"></p>
+    <div class="stage"><div class="scaler"><div class="phone">
+      <div class="hdr"><div class="brand"><div class="logo"></div><div><div class="bname">Blood Journey</div><div class="bsub">บันทึกบริจาคโลหิต</div></div></div><div class="hic"><i></i><i></i></div></div>
+      <div class="content">${greet}${hero(!!v.heroCal)}${cta}${v.body()}${history}</div>
+      <div class="fold"></div><div class="nav"><i></i><i></i><i></i><i></i></div>
+    </div></div></div>`;
+  grid.appendChild(panel);
+});
+
+// Measure where the history section starts inside each unscaled phone.
+function measure() {
+  document.querySelectorAll('.panel').forEach((p) => {
+    const phone = p.querySelector('.phone');
+    const h = p.querySelector('[data-hist]');
+    const firstCard = h.nextElementSibling;
+    const scale = 0.66;
+    const top = Math.round((h.getBoundingClientRect().top - phone.getBoundingClientRect().top) / scale);
+    const cardBottom = Math.round((firstCard.getBoundingClientRect().bottom - phone.getBoundingClientRect().top) / scale);
+    const m = p.querySelector('.metric');
+    const fold = 772;
+    if (cardBottom <= fold) { m.className = 'metric good'; m.textContent = `ประวัติเริ่มที่ ${top}px · เห็นรายการแรกเต็มใบ`; }
+    else if (top + 22 <= fold) { m.className = 'metric mid'; m.textContent = `ประวัติเริ่มที่ ${top}px · เห็นหัวข้อ แต่รายการแรกโดนตัด`; }
+    else { m.className = 'metric bad'; m.textContent = `ประวัติเริ่มที่ ${top}px · อยู่นอกจอแรก (เส้นอยู่ที่ ${fold}px)`; }
+  });
+}
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(measure);
+</script>
+</body>
+</html>

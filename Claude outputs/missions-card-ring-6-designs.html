@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>การ์ดภารกิจถัดไป — 6 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 26px; max-width: 740px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 420px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); }
+  .tag { text-align: center; font-size: 12px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .panel.ref .tag { background: #7A6360; }
+  .desc { font-size: 11px; color: #7A6360; text-align: center; padding: 8px 14px 0; line-height: 1.55; min-height: 58px; margin: 0; }
+  .stage { padding: 14px 16px 18px; }
+  .page-h { font-size: 16px; font-weight: 700; margin-bottom: 2px; } .page-s { font-size: 11.5px; color: #7A6360; margin-bottom: 14px; }
+  .card { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); box-shadow: 0 14px 32px -8px rgba(122,42,35,.55); border-radius: 16px; padding: 16px 18px; color: #FFF7F5; }
+  .k { font-size: 12px; opacity: .85; }
+  .t { font-size: 14.5px; font-weight: 600; }
+  .e { font-size: 11px; opacity: .8; }
+  .bar { height: 7px; border-radius: 4px; background: rgba(255,247,245,.3); overflow: hidden; } .bar i { display: block; height: 100%; width: 42.86%; background: #FFF7F5; border-radius: 4px; }
+  .row { display: flex; align-items: center; gap: 14px; }
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .hl { outline: 2px dashed rgba(255,247,245,.75); outline-offset: 3px; border-radius: 6px; }
+  .share { display: flex; justify-content: flex-end; margin-top: 12px; } .share span { font-size: 11px; border: 1px solid #E3C8C3; color: #9A3B33; border-radius: 9px; padding: 6px 10px; background: #fff; }
+</style>
+</head>
+<body>
+  <h1>การ์ด "ภารกิจถัดไป" ในแท็บภารกิจ — 6 แบบ</h1>
+  <p class="sub">การ์ดนี้เป็นพื้นแดงตัวหนังสือขาว ต่างจากการ์ดขาวที่หน้าหลัก ทุกแบบใช้วงแหวนสีขาวให้เข้ากับพื้นแดง ข้อมูลตัวอย่าง: บริจาคแล้ว 3 ครั้ง เป้าหมาย "เข็มที่ระลึก ครั้งที่ 7" ที่อัตราเฉลี่ยปัจจุบันอีกราว 15.3 เดือน เส้นประชี้ส่วนที่เปลี่ยน</p>
+  <div class="grid" id="grid"></div>
+<script>
+const ring = ({ size = 58, stroke = 5, inner = '', frac = 3 / 7, track = 'rgba(255,247,245,0.28)', color = '#FFF7F5', start = -90, sweep = 360 } = {}) => {
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r, h = size / 2, arc = c * sweep / 360;
+  return `<div class="hl" style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="${track}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${arc} ${c}" transform="rotate(${start} ${h} ${h})"/>
+    <circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${arc * frac} ${c}" transform="rotate(${start} ${h} ${h})"/></svg>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;">${inner}</div></div>`;
+};
+const n37 = (big = 13.5) => `<span class="num" style="font-size:${big}px;">3<span style="opacity:.75;font-weight:600;">/7</span></span>`;
+const PIN = `<svg width="22" height="26" viewBox="0 0 24 28"><path d="M12 2 C12 2 4 12.5 4 18 C4 23 7.6 26 12 26 C16.4 26 20 23 20 18 C20 12.5 12 2 12 2 Z" fill="#FFF7F5"/><circle cx="12" cy="18" r="3.2" fill="#B24A40"/></svg>`;
+const est = `ที่อัตราการบริจาคเฉลี่ยปัจจุบัน อีกประมาณ 15.3 เดือน`;
+
+const variants = [
+  { ref: true, label: 'ตอนนี้ (อ้างอิง)', desc: 'หัวข้อ ประโยค "อีก 4 ครั้ง ถึง…" แถบเส้นสีขาว และบรรทัดประมาณเวลา แถบเหมือนแถบช่วงพักฟื้นในการ์ดแดงหน้าหลัก',
+    card: () => `<div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="margin-bottom:10px">อีก 4 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 7"</div><div class="bar"><i></i></div><div class="e" style="margin-top:8px">${est}</div>` },
+  { label: '1. แบบเดียวกับหน้าหลัก (สีขาว)', desc: 'โครงเหมือนการ์ดหน้าหลักแบบ D: ชื่อรางวัลตัวหนา "อีก 4 ครั้ง" ข้างใต้ วงแหวน 3/7 ด้านขวา บรรทัดประมาณเวลาอยู่ใต้สุดเต็มความกว้าง',
+    card: () => `<div class="row"><div style="flex:1"><div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="font-size:16px;font-weight:700">เข็มที่ระลึก ครั้งที่ 7</div><div style="font-size:12.5px;opacity:.85;margin-top:2px">อีก 4 ครั้ง</div></div>${ring({ inner: n37() })}</div><div class="e" style="margin-top:10px">${est}</div>` },
+  { label: '2. แบบ 1 + เวลาประมาณเป็นบรรทัดรอง', desc: 'รวมบรรทัดประมาณเวลาเข้าไปใต้ "อีก 4 ครั้ง" เป็นข้อความสั้น "ประมาณ 15 เดือน" การ์ดเตี้ยลง ข้อมูลเดิมครบ',
+    card: () => `<div class="row"><div style="flex:1"><div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="font-size:16px;font-weight:700">เข็มที่ระลึก ครั้งที่ 7</div><div style="font-size:12.5px;opacity:.85;margin-top:2px">อีก 4 ครั้ง · <span class="hl">ประมาณ 15 เดือน</span></div></div>${ring({ inner: n37() })}</div>` },
+  { label: '3. วงแหวนใหญ่ด้านซ้าย', desc: 'วงแหวนใหญ่ขึ้น (72px) ย้ายไปด้านซ้าย ในวงมีเลข 3 ตัวใหญ่ "จาก 7" ตัวเล็ก ข้อความอยู่ขวา เด่นเป็นตัวเลขแบบหน้าแดชบอร์ด',
+    card: () => `<div class="row">${ring({ size: 72, stroke: 6, inner: `<span class="num" style="font-size:22px;">3</span><span style="font-size:9.5px;opacity:.8;margin-top:2px;">จาก 7</span>` })}<div style="flex:1"><div class="k" style="margin-bottom:4px">ภารกิจถัดไป</div><div class="t" style="font-size:16px;font-weight:700">เข็มที่ระลึก ครั้งที่ 7</div><div class="e" style="font-size:11.5px;margin-top:3px">อีก 4 ครั้ง · ประมาณ 15.3 เดือน</div></div></div>` },
+  { label: '4. รูปเข็มอยู่กลางวงแหวน', desc: 'ในวงแหวนเป็นไอคอนรางวัลที่กำลังไปถึง (เข็มที่ระลึก) แทนตัวเลข ส่วน 3/7 อยู่ท้าย "อีก 4 ครั้ง" สื่อว่าวงนี้คือทางไปหารางวัล เข้ากับแท็บภารกิจ',
+    card: () => `<div class="row"><div style="flex:1"><div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="font-size:16px;font-weight:700">เข็มที่ระลึก ครั้งที่ 7</div><div style="font-size:12.5px;opacity:.85;margin-top:2px">อีก 4 ครั้ง · <span class="num hl">3/7</span></div></div>${ring({ size: 62, inner: PIN })}</div><div class="e" style="margin-top:10px">${est}</div>` },
+  { label: '5. มาตรครึ่งวง', desc: 'วงแหวนครึ่งวงแบบมาตรวัด ตัวเลข 3/7 อยู่ใต้โค้ง วางขวา ดูเป็นมาตรความคืบหน้า ต่างจากวงเต็มหน้าหลักนิดหนึ่ง',
+    card: () => `<div class="row"><div style="flex:1"><div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="font-size:16px;font-weight:700">เข็มที่ระลึก ครั้งที่ 7</div><div style="font-size:12.5px;opacity:.85;margin-top:2px">อีก 4 ครั้ง</div></div><div class="hl" style="position:relative;width:78px;height:46px;flex-shrink:0;">
+      <svg width="78" height="46" viewBox="0 0 78 46"><path d="M8 40 A31 31 0 0 1 70 40" fill="none" stroke="rgba(255,247,245,.28)" stroke-width="6" stroke-linecap="round"/><path d="M8 40 A31 31 0 0 1 70 40" fill="none" stroke="#FFF7F5" stroke-width="6" stroke-linecap="round" stroke-dasharray="${Math.PI * 31 * 3 / 7} 999"/></svg>
+      <div style="position:absolute;left:0;right:0;bottom:0;text-align:center;">${n37(13)}</div></div></div><div class="e" style="margin-top:10px">${est}</div>` },
+  { label: '6. วงแหวน + แถบเดิม', desc: 'เก็บแถบเส้นเดิมไว้ และเพิ่มวงแหวน 3/7 ด้านขวาของหัวข้อ เปลี่ยนน้อยสุด แต่วงกับแถบบอกเรื่องเดียวกันซ้ำ',
+    card: () => `<div class="row" style="align-items:flex-start"><div style="flex:1"><div class="k" style="margin-bottom:6px">ภารกิจถัดไป</div><div class="t" style="margin-bottom:10px">อีก 4 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 7"</div></div>${ring({ size: 48, stroke: 4.5, inner: n37(11.5) })}</div><div class="bar"><i></i></div><div class="e" style="margin-top:8px">${est}</div>` },
+];
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const s = document.createElement('section');
+  s.className = 'panel' + (v.ref ? ' ref' : '');
+  s.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p><div class="stage">
+    <div class="page-h">ภารกิจนักบริจาค</div><div class="page-s">สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</div>
+    <div class="card">${v.card()}</div><div class="share"><span>แชร์การให้ที่ยิ่งใหญ่ของคุณ</span></div></div>`;
+  grid.appendChild(s);
+});
+</script>
+</body>
+</html>

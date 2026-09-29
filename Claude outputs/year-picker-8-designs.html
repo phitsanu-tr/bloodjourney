@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ตัวเลือกปี — 8 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 30px; max-width: 720px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 64px; margin: 0; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .scaler { width: calc(390px * 0.66); height: calc(600px * 0.66); overflow: hidden; border-radius: 20px; box-shadow: 0 0 0 1px #E3C8C3; }
+  .phone { width: 390px; height: 600px; transform: scale(0.66); transform-origin: 0 0; background: #FBF6F5; position: relative; overflow: hidden; padding: 24px 20px; }
+
+  .mission { height: 94px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 26px; padding: 13px 15px; }
+  .mission .h { font-size: 12px; font-weight: 600; color: #9A3B33; } .mission .t { font-size: 14px; font-weight: 700; margin-top: 7px; } .mission .s { font-size: 12px; color: #7A6360; }
+  .hhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; position: relative; }
+  .htitle { font-size: 14px; font-weight: 600; color: #3A2C29; }
+  .sel { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #5C4A46; background: #fff; border: 1px solid #E3C8C3; border-radius: 8px; padding: 5px 8px 5px 10px; }
+  .sel.open { border-color: #9A3B33; box-shadow: 0 0 0 3px rgba(154,59,51,.12); }
+  .chev { width: 12px; height: 12px; }
+  .chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  .chip { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+  .c-all { background: #9A3B33; color: #FFF7F5; } .c-w { background: #F3EAE8; color: #9A3B33; } .c-c { background: #EFE3F0; color: #6B3E78; }
+  .row { height: 95px; background: #fff; border: 1px solid #EEDEDA; border-radius: 14px; margin-bottom: 10px; display: flex; gap: 14px; padding: 14px 16px; }
+  .drop { width: 34px; height: 42px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9A3B33; flex-shrink: 0; }
+  .row .d { font-size: 14px; font-weight: 700; } .row .p { margin-top: 6px; width: 70px; height: 20px; border-radius: 20px; background: #F3EAE8; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(36,26,24,.45); z-index: 5; }
+  .pop { position: absolute; z-index: 6; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; box-shadow: 0 10px 28px rgba(90,50,45,.18); padding: 6px; }
+  .opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; color: #3A2C29; }
+  .opt.on { background: #F3EAE8; color: #9A3B33; font-weight: 600; }
+  .ck { color: #9A3B33; font-weight: 700; }
+  .cnt { font-size: 11px; color: #7A6360; font-variant-numeric: tabular-nums; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #FBF6F5; border-radius: 20px 20px 0 0; padding: 10px 20px 26px; box-shadow: 0 -10px 30px rgba(36,26,24,.2); }
+  .grab { width: 38px; height: 4px; border-radius: 2px; background: #E3C8C3; margin: 0 auto 12px; }
+  .sh-title { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .sh-title span { font-size: 18px; color: #7A6360; font-weight: 400; }
+  .hl { outline: 2px dashed #D98C84; outline-offset: 3px; }
+</style>
+</head>
+<body>
+  <h1>ตัวเลือกปีในส่วนประวัติ — 8 แบบ</h1>
+  <p class="sub">แทนตัวเลือกมาตรฐานของเครื่อง (ที่ iOS กับ Android หน้าตาไม่เหมือนกัน) ด้วยตัวเลือกที่แอปวาดเอง จะได้เหมือนกันทุกเครื่องและเข้าธีม
+    ตัวอย่างใช้ปีจากภาพที่ส่งมา (2569, 2568, 2567, 2566, 2557, 2556) แต่ละแบบโชว์ตอนเปิดเมนูอยู่ เส้นประชี้ส่วนที่เปลี่ยน</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const YEARS = [['2569', 3], ['2568', 4], ['2567', 3], ['2566', 3], ['2557', 1], ['2556', 1]];
+const CHEV = `<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>`;
+const mission = `<div class="mission"><div class="h">🏅 ภารกิจถัดไป</div><div class="t">เข็มที่ระลึก ครั้งที่ 24</div><div class="s">อีก 8 ครั้ง</div></div>`;
+const chips = `<div class="chips"><span class="chip c-all">ทั้งหมด</span><span class="chip c-w">โลหิตรวม</span><span class="chip c-c">พลาสมา/เกล็ดเลือด</span></div>`;
+const rows = [['4 ก.ค. 2569'], ['12 มี.ค. 2569'], ['3 ธ.ค. 2568']].map(([d]) => `<div class="row"><div class="drop"></div><div><div class="d">${d}</div><div class="p"></div></div></div>`).join('');
+const head = (right) => `<div class="hhead"><div class="htitle">ประวัติบริจาคโลหิต</div>${right}</div>`;
+const selBtn = (label = 'ทุกปี', open = true) => `<span class="sel ${open ? 'open' : ''}">${label} ${CHEV}</span>`;
+const list = (withCount = false, sel = 'all') => [['all', 'ทุกปี', 15], ...YEARS.map(([y, c]) => [y, 'ปี ' + y, c])]
+  .map(([k, l, c]) => `<div class="opt ${k === sel ? 'on' : ''}"><span>${l}</span>${withCount ? `<span class="cnt">${c} ครั้ง</span>` : ''}${k === sel ? '<span class="ck">✓</span>' : (withCount ? '' : '<span></span>')}</div>`).join('');
+
+const variants = [
+  { label: '1. เมนูเด้งใต้ช่อง', desc: 'กดแล้วเมนูเล็กเด้งลงมาใต้ช่องเลือก ขาวขอบมน เงาเบา ตัวที่เลือกอยู่พื้นชมพูอ่อน + ✓ หน้าตาเดียวกับเมนู ⋮ ในการ์ดประวัติ',
+    body: () => mission + head(selBtn()) + chips + rows + `<div class="pop hl" style="top:${24 + 120 + 30}px;right:20px;min-width:150px;">${list()}</div>` },
+  { label: '2. เมนูเด้ง + จำนวนครั้งต่อปี', desc: 'เหมือนแบบ 1 แต่บอกจำนวนครั้งของแต่ละปีด้วย รู้ก่อนเลือกเลยว่าปีไหนมีกี่รายการ',
+    body: () => mission + head(selBtn()) + chips + rows + `<div class="pop hl" style="top:${24 + 120 + 30}px;right:20px;min-width:190px;">${list(true)}</div>` },
+  { label: '3. แผ่นเลื่อนขึ้นจากด้านล่าง', desc: 'กดแล้วแผ่นเลื่อนขึ้นจากขอบล่าง พื้นหลังมืดลง มีขีดจับด้านบน ปุ่มแต่ละปีใหญ่ กดง่ายด้วยนิ้วโป้ง แบบที่แอปมือถือนิยม',
+    body: () => mission + head(selBtn()) + chips + rows + `<div class="scrim"></div><div class="sheet hl"><div class="grab"></div><div class="sh-title">เลือกปี<span>✕</span></div>${list(true)}</div>` },
+  { label: '4. แผ่นล่าง + ปุ่มปีเป็นตาราง', desc: 'แผ่นเลื่อนขึ้นเหมือนแบบ 3 แต่ปีเรียงเป็นตาราง 3 คอลัมน์ กินที่น้อย เห็นทุกปีในทีเดียวแม้มีหลายปี',
+    body: () => mission + head(selBtn()) + chips + rows + `<div class="scrim"></div><div class="sheet hl"><div class="grab"></div><div class="sh-title">เลือกปี<span>✕</span></div>
+      <div class="opt on" style="justify-content:center;margin-bottom:8px;border:1px solid #E3C8C3;">ทุกปี · 15 ครั้ง</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">${YEARS.map(([y, c]) => `<div style="background:#fff;border:1px solid #EEDEDA;border-radius:12px;padding:10px 0;text-align:center;"><div style="font-size:14px;font-weight:600;">${y}</div><div class="cnt">${c} ครั้ง</div></div>`).join('')}</div></div>` },
+  { label: '5. ชิปปีเลื่อนแนวนอน (ไม่มีเมนู)', desc: 'ไม่มีเมนูเด้งเลย ปีทั้งหมดเป็นชิปแถวเดียวเลื่อนซ้ายขวาได้ อยู่ใต้ชิปประเภท กดครั้งเดียวจบ แต่เพิ่มอีกหนึ่งแถว',
+    body: () => mission + head('') + chips + `<div class="chips hl" style="overflow:hidden;">${['ทุกปี', ...YEARS.map(y => y[0])].map((y, i) => `<span class="chip" style="background:${i === 0 ? '#3A2C29' : '#fff'};color:${i === 0 ? '#FFF7F5' : '#5C4A46'};border:1px solid ${i === 0 ? '#3A2C29' : '#E3C8C3'};">${y}</span>`).join('')}</div>` + rows },
+  { label: '6. ปุ่มเลื่อนปี ‹ 2569 ›', desc: 'แทนช่องเลือกด้วยลูกศรซ้ายขวาเลื่อนทีละปี ตรงกลางกดแล้วกลับเป็น "ทุกปี" เหมาะกับดูย้อนทีละปี แต่ข้ามไปปีไกล ๆ ต้องกดหลายที',
+    body: () => mission + head(`<span class="sel hl" style="padding:3px 4px;gap:2px;"><span style="padding:2px 8px;color:#9A3B33;font-size:15px;">‹</span><span style="font-weight:600;">ปี 2569</span><span style="padding:2px 8px;color:#9A3B33;font-size:15px;">›</span></span>`) + chips + rows },
+  { label: '7. แผ่นล่าง + กราฟแท่งต่อปี', desc: 'แผ่นเลื่อนขึ้นแบบ 3 แต่แต่ละปีมีแท่งเล็ก ๆ บอกจำนวนครั้ง เห็นภาพว่าปีไหนบริจาคบ่อย ช่วยตัดสินใจว่าจะดูปีไหน',
+    body: () => mission + head(selBtn()) + chips + rows + `<div class="scrim"></div><div class="sheet hl"><div class="grab"></div><div class="sh-title">เลือกปี<span>✕</span></div>
+      <div class="opt on"><span>ทุกปี</span><span class="cnt">15 ครั้ง</span><span class="ck">✓</span></div>
+      ${YEARS.map(([y, c]) => `<div class="opt"><span style="width:62px;">ปี ${y}</span><span style="flex:1;height:8px;border-radius:4px;background:#F3EAE8;overflow:hidden;"><i style="display:block;height:100%;width:${c / 4 * 100}%;background:#C9786F;border-radius:4px;"></i></span><span class="cnt" style="width:44px;text-align:right;">${c} ครั้ง</span></div>`).join('')}</div>` },
+  { label: '8. รวมเป็นปุ่ม "ตัวกรอง" เดียว', desc: 'ย้ายทั้งประเภทและปีเข้าไปในแผ่นเดียว หัวข้อประวัติเหลือปุ่ม "ตัวกรอง" ปุ่มเดียว หน้าโล่งสุด แต่ต้องกดเพิ่มอีกขั้นถึงจะกรองประเภทได้',
+    body: () => mission + head(`<span class="sel hl">☰ ตัวกรอง</span>`) + rows + `<div class="scrim"></div><div class="sheet hl"><div class="grab"></div><div class="sh-title">ตัวกรอง<span>✕</span></div>
+      <div style="font-size:12px;color:#7A6360;margin-bottom:6px;">ประเภท</div>${chips}
+      <div style="font-size:12px;color:#7A6360;margin:4px 0 6px;">ปี</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${['ทุกปี', ...YEARS.map(y => y[0])].map((y, i) => `<span class="chip" style="background:${i === 0 ? '#3A2C29' : '#fff'};color:${i === 0 ? '#FFF7F5' : '#5C4A46'};border:1px solid ${i === 0 ? '#3A2C29' : '#E3C8C3'};">${y}</span>`).join('')}</div>
+      <div style="margin-top:16px;background:#9A3B33;color:#FFF7F5;text-align:center;border-radius:12px;padding:12px;font-size:13px;font-weight:600;">แสดง 15 รายการ</div></div>` },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p>
+    <div class="stage"><div class="scaler"><div class="phone">${v.body()}</div></div></div>`;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

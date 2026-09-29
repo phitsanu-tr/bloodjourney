@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ท่าเปิดปิดฟอร์มบันทึก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 26px; max-width: 740px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .panel.ref .tag { background: #7A6360; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 66px; margin: 0; }
+  .ctl { display: flex; justify-content: center; gap: 8px; padding: 8px 0 0; }
+  .ctl button { font-family: inherit; font-size: 11.5px; border: 1px solid #E3C8C3; background: #fff; color: #9A3B33; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .phone { width: 250px; height: 440px; border-radius: 22px; background: #FBF6F5; position: relative; overflow: hidden; box-shadow: 0 0 0 1px #E3C8C3; padding: 14px; }
+
+  .hero { height: 128px; border-radius: 14px; background: linear-gradient(135deg,#B24A40,#8A2F28); color: #FFF7F5; padding: 12px 14px; margin-bottom: 10px; }
+  .hero .l { font-size: 8.5px; opacity: .85; } .hero .n { font-size: 28px; font-weight: 700; line-height: 1.15; } .hero .n small { font-size: 11px; font-weight: 500; }
+  .cta { height: 44px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 10.5px; font-weight: 600; margin-bottom: 10px; position: relative; }
+  .cta b { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg,#B24A40,#8A2F28); color: #FFF7F5; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 400; }
+  .card { height: 58px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; margin-bottom: 8px; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(36,26,24,.45); opacity: 0; pointer-events: none; }
+  .wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 14px; pointer-events: none; }
+  .dlg { width: 100%; background: #FBF6F5; border-radius: 16px; padding: 14px; box-shadow: 0 14px 36px rgba(36,26,24,.25); opacity: 0; visibility: hidden; }
+  .dt { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .fl { font-size: 8.5px; color: #7A6360; margin-bottom: 4px; }
+  .fi { height: 28px; border: 1px solid #E3C8C3; border-radius: 8px; background: #fff; margin-bottom: 8px; font-size: 9.5px; display: flex; align-items: center; padding: 0 8px; color: #3A2C29; }
+  .seg { display: flex; gap: 5px; margin-bottom: 10px; } .seg span { flex: 1; text-align: center; font-size: 9px; padding: 6px 0; border-radius: 8px; background: #F3EAE8; color: #9A3B33; font-weight: 600; } .seg span.on { background: #9A3B33; color: #FFF7F5; }
+  .btns { display: flex; gap: 6px; } .btns span { flex: 1; text-align: center; font-size: 10px; font-weight: 600; padding: 8px 0; border-radius: 9px; } .b1 { border: 1px solid #E3C8C3; color: #9A3B33; background: #fff; } .b2 { background: #9A3B33; color: #FFF7F5; }
+  .toast { position: absolute; left: 50%; bottom: 22px; transform: translate(-50%, 16px); background: #2E6B4F; color: #fff; font-size: 9.5px; padding: 6px 12px; border-radius: 20px; opacity: 0; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .phone.toasting .toast { opacity: 1; transform: translate(-50%, 0); }
+  .tap { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: rgba(154,59,51,.35); transform: scale(0); pointer-events: none; }
+  .tap.go { animation: tap 380ms ease-out; }
+  @keyframes tap { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  /* open state (shown) */
+  .phone.open .scrim { opacity: 1; }
+  .phone.open .dlg { opacity: 1; visibility: visible; transform: none; }
+
+  /* v0: instant */
+  /* v1: fade + scale */
+  .v1 .dlg { transform: scale(.96); }
+  .v1.anim .dlg { transition: opacity 180ms ease, transform 180ms cubic-bezier(.2,.8,.2,1), visibility 0s linear 0s; }
+  .v1.anim .scrim { transition: opacity 180ms ease; }
+  .v1.anim:not(.open) .dlg { transition: opacity 130ms ease, transform 130ms ease-in, visibility 0s linear 130ms; }
+  /* v2: fade + rise */
+  .v2 .dlg { transform: translateY(14px); }
+  .v2.anim .dlg { transition: opacity 200ms ease, transform 200ms cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  .v2.anim .scrim { transition: opacity 200ms ease; }
+  .v2.anim:not(.open) .dlg { transform: translateY(8px); transition: opacity 140ms ease, transform 140ms ease-in, visibility 0s linear 140ms; }
+  /* v3: pop with slight overshoot */
+  .v3 .dlg { transform: scale(.88); }
+  .v3.anim .dlg { transition: opacity 160ms ease, transform 280ms cubic-bezier(.34,1.56,.64,1), visibility 0s; }
+  .v3.anim .scrim { transition: opacity 180ms ease; }
+  .v3.anim:not(.open) .dlg { transform: scale(.94); transition: opacity 130ms ease, transform 130ms ease-in, visibility 0s linear 130ms; }
+  /* v4: slide up from bottom (sheet-like) */
+  .v4 .dlg { transform: translateY(320px); opacity: 1; }
+  .v4.anim .dlg { transition: transform 240ms cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  .v4.anim .scrim { transition: opacity 220ms ease; }
+  .v4.anim:not(.open) .dlg { transition: transform 170ms cubic-bezier(.5,0,.9,.6), visibility 0s linear 170ms; }
+  /* v5: grows out of the CTA row */
+  .v5 .dlg { transform-origin: 50% 12%; transform: scale(.3) translateY(-60px); }
+  .v5.anim .dlg { transition: opacity 200ms ease, transform 240ms cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  .v5.anim .scrim { transition: opacity 200ms ease; }
+  .v5.anim:not(.open) .dlg { transition: opacity 150ms ease, transform 170ms ease-in, visibility 0s linear 170ms; }
+  /* v6: fade only */
+  .v6.anim .dlg { transition: opacity 150ms ease, visibility 0s; }
+  .v6.anim .scrim { transition: opacity 150ms ease; }
+  .v6.anim:not(.open) .dlg { transition: opacity 120ms ease, visibility 0s linear 120ms; }
+  .anim:not(.open) .scrim { transition-duration: 160ms; }
+  @media (prefers-reduced-motion: reduce) { .phone * { transition-duration: 1ms !important; animation-duration: 1ms !important; } }
+</style>
+</head>
+<body>
+  <h1>ท่าเปิด–ปิดหน้าต่าง "บันทึกบริจาคโลหิต" — 7 แบบ</h1>
+  <p class="sub">แต่ละช่องเล่นวนเอง: แตะ "บันทึกบริจาคโลหิต" → หน้าต่างเปิด → กด "บันทึก" → หน้าต่างปิดและมีแจ้งเตือนสีเขียว
+    ท่าที่เลือกจะใช้กับทุกหน้าต่างกลางจอในแอปได้ (โปรไฟล์ ตั้งค่า ยืนยันลบ ฯลฯ) ตอนนี้ในแอปเป็นแบบแรก</p>
+  <div class="grid" id="grid"></div>
+<script>
+const variants = [
+  { cls: 'v0', ref: true, label: 'ตอนนี้: เด้งทันที', desc: 'หน้าต่างกับพื้นมืดโผล่และหายวับในเฟรมเดียว ใช้งานได้ แต่ดูแข็ง และตอนปิดแทบไม่รู้ว่ากลับมาหน้าไหน' },
+  { cls: 'v1', label: '1. จางเข้า + ขยายเล็กน้อย', desc: 'หน้าต่างจางเข้าพร้อมขยายจาก 96% เป็นเต็ม (0.18 วิ) ปิดย้อนกลับเร็วกว่า (0.13 วิ) เรียบ ทันสมัย แบบที่ iOS/Android ใช้กับกล่องกลางจอ' },
+  { cls: 'v2', label: '2. จางเข้า + ลอยขึ้นนิดหน่อย', desc: 'หน้าต่างลอยขึ้น 14px พร้อมจางเข้า (0.2 วิ) ปิดแล้วจมลงนิดเดียวแล้วหาย นุ่ม รู้สึกเบา เข้ากับการ์ดอื่นในแอป' },
+  { cls: 'v3', label: '3. เด้งออกมาแบบสปริง', desc: 'ขยายจาก 88% แล้วเกินไปนิดเด้งกลับ (0.28 วิ) มีชีวิตชีวา สนุก แต่ถ้าเปิดบ่อยอาจรู้สึกเยอะ' },
+  { cls: 'v4', label: '4. เลื่อนขึ้นจากด้านล่าง', desc: 'เลื่อนขึ้นจากขอบล่างเหมือนแผ่นตัวกรอง (0.24 วิ) ท่าเดียวกันทั้งแอป แต่หน้าต่างอยู่กลางจอ เลยดูแปลกนิด ๆ ที่มาจากข้างล่าง' },
+  { cls: 'v5', label: '5. ขยายออกจากปุ่มที่กด', desc: 'หน้าต่างงอกออกมาจากแถว "บันทึกบริจาคโลหิต" ที่แตะ ปิดแล้วหดกลับไปทางเดิม เชื่อมโยงชัดที่สุด แต่ทำยาก เพราะหน้าต่างเปิดได้จากหลายที่' },
+  { cls: 'v6', label: '6. จางอย่างเดียว', desc: 'ไม่มีการขยับ แค่จางเข้า–ออก (0.15 วิ) เบาที่สุด เร็วที่สุด ไม่รบกวนสายตา' },
+];
+const phoneHTML = () => `
+  <div class="hero"><div class="l">บริจาคโลหิตสะสมทั้งหมด</div><div class="n">16 <small>ครั้ง</small></div></div>
+  <div class="cta"><b>+</b>บันทึกบริจาคโลหิต</div>
+  <div class="card"></div><div class="card"></div><div class="card"></div>
+  <div class="scrim"></div>
+  <div class="wrap"><div class="dlg">
+    <div class="dt"><span>ระบุข้อมูลการบริจาคโลหิต</span><span style="font-weight:400">✕</span></div>
+    <div class="fl">วันที่บริจาค</div><div class="fi">28 ก.ย. 2569</div>
+    <div class="fl">ประเภท</div><div class="seg"><span class="on">โลหิตรวม</span><span>พลาสมา/เกล็ดเลือด</span></div>
+    <div class="fl">สถานที่ (ไม่บังคับ)</div><div class="fi" style="color:#B7A5A1">เช่น สภากาชาดไทย</div>
+    <div class="btns"><span class="b1">ยกเลิก</span><span class="b2 save">บันทึก</span></div>
+  </div></div>
+  <div class="toast">✓ บันทึกเรียบร้อยแล้ว</div>
+  <span class="tap"></span>`;
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel' + (v.ref ? ' ref' : '');
+  panel.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p>
+    <div class="ctl"><button type="button" data-a="replay">เล่นใหม่</button><button type="button" data-a="pause">หยุด</button></div>
+    <div class="stage"><div class="phone ${v.cls} ${v.cls === 'v0' ? '' : 'anim'}">${phoneHTML()}</div></div>`;
+  grid.appendChild(panel);
+  const ph = panel.querySelector('.phone');
+  const tap = ph.querySelector('.tap');
+  const tapAt = (el) => { const r = el.getBoundingClientRect(), p = ph.getBoundingClientRect(); tap.style.left = (r.left - p.left + r.width / 2 - 11) + 'px'; tap.style.top = (r.top - p.top + r.height / 2 - 11) + 'px'; tap.classList.remove('go'); void tap.offsetWidth; tap.classList.add('go'); };
+  let paused = false, token = 0;
+  async function cycle(my) {
+    ph.classList.remove('open', 'toasting');
+    await sleep(900); if (my !== token) return;
+    tapAt(ph.querySelector('.cta')); await sleep(120);
+    ph.classList.add('open');
+    await sleep(1700); if (my !== token) return;
+    tapAt(ph.querySelector('.save')); await sleep(120);
+    ph.classList.remove('open'); ph.classList.add('toasting');
+    await sleep(1400); if (my !== token) return;
+    ph.classList.remove('toasting');
+    if (!paused) cycle(my);
+  }
+  const start = () => { token++; cycle(token); };
+  panel.querySelector('[data-a="replay"]').onclick = () => { paused = false; panel.querySelector('[data-a="pause"]').textContent = 'หยุด'; start(); };
+  panel.querySelector('[data-a="pause"]').onclick = (e) => { paused = !paused; e.target.textContent = paused ? 'เล่นต่อ' : 'หยุด'; if (!paused) start(); };
+  start();
+});
+</script>
+</body>
+</html>

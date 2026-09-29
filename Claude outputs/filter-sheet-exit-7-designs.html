@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ท่าปิดแผ่นตัวกรอง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 auto 26px; max-width: 720px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11.5px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .panel.ref .tag { background: #7A6360; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 66px; margin: 0; }
+  .ctl { display: flex; justify-content: center; gap: 8px; padding: 8px 0 0; }
+  .ctl button { font-family: inherit; font-size: 11.5px; border: 1px solid #E3C8C3; background: #fff; color: #9A3B33; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+  .ctl button:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
+  .stage { padding: 12px 0 18px; display: flex; justify-content: center; }
+  .phone { width: 250px; height: 420px; border-radius: 22px; background: #FBF6F5; position: relative; overflow: hidden; box-shadow: 0 0 0 1px #E3C8C3; padding: 14px 14px; }
+
+  .mission { height: 58px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; margin-bottom: 14px; }
+  .hh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: 600; }
+  .fbtn { font-size: 9.5px; font-weight: 600; color: #9A3B33; border: 1px solid #9A3B33; background: #FBF1EF; border-radius: 7px; padding: 3px 7px; position: relative; }
+  .row { height: 58px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; margin-bottom: 8px; display: flex; gap: 10px; padding: 10px; }
+  .drop { width: 22px; height: 28px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9A3B33; }
+  .bar { height: 9px; width: 90px; border-radius: 5px; background: #F3EAE8; margin-top: 4px; }
+
+  .scrim { position: absolute; inset: 0; background: rgba(36,26,24,.45); opacity: 0; pointer-events: none; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #FBF6F5; border-radius: 16px 16px 0 0; padding: 8px 14px 14px; box-shadow: 0 -8px 22px rgba(36,26,24,.2); transform: translateY(105%); }
+  .grab { width: 28px; height: 3px; border-radius: 2px; background: #E3C8C3; margin: 0 auto 8px; }
+  .st { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; margin-bottom: 8px; }
+  .st small { font-size: 9px; color: #7A6360; font-weight: 400; } .st .clr { margin-left: auto; font-size: 9.5px; color: #9A3B33; text-decoration: underline; font-weight: 600; } .st .x { font-size: 13px; font-weight: 400; }
+  .lbl { font-size: 9px; color: #7A6360; margin: 2px 0 5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .chip { font-size: 9px; padding: 4px 8px; border-radius: 20px; background: #F3EAE8; color: #9A3B33; font-weight: 600; }
+  .chip.on { background: #9A3B33; color: #FFF7F5; } .chip.y { background: #fff; border: 1px solid #E3C8C3; color: #5C4A46; font-weight: 400; } .chip.y.on { background: #3A2C29; border-color: #3A2C29; color: #FFF7F5; font-weight: 600; }
+  .done { margin-top: 10px; background: #9A3B33; color: #FFF7F5; text-align: center; border-radius: 9px; padding: 8px; font-size: 11px; font-weight: 600; position: relative; overflow: hidden; }
+
+  /* open state shared */
+  .phone.open .scrim { opacity: 1; }
+  .phone.open .sheet { transform: translateY(0); }
+  .phone .sheet, .phone .scrim { transition: none; }
+  .phone.animating-in .sheet { transition: transform 220ms cubic-bezier(.2,.8,.2,1); }
+  .phone.animating-in .scrim { transition: opacity 220ms ease; }
+
+  /* v0 reference: no exit animation */
+  .v0.closing .sheet, .v0.closing .scrim { transition: none; }
+  /* v1: slide down (mirror of open) */
+  .v1.closing .sheet { transition: transform 220ms cubic-bezier(.4,0,1,1); }
+  .v1.closing .scrim { transition: opacity 220ms ease; }
+  /* v2: quick slide down, scrim fades slightly slower */
+  .v2.closing .sheet { transition: transform 160ms cubic-bezier(.5,0,.9,.6); }
+  .v2.closing .scrim { transition: opacity 260ms ease 40ms; }
+  /* v3: fade + small drop */
+  .v3.closing .sheet { transition: transform 200ms ease, opacity 200ms ease; }
+  .v3.closing:not(.open) .sheet { transform: translateY(24px) !important; opacity: 0; }
+  .v3.closing .scrim { transition: opacity 200ms ease; }
+  /* v4: small lift then drop (anticipation) */
+  .v4.closing:not(.open) .sheet { animation: liftDrop 300ms cubic-bezier(.4,0,.6,1) forwards; }
+  @keyframes liftDrop { 0% { transform: translateY(0); } 25% { transform: translateY(-8px); } 100% { transform: translateY(105%); } }
+  .v4.closing .scrim { transition: opacity 300ms ease; }
+  /* v5: shrink back into the filter button */
+  .v5 .sheet { transform-origin: 88% -150px; }
+  .v5.closing .sheet { transition: transform 260ms cubic-bezier(.4,0,.2,1), opacity 220ms ease 40ms; }
+  .v5.closing:not(.open) .sheet { transform: scale(.08) !important; opacity: 0; }
+  .v5.closing .scrim { transition: opacity 260ms ease; }
+  .v5 .fbtn.pulse { animation: pulse 380ms ease 200ms; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(154,59,51,.45); } 100% { box-shadow: 0 0 0 10px rgba(154,59,51,0); } }
+  /* v6: "เสร็จ" confirms with a tick, then slides down */
+  .done .tick { display: none; }
+  .v6 .done .tick { display: inline-block; width: 0; overflow: hidden; vertical-align: bottom; transition: width 160ms ease; }
+  .v6.ticking .done .tick { width: 14px; }
+  .v6.ticking .done { background: #7E2F28; }
+  .v6.closing .sheet { transition: transform 220ms cubic-bezier(.4,0,1,1); }
+  .v6.closing .scrim { transition: opacity 220ms ease; }
+
+  .press { animation: press 180ms ease; }
+  @keyframes press { 50% { transform: scale(.94); } }
+  @media (prefers-reduced-motion: reduce) { .phone * { transition-duration: 1ms !important; animation-duration: 1ms !important; } }
+</style>
+</head>
+<body>
+  <h1>ท่าตอนปิดแผ่นตัวกรอง — 7 แบบ</h1>
+  <p class="sub">แต่ละช่องเล่นวนเอง: แผ่นเปิดขึ้น → ค้างครู่หนึ่ง → กด "เสร็จ" แล้วปิด (กด ✕ หรือแตะพื้นที่มืดก็ใช้ท่าเดียวกัน)
+    กด "เล่นใหม่" เพื่อดูท่าปิดอีกครั้ง หรือ "หยุด/เล่นต่อ" เพื่อหยุดวน ตอนนี้ในแอปเป็นแบบแรก (ปิดแล้วหายทันที)</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const variants = [
+  { cls: 'v0', ref: true, label: 'ตอนนี้: หายทันที', desc: 'เปิดมีท่าเลื่อนขึ้น แต่ปิดแล้วแผ่นกับพื้นที่มืดหายวับไปทันที ดูสะดุดนิดหน่อยเพราะเข้ากับออกไม่เหมือนกัน', dur: 0 },
+  { cls: 'v1', label: '1. เลื่อนลงกลับที่เดิม', desc: 'กลับทางของตอนเปิด แผ่นเลื่อนลงไปใต้จอ พื้นที่มืดค่อย ๆ จาง 0.22 วินาที เรียบ คาดเดาได้ แบบที่แอปส่วนใหญ่ใช้', dur: 220 },
+  { cls: 'v2', label: '2. เลื่อนลงเร็ว พื้นมืดจางตามทีหลัง', desc: 'แผ่นลงเร็วกว่า (0.16 วินาที) ให้ความรู้สึกฉับไว พื้นที่มืดจางตามหลังนิดนึง นุ่มขึ้นแต่ไม่ช้า', dur: 300 },
+  { cls: 'v3', label: '3. จางหาย + ลงนิดเดียว', desc: 'แผ่นขยับลงแค่นิดเดียวพร้อมจางหายไป เบาและสุภาพ เหมาะถ้าไม่อยากให้มีการเคลื่อนไหวเยอะ', dur: 200 },
+  { cls: 'v4', label: '4. ยกขึ้นนิดแล้วดิ่งลง', desc: 'แผ่นยกขึ้นเล็กน้อยก่อนดิ่งลง (0.3 วินาที) มีชีวิตชีวา สนุกขึ้น แต่ช้ากว่าแบบอื่นเล็กน้อย', dur: 300 },
+  { cls: 'v5', label: '5. หดกลับเข้าปุ่มตัวกรอง', desc: 'แผ่นหดเล็กลงไปทางปุ่ม "ตัวกรอง" แล้วปุ่มกระเพื่อมทีหนึ่ง บอกว่าตัวกรองไปอยู่ที่ปุ่มนั้นแล้ว เด่นสุดแต่ซับซ้อนสุด', dur: 380 },
+  { cls: 'v6', label: '6. เสร็จขึ้น ✓ แล้วเลื่อนลง', desc: 'กด "เสร็จ" แล้วปุ่มมีเครื่องหมาย ✓ ขึ้นแวบหนึ่ง จากนั้นเลื่อนลงแบบแบบ 1 ได้ยืนยันว่าบันทึกตัวกรองแล้ว (✕ ข้ามขั้น ✓)', dur: 220, tick: true },
+];
+
+const phoneHTML = () => `
+  <div class="mission"></div>
+  <div class="hh"><span>ประวัติบริจาคโลหิต</span><span class="fbtn">ตัวกรอง 2</span></div>
+  ${'<div class="row"><div class="drop"></div><div><div class="bar"></div><div class="bar" style="width:50px"></div></div></div>'.repeat(4)}
+  <div class="scrim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="st">ตัวกรอง <small>2 ครั้ง</small><span class="clr">ล้างตัวกรอง</span><span class="x">✕</span></div>
+    <div class="lbl">ประเภท</div>
+    <div class="chips"><span class="chip">ทั้งหมด</span><span class="chip on">โลหิตรวม</span><span class="chip" style="background:#EFE3F0;color:#6B3E78;">พลาสมา</span></div>
+    <div class="lbl">ปี</div>
+    <div class="chips"><span class="chip y">ทุกปี</span><span class="chip y on">2569</span><span class="chip y">2568</span><span class="chip y">2567</span></div>
+    <div class="done">เสร็จ<span class="tick"> ✓</span></div>
+  </div>`;
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel' + (v.ref ? ' ref' : '');
+  panel.innerHTML = `<div class="tag">${v.label}</div><p class="desc">${v.desc}</p>
+    <div class="ctl"><button type="button" data-a="replay">เล่นใหม่</button><button type="button" data-a="pause">หยุด</button></div>
+    <div class="stage"><div class="phone ${v.cls}">${phoneHTML()}</div></div>`;
+  grid.appendChild(panel);
+  const ph = panel.querySelector('.phone');
+  const done = ph.querySelector('.done');
+  const fbtn = ph.querySelector('.fbtn');
+  let paused = false, token = 0;
+  async function cycle(my) {
+    // open
+    ph.className = `phone ${v.cls}`;
+    await sleep(60);
+    ph.classList.add('animating-in', 'open');
+    await sleep(1500); if (my !== token) return;
+    // press "เสร็จ"
+    done.classList.remove('press'); void done.offsetWidth; done.classList.add('press');
+    if (v.tick) { ph.classList.add('ticking'); await sleep(320); if (my !== token) return; }
+    await sleep(140);
+    ph.classList.remove('animating-in');
+    ph.classList.add('closing');
+    void ph.offsetWidth;
+    ph.classList.remove('open');
+    if (v.cls === 'v5') { fbtn.classList.remove('pulse'); void fbtn.offsetWidth; fbtn.classList.add('pulse'); }
+    await sleep(Math.max(v.dur, 0) + 1000); if (my !== token) return;
+    ph.classList.remove('ticking');
+    if (!paused) cycle(my);
+  }
+  const start = () => { token++; cycle(token); };
+  panel.querySelector('[data-a="replay"]').onclick = () => { paused = false; panel.querySelector('[data-a="pause"]').textContent = 'หยุด'; start(); };
+  panel.querySelector('[data-a="pause"]').onclick = (e) => { paused = !paused; e.target.textContent = paused ? 'เล่นต่อ' : 'หยุด'; if (!paused) start(); };
+  start();
+});
+</script>
+</body>
+</html>

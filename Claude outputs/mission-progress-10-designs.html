@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แถบภารกิจ — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Mitr', 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #7A6360; margin: 0 0 30px; max-width: 660px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1180px; margin: 0 auto; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .panel.ref .tag { background: #7A6360; }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #7A6360; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 58px; }
+  .stage { flex: 1; padding: 14px 14px 18px; display: flex; justify-content: center; }
+  .phone { width: 100%; max-width: 270px; background: #FBF6F5; border-radius: 14px; padding: 12px; border: 1px solid #EEDEDA; }
+
+  /* hero card (context, identical in every panel) */
+  .hero { background: linear-gradient(135deg, #B24A40 0%, #8A2F28 100%); border-radius: 14px; padding: 13px 14px; color: #FFF7F5; }
+  .hero .lbl { font-size: 9.5px; opacity: .85; }
+  .hero .big { font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .hero .big small { font-size: 11px; font-weight: 500; }
+  .hero .div { border-top: 1px solid rgba(255,247,245,.25); margin: 9px 0 8px; }
+  .hero .cd { font-size: 12px; font-weight: 700; }
+  .hero .date { font-size: 8.5px; color: rgba(255,247,245,.85); }
+  .hero .bar { height: 4px; border-radius: 3px; background: rgba(255,247,245,.2); margin-top: 7px; overflow: hidden; }
+  .hero .bar i { display: block; height: 100%; width: 22%; background: #FFF7F5; border-radius: 3px; }
+
+  .cta { margin-top: 9px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 600; color: #3A2C29; }
+  .cta b { width: 22px; height: 22px; border-radius: 7px; background: #9A3B33; color: #FFF7F5; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; }
+
+  /* mission card (the part being redesigned) */
+  .mission { margin-top: 9px; background: #fff; border: 1px solid #EEDEDA; border-radius: 12px; padding: 10px 11px; }
+  .mhead { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 600; color: #9A3B33; }
+  .mtext { font-size: 10px; color: #3A2C29; margin: 5px 0 7px; }
+  .mbar { height: 5px; border-radius: 3px; background: #F3EAE8; overflow: hidden; }
+  .mbar i { display: block; height: 100%; width: 42.86%; background: #9A3B33; border-radius: 3px; }
+  .flex { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .count { font-size: 9.5px; font-weight: 700; color: #9A3B33; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .count span { color: #7A6360; font-weight: 600; }
+  .hl { outline: 2px dashed #D98C84; outline-offset: 3px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <h1>แถบความคืบหน้าในการ์ดภารกิจ — 10 แบบ</h1>
+  <p class="sub">ตัวอย่างใช้ข้อมูลจริง: บริจาคแล้ว 3 ครั้ง เป้าหมายถัดไปคือ "เข็มที่ระลึก ครั้งที่ 7" และอยู่ในช่วงรออีก 70 วัน
+    การ์ดแดงด้านบนเหมือนกันทุกแบบ ส่วนที่เปลี่ยนคือการ์ด "ภารกิจถัดไป" เท่านั้น เส้นประสีชมพูชี้จุดที่ต่างจากแบบเดิม</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const AWARD = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"/></svg>`;
+const DROP = (fill, stroke) => `<svg width="13" height="16" viewBox="0 0 24 28"><path d="M12 2 C12 2 4 12.5 4 18 C4 23 7.6 26 12 26 C16.4 26 20 23 20 18 C20 12.5 12 2 12 2 Z" fill="${fill}" stroke="${stroke}" stroke-width="1.8"/></svg>`;
+
+const hero = `
+  <div class="hero">
+    <div class="lbl">บริจาคโลหิตสะสมทั้งหมด</div>
+    <div class="big">3 <small>ครั้ง</small></div>
+    <div class="div"></div>
+    <div class="cd">อีก 70 วัน</div>
+    <div class="date">บริจาคได้อีกครั้ง 7 ธ.ค. 2569</div>
+    <div class="bar"><i></i></div>
+  </div>
+  <div class="cta"><b>+</b> บันทึกบริจาคโลหิต</div>`;
+
+const head = (extra = '') => `<div class="flex"><div class="mhead">${AWARD} ภารกิจถัดไป</div>${extra}</div>`;
+const text = `อีก 4 ครั้ง ถึง "เข็มที่ระลึก ครั้งที่ 7"`;
+const bar = `<div class="mbar"><i></i></div>`;
+
+const variants = [
+  {
+    ref: true,
+    label: "แบบเดิม (อ้างอิง)",
+    desc: "ตอนนี้: ข้อความบอกแค่ว่าเหลืออีกกี่ครั้ง แถบสีแดงบนการ์ดขาว ความหนาและทรงเดียวกับแถบในการ์ดแดง",
+    mission: () => `${head()}<div class="mtext">${text}</div>${bar}`,
+  },
+  {
+    label: "1. \"3/7\" ชิดขวาบรรทัดข้อความ",
+    desc: "เติมตัวเลขเล็ก ๆ ท้ายบรรทัด \"อีก 4 ครั้ง\" แถบเหมือนเดิมทุกอย่าง เปลี่ยนน้อยที่สุด (แบบที่ผมแนะนำ)",
+    mission: () => `${head()}<div class="mtext flex"><span>${text}</span><span class="count hl">3<span>/7</span></span></div>${bar}`,
+  },
+  {
+    label: "2. \"3/7\" ชิดขวาบรรทัดหัวข้อ",
+    desc: "ตัวเลขไปอยู่แถวเดียวกับหัวข้อ \"ภารกิจถัดไป\" แยกจากประโยคด้านล่าง อ่านเป็นสถานะของการ์ดทั้งใบ",
+    mission: () => `${head('<span class="count hl">3<span>/7</span></span>')}<div class="mtext">${text}</div>${bar}`,
+  },
+  {
+    label: "3. ป้ายตัวเลขที่สองปลายแถบ",
+    desc: "ใต้แถบมี \"3 ครั้ง\" ฝั่งซ้าย และ \"7\" ฝั่งขวา บอกทั้งตำแหน่งปัจจุบันและเส้นชัย เหมือนสเกลไม้บรรทัด",
+    mission: () => `${head()}<div class="mtext">${text}</div>${bar}
+      <div class="flex hl" style="margin-top:4px;font-size:8.5px;color:#7A6360;font-variant-numeric:tabular-nums;"><span style="color:#9A3B33;font-weight:700;">3 ครั้ง</span><span>7</span></div>`,
+  },
+  {
+    label: "4. แถบแบ่งเป็นช่องตามจำนวนครั้ง",
+    desc: "แถบแบ่ง 7 ช่อง เติมสี 3 ช่อง นับได้ทันทีว่าผ่านมากี่ครั้ง ทรงต่างจากแถบในการ์ดแดงชัดเจน ⚠ เป้าหลัง ๆ ไกลถึง 72–108 ครั้ง ต้องนับช่องจากเป้าก่อนหน้าแทน (เช่น 60→72 = 12 ช่อง)",
+    mission: () => `${head()}<div class="mtext">${text}</div>
+      <div class="hl" style="display:flex;gap:3px;">${Array.from({ length: 7 }, (_, i) => `<i style="flex:1;height:6px;border-radius:3px;background:${i < 3 ? '#9A3B33' : '#F3EAE8'};"></i>`).join('')}</div>`,
+  },
+  {
+    label: "5. หยดเลือด 7 หยด",
+    desc: "แทนแถบด้วยหยดเลือดเล็ก ๆ 7 หยด เติมสี 3 หยด เข้ากับธีมแอป ⚠ ใช้ได้ดีเฉพาะเป้าใกล้ ๆ เป้าหลัง ๆ ต้องนับจากเป้าก่อนหน้า (สูงสุด 12 หยด)",
+    mission: () => `${head()}<div class="mtext">${text}</div>
+      <div class="hl" style="display:flex;gap:5px;align-items:center;">${Array.from({ length: 7 }, (_, i) => i < 3 ? DROP('#9A3B33', '#9A3B33') : DROP('#FBF6F5', '#E3C8C3')).join('')}</div>`,
+  },
+  {
+    label: "6. แบ่งช่อง + ตัวเลข \"3/7\"",
+    desc: "รวมแบบ 1 กับแบบ 4: แถบแบ่ง 7 ช่อง และมีตัวเลข 3/7 ชิดขวาบรรทัดข้อความ ชัดทั้งสองทาง ⚠ ข้อจำกัดเรื่องจำนวนช่องเหมือนแบบ 4",
+    mission: () => `${head()}<div class="mtext flex"><span>${text}</span><span class="count hl">3<span>/7</span></span></div>
+      <div class="hl" style="display:flex;gap:3px;">${Array.from({ length: 7 }, (_, i) => `<i style="flex:1;height:6px;border-radius:3px;background:${i < 3 ? '#9A3B33' : '#F3EAE8'};"></i>`).join('')}</div>`,
+  },
+  {
+    label: "7. วงแหวนเล็กแทนแถบ",
+    desc: "วงกลมความคืบหน้าขนาดเล็กทางซ้าย มี \"3/7\" อยู่ตรงกลาง ข้อความอยู่ทางขวา ทรงต่างจากแถบในการ์ดแดงโดยสิ้นเชิง",
+    mission: () => {
+      const r = 15, c = 2 * Math.PI * r, p = 3 / 7;
+      return `${head()}<div class="flex" style="justify-content:flex-start;gap:10px;margin-top:6px;">
+        <div class="hl" style="position:relative;width:38px;height:38px;flex-shrink:0;">
+          <svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="19" r="${r}" fill="none" stroke="#F3EAE8" stroke-width="4"/>
+          <circle cx="19" cy="19" r="${r}" fill="none" stroke="#9A3B33" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c * p} ${c}" transform="rotate(-90 19 19)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#9A3B33;font-variant-numeric:tabular-nums;">3/7</div>
+        </div>
+        <div style="font-size:10px;color:#3A2C29;line-height:1.5;">อีก 4 ครั้ง ถึง<br>"เข็มที่ระลึก ครั้งที่ 7"</div></div>`;
+    },
+  },
+  {
+    label: "8. เหรียญที่ปลายแถบ",
+    desc: "มีไอคอนเหรียญวางที่ปลายขวาของแถบเป็นเส้นชัย และ \"3/7\" ชิดขวาบรรทัดข้อความ สื่อว่าแถบนี้วิ่งไปหารางวัล",
+    mission: () => `${head()}<div class="mtext flex"><span>${text}</span><span class="count hl">3<span>/7</span></span></div>
+      <div class="flex hl" style="gap:6px;"><div class="mbar" style="flex:1;"><i></i></div>
+      <span style="width:18px;height:18px;border-radius:50%;background:#FFFBF0;border:1px solid #E9D9A8;color:#8A6B1D;display:flex;align-items:center;justify-content:center;">${AWARD}</span></div>`,
+  },
+  {
+    label: "9. เลขใหญ่ \"3/7\" นำหน้า",
+    desc: "ตัวเลข 3/7 ตัวใหญ่ด้านซ้าย ข้อความเป้าหมายด้านขวา แถบเดิมอยู่ข้างล่าง เน้นตัวเลขมากที่สุด",
+    mission: () => `${head()}<div class="flex hl" style="justify-content:flex-start;gap:9px;margin:6px 0 7px;">
+      <div style="font-size:20px;font-weight:700;color:#9A3B33;line-height:1;font-variant-numeric:tabular-nums;">3<span style="font-size:11px;color:#7A6360;font-weight:600;">/7</span></div>
+      <div style="font-size:9.5px;color:#3A2C29;line-height:1.45;">อีก 4 ครั้ง ถึง<br>"เข็มที่ระลึก ครั้งที่ 7"</div></div>${bar}`,
+  },
+];
+
+const grid = document.getElementById('grid');
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel' + (v.ref ? ' ref' : '');
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="stage"><div class="phone">${hero}<div class="mission">${v.mission()}</div></div></div>`;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>

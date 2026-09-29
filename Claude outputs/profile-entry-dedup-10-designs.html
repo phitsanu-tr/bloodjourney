@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แก้ทางเข้าโปรไฟล์ซ้ำ — 10 แบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F3E9E7; font-family: 'Inter', sans-serif; padding: 28px 16px 60px; color: #241A18; }
+  h1 { font-family: 'Mitr', sans-serif; font-size: 19px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12.5px; color: #8A7370; margin: 0 0 30px; max-width: 640px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1180px; margin: 0 auto; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: #FBF6F5; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(122,42,35,0.10); display: flex; flex-direction: column; }
+  .tag { text-align: center; font-size: 11px; font-weight: 700; padding: 9px 6px; background: #9A3B33; color: #FFF7F5; }
+  .desc { font-size: 10.5px; color: #8A7370; text-align: center; padding: 8px 12px 0; line-height: 1.5; min-height: 58px; }
+  .stage { flex: 1; padding: 16px 16px 20px; display: flex; align-items: flex-start; justify-content: center; }
+  .phone { width: 100%; max-width: 260px; background: #FFF7F5; border-radius: 14px; padding: 14px 14px 16px; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .logo { width: 26px; height: 26px; border-radius: 8px; background: #9A3B33; display: flex; align-items: center; justify-content: center; color: #FFF7F5; flex-shrink: 0; }
+  .brandtext { line-height: 1.2; }
+  .brandtext .name { font-family: 'Mitr','Inter',sans-serif; font-size: 12px; font-weight: 700; color: #3A2C29; }
+  .brandtext .sub2 { font-size: 8.5px; color: #8A7370; }
+  .icons { display: flex; align-items: center; gap: 4px; color: #9A3B33; }
+  .icons svg, .icons .ic { flex-shrink: 0; }
+  .avatarrow { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: #F3EAE8; display: flex; align-items: center; justify-content: center; color: #9A3B33; flex-shrink: 0; font-size: 13px; font-weight: 700; }
+  .greet { font-size: 11.5px; font-weight: 600; color: #3A2C29; }
+  .pills { display: flex; gap: 5px; margin-top: 5px; }
+  .pill { font-size: 8px; font-weight: 600; background: #F3EAE8; color: #9A3B33; padding: 2px 6px; border-radius: 20px; }
+</style>
+</head>
+<body>
+  <h1>ทางเข้าหน้าโปรไฟล์ซ้ำกัน — 10 แบบแก้</h1>
+  <p class="sub">ปัญหาเดิม: ปุ่มรูปคนที่ header (มุมขวาบน) กับรูปอวตาร์/ชื่อในแถวทักทายด้านล่าง เปิด dialog โปรไฟล์เดียวกันทั้งคู่ — 10 แบบนี้คือแนวทางต่าง ๆ ในการเหลือทางเข้าเดียว หรือรวมให้ชัดเจนขึ้น</p>
+  <div class="grid" id="grid"></div>
+
+<script>
+const ICON_USER = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+const ICON_SETTINGS = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+const ICON_MORE = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`;
+const ICON_CHEVRON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
+const ICON_DROP = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z"/></svg>`;
+const ICON_ALERT = `<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>`;
+
+const BRAND = `
+  <div class="brand">
+    <div class="logo">${ICON_DROP}</div>
+    <div class="brandtext"><div class="name">Blood Journey</div><div class="sub2">บันทึกบริจาคโลหิต</div></div>
+  </div>`;
+
+const grid = document.getElementById('grid');
+
+const variants = [
+  {
+    label: "1. ตัดปุ่มโปรไฟล์ที่ header ออก",
+    desc: "เหลือแค่ปุ่มตั้งค่า (เฟือง) ที่ header ทางเข้าโปรไฟล์เหลือจุดเดียวคืออวตาร์/ชื่อด้านล่าง — เปลี่ยนน้อยที่สุด แก้ปัญหาตรงจุด",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons">${ICON_SETTINGS}</div></div>
+        <div class="avatarrow"><div class="avatar">พ</div><div><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+  {
+    label: "2. ตัด header ทั้งคู่ออก ย้ายตั้งค่าไปแถวอวตาร์",
+    desc: "Header เหลือแค่โลโก้/ชื่อแอปล้วน ๆ ไม่มีไอคอนเลย ปุ่มตั้งค่า (เฟือง) ย้ายไปแปะข้างแถวอวตาร์แทน รวมจุดกดทั้งหมดไว้ที่เดียว",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div></div></div>
+        <div class="avatarrow" style="justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;"><div class="avatar">พ</div><div><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+          <div class="icons">${ICON_SETTINGS}</div>
+        </div>
+      </div>`,
+  },
+  {
+    label: "3. รวมเป็นไอคอน \"บัญชี\" เดียวที่ header",
+    desc: "Header เหลือไอคอนเดียว (คน+เฟืองซ้อนกัน) กดแล้วเปิดเมนูเล็กให้เลือก \"โปรไฟล์\" หรือ \"ตั้งค่า\" — แถวอวตาร์ด้านล่างเปลี่ยนเป็นข้อมูลอย่างเดียว ไม่ใช่ปุ่ม",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}
+          <div style="position:relative;">
+            <div class="icons">${ICON_USER}</div>
+            <div style="position:absolute;bottom:-2px;right:-2px;width:11px;height:11px;border-radius:50%;background:#FBF6F5;display:flex;align-items:center;justify-content:center;color:#9A3B33;">${ICON_SETTINGS.replace('width="18" height="18"','width="9" height="9"')}</div>
+          </div>
+        </div>
+        <div class="avatarrow"><div class="avatar">พ</div><div><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+  {
+    label: "4. อวตาร์ตัวจริงขึ้นที่ header แทนไอคอนคนทั่วไป",
+    desc: "ไอคอนคนที่ header เปลี่ยนเป็นรูปโปรไฟล์ของผู้ใช้เอง (วงกลมเล็ก) แตะแล้วเปิดโปรไฟล์เหมือนเดิม ส่วนแถวด้านล่างเปลี่ยนเป็นข้อความล้วน ไม่ใช่ปุ่มซ้ำ",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons"><div class="avatar" style="width:22px;height:22px;font-size:10px;">พ</div>${ICON_SETTINGS}</div></div>
+        <div class="avatarrow"><div class="avatar" style="background:#FBF6F5;border:1.5px dashed #E3C8C3;">พ</div><div><div class="greet" style="cursor:default;">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+  {
+    label: "5. แถวอวตาร์เป็นแค่ข้อมูล header เป็นทางเข้าเดียว",
+    desc: "สลับด้านกับแบบ 1 — เก็บไอคอนคนไว้ที่ header เป็นทางเข้าโปรไฟล์จุดเดียว ส่วนอวตาร์/ชื่อด้านล่างกลายเป็นป้ายแสดงผลอย่างเดียว กดไม่ได้ (เหมาะถ้าอยากให้ตำแหน่งทางเข้าคงที่บนสุดเสมอ)",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons">${ICON_USER}${ICON_SETTINGS}</div></div>
+        <div class="avatarrow"><div class="avatar" style="cursor:default;">พ</div><div><div class="greet" style="cursor:default;">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+  {
+    label: "6. การ์ดโปรไฟล์เต็มแถวเดียว แทนทั้งคู่",
+    desc: "รวมแถวทักทายให้เป็นการ์ดสีขาวเต็มความกว้าง มีลูกศรบอกว่ากดได้ (เหมือนการ์ดรายการอื่นในหน้าแรก) Header เหลือแค่เฟืองตั้งค่าอันเดียว ทางเข้าโปรไฟล์ชัดเจนเป็นก้อนเดียว",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons">${ICON_SETTINGS}</div></div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#FFFFFF;border:1px solid #EEDEDA;box-shadow:0 3px 10px rgba(122,42,35,0.06);">
+          <div class="avatar">พ</div>
+          <div style="flex:1;"><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div>
+          <div style="color:#B39B96;">${ICON_CHEVRON}</div>
+        </div>
+      </div>`,
+  },
+  {
+    label: "7. เมนู ⋯ รวมโปรไฟล์+ตั้งค่า+แชร์",
+    desc: "Header เหลือไอคอน ⋯ (more) จุดเดียว กดแล้วเปิดเมนูลอยรวมทุกอย่างที่ไม่ใช่เนื้อหาหลัก (โปรไฟล์ / ตั้งค่า / แชร์แอป) แถวอวตาร์ด้านล่างเป็นทางเข้าโปรไฟล์โดยตรงทางเดียว",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons">${ICON_MORE}</div></div>
+        <div class="avatarrow"><div class="avatar">พ</div><div><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+  {
+    label: "8. ไอคอนคนที่ header แสดงเฉพาะตอนโปรไฟล์ยังไม่ครบ",
+    desc: "ปกติ header เหลือแค่เฟือง — ไอคอนคน (พร้อมจุดแดงเตือน) จะโผล่ขึ้นมาเป็นพิเศษเฉพาะตอนที่ยังไม่กรอกข้อมูลโปรไฟล์ ทำหน้าที่เป็น shortcut ชวนกรอกให้เสร็จ ไม่ใช่ทางเข้าถาวรซ้ำกับแถวล่าง",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons"><div style="position:relative;">${ICON_USER}<div style="position:absolute;top:-1px;right:-1px;color:#B3261E;">${ICON_ALERT}</div></div>${ICON_SETTINGS}</div></div>
+        <div class="avatarrow"><div class="avatar" style="background:#FBF6F5;border:1.5px dashed #E3C8C3;"></div><div><div class="greet">สวัสดี, วันนี้คุณบริจาคโลหิตแล้วหรือยัง?</div><div style="font-size:9px;color:#9A3B33;font-weight:600;margin-top:3px;">+ เพิ่มข้อมูลโปรไฟล์</div></div></div>
+      </div>`,
+  },
+  {
+    label: "9. สลับ: อวตาร์ย้ายขึ้น header เป็นแท็บลอย",
+    desc: "เอาแถวทักทาย/อวตาร์ทั้งหมดขึ้นไปรวมกับแถว header เป็นแถบเดียวด้านบนสุด (โลโก้แอปเล็กลง/ย้ายไปอยู่ในหน้า dashboard แทน) เหลือทางเข้าโปรไฟล์จุดเดียวชัดเจนที่สุด",
+    render: () => `
+      <div class="phone">
+        <div class="row">
+          <div style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="width:30px;height:30px;font-size:12px;">พ</div><div><div class="greet" style="font-size:11px;">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+          <div class="icons">${ICON_SETTINGS}</div>
+        </div>
+      </div>`,
+  },
+  {
+    label: "10. Header คงเดิม แค่ผูก interaction ให้เป็นจุดเดียวกัน",
+    desc: "ไม่ลบไอคอนไหนออกเลย แต่ทำให้ปุ่มโปรไฟล์ที่ header กับแถวอวตาร์ \"เชื่อมกัน\" ด้วยเส้นไฮไลต์บาง ๆ ตอนโฟกัส/hover เพื่อสื่อว่าเป็นทางเข้าเดียวกัน (เปลี่ยนน้อยสุด เหมาะถ้ากลัวว่าการลบไอคอนจะกระทบผู้ใช้ที่ชินแล้ว)",
+    render: () => `
+      <div class="phone">
+        <div class="row">${BRAND}<div class="icons" style="padding:3px 6px;border-radius:10px;border:1.5px dashed #E3C8C3;">${ICON_USER}${ICON_SETTINGS}</div></div>
+        <div class="avatarrow" style="padding:4px 6px;border-radius:10px;border:1.5px dashed #E3C8C3;"><div class="avatar">พ</div><div><div class="greet">สวัสดี, คุณพิษณุ</div><div class="pills"><span class="pill">O</span><span class="pill">32 ปี</span></div></div></div>
+      </div>`,
+  },
+];
+
+variants.forEach((v) => {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <div class="tag">${v.label}</div>
+    <p class="desc">${v.desc}</p>
+    <div class="stage">${v.render()}</div>
+  `;
+  grid.appendChild(panel);
+});
+</script>
+</body>
+</html>
