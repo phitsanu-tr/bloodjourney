@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.127";
+const APP_VERSION = "1.0.128";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -110,7 +110,7 @@ const PRIVACY_POLICY_SECTIONS = [
     heading: "5. สถานที่จัดเก็บข้อมูล",
     body: [
       "ข้อมูลทั้งหมดของคุณถูกจัดเก็บไว้ในเครื่อง/อุปกรณ์ของคุณเองเท่านั้น (local storage) แอปไม่มีเซิร์ฟเวอร์ฐานข้อมูลส่วนกลางสำหรับเก็บข้อมูลผู้ใช้ ไม่มีบัญชีผู้ใช้ และผู้พัฒนาแอปไม่สามารถเข้าถึงหรือมองเห็นข้อมูลของคุณได้เลย",
-      "ไฟล์สำรองข้อมูลที่คุณส่งออกจะอยู่ในที่ที่คุณเลือกเก็บ (เช่น โฟลเดอร์ในเครื่อง หรือบริการคลาวด์ของคุณเอง) คุณเลือกตั้งรหัสผ่านเพื่อเข้ารหัสไฟล์สำรองได้ตอนส่งออก การเข้ารหัสและถอดรหัสเกิดขึ้นในเครื่องของคุณเท่านั้น แอปไม่เก็บและไม่ส่งรหัสผ่านไปที่ใด หากลืมรหัสผ่านจะเปิดไฟล์นั้นไม่ได้และผู้พัฒนากู้คืนให้ไม่ได้ ไฟล์ที่ไม่ได้ตั้งรหัสผ่านจะเป็นข้อความธรรมดาที่ใครได้ไฟล์ไปก็อ่านได้",
+      "ไฟล์สำรองข้อมูลที่คุณส่งออกจะอยู่ในที่ที่คุณเลือกเก็บ (เช่น โฟลเดอร์ในเครื่อง หรือบริการคลาวด์ของคุณเอง) แอปเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเป็นค่าเริ่มต้น (แอปสร้างรหัสให้ หรือคุณตั้งเองได้) การเข้ารหัสและถอดรหัสเกิดขึ้นในเครื่องของคุณเท่านั้น แอปไม่เก็บและไม่ส่งรหัสผ่านไปที่ใด หากลืมรหัสผ่านจะเปิดไฟล์นั้นไม่ได้และผู้พัฒนากู้คืนให้ไม่ได้ หากคุณเลือกส่งออกแบบไม่เข้ารหัสเอง ไฟล์นั้นจะเป็นข้อความธรรมดาที่ใครได้ไฟล์ไปก็อ่านได้",
       "เนื่องจากข้อมูลอยู่ในเครื่องเท่านั้น หากคุณล้างข้อมูลเบราว์เซอร์ ล้างแคชของแอป LINE ถอนการติดตั้ง หรือเปลี่ยนเครื่อง/เปลี่ยนเบราว์เซอร์ ข้อมูลที่ไม่ได้ส่งออกไว้อาจสูญหายและไม่สามารถกู้คืนได้ — แนะนำให้ใช้ฟังก์ชัน \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเพื่อสำรองข้อมูลเป็นระยะ",
     ],
   },
@@ -2667,12 +2667,18 @@ function AppInner() {
   const importTabIdx = backupRestoreTab === "import" ? 0 : -1;
   // Password-protected backup (design 3 of backup-encrypt-designs.html).
   // Passwords live only in memory and are cleared whenever the hub opens or closes.
-  const [exportProtect, setExportProtect] = useState(false);
+  // Encrypted by default (design 3 of backup-force-encrypt-designs.html): the
+  // hub opens with a generated passphrase; a plain file is a small link that
+  // goes through a warning. exportGenPw = generated mode, empty = own password.
+  const [exportProtect, setExportProtect] = useState(true);
+  const [exportStep, setExportStep] = useState(1); // generated mode: 1 = show the passphrase, 2 = type it back
+  const [exportConfirmPw, setExportConfirmPw] = useState("");
+  const [showPlainWarn, setShowPlainWarn] = useState(false);
+  const [plainWarnAck, setPlainWarnAck] = useState(false);
   const [exportPw, setExportPw] = useState("");
   const [exportPw2, setExportPw2] = useState("");
   const [exportShowPw, setExportShowPw] = useState(false);
   const [exportGenPw, setExportGenPw] = useState(""); // non-empty = the generated passphrase is in use
-  const [exportSavedAck, setExportSavedAck] = useState(false);
   const [exportEncrypted, setExportEncrypted] = useState(null); // { key, text }
   const [exportEncrypting, setExportEncrypting] = useState(false);
   const exportEncryptRunRef = useRef(0);
@@ -2687,7 +2693,8 @@ function AppInner() {
   // What the textarea / download / copy use: the plain JSON, or the
   // ciphertext once it has been made for the current data + password.
   const exportOutText = !exportProtect ? exportJsonText : (exportEncrypted && exportKey && exportEncrypted.key === exportKey ? exportEncrypted.text : "");
-  const exportReady = !!exportOutText && (!exportProtect || !exportGenPw || exportSavedAck);
+  const exportTypedOk = !!exportGenPw && exportConfirmPw.trim().toLowerCase() === exportGenPw;
+  const exportReady = !!exportOutText && (!exportProtect || !exportGenPw || (exportStep === 2 && exportTypedOk));
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
   const canShareFiles = useMemo(() => {
@@ -4049,7 +4056,7 @@ function AppInner() {
       } catch (e) {
         if (run === exportEncryptRunRef.current) {
           setExportEncrypted(null);
-          showToast("error", "เข้ารหัสไม่สำเร็จ ลองอีกครั้ง หรือเลือกไฟล์ปกติแทน");
+          showToast("error", "เข้ารหัสไม่สำเร็จ ลองอีกครั้ง หรือกดสุ่มรหัสใหม่");
         }
       } finally {
         if (run === exportEncryptRunRef.current) setExportEncrypting(false);
@@ -4060,12 +4067,15 @@ function AppInner() {
   }, [exportProtect, exportKey]);
 
   const resetBackupProtection = () => {
-    setExportProtect(false);
+    setExportProtect(true);
+    setExportStep(1);
+    setExportConfirmPw("");
+    setShowPlainWarn(false);
+    setPlainWarnAck(false);
     setExportPw("");
     setExportPw2("");
     setExportShowPw(false);
     setExportGenPw("");
-    setExportSavedAck(false);
     setExportEncrypted(null);
     setImportLock(null);
     setImportLockPw("");
@@ -4073,18 +4083,34 @@ function AppInner() {
     setImportLockError("");
     setImportLockBusy(false);
   };
-  const chooseExportProtect = (on) => {
-    setExportProtect(on);
-    if (!on) {
-      setExportPw(""); setExportPw2(""); setExportGenPw(""); setExportSavedAck(false); setExportEncrypted(null);
-    }
-  };
+  // Every time the hub opens: encrypted, with a passphrase already waiting.
+  // (Browsers without WebCrypto fall back to the plain file.)
+  useEffect(() => {
+    if (!showBackupRestore) return;
+    if (!canEncryptBackup()) { setExportProtect(false); return; }
+    if (exportProtect && !exportGenPw && !exportPw) setExportGenPw(generateBackupPassphrase());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showBackupRestore]);
   const generateExportPassword = () => {
+    setExportProtect(true);
     setExportGenPw(generateBackupPassphrase());
-    setExportSavedAck(false);
+    setExportStep(1);
+    setExportConfirmPw("");
     setExportPw("");
     setExportPw2("");
   };
+  const useOwnExportPassword = () => {
+    setExportGenPw("");
+    setExportStep(1);
+    setExportConfirmPw("");
+  };
+  const goPlainExport = () => {
+    setShowPlainWarn(false);
+    setPlainWarnAck(false);
+    setExportProtect(false);
+    setExportGenPw(""); setExportPw(""); setExportPw2(""); setExportEncrypted(null);
+  };
+  const backToEncryptedExport = () => generateExportPassword();
   const copyGeneratedPassword = async () => {
     try {
       await navigator.clipboard.writeText(exportGenPw);
@@ -8098,6 +8124,29 @@ function AppInner() {
         </div>
       )}
 
+      {showBackupRestore && showPlainWarn && (
+        <div role="alertdialog" aria-modal="true" aria-label="ส่งออกแบบไม่เข้ารหัส" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 24 }}>
+          <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 18px 16px", boxShadow: "0 8px 30px rgba(58,44,41,0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15.5, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>
+              <AlertTriangle size={19} color="#B3261E" aria-hidden="true" /> ส่งออกแบบไม่เข้ารหัส?
+            </div>
+            <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5C4A46", margin: "0 0 12px" }}>ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด เช่น หมู่เลือด เลขผู้บริจาค ประวัติบริจาค ถ้าส่งผ่านแชทหรือเก็บในไดรฟ์ ควรเข้ารหัสไว้</p>
+            <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.5, color: "#3A2C29", marginBottom: 14, cursor: "pointer" }}>
+              <input type="checkbox" checked={plainWarnAck} onChange={(e) => setPlainWarnAck(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1, accentColor: "#9A3B33", flexShrink: 0 }} />
+              <span>เข้าใจแล้ว และจะเก็บไฟล์ไว้เอง</span>
+            </label>
+            <button type="button" onClick={() => { setShowPlainWarn(false); setPlainWarnAck(false); }} className="btn-primary"
+              style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
+              กลับไปใช้รหัสผ่าน
+            </button>
+            <button type="button" onClick={goPlainExport} disabled={!plainWarnAck}
+              style={{ width: "100%", padding: "12px 0", borderRadius: 14, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 14, fontFamily: "inherit", cursor: plainWarnAck ? "pointer" : "not-allowed", opacity: plainWarnAck ? 1 : 0.45 }}>
+              ส่งออกแบบไม่เข้ารหัส
+            </button>
+          </div>
+        </div>
+      )}
+
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div ref={backupDialogRef} className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22, maxHeight: "92vh", overflowY: "auto" }}>
@@ -8157,133 +8206,149 @@ function AppInner() {
                   กด "ดาวน์โหลดไฟล์" เพื่อบันทึกหรือแชร์เป็นไฟล์ หรือถ้าใช้ไม่ได้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
                   <br /><span style={{ fontSize: 11, color: "#B39B96" }}>(ไฟล์นี้ไม่รวมรูปโปรไฟล์ — หลังนำเข้าจะต้องอัปโหลดรูปใหม่ ส่วนรอบบริจาค/ระยะแจ้งเตือนที่ตั้งไว้จะรวมอยู่ในไฟล์นี้ด้วย)</span>
                 </p>
-                {/* Two cards (design 3 of backup-encrypt-designs.html): a plain
-                    file, or one protected with a password. Plain is the default. */}
-                <div role="radiogroup" aria-label="รูปแบบไฟล์สำรอง" style={{ marginBottom: 10 }}>
-                  {[
-                    { on: false, title: "ไฟล์ปกติ", sub: "อ่านและแก้ไขได้ด้วยโปรแกรมทั่วไป ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด" },
-                    { on: true, title: "ป้องกันด้วยรหัสผ่าน", sub: "เข้ารหัสทั้งไฟล์ ต้องใส่รหัสผ่านตอนกู้คืน ลืมรหัสแล้วกู้ไม่ได้", rec: true },
-                  ].map((o) => {
-                    const sel = exportProtect === o.on;
-                    const disabled = o.on && !canEncryptBackup();
-                    return (
-                      <button key={String(o.on)} type="button" role="radio" aria-checked={sel} disabled={disabled}
-                        tabIndex={exportTabIdx}
-                        onClick={() => chooseExportProtect(o.on)}
-                        style={{ display: "flex", gap: 11, alignItems: "flex-start", width: "100%", textAlign: "left", fontFamily: "inherit", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
-                          background: sel ? "#FFFAF9" : "#FFFFFF", border: `1.5px solid ${sel ? "#9A3B33" : "#EEDEDA"}`, borderRadius: 14, padding: "12px 13px", marginBottom: 10 }}>
-                        <span aria-hidden="true" style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${sel ? "#9A3B33" : "#D9C3BE"}`, flexShrink: 0, marginTop: 1, position: "relative", boxSizing: "border-box" }}>
-                          {sel && <span style={{ position: "absolute", inset: 3, borderRadius: "50%", background: "#9A3B33" }} />}
-                        </span>
-                        <span style={{ minWidth: 0 }}>
-                          <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
-                            {o.title}
-                            {o.rec && <span style={{ display: "inline-block", fontSize: 10.5, background: "#9A3B33", color: "#FFF7F5", borderRadius: 8, padding: "1px 7px", marginLeft: 6, fontWeight: 600, verticalAlign: 1 }}>แนะนำ</span>}
-                          </span>
-                          <span style={{ display: "block", fontSize: 11.5, color: "#7A6360", lineHeight: 1.5, marginTop: 1 }}>{disabled ? "เบราว์เซอร์นี้เข้ารหัสไฟล์ไม่ได้" : o.sub}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
                 {exportProtect && (
-                  <div style={{ marginBottom: 4 }}>
-                    {!exportGenPw ? (
-                      <>
-                        <label htmlFor="export-pw" style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
-                          <input id="export-pw" type={exportShowPw ? "text" : "password"} value={exportPw} tabIndex={exportTabIdx}
-                            onChange={(e) => setExportPw(e.target.value)}
-                            autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="ตั้งรหัสผ่าน"
-                            style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
-                          <button type="button" tabIndex={exportTabIdx} onClick={() => setExportShowPw(v => !v)} aria-label={exportShowPw ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={exportShowPw}
-                            style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
-                            {exportShowPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                          </button>
-                        </div>
-                        {exportPw.length > 0 && (
-                          <div aria-live="polite">
-                            <div aria-hidden="true" style={{ display: "flex", gap: 4, margin: "8px 0 3px" }}>
-                              {[1, 2, 3].map(n => (
-                                <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2E7D4F" : "#D9A03A") : "#EEDEDA" }} />
-                              ))}
-                            </div>
-                            {exportStrength.label && <div style={{ fontSize: 11.5, color: exportStrength.level === 3 ? "#2E7D4F" : "#B5651D" }}>{exportStrength.label}</div>}
-                          </div>
-                        )}
-                        <label htmlFor="export-pw2" style={{ display: "block", fontSize: 11.5, color: "#7A6360", margin: "10px 0 4px" }}>ยืนยันรหัสผ่าน</label>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2E7D4F" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
-                          <input id="export-pw2" type={exportShowPw ? "text" : "password"} value={exportPw2} tabIndex={exportTabIdx}
-                            onChange={(e) => setExportPw2(e.target.value)}
-                            autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสผ่านอีกครั้ง"
-                            style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
-                          {exportPw2 && exportPw2 === exportPw && exportStrength.ok && <Check size={17} color="#2E7D4F" aria-label="รหัสผ่านตรงกัน" />}
-                        </div>
-                        {exportPw2.length > 0 && exportPw2 !== exportPw && (
-                          <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", margin: "6px 2px 0" }}>รหัสผ่านสองช่องไม่ตรงกัน</div>
-                        )}
-                        <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
-                          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: "#F3EAE8", color: "#9A3B33", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer", margin: "12px 0" }}>
-                          <Dices size={16} /> สร้างรหัสให้
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-                          <div style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านที่แอปสร้างให้</div>
-                          <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
-                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                            <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
-                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
-                              <Copy size={15} /> คัดลอก
-                            </button>
-                            <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
-                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
-                              <Dices size={15} /> สุ่มใหม่
-                            </button>
-                          </div>
-                          <button type="button" tabIndex={exportTabIdx} onClick={() => { setExportGenPw(""); setExportSavedAck(false); }}
-                            style={{ display: "block", margin: "10px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                            ตั้งรหัสผ่านเอง
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
-                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
-                      <div><b style={{ color: "#3A2C29" }}>{exportGenPw ? "เก็บรหัสนี้ไว้ก่อนดาวน์โหลด" : "ลืมรหัส = เปิดไฟล์ไม่ได้"}</b><br />แอปไม่เก็บรหัสผ่านนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้</div>
-                    </div>
-                    {exportGenPw && (
-                      <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.5, color: "#3A2C29", marginBottom: 12, cursor: "pointer" }}>
-                        <input type="checkbox" checked={exportSavedAck} tabIndex={exportTabIdx} onChange={(e) => setExportSavedAck(e.target.checked)}
-                          style={{ width: 20, height: 20, marginTop: 1, accentColor: "#9A3B33", flexShrink: 0 }} />
-                        <span>ฉันคัดลอกหรือจดรหัสนี้ไว้แล้ว</span>
-                      </label>
-                    )}
+                  <div role="note" style={{ display: "flex", gap: 10, background: "#EAF4EE", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#2C4A38", marginBottom: 12 }}>
+                    <ShieldCheck size={17} color="#2E7D4F" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div><b style={{ color: "#1F3A2B" }}>ไฟล์สำรองเข้ารหัสทุกครั้ง</b><br />ข้อมูลสุขภาพของคุณจะอ่านไม่ได้ ถ้าไม่มีรหัสผ่าน</div>
+                  </div>
+                )}
+                {!exportProtect && (
+                  <div role="alert" style={{ display: "flex", gap: 10, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
+                    <AlertTriangle size={17} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้ไม่ได้เข้ารหัส</b><br />ใครเปิดไฟล์ก็เห็นข้อมูลทั้งหมด</div>
                   </div>
                 )}
 
-                <textarea
-                  ref={exportTextareaRef}
-                  readOnly
-                  tabIndex={exportTabIdx}
-                  value={exportOutText}
-                  placeholder={exportProtect ? (exportEncrypting ? "กำลังเข้ารหัส…" : "ข้อความเข้ารหัสจะแสดงที่นี่เมื่อตั้งรหัสผ่านครบ") : ""}
-                  onFocus={(e) => e.target.select()}
-                  aria-label={exportProtect ? "ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก" : "ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"}
-                  style={{ width: "100%", height: exportProtect ? 76 : 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
-                />
-                <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
-                  <Download size={17} /> {exportProtect && exportEncrypting ? "กำลังเข้ารหัส…" : "ดาวน์โหลดไฟล์"}
-                </button>
-                <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
-                  <StickyNote size={16} /> คัดลอกข้อความ
-                </button>
-                {!exportProtect && (
-                  <p style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 11.5, color: "#7A6360", margin: "12px 0 0" }}>
-                    <AlertTriangle size={13} color="#B5651D" aria-hidden="true" /> ไฟล์นี้ไม่ได้เข้ารหัส เก็บไว้ในที่ปลอดภัย
-                  </p>
+                {exportProtect && exportGenPw && exportStep === 1 && (
+                  <>
+                    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+                      <div style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านที่แอปสร้างให้</div>
+                      <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                        <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
+                          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                          <Copy size={15} /> คัดลอก
+                        </button>
+                        <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
+                          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                          <Dices size={15} /> สุ่มใหม่
+                        </button>
+                      </div>
+                    </div>
+                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
+                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                      <div><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b><br />แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</div>
+                    </div>
+                    <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} className="btn-primary"
+                      style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 6 }}>
+                      ต่อไป: ยืนยันรหัส
+                    </button>
+                    <button type="button" tabIndex={exportTabIdx} onClick={useOwnExportPassword}
+                      style={{ display: "block", margin: "8px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                      ตั้งรหัสผ่านเอง
+                    </button>
+                  </>
+                )}
+
+                {exportProtect && exportGenPw && exportStep === 2 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่คัดลอกหรือจดไว้อีกครั้ง</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2E7D4F" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
+                      <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx} autoFocus
+                        onChange={(e) => setExportConfirmPw(e.target.value)}
+                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="เช่น word-word-word-word-word"
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
+                      {exportTypedOk && <Check size={17} color="#2E7D4F" aria-label="รหัสตรงกัน" />}
+                    </div>
+                    <div aria-live="polite" style={{ fontSize: 11.5, margin: "6px 2px 0", color: exportTypedOk ? "#2E7D4F" : "#7A6360" }}>
+                      {exportTypedOk ? "ตรงกันแล้ว" : "พิมพ์ให้ตรงกับรหัสที่แอปสร้างให้ เพื่อให้แน่ใจว่าจดถูก"}
+                    </div>
+                    <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(1)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: "#F3EAE8", color: "#9A3B33", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer", marginTop: 12 }}>
+                      <Eye size={16} /> ดูรหัสอีกครั้ง
+                    </button>
+                  </div>
+                )}
+
+                {exportProtect && !exportGenPw && (
+                  <div style={{ marginBottom: 4 }}>
+                    <label htmlFor="export-pw" style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
+                      <input id="export-pw" type={exportShowPw ? "text" : "password"} value={exportPw} tabIndex={exportTabIdx}
+                        onChange={(e) => setExportPw(e.target.value)}
+                        autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="ตั้งรหัสผ่าน"
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
+                      <button type="button" tabIndex={exportTabIdx} onClick={() => setExportShowPw(v => !v)} aria-label={exportShowPw ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={exportShowPw}
+                        style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                        {exportShowPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {exportPw.length > 0 && (
+                      <div aria-live="polite">
+                        <div aria-hidden="true" style={{ display: "flex", gap: 4, margin: "8px 0 3px" }}>
+                          {[1, 2, 3].map(n => (
+                            <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2E7D4F" : "#D9A03A") : "#EEDEDA" }} />
+                          ))}
+                        </div>
+                        {exportStrength.label && <div style={{ fontSize: 11.5, color: exportStrength.level === 3 ? "#2E7D4F" : "#B5651D" }}>{exportStrength.label}</div>}
+                      </div>
+                    )}
+                    <label htmlFor="export-pw2" style={{ display: "block", fontSize: 11.5, color: "#7A6360", margin: "10px 0 4px" }}>ยืนยันรหัสผ่าน</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2E7D4F" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
+                      <input id="export-pw2" type={exportShowPw ? "text" : "password"} value={exportPw2} tabIndex={exportTabIdx}
+                        onChange={(e) => setExportPw2(e.target.value)}
+                        autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสผ่านอีกครั้ง"
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
+                      {exportPw2 && exportPw2 === exportPw && exportStrength.ok && <Check size={17} color="#2E7D4F" aria-label="รหัสผ่านตรงกัน" />}
+                    </div>
+                    {exportPw2.length > 0 && exportPw2 !== exportPw && (
+                      <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", margin: "6px 2px 0" }}>รหัสผ่านสองช่องไม่ตรงกัน</div>
+                    )}
+                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", margin: "12px 0" }}>
+                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                      <div><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b><br />แอปไม่เก็บรหัสผ่านนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้</div>
+                    </div>
+                  </div>
+                )}
+
+                {!(exportProtect && exportGenPw && exportStep === 1) && (
+                  <>
+                    <textarea
+                      ref={exportTextareaRef}
+                      readOnly
+                      tabIndex={exportTabIdx}
+                      value={exportOutText}
+                      placeholder={exportProtect ? (exportEncrypting ? "กำลังเข้ารหัส…" : "ข้อความเข้ารหัสจะแสดงที่นี่เมื่อรหัสผ่านครบ") : ""}
+                      onFocus={(e) => e.target.select()}
+                      aria-label={exportProtect ? "ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก" : "ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"}
+                      style={{ width: "100%", height: exportProtect ? 76 : 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                    />
+                    <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
+                      <Download size={17} /> {exportProtect && exportEncrypting ? "กำลังเข้ารหัส…" : exportProtect ? "ดาวน์โหลดไฟล์" : "ดาวน์โหลดไฟล์ (ไม่เข้ารหัส)"}
+                    </button>
+                    <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
+                      <StickyNote size={16} /> คัดลอกข้อความ
+                    </button>
+                  </>
+                )}
+
+                {exportProtect && !exportGenPw && (
+                  <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
+                    style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                    ให้แอปสร้างรหัสให้แทน
+                  </button>
+                )}
+                {exportProtect && exportGenPw && exportStep === 1 && (
+                  <button type="button" tabIndex={exportTabIdx} onClick={() => { setPlainWarnAck(false); setShowPlainWarn(true); }}
+                    style={{ display: "block", margin: "10px auto 0", background: "none", border: "none", color: "#A89692", fontSize: 11.5, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                    ส่งออกแบบไม่เข้ารหัส
+                  </button>
+                )}
+                {!exportProtect && canEncryptBackup() && (
+                  <button type="button" tabIndex={exportTabIdx} onClick={backToEncryptedExport}
+                    style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#9A3B33", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                    กลับไปเข้ารหัส (แนะนำ)
+                  </button>
                 )}
               </div>
 
