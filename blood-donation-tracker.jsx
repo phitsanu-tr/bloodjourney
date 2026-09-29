@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.162";
+const APP_VERSION = "1.0.163";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7613,25 +7613,6 @@ function AppInner() {
                                   color: hint.color, background: hint.color === "#2E7D4F" ? "#E8F4EC" : hint.color === "#B5651D" ? "#FBEFE3" : "#F3EAE8" }}>{hint.text}</span>
                               )}
                               {pickerPanel(r.key)}
-                              {(() => {
-                                // "ล้างค่า" appears as soon as the scale moves (or a value is already saved); the slot is
-                                // always reserved so the layout doesn't jump when it shows up.
-                                const canClear = committed[r.key] !== "" || (pickerPreview && pickerPreview.key === r.key);
-                                return (
-                                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4, minHeight: 18 }}>
-                                    <button tabIndex={canClear ? 0 : -1} aria-hidden={canClear ? undefined : "true"}
-                                      onClick={() => {
-                                        clearTimeout(pickerCloseTimer); pickerDirtyKey = null;
-                                        setProfileOpenChoice(null); setPickerPreview(null);
-                                        if (committed[r.key] !== "") commitProfile(r.key === "birthYear" ? { birthYear: "", birthYearApprox: false } : { [r.key]: "" }, r.key);
-                                      }}
-                                      style={{ position: "relative", background: "none", border: "none", padding: 0, fontSize: 12, fontWeight: 600, color: "#9A3B33", cursor: "pointer", fontFamily: "inherit", visibility: canClear ? "visible" : "hidden" }}>
-                                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
-                                      ล้างค่า
-                                    </button>
-                                  </div>
-                                );
-                              })()}
                             </div>
                           )}
                           {isOpen && r.kind === "choice" && !r.blood && (
