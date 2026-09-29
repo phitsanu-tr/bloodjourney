@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.163";
+const APP_VERSION = "1.0.164";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2540,6 +2540,46 @@ function AppInner() {
   const [showSettings, setShowSettings] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
+  const profileBoxRef = useRef(null);
+  const profileScrollRef = useRef(null);
+  const [profileScrolled, setProfileScrolled] = useState(false);
+  // Profile dialog: move focus into it, keep Tab inside it, and stop the page behind from scrolling.
+  useEffect(() => {
+    if (!showProfile) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    const opener = document.activeElement;
+    document.body.style.overflow = "hidden";
+    setProfileScrolled(false);
+    const t = setTimeout(() => profileBoxRef.current?.focus?.({ preventScroll: true }), 30);
+    const onKey = (e) => {
+      if (e.key !== "Tab") return;
+      const box = profileBoxRef.current;
+      if (!box) return;
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      const top = dialogs[dialogs.length - 1];
+      if (!top || !top.contains(box)) return; // another dialog is on top of the profile
+      const f = [...box.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1], a = document.activeElement;
+      if (!box.contains(a)) { e.preventDefault(); first.focus(); return; }
+      if (e.shiftKey && (a === first || a === box)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t); document.body.style.overflow = prevOverflow; document.removeEventListener("keydown", onKey);
+      if (opener && opener !== document.body && document.contains(opener)) { try { opener.focus({ preventScroll: true }); } catch (e) {} }
+    };
+  }, [showProfile]);
+  // Opening a row near the bottom: scroll the box so the whole panel is visible.
+  useEffect(() => {
+    if (!showProfile || !profileOpenChoice) return undefined;
+    const t = setTimeout(() => {
+      const el = profileScrollRef.current?.querySelector(`[data-prow="${profileOpenChoice}"]`);
+      el?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [showProfile, profileOpenChoice]);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   // Which history card's overflow (⋮) action menu is currently open — replaces
   // the previous always-visible edit/delete icon pair to reduce visual
@@ -5421,7 +5461,7 @@ function AppInner() {
            waiting on a React re-render of the whole app. */
         .prow-edit:focus-within { background: #FBEFEC !important; }
         .prow-edit:focus-within input { color: #3A2C29 !important; }
-        .prow-edit input::placeholder { color: #B7A5A1; opacity: 1; }
+        .prow-edit input::placeholder { color: #80726F; opacity: 1; }
         .prow-edit:focus-within input::placeholder { color: transparent; }
         .prow-edit .prow-unit-empty { display: none; }
         .prow-edit:focus-within .prow-unit-empty { display: inline; }
@@ -6111,7 +6151,7 @@ function AppInner() {
                     }}>
                       {kind === "backup" && (
                         <>
-                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
+                          <AlertTriangle size={15} color="#9C5515" style={{ flexShrink: 0 }} />
                           <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูล</span>
                           <button onClick={() => openBackupRestore("export", { fromHome: true })}
                             style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
@@ -6129,7 +6169,7 @@ function AppInner() {
                         // criteria (top of the knowledge tab, whose footer
                         // already says the staff make the real call).
                         <>
-                          <AlertTriangle size={15} color="#B5651D" style={{ flexShrink: 0 }} />
+                          <AlertTriangle size={15} color="#9C5515" style={{ flexShrink: 0 }} />
                           <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>
                             {kind === "age" ? `อายุอยู่นอกเกณฑ์ทั่วไป (${MIN_AGE}–${MAX_AGE} ปี)` : `น้ำหนักต่ำกว่าเกณฑ์ทั่วไป (${MIN_WEIGHT} กก.)`}
                           </span>
@@ -6783,7 +6823,7 @@ function AppInner() {
                       <div style={{ textAlign: "right" }}>
                         <div style={{
                           display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, borderRadius: 20, padding: "4px 10px",
-                          color: stats.thisYearCount >= stats.lastYearCount ? "#2E7D32" : "#B5651D",
+                          color: stats.thisYearCount >= stats.lastYearCount ? "#2E7D32" : "#9C5515",
                           background: stats.thisYearCount >= stats.lastYearCount ? "#E7F3E8" : "#FDF0E6",
                         }}>
                           {stats.thisYearCount >= stats.lastYearCount ? "▲" : "▼"} {stats.thisYearCount >= stats.lastYearCount ? "+" : ""}{stats.thisYearCount - stats.lastYearCount} จากปี {buddhistYear(new Date()) - 1}
@@ -7318,7 +7358,7 @@ function AppInner() {
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ");
         const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || {}).label;
-        const ph = (t) => <span style={{ color: "#B7A5A1" }}>{t}</span>;
+        const ph = (t) => <span style={{ color: "#80726F" }}>{t}</span>;
         // Criteria hint on the right of a row: grey = not filled, green =
         // within, orange = outside. Birth year shows the age it works out to.
         const nowBE = thaiYearNow();
@@ -7336,11 +7376,11 @@ function AppInner() {
             const range = `${MIN_AGE}–${MAX_AGE} ปี`;
             if (Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
             const a = nowBE - n;
-            if (birthYearApprox && n === birthYear) return { text: "ปีโดยประมาณ", color: "#B5651D" };
-            return a >= MIN_AGE && a <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#B5651D" };
+            if (birthYearApprox && n === birthYear) return { text: "ปีโดยประมาณ", color: "#9C5515" };
+            return a >= MIN_AGE && a <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#9C5515" };
           }
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
-          return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
+          return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#9C5515" };
         };
         const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาคโลหิต" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
@@ -7452,15 +7492,16 @@ function AppInner() {
           <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน"
             onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-            <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
+              <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px", borderBottom: `1px solid ${profileScrolled ? "#EEDEDA" : "transparent"}`, transition: "border-color .15s" }}>
                 <div style={{ fontSize: 15.5, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
                 <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
                   <X size={19} />
                 </button>
               </div>
-
+              <div ref={profileScrollRef} className="no-scrollbar" onScroll={(e) => { const sc = e.currentTarget.scrollTop > 2; setProfileScrolled(v => (v === sc ? v : sc)); }}
+                style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="เปลี่ยนรูปโปรไฟล์"
@@ -7496,7 +7537,7 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nickname.trim() || "ยังไม่ได้ใส่ชื่อ"}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{firstName || "ยังไม่ได้ใส่ชื่อ"}</div>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy}
                     style={{ position: "relative", marginTop: 2, padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
                     <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
@@ -7533,14 +7574,14 @@ function AppInner() {
                   const rowHint = !hint ? null
                     : !isCriteriaRow ? hint
                     : profileOpenChoice === r.key ? null // the panel's chip already says it
-                    : hint.color !== "#B5651D" ? null
+                    : hint.color !== "#9C5515" ? null
                     : { ...hint, text: hint.text.startsWith("นอกเกณฑ์") ? "นอกเกณฑ์" : hint.text.startsWith("ต่ำกว่าเกณฑ์") ? "ต่ำกว่าเกณฑ์" : hint.text };
                   const saved = profileSavedKey === r.key && profileOpenChoice !== r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
                     : r.kind === "action" ? <ChevronRight size={16} color="#7A6360" aria-hidden="true" style={{ flexShrink: 0 }} />
                     : r.kind === "id" && donorId && profileInline.donorId === donorId ? (
                       <button type="button" onClick={(e) => { e.preventDefault(); copyDonorId(); }} aria-label="คัดลอกเลขประจำตัวผู้บริจาค"
-                        style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 600, color: "#9A3B33", background: "#F3EAE8", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontFamily: "inherit" }}>
+                        style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, margin: "-3px 0", fontSize: 11.5, fontWeight: 600, color: "#9A3B33", background: "#F3EAE8", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -4px" }} />
                         <Copy size={13} /> คัดลอก
                       </button>
@@ -7548,7 +7589,7 @@ function AppInner() {
                     : rowHint && <span style={{ flexShrink: 0, fontSize: 11, color: rowHint.color, whiteSpace: "nowrap" }}>{rowHint.text}</span>;
                   const isOpen = profileOpenChoice === r.key;
                   return (
-                    <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                    <div key={r.key} data-prow={r.key} style={{ scrollMarginBottom: 12, padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       {r.kind === "choice" || r.kind === "action" || r.kind === "picker" ? (
                         <>
                           <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); if (pickerDirtyKey && (pickerDirtyKey !== r.key || isOpen)) { clearTimeout(pickerCloseTimer); const dk = pickerDirtyKey; pickerDirtyKey = null; flashSaved(dk); } setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
@@ -7557,7 +7598,7 @@ function AppInner() {
                             <span style={{ flex: 1, minWidth: 0 }}>
                               {labelEl}
                               <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
-                                <span style={{ flex: 1, fontSize: 15, color: "#3A2C29", fontVariantNumeric: r.kind === "picker" ? "tabular-nums" : undefined }}>{r.kind === "picker" ? pickerShown(r.key) : r.value}</span>
+                                <span style={{ flex: 1, fontSize: 15, lineHeight: "22px", minHeight: 22, color: "#3A2C29", fontVariantNumeric: r.kind === "picker" ? "tabular-nums" : undefined }}>{r.kind === "picker" ? pickerShown(r.key) : r.value}</span>
                                 {saved}
                               </span>
                             </span>
@@ -7610,7 +7651,7 @@ function AppInner() {
                             <div style={{ position: "relative", padding: isCriteriaRow ? "34px 0 6px" : "10px 0 6px" }}>
                               {isCriteriaRow && hint && (
                                 <span role="status" style={{ position: "absolute", top: 8, right: 0, fontSize: 11.5, fontWeight: 500, padding: "3px 10px", borderRadius: 12, whiteSpace: "nowrap",
-                                  color: hint.color, background: hint.color === "#2E7D4F" ? "#E8F4EC" : hint.color === "#B5651D" ? "#FBEFE3" : "#F3EAE8" }}>{hint.text}</span>
+                                  color: hint.color, background: hint.color === "#2E7D4F" ? "#E8F4EC" : hint.color === "#9C5515" ? "#FBEFE3" : "#F3EAE8" }}>{hint.text}</span>
                               )}
                               {pickerPanel(r.key)}
                             </div>
@@ -7696,7 +7737,7 @@ function AppInner() {
                                   setTimeout(() => e.target.blur(), 0);
                                 }
                               }}
-                              style={{ flex: 1, minWidth: 0, border: "none", background: "none", outline: "none", padding: 0, fontSize: 15, fontFamily: "inherit", color: "#3A2C29", caretColor: "#9A3B33", letterSpacing: r.kind === "id" ? 0.5 : undefined }} />
+                              style={{ flex: 1, minWidth: 0, height: 22, lineHeight: "22px", border: "none", background: "none", outline: "none", padding: 0, fontSize: 15, fontFamily: "inherit", color: "#3A2C29", caretColor: "#9A3B33", letterSpacing: r.kind === "id" ? 0.5 : undefined }} />
                             {saved}
                           </span>
                           </span>
@@ -7729,6 +7770,7 @@ function AppInner() {
               )}
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 10 }}>
                 <Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น
+              </div>
               </div>
             </div>
           </div>
@@ -7880,7 +7922,7 @@ function AppInner() {
             {sameDateConflict ? (
               <div style={{ fontSize: 11.5, color: "#B3261E", lineHeight: 1.6, margin: "8px 0 0" }} role="alert">{sameDateConflictMessage}</div>
             ) : closeGapWarning && (
-              <div style={{ fontSize: 11.5, color: "#B5651D", lineHeight: 1.6, margin: "8px 0 0" }}>{closeGapWarning}</div>
+              <div style={{ fontSize: 11.5, color: "#9C5515", lineHeight: 1.6, margin: "8px 0 0" }}>{closeGapWarning}</div>
             )}
             <div style={{ marginTop: 14, marginBottom: 14 }}>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
@@ -8425,7 +8467,7 @@ function AppInner() {
                             <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2E7D4F" : "#D9A03A") : "#EEDEDA" }} />
                           ))}
                         </div>
-                        {exportStrength.label && <div style={{ fontSize: 11.5, color: exportStrength.level === 3 ? "#2E7D4F" : "#B5651D" }}>{exportStrength.label}</div>}
+                        {exportStrength.label && <div style={{ fontSize: 11.5, color: exportStrength.level === 3 ? "#2E7D4F" : "#9C5515" }}>{exportStrength.label}</div>}
                       </div>
                     )}
                     <label htmlFor="export-pw2" style={{ display: "block", fontSize: 11.5, color: "#7A6360", margin: "10px 0 4px" }}>ยืนยันรหัสผ่าน</label>
