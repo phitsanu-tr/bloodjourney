@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.120";
+const APP_VERSION = "1.0.121";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1362,65 +1362,80 @@ function WheelPicker({ values, value, onChange, onSettle, format = (v) => v, lab
   );
 }
 
-// Vertical ruler for height (design 4 of profile-number-picker-designs.html,
-// turned upright like a height chart): bigger values at the top, 1 cm per
-// tick, a label every 10 cm, the red line in the middle marks the value.
+// Horizontal ruler (design 4 of profile-number-picker-designs.html): the
+// value reads big above, the scale slides left/right under a fixed red line.
+// Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
+// works the same for left- and right-handed use.
 const RULER_TICK = 8;
-function VerticalRuler({ min, max, value, onChange, onSettle, label }) {
+function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, onChange, onSettle, label, ariaUnit }) {
   const ref = useRef(null);
-  const vals = useMemo(() => Array.from({ length: max - min + 1 }, (_, i) => max - i), [min, max]);
-  const idxRef = useRef(Math.max(0, vals.indexOf(value)));
+  const count = Math.round((max - min) / step) + 1;
+  const valAt = (i) => Math.round((min + i * step) * 10 ** decimals) / 10 ** decimals;
+  const idxOf = (v) => Math.max(0, Math.min(count - 1, Math.round((v - min) / step)));
+  const idxRef = useRef(idxOf(value));
   const settleTimer = useRef(null);
   const userScrolled = useRef(false);
   const [idx, setIdx] = useState(idxRef.current);
-  const H = WHEEL_ITEM * 5;
   useEffect(() => {
-    if (ref.current) ref.current.scrollTop = idxRef.current * RULER_TICK;
-    return () => clearTimeout(settleTimer.current);
+    const el = ref.current;
+    if (!el) return undefined;
+    el.scrollLeft = idxRef.current * RULER_TICK;
+    // A mouse wheel / trackpad scrolling vertically moves the scale too.
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); el.scrollLeft += e.deltaY; }
+      userScrolled.current = true;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => { el.removeEventListener("wheel", onWheel); clearTimeout(settleTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const pick = (i) => {
-    i = Math.max(0, Math.min(vals.length - 1, i));
+    i = Math.max(0, Math.min(count - 1, i));
     idxRef.current = i; setIdx(i);
-    ref.current?.scrollTo({ top: i * RULER_TICK, behavior: "smooth" });
-    onChange?.(vals[i]);
+    ref.current?.scrollTo({ left: i * RULER_TICK, behavior: "smooth" });
+    onChange?.(valAt(i));
     clearTimeout(settleTimer.current);
-    settleTimer.current = setTimeout(() => onSettle?.(vals[i]), 250);
+    settleTimer.current = setTimeout(() => onSettle?.(valAt(i)), 250);
   };
   const onScroll = () => {
     const el = ref.current;
     if (!el) return;
-    const i = Math.max(0, Math.min(vals.length - 1, Math.round(el.scrollTop / RULER_TICK)));
-    if (i !== idxRef.current) { idxRef.current = i; setIdx(i); onChange?.(vals[i]); }
+    const i = Math.max(0, Math.min(count - 1, Math.round(el.scrollLeft / RULER_TICK)));
+    if (i !== idxRef.current) { idxRef.current = i; setIdx(i); onChange?.(valAt(i)); }
     if (!userScrolled.current) return;
     clearTimeout(settleTimer.current);
-    settleTimer.current = setTimeout(() => onSettle?.(vals[idxRef.current]), 180);
+    settleTimer.current = setTimeout(() => onSettle?.(valAt(idxRef.current)), 180);
   };
   const markUser = () => { userScrolled.current = true; };
+  const shown = valAt(idx).toFixed(decimals);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-      <div aria-hidden="true" style={{ flex: 1, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
-        <span style={{ fontSize: 30, fontWeight: 700, color: "#9A3B33" }}>{vals[idx]}</span>
-        <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>ซม.</span>
+    <div>
+      <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums", marginBottom: 2 }}>
+        <span style={{ fontSize: 28, fontWeight: 700, color: "#9A3B33" }}>{shown}</span>
+        <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>{unit}</span>
       </div>
-      <div style={{ position: "relative", flex: "0 0 96px", height: H }}>
-        <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: H / 2 - 1.5, height: 3, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
-        <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onWheel={markUser} onPointerDown={markUser}
-          role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={vals[idx]} aria-valuetext={`${vals[idx]} เซนติเมตร`}
+      <div style={{ position: "relative", height: 62 }}>
+        <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: 2, width: 3, height: 40, marginLeft: -1.5, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
+        <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onPointerDown={markUser}
+          role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={valAt(idx)} aria-valuetext={`${shown} ${ariaUnit || unit}`}
           onKeyDown={(e) => {
-            if (e.key === "ArrowUp") { e.preventDefault(); markUser(); pick(idxRef.current - 1); }
-            if (e.key === "ArrowDown") { e.preventDefault(); markUser(); pick(idxRef.current + 1); }
+            if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); markUser(); pick(idxRef.current + 1); }
+            if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); markUser(); pick(idxRef.current - 1); }
           }}
-          style={{ height: "100%", overflowY: "scroll", scrollSnapType: "y mandatory", overscrollBehavior: "contain", outline: "none",
-            WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent)", maskImage: "linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent)" }}>
-          <div style={{ height: H / 2 - RULER_TICK / 2 }} />
-          {vals.map((v) => (
-            <div key={v} style={{ position: "relative", height: RULER_TICK, scrollSnapAlign: "center" }}>
-              <span style={{ position: "absolute", right: 0, top: RULER_TICK / 2 - 0.5, height: 1, width: v % 10 === 0 ? 34 : v % 5 === 0 ? 24 : 14, background: v % 10 === 0 ? "#B7A5A1" : "#D9C3BE" }} />
-              {v % 10 === 0 && <span style={{ position: "absolute", left: 0, top: RULER_TICK / 2 - 8, fontSize: 11, lineHeight: "16px", color: "#7A6360", fontVariantNumeric: "tabular-nums" }}>{v}</span>}
-            </div>
-          ))}
-          <div style={{ height: H / 2 - RULER_TICK / 2 }} />
+          style={{ height: "100%", overflowX: "scroll", overflowY: "hidden", scrollSnapType: "x mandatory", overscrollBehavior: "contain", outline: "none", display: "flex",
+            WebkitMaskImage: "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)", maskImage: "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)" }}>
+          <div style={{ flex: `0 0 calc(50% - ${RULER_TICK / 2}px)` }} />
+          {Array.from({ length: count }, (_, i) => {
+            const major = i % majorEvery === 0;
+            const mid = !major && midEvery && i % midEvery === 0;
+            return (
+              <div key={i} style={{ position: "relative", flex: `0 0 ${RULER_TICK}px`, height: "100%", scrollSnapAlign: "center" }}>
+                <span style={{ position: "absolute", left: RULER_TICK / 2 - 0.5, top: 6, width: 1, height: major ? 28 : mid ? 20 : 12, background: major ? "#B7A5A1" : "#D9C3BE" }} />
+                {major && <span style={{ position: "absolute", left: RULER_TICK / 2, top: 40, transform: "translateX(-50%)", fontSize: 11, color: "#7A6360", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{Math.round(valAt(i))}</span>}
+              </div>
+            );
+          })}
+          <div style={{ flex: `0 0 calc(50% - ${RULER_TICK / 2}px)` }} />
         </div>
       </div>
     </div>
@@ -2456,7 +2471,6 @@ function AppInner() {
   const [profileOpenChoice, setProfileOpenChoice] = useState(null); // "bloodType" | "donorType" | null
   const [profileSavedKey, setProfileSavedKey] = useState(null);
   const [pickerPreview, setPickerPreview] = useState(null); // { key, value } while a picker scrolls
-  const weightPartsRef = useRef(null);
   const profileSavedTimerRef = useRef(null);
   const [showRemindPause, setShowRemindPause] = useState(false);
   const [remindPauseChoice, setRemindPauseChoice] = useState("6");
@@ -7101,7 +7115,7 @@ function AppInner() {
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
             { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก ชาย, หญิง หรือไม่ระบุ"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender },
-            // Birth year and weight: scroll wheels; height: an upright ruler
+            // Birth year: scroll wheel; height and weight: horizontal rulers
             // (profile-number-picker-designs.html, design 1 + 4). Each saves
             // once the scroll settles.
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "picker", unit: "พ.ศ." },
@@ -7137,11 +7151,6 @@ function AppInner() {
             commitProfile({ [key]: v }, key);
           }
         };
-        const kgValues = Array.from({ length: 171 }, (_, i) => 30 + i);
-        const decValues = Array.from({ length: 10 }, (_, i) => i);
-        const w0 = weight === "" ? 55 : Math.min(200, Math.max(30, Number(weight)));
-        const weightParts = { kg: Math.floor(w0), dec: Math.round((w0 - Math.floor(w0)) * 10) % 10 };
-        const weightFrom = () => Math.round((weightPartsRef.current.kg + weightPartsRef.current.dec / 10) * 10) / 10;
         const pickerPanel = (key) => {
           if (key === "birthYear") {
             const years = Array.from({ length: 101 }, (_, i) => nowBE - 100 + i);
@@ -7149,24 +7158,11 @@ function AppInner() {
               ariaValueText={(v) => `พ.ศ. ${v} อายุ ${nowBE - v} ปี`} onChange={preview(key)} onSettle={settle(key)} />;
           }
           if (key === "height") {
-            return <VerticalRuler min={MIN_HEIGHT} max={MAX_HEIGHT} value={height === "" ? 160 : Math.round(Number(height))} label="ส่วนสูง เซนติเมตร"
-              onChange={preview(key)} onSettle={settle(key)} />;
+            return <HorizontalRuler min={MIN_HEIGHT} max={MAX_HEIGHT} step={1} majorEvery={10} midEvery={5} unit="ซม." ariaUnit="เซนติเมตร"
+              value={height === "" ? 160 : Math.round(Number(height))} label="ส่วนสูง" onChange={preview(key)} onSettle={settle(key)} />;
           }
-          if (!weightPartsRef.current) weightPartsRef.current = { ...weightParts };
-          const onPart = (part, fire) => (v) => {
-            weightPartsRef.current = { ...weightPartsRef.current, [part]: v };
-            fire(weightFrom());
-          };
-          return (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <WheelPicker values={kgValues} value={weightParts.kg} width={96} label="น้ำหนัก กิโลกรัม"
-                onChange={onPart("kg", preview(key))} onSettle={onPart("kg", settle(key))} />
-              <span aria-hidden="true" style={{ fontSize: 22, fontWeight: 700, color: "#3A2C29" }}>.</span>
-              <WheelPicker values={decValues} value={weightParts.dec} width={60} label="น้ำหนัก ทศนิยม"
-                onChange={onPart("dec", preview(key))} onSettle={onPart("dec", settle(key))} />
-              <span aria-hidden="true" style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>กก.</span>
-            </div>
-          );
+          return <HorizontalRuler min={30} max={200} step={0.1} decimals={1} majorEvery={10} midEvery={5} unit="กก." ariaUnit="กิโลกรัม"
+            value={weight === "" ? 55 : Math.min(200, Math.max(30, Number(weight)))} label="น้ำหนัก" onChange={preview(key)} onSettle={settle(key)} />;
         };
         const copyDonorId = async () => {
           try {
@@ -7286,7 +7282,7 @@ function AppInner() {
                     <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       {r.kind === "choice" || r.kind === "action" || r.kind === "picker" ? (
                         <>
-                          <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); weightPartsRef.current = null; setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
+                          <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
                             style={{ ...itemStyle, border: "none", cursor: "pointer", background: isOpen ? "#FBEFEC" : "transparent" }}>
                             {iconEl}
                             <span style={{ flex: 1, minWidth: 0 }}>
@@ -7319,7 +7315,10 @@ function AppInner() {
                             </div>
                           )}
                           {isOpen && r.kind === "picker" && (
-                            <div style={{ padding: "10px 0 6px 46px" }}>
+                            // Rulers use the row's full width so the scale is centred on
+                            // screen (easy from either hand); the year wheel lines up
+                            // with the row text like the chips do.
+                            <div style={{ padding: r.key === "birthYear" ? "10px 0 6px 46px" : "10px 0 6px" }}>
                               {pickerPanel(r.key)}
                               {committed[r.key] !== "" && (
                                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
