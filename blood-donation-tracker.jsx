@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.138";
+const APP_VERSION = "1.0.139";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7390,6 +7390,9 @@ function AppInner() {
         };
         // Equal-width chips: each group is a grid of equal columns, so every
         // chip in a row is the same width (padding kept small for Rh labels).
+        // Let the chosen drop / Rh segment settle for a beat before the panel folds,
+        // and only close it if the user hasn't moved on to another row meanwhile.
+        const closeBloodSoon = () => setTimeout(() => setProfileOpenChoice(o => (o === "blood" ? null : o)), 420);
         const chipGrid = (cols) => ({ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 8 });
         const chip = (on) => ({ minHeight: 40, minWidth: 0, padding: "0 6px", whiteSpace: "nowrap", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
@@ -7519,7 +7522,7 @@ function AppInner() {
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
                                       onClick={() => {
                                         if (!on) commitProfile({ bloodType: bt }, "blood");
-                                        if (bloodRh) setProfileOpenChoice(null);
+                                        if (bloodRh) closeBloodSoon();
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
@@ -7541,7 +7544,7 @@ function AppInner() {
                                   const on = bloodRh === v;
                                   return (
                                     <button key={v} role="radio" aria-checked={on}
-                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) setProfileOpenChoice(null); }}
+                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) closeBloodSoon(); }}
                                       style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
