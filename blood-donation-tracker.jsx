@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.144";
+const APP_VERSION = "1.0.145";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7324,8 +7324,8 @@ function AppInner() {
           : <span style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
               {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
               {rhSign && (
-                <span aria-label={bloodRh === "+" ? "Rh บวก" : "Rh ลบ"} style={{ fontFamily: "'Mitr', 'Inter', sans-serif", fontSize: 15, fontWeight: 500 }}>
-                  Rh<sup aria-hidden="true" style={{ fontSize: "0.78em", lineHeight: 0, position: "relative", top: "-0.2em", marginLeft: 1 }}>{rhSign}</sup>
+                <span aria-label={bloodRh === "+" ? "Rh บวก" : "Rh ลบ"}>
+                  Rh<sup aria-hidden="true" style={{ fontSize: "0.85em", lineHeight: 0, position: "relative", top: "-0.2em", marginLeft: 1 }}>{rhSign}</sup>
                 </span>
               )}
             </span>;
