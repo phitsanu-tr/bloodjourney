@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แก้ไขในแถว</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --red:#9A3B33; --line:#EEDEDA; --line2:#E3C8C3; --sep:#F3E7E4; --soft:#F3EAE8; --bg:#FBF6F5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding-inline: 16px; padding-block: 24px 60px; }
+  h1 { font-size: 21px; font-weight: 600; text-align: center; margin: 0 0 4px; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; max-width: 680px; margin: 0 auto 22px; line-height: 1.6; }
+  .grid { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+  .panel { width: 360px; max-width: 100%; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 80px; }
+  .stage { background: rgba(36,26,24,.45); border-radius: 26px; padding: 22px 12px; }
+  .box { background: var(--bg); border-radius: 18px; padding: 20px; }
+  .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .hd b { font-size: 15.5px; font-weight: 700; }
+  .me { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .av { position: relative; width: 52px; height: 52px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+  .cam { position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; }
+  .nm { font-size: 15px; font-weight: 600; } .chg { font-size: 12.5px; color: var(--red); font-weight: 600; margin-top: 2px; }
+  .sl { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: .3px; margin: 0 0 6px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 4px; margin-bottom: 16px; }
+  .row { position: relative; display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 8px; font-size: 13.5px; color: var(--ink2); cursor: text; border-radius: 9px; transition: background .15s; }
+  .row.choice { cursor: pointer; }
+  .item + .item .row { border-top: 1px solid var(--sep); }
+  .item + .item .row.v3, .item + .item .row.v2 { }
+  .row svg.ic { flex-shrink: 0; }
+  .row .lab { flex-shrink: 0; }
+  .val { margin-left: auto; min-width: 0; flex: 1; text-align: right; font: inherit; font-size: 13.5px; color: var(--mut); background: none; border: none; outline: none; padding: 0; caret-color: var(--red); }
+  .val::placeholder { color: #B7A5A1; }
+  .unit { color: var(--mut); font-size: 13.5px; }
+  .tail { width: 16px; display: flex; justify-content: center; flex-shrink: 0; }
+  .err { display: none; font-size: 11.5px; color: #B3261E; padding: 0 8px 8px 34px; }
+  .item.bad .err { display: block; }
+  .saved { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #2E7D4F; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; background: #fff; padding-left: 6px; }
+  .item.ok .saved { opacity: 1; }
+  .opts { display: none; flex-wrap: wrap; gap: 8px; padding: 2px 8px 12px 34px; }
+  .item.open .opts { display: flex; }
+  .opt { min-height: 40px; min-width: 50px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--line2); background: #fff; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink2); cursor: pointer; }
+  .opt.on { background: var(--red); border-color: var(--red); color: #FFF7F5; }
+  .lock { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; color: var(--mut); }
+
+  /* V1: whole row tints while editing */
+  .v1 .item.editing .row, .v1 .item.open .row { background: #FBEFEC; }
+  .v1 .item.editing .val { color: var(--ink2); }
+  /* V2: red underline under the value only */
+  .v2 .val { padding-bottom: 2px; border-bottom: 2px solid transparent; flex: 0 1 auto; width: 9ch; }
+  .v2 .item.editing .val { border-bottom-color: var(--red); color: var(--ink2); }
+  .v2 .item.open .row .cur { border-bottom: 2px solid var(--red); }
+  /* V3: value sits in a faint pill that becomes the typing spot */
+  .v3 .pill { margin-left: auto; display: flex; align-items: center; gap: 4px; background: var(--soft); border-radius: 9px; padding: 0 10px; height: 32px; max-width: 60%; border: 1px solid transparent; transition: background .15s, border-color .15s; }
+  .v3 .pill .val { width: 100%; flex: 1; }
+  .v3 .item.editing .pill, .v3 .item.open .pill { background: #fff; border-color: var(--red); box-shadow: 0 0 0 3px rgba(154,59,51,.1); }
+  .v3 .item.editing .val { color: var(--ink2); }
+  .note { max-width: 760px; margin: 32px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.75; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; }
+  .note p { margin: 0 0 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<h1>แก้ไขในแถว (Inline editing)</h1>
+<p class="lead">ลองได้จริงในหน้านี้: แตะค่าทางขวาแล้วพิมพ์ กด Enter หรือแตะที่อื่นเพื่อบันทึก (จะขึ้น “บันทึกแล้ว” สั้น ๆ) ลองกรอกอายุ 200 เพื่อดูข้อความเตือน แถวหมู่โลหิตกับประเภทผู้บริจาคแตะแล้วกางตัวเลือก ภาพตั้งต้นของแต่ละแบบโชว์แถวอายุตอนกำลังแก้</p>
+<div class="grid" id="grid"></div>
+<div class="note">
+  <h2>เหมือนกันทุกแบบ</h2>
+  <p>ไม่มีหน้าต่างเด้ง ไม่มีปุ่มบันทึกรวม แต่ละแถวบันทึกเองตอนกด “เสร็จ” บนคีย์บอร์ดหรือแตะออกจากแถว ถ้ากรอกผิดจะไม่บันทึกและบอกตัวแดงใต้แถวนั้น ช่องตัวเลขเปิดคีย์บอร์ดตัวเลข ตัวหนังสือตอนพิมพ์ 16px บนมือถือจริงเพื่อไม่ให้ iPhone ซูมจอ และกล่องจะเลื่อนแถวที่กำลังแก้ขึ้นมาให้พ้นคีย์บอร์ดเอง</p>
+  <p>ในหน้านี้ตัวอย่างใช้ตัวหนังสือ 13.5px ให้ตรงกับขนาดแถวบนจอ</p>
+</div>
+<script>
+const P = {
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  cake:'<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/>',
+  weight:'<circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/>',
+  drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  award:'<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  pen:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
+  chev:'<path d="m9 18 6-6-6-6"/>', down:'<path d="m6 9 6 6 6-6"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', cam:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+};
+const ic = (n, s = 16, c = '#9A3B33', cls = '') => `<svg class="${cls}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+const FIELDS = [
+  { g: 'ข้อมูลส่วนตัว', rows: [
+    { k: 'first', icon: 'user', lab: 'ชื่อ', val: 'ต้น', type: 'text', ph: 'ใส่ชื่อ' },
+    { k: 'last', icon: 'users', lab: 'นามสกุล', val: '', type: 'text', ph: 'ไม่บังคับ' },
+    { k: 'age', icon: 'cake', lab: 'อายุ', val: '34', type: 'num', unit: 'ปี', ph: '—' },
+    { k: 'weight', icon: 'weight', lab: 'น้ำหนัก', val: '62', type: 'num', unit: 'กก.', ph: '—' },
+  ] },
+  { g: 'สำหรับการบริจาค', rows: [
+    { k: 'blood', icon: 'drop', lab: 'หมู่โลหิต', val: 'O', type: 'choice', opts: ['A', 'B', 'AB', 'O', 'ไม่ระบุ'] },
+    { k: 'donor', icon: 'award', lab: 'ประเภทผู้บริจาค', val: 'บุคคลทั่วไป', type: 'choice', opts: ['บุคคลทั่วไป', 'พระภิกษุสงฆ์'] },
+  ] },
+];
+const V = [
+  { cls: 'v1', name: 'แถวเปลี่ยนสีตอนแก้', desc: 'แตะแล้วทั้งแถวเป็นสีชมพูอ่อน ค่าทางขวาพิมพ์ได้เลย ไม่มีกรอบ ท้ายแถวเป็นไอคอนดินสอเล็ก ๆ บอกว่าแก้ได้ เรียบที่สุด ใกล้กับหน้าตั้งค่าของ iPhone', tail: 'pen' },
+  { cls: 'v2', name: 'ขีดเส้นใต้สีแดง', desc: 'ตอนปกติเหมือนแถวธรรมดา แตะแล้วมีเส้นสีแดงขีดใต้ค่าที่กำลังพิมพ์ เห็นชัดว่าตรงไหนกำลังถูกแก้ แต่ตอนยังไม่แตะ ไม่มีอะไรบอกว่าแก้ได้นอกจากดินสอท้ายแถว', tail: 'pen' },
+  { cls: 'v3', name: 'ค่าอยู่ในแคปซูลจาง ๆ', desc: 'ค่าทุกแถวอยู่ในแคปซูลสีชมพูจาง ดูออกทันทีว่าแตะแก้ได้ แตะแล้วแคปซูลเปลี่ยนเป็นขอบแดง ไม่ต้องมีไอคอนท้ายแถว ชัดที่สุดสำหรับคนที่ไม่คุ้นกับการแก้ในแถว', tail: null },
+];
+function rowHTML(v, f) {
+  const tail = v.tail ? `<span class="tail">${ic(f.type === 'choice' ? 'down' : v.tail, 14, '#B7A5A1')}</span>` : '';
+  let valEl;
+  if (f.type === 'choice') valEl = `<span class="val cur" style="flex:0 1 auto;${v.cls==='v3'?'':'margin-left:auto'}">${f.val}</span>`;
+  else valEl = `<input class="val" ${f.type === 'num' ? 'inputmode="numeric"' : ''} value="${f.val}" placeholder="${f.ph}" aria-label="${f.lab}">${f.unit ? `<span class="unit">${f.unit}</span>` : ''}`;
+  const inner = v.cls === 'v3' ? `<span class="pill">${valEl}</span>` : valEl;
+  const opts = f.type === 'choice' ? `<div class="opts" role="radiogroup" aria-label="${f.lab}">${f.opts.map(o => `<button class="opt ${o === f.val ? 'on' : ''}" role="radio" aria-checked="${o === f.val}">${o}</button>`).join('')}</div>` : '';
+  return `<div class="item" data-k="${f.k}" data-type="${f.type}"><div class="row ${f.type === 'choice' ? 'choice' : ''} ${v.cls}">${ic(f.icon, 16, '#9A3B33', 'ic')}<span class="lab">${f.lab}</span>${inner}${tail}<span class="saved">✓ บันทึกแล้ว</span></div><div class="err">อายุต้องอยู่ระหว่าง 0–120 ปี</div>${opts}</div>`;
+}
+document.getElementById('grid').innerHTML = V.map((v, i) => `<div class="panel"><span class="tag">แบบ ${i + 1}</span><p class="name">${v.name}</p><p class="desc">${v.desc}</p>
+<div class="stage"><div class="box ${v.cls}"><div class="hd"><b>โปรไฟล์ของฉัน</b>${ic('x', 19, '#3A2C29')}</div>
+<div class="me"><span class="av">ต<span class="cam">${ic('cam', 10, '#FFF7F5')}</span></span><div><div class="nm">ต้น</div><div class="chg">เปลี่ยนรูป</div></div></div>
+${FIELDS.map(g => `<div class="sl">${g.g}</div><div class="card">${g.rows.map(f => rowHTML(v, f)).join('')}</div>`).join('')}
+<div class="lock">${ic('lock', 12, '#7A6360')} ข้อมูลเก็บในเครื่องนี้เท่านั้น</div></div></div></div>`).join('');
+
+// behaviour
+document.querySelectorAll('.box').forEach(box => {
+  box.querySelectorAll('.item').forEach(item => {
+    const type = item.dataset.type, row = item.querySelector('.row');
+    if (type === 'choice') {
+      row.addEventListener('click', () => { const was = item.classList.contains('open'); box.querySelectorAll('.item.open').forEach(x => x.classList.remove('open')); if (!was) item.classList.add('open'); });
+      item.querySelectorAll('.opt').forEach(o => o.addEventListener('click', (e) => {
+        e.stopPropagation(); item.querySelectorAll('.opt').forEach(x => { x.classList.toggle('on', x === o); x.setAttribute('aria-checked', x === o); });
+        item.querySelector('.cur').textContent = o.textContent; item.classList.remove('open'); flash(item);
+      }));
+      return;
+    }
+    const inp = item.querySelector('input');
+    let before = inp.value;
+    row.addEventListener('click', (e) => { if (e.target !== inp) inp.focus(); });
+    inp.addEventListener('focus', () => { before = inp.value; item.classList.add('editing'); item.classList.remove('ok'); });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = before; inp.blur(); } });
+    inp.addEventListener('input', () => { if (type === 'num') inp.value = inp.value.replace(/[^0-9]/g, '').slice(0, 3); item.classList.remove('bad'); });
+    inp.addEventListener('blur', () => {
+      item.classList.remove('editing');
+      if (item.dataset.k === 'age' && inp.value !== '' && +inp.value > 120) { item.classList.add('bad'); inp.value = before; return; }
+      if (inp.value !== before) flash(item);
+      if (item.dataset.k === 'first') box.querySelector('.nm').textContent = inp.value || 'ยังไม่ได้ใส่ชื่อ';
+    });
+  });
+  // resting preview: age row shown in its editing look
+  const pv = box.querySelector('.item[data-k="age"]'); pv.classList.add('editing', 'preview');
+  box.addEventListener('pointerdown', () => { if (pv.classList.contains('preview')) { pv.classList.remove('preview'); if (document.activeElement !== pv.querySelector('input')) pv.classList.remove('editing'); } }, true);
+});
+function flash(item) { item.classList.add('ok'); clearTimeout(item._t); item._t = setTimeout(() => item.classList.remove('ok'), 1400); }
+</script>
+</body>
+</html>
