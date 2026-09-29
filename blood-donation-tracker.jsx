@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.110";
+const APP_VERSION = "1.0.111";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -6805,7 +6805,14 @@ function AppInner() {
                   donor type expand their options under the item. */}
               <div style={{ marginBottom: 16 }}>
                 {groups.flatMap(g => g.rows).map((r, ri, all) => {
-                  const itemStyle = { display: "block", width: "100%", padding: "9px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
+                  const itemStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "9px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
+                  // Icon in a soft pink circle (design 3 of profile-icons-8.html),
+                  // the same treatment as the new-user rows on the home tab.
+                  const iconEl = (
+                    <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <r.Icon size={17} color="#9A3B33" />
+                    </span>
+                  );
                   const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
                   const hint = criteriaHint(r.key);
                   const saved = profileSavedKey === r.key
@@ -6817,14 +6824,17 @@ function AppInner() {
                         <>
                           <button onClick={() => setProfileOpenChoice(o => (o === r.key ? null : r.key))} aria-expanded={profileOpenChoice === r.key}
                             style={{ ...itemStyle, border: "none", cursor: "pointer", background: profileOpenChoice === r.key ? "#FBEFEC" : "transparent" }}>
-                            {labelEl}
-                            <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
-                              <span style={{ flex: 1, fontSize: 15, color: "#3A2C29" }}>{r.value}</span>
-                              {saved}
+                            {iconEl}
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              {labelEl}
+                              <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
+                                <span style={{ flex: 1, fontSize: 15, color: "#3A2C29" }}>{r.value}</span>
+                                {saved}
+                              </span>
                             </span>
                           </button>
                           {profileOpenChoice === r.key && (
-                            <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "4px 0 12px" }}>
+                            <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "4px 0 12px 46px" }}>
                               {r.options.map(o => (
                                 <button key={o.v} role="radio" aria-checked={r.current === o.v}
                                   onClick={() => { setProfileOpenChoice(null); if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); }}
@@ -6835,6 +6845,8 @@ function AppInner() {
                         </>
                       ) : (
                         <label htmlFor={`profile-${r.key}`} className="prow-edit" style={{ ...itemStyle, cursor: "text" }}>
+                          {iconEl}
+                          <span style={{ flex: 1, minWidth: 0 }}>
                           {labelEl}
                           <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
                             <input id={`profile-${r.key}`}
@@ -6872,10 +6884,11 @@ function AppInner() {
                               style={{ flex: 1, minWidth: 0, border: "none", background: "none", outline: "none", padding: 0, fontSize: 15, fontFamily: "inherit", color: "#3A2C29", caretColor: "#9A3B33" }} />
                             {saved}
                           </span>
+                          </span>
                         </label>
                       )}
                       {profileInlineError[r.key] && (
-                        <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", padding: "0 0 8px" }}>{profileInlineError[r.key]}</div>
+                        <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", padding: "0 0 8px 46px" }}>{profileInlineError[r.key]}</div>
                       )}
                     </div>
                   );
