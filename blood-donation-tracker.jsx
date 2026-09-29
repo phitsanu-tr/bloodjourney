@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.177";
+const APP_VERSION = "1.0.178";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1466,7 +1466,7 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
         {unit && <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>{unit}</span>}
         {caption && <span style={{ fontSize: 12, color: "#7A6360", marginLeft: 6 }}>· {caption(valAt(idx))}</span>}
       </div>
-      <div style={{ position: "relative", height: 62 }}>
+      <div style={{ position: "relative", height: 58 }}>
         <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: 2, width: 3, height: 40, marginLeft: -1.5, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
         <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onPointerDown={markUser}
           role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={valAt(idx)} aria-valuetext={`${unitBefore ? unitBefore + " " : ""}${shown}${unit ? " " + (ariaUnit || unit) : ""}${caption ? " " + caption(valAt(idx)) : ""}`}
@@ -5463,6 +5463,7 @@ function AppInner() {
         .prow-edit:focus-within { background: #FBEFEC !important; }
         .prow-edit:focus-within input { color: #3A2C29 !important; }
         .prow-edit input::placeholder { color: #80726F; opacity: 1; }
+        .prow-edit input { text-overflow: ellipsis; }
         .prow-edit:focus-within input::placeholder { color: transparent; }
         .prow-edit .prow-unit-empty { display: none; }
         .prow-edit:focus-within .prow-unit-empty { display: inline; }
@@ -5946,7 +5947,7 @@ function AppInner() {
                   </span>
                   <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1 }}>
                     {remindPaused ? (
-                      // Donor paused reminders (profile → พักการเตือนชั่วคราว).
+                      // Donor paused reminders (settings → การเตือน → พักการเตือนชั่วคราว).
                       <>
                         <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</div>
                         <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
@@ -7383,7 +7384,7 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `น้ำหนัก ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: "อยู่ในเกณฑ์", color: "#2E7D4F" } : { text: "อยู่นอกเกณฑ์", color: "#9C5515" };
         };
-        const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาคโลหิต" };
+        const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
@@ -7396,7 +7397,6 @@ function AppInner() {
                 </span>
               )}
             </span>;
-        const paused = isRemindPaused(remindPauseUntil);
         const groups = [
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
@@ -7415,9 +7415,6 @@ function AppInner() {
             { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
             { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือกประเภทผู้บริจาค"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
-            { key: "pause", Icon: BellOff, label: "พักการเตือนชั่วคราว", kind: "action",
-              value: paused ? (remindPauseUntil === "indefinite" ? "พักอยู่ จนกว่าจะเปิดเอง" : `พักถึง ${toBuddhistDate(remindPauseUntil)}`) : "ปิดอยู่",
-              onClick: () => { setRemindPauseChoice("6"); setShowRemindPause(true); } },
           ] },
         ];
         const committed = { birthYear, height, weight };
@@ -7509,7 +7506,7 @@ function AppInner() {
                 style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="เปลี่ยนรูปโปรไฟล์"
+                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label={photo ? "เปลี่ยนรูปโปรไฟล์" : "เพิ่มรูปโปรไฟล์"}
                     style={{ width: 52, height: 52, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -7546,7 +7543,7 @@ function AppInner() {
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy}
                     style={{ position: "relative", marginTop: 2, padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
                     <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
-                    {photoBusy ? "กำลังประมวลผลรูป..." : "เปลี่ยนรูป"}
+                    {photoBusy ? "กำลังประมวลผลรูป..." : photo ? "เปลี่ยนรูป" : "เพิ่มรูป"}
                   </button>
                 </div>
               </div>
@@ -7663,24 +7660,24 @@ function AppInner() {
                                   );
                                 })}
                               </div>
-                              <div style={{ fontSize: 11, color: "#7A6360", marginTop: 8 }}>ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</div>
+                              <div style={{ fontSize: 11, color: "#7A6360", marginTop: 8 }}>ดูได้จากบัตรผู้บริจาค (คนไทยส่วนใหญ่ Rh+)</div>
                             </div>
                           )}
                           {isOpen && r.kind === "picker" && (
                             // Rulers use the row's full width so the scale is centred on
                             // screen (easy from either hand).
-                            <div style={{ position: "relative", padding: isCriteriaRow ? "34px 0 6px" : "10px 0 6px" }}>
+                            <div style={{ position: "relative", padding: isCriteriaRow ? "34px 0 2px" : "10px 0 2px" }}>
                               {isCriteriaRow && hint && (
                                 <span role="status" style={{ position: "absolute", top: 8, right: 0, fontSize: 11.5, fontWeight: 500, padding: "3px 10px", borderRadius: 12, whiteSpace: "nowrap",
                                   color: hint.color, background: hint.color === "#2E7D4F" ? "#E8F4EC" : hint.color === "#9C5515" ? "#FBEFE3" : "#F3EAE8" }}>{hint.text}</span>
                               )}
                               {pickerPanel(r.key)}
                               {(() => {
-                                // "ล้างค่า" appears as soon as the scale moves (or a value is already saved); the slot is
-                                // always reserved so the layout doesn't jump when it shows up.
+                                // "ล้างค่า" appears as soon as the scale moves (or a value is already saved). It sits
+                                // beside the big number (absolute), so showing it never moves the layout.
                                 const canClear = committed[r.key] !== "" || (pickerPreview && pickerPreview.key === r.key);
                                 return (
-                                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4, minHeight: 18 }}>
+                                  <div style={{ position: "absolute", right: 0, top: isCriteriaRow ? 46 : 22 }}>
                                     <button tabIndex={canClear ? 0 : -1} aria-hidden={canClear ? undefined : "true"}
                                       onClick={() => {
                                         clearTimeout(pickerCloseTimer); pickerDirtyKey = null;
@@ -8160,7 +8157,18 @@ function AppInner() {
             </div>
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>การเตือน</div>
-            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "12px 12px 14px", marginBottom: 18 }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px 14px", marginBottom: 18 }}>
+              <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 52, padding: "6px 0", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", marginBottom: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                <BellOff size={16} color="#9A3B33" style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13.5, color: "#3A2C29" }}>พักการเตือนชั่วคราว</span>
+                  <span style={{ display: "block", fontSize: 12, color: remindPaused ? "#9C5515" : "#7A6360" }}>
+                    {remindPaused ? (remindPauseUntil === "indefinite" ? "พักอยู่ จนกว่าจะเปิดเอง" : `พักถึง ${toBuddhistDate(remindPauseUntil)}`) : "ปิดอยู่"}
+                  </span>
+                </span>
+                <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} />
+              </button>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — โลหิตรวม (วัน)</label>
               <input type="number" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={cycleDays}
                 onChange={(e) => setCycleDays(e.target.value === "" ? "" : Number(e.target.value))}
