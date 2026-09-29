@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ยกเลิกค่าที่เลือก — 4 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#F6EFEC;font-family:'Mitr',sans-serif;color:#3A2C29;padding:20px 16px 60px}
+h1{font-size:18px;margin:0 0 4px}p.sub{margin:0 0 20px;font-size:13px;color:#7A6360;line-height:1.5;max-width:1500px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px;max-width:1500px}
+.lab{font-size:13px;font-weight:600;margin:0 0 4px}.desc{font-size:12px;color:#7A6360;margin:0 0 10px;line-height:1.5;min-height:54px}
+.phone{background:#fff;border-radius:22px;padding:8px 16px 14px;box-shadow:0 2px 14px rgba(90,40,30,.1)}
+.row{display:flex;align-items:center;gap:12px;padding:9px 8px;margin:0 -8px;border-radius:9px}.row.open{background:#FBEFEC}
+.ico{width:34px;height:34px;border-radius:17px;background:#F3EAE8;flex:none}
+.row small{display:block;font-size:11.5px;color:#7A6360}.row b{font-weight:400;font-size:15px;line-height:22px;display:block}.ph{color:#80726F}
+.pnl{padding:6px 0 10px 46px}
+.seg{position:relative;display:flex;background:#FDF6F4;border:1px solid #F3E7E4;border-radius:14px;padding:3px}
+.ind{position:absolute;top:3px;bottom:3px;border-radius:11px;background:#9A3B33;transition:left .22s,opacity .18s}
+.seg button{position:relative;z-index:1;flex:1;min-width:0;height:42px;border:none;background:none;border-radius:11px;font:inherit;font-weight:500;font-size:16px;color:#7A6360;cursor:pointer;transition:color .2s}
+.seg button.on{color:#fff}
+.sub2{font-size:11px;color:#7A6360;margin:2px 0 6px}
+.tip{font-size:11.5px;color:#7A6360;margin-top:7px}
+.clr{display:block;margin:6px 0 0 auto;background:none;border:none;font:inherit;font-size:12px;font-weight:600;color:#9A3B33;cursor:pointer;padding:0}
+.x{display:inline-block;margin-left:6px;font-size:13px;opacity:.85}
+.sep{border-top:1px solid #F3E7E4;margin:4px 0}
+.reset{margin:10px auto 0;display:block;background:none;border:none;font:inherit;font-size:11.5px;color:#7A6360;text-decoration:underline;cursor:pointer}
+.pop{animation:pop .2s}@keyframes pop{0%{transform:scale(.96)}100%{transform:scale(1)}}
+</style></head><body>
+<h1>ยกเลิกค่าที่เลือก — 4 แบบ</h1>
+<p class="sub">ใช้กับ <b>หมู่โลหิต (A/B/AB/O)</b> และ <b>ประเภทผู้บริจาค</b> ส่วนเพศ ("ไม่ระบุ") กับ Rh ("ไม่ทราบ") มีตัวเลือกอยู่แล้ว ไม่ต้องเปลี่ยน · กดในตัวอย่างได้เลย: แตะค่าที่เลือกอยู่เพื่อยกเลิก แล้วแถวจะกลับเป็น "เลือก…" · ในแอปจริงแผงจะหุบเองหลังเลือก ตัวอย่างนี้ไม่หุบเพื่อให้เห็นผล</p>
+<div class="grid" id="g"></div>
+<script>
+const D=[['1 · แตะซ้ำเพื่อยกเลิก (ไม่มีคำใบ้)','สะอาดที่สุด ไม่มีอะไรเพิ่ม แต่ผู้ใช้ต้องรู้เอง ตัวที่เลือกจะค่อยๆ จางออกเมื่อยกเลิก'],
+['2 · แตะซ้ำ + คำใบ้เล็กใต้แถบ','เหมือนแบบ 1 แต่มีบรรทัดเล็ก "แตะค่าที่เลือกอีกครั้งเพื่อยกเลิก" โผล่เฉพาะตอนมีค่าที่เลือก'],
+['3 · มี × บนปุ่มที่เลือก','ปุ่มที่เลือกแสดง × ต่อท้าย (เช่น "O ✕") บอกว่าแตะเพื่อเอาออกได้ เห็นได้เอง ไม่ต้องอ่านคำใบ้'],
+['4 · ลิงก์ "ล้างค่า" ใต้แถบ','กลับมาใช้คำว่า "ล้างค่า" ขวาใต้แถบเหมือนที่เคยมีบนสเกล ชัดเจนที่สุดแต่เพิ่มบรรทัดในแผง']];
+const OPT={abo:['A','B','AB','O'],don:['บุคคลทั่วไป','พระภิกษุสงฆ์']};
+const S=D.map(()=>({abo:'O',don:'บุคคลทั่วไป'}));
+function seg(i,k){const o=OPT[k],n=o.length,idx=o.indexOf(S[i][k]);
+ const ind=`<span class="ind" style="left:calc(3px + ${Math.max(idx,0)} * (100% - 6px) / ${n});width:calc((100% - 6px) / ${n});opacity:${idx<0?0:1}"></span>`;
+ return `<div class="seg" role="radiogroup">${ind}${o.map((v,j)=>`<button role="radio" aria-checked="${j==idx}" class="${j==idx?'on':''}" style="font-size:${k=='don'?15:16}px" onclick="pick(${i},'${k}',${j})">${v}${i==2&&j==idx?'<span class="x">✕</span>':''}</button>`).join('')}</div>`}
+function pick(i,k,j){const v=OPT[k][j];S[i][k]=S[i][k]===v?'':v;draw()}
+function clr(i,k){S[i][k]='';draw()}
+function block(i,k,label,phTxt,sub){const v=S[i][k];
+ const tip=i==1&&v?`<div class="tip">แตะ “${v}” อีกครั้งเพื่อยกเลิก</div>`:'';
+ const cl=i==3&&v?`<button class="clr" onclick="clr(${i},'${k}')">ล้างค่า</button>`:'';
+ return `<div class="row open"><span class="ico"></span><span><small>${label}</small><b class="${v?'':'ph'}">${v||phTxt}</b></span></div><div class="pnl">${sub?`<div class="sub2">${sub}</div>`:''}${seg(i,k)}${tip}${cl}</div>`}
+function draw(){document.getElementById('g').innerHTML=D.map((d,i)=>`<div><div class="lab">${d[0]}</div><div class="desc">${d[1]}</div><div class="phone">${block(i,'abo','หมู่โลหิต','เลือกหมู่โลหิต','หมู่')}<div class="sep"></div>${block(i,'don','ประเภทผู้บริจาค','เลือกประเภทผู้บริจาค','')}</div><button class="reset" onclick="S[${i}]={abo:'O',don:'บุคคลทั่วไป'};draw()">รีเซ็ตตัวอย่าง</button></div>`).join('')}
+draw();
+</script></body></html>

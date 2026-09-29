@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.164";
+const APP_VERSION = "1.0.165";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2541,6 +2541,7 @@ function AppInner() {
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
   const profileBoxRef = useRef(null);
+  const lastPickedRef = useRef({}); // last chosen option per profile row, so the highlight can fade out in place
   const profileScrollRef = useRef(null);
   const [profileScrolled, setProfileScrolled] = useState(false);
   // Profile dialog: move focus into it, keep Tab inside it, and stop the page behind from scrolling.
@@ -7607,16 +7608,23 @@ function AppInner() {
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
                               <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
-                                {ABO_ONLY.includes(bloodType) && (
-                                  <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${ABO_ONLY.indexOf(bloodType)} * (100% - 6px) / 4)`, width: "calc((100% - 6px) / 4)", borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
-                                )}
+                                {(() => {
+                                  const aboOn = ABO_ONLY.includes(bloodType);
+                                  if (aboOn) lastPickedRef.current.abo = bloodType;
+                                  const shownIdx = ABO_ONLY.indexOf(aboOn ? bloodType : lastPickedRef.current.abo);
+                                  return shownIdx >= 0 ? (
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / 4)`, width: "calc((100% - 6px) / 4)", borderRadius: 11, background: "#9A3B33", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                  ) : null;
+                                })()}
                                 {ABO_ONLY.map(bt => {
                                   const on = bloodType === bt;
                                   return (
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
                                       onClick={() => {
-                                        if (!on) commitProfile({ bloodType: bt }, "blood");
-                                        if (bloodRh) closeBloodSoon(!on);
+                                        // Tapping the chosen group again takes it back off (nothing selected).
+                                        if (on) { commitProfile({ bloodType: "" }, "blood"); return; }
+                                        commitProfile({ bloodType: bt }, "blood");
+                                        if (bloodRh) closeBloodSoon(true);
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
@@ -7662,17 +7670,25 @@ function AppInner() {
                                 // Same sliding segmented bar as the blood group / Rh pickers.
                                 const n = r.options.length;
                                 const idx = r.options.findIndex(o => o.v === r.current);
+                                if (idx >= 0) lastPickedRef.current[r.key] = idx;
+                                const shownIdx = idx >= 0 ? idx : (lastPickedRef.current[r.key] ?? -1);
+                                const canClear = r.key === "donorType"; // gender already has "ไม่ระบุ"
                                 const longest = Math.max(...r.options.map(o => o.label.length));
                                 return (
                                   <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
-                                    {idx >= 0 && (
-                                      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${idx} * (100% - 6px) / ${n})`, width: `calc((100% - 6px) / ${n})`, borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
+                                    {shownIdx >= 0 && (
+                                      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / ${n})`, width: `calc((100% - 6px) / ${n})`, borderRadius: 11, background: "#9A3B33", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                     )}
                                     {r.options.map(o => {
                                       const on = r.current === o.v;
                                       return (
                                         <button key={o.v} role="radio" aria-checked={on}
-                                          onClick={() => { if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); closeRowSoon(r.key, o.v !== r.current); }}
+                                          onClick={() => {
+                                            // Donor type: tapping the chosen option again takes it back off.
+                                            if (canClear && o.v === r.current) { commitProfile({ [r.key]: "" }, r.key); return; }
+                                            if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key);
+                                            closeRowSoon(r.key, o.v !== r.current);
+                                          }}
                                           style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
                                           {o.label}
                                         </button>
