@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.118";
+const APP_VERSION = "1.0.119";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6995,7 +6995,10 @@ function AppInner() {
             showToast("error", "คัดลอกไม่ได้ในแอปนี้ — กดค้างที่ตัวเลขเพื่อคัดลอกเอง");
           }
         };
-        const chip = (on) => ({ minHeight: 40, minWidth: 50, padding: "0 14px", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        // Equal-width chips: each group is a grid of equal columns, so every
+        // chip in a row is the same width (padding kept small for Rh labels).
+        const chipGrid = (cols) => ({ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 8 });
+        const chip = (on) => ({ minHeight: 40, minWidth: 0, padding: "0 6px", whiteSpace: "nowrap", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
         const trail = (key, icon) => profileSavedKey === key
           ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
@@ -7116,15 +7119,15 @@ function AppInner() {
                           {isOpen && r.blood && (
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={chipGrid(4)}>
                                 {BLOOD_TYPES.map(bt => (
                                   <button key={bt} role="radio" aria-checked={bloodType === bt}
                                     onClick={() => { if (bt !== bloodType) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
-                                    style={chip(bloodType === bt)}>{bt === "ไม่ทราบ" ? "ไม่ทราบ" : bt}</button>
+                                    style={{ ...chip(bloodType === bt), gridColumn: bt === "ไม่ทราบ" ? "span 2" : undefined }}>{bt}</button>
                                 ))}
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: "#7A6360", margin: "10px 0 6px" }}>Rh</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={chipGrid(3)}>
                                 {BLOOD_RH.map(([v, label]) => (
                                   <button key={v} role="radio" aria-checked={bloodRh === v}
                                     onClick={() => { if (v !== bloodRh) commitProfile({ bloodRh: v }, "blood"); if (bloodType) setProfileOpenChoice(null); }}
@@ -7136,7 +7139,7 @@ function AppInner() {
                           )}
                           {isOpen && !r.blood && (
                             <div style={{ padding: "10px 0 6px 46px" }}>
-                              <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              <div role="radiogroup" aria-label={r.label} style={chipGrid(r.options.length)}>
                                 {r.options.map(o => (
                                   <button key={o.v} role="radio" aria-checked={r.current === o.v}
                                     onClick={() => { setProfileOpenChoice(null); if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); }}
@@ -7252,9 +7255,9 @@ function AppInner() {
               )}
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px" }}>
                 <div id="remind-pause-len" style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>{paused ? "เปลี่ยนเป็นพักไว้" : "พักไว้"}</div>
-                <div role="radiogroup" aria-labelledby="remind-pause-len" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <div role="radiogroup" aria-labelledby="remind-pause-len" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
                   {REMIND_PAUSE_OPTIONS.map(([v, label]) => (
-                    <button key={v} role="radio" aria-checked={remindPauseChoice === v} onClick={() => setRemindPauseChoice(v)} style={chipStyle(remindPauseChoice === v)}>{label}</button>
+                    <button key={v} role="radio" aria-checked={remindPauseChoice === v} onClick={() => setRemindPauseChoice(v)} style={{ ...chipStyle(remindPauseChoice === v), padding: "0 6px", whiteSpace: "nowrap", gridColumn: v === "indefinite" ? "span 3" : undefined }}>{label}</button>
                   ))}
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
