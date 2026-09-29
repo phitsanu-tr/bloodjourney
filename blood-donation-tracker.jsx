@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.114";
+const APP_VERSION = "1.0.115";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6951,7 +6951,7 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
         };
-        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี (ไม่บังคับ)", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165 (ไม่บังคับ)", donorId: "ดูได้จากบัตรผู้บริจาค" };
+        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165", donorId: "ดูได้จากบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         const rhLabel = bloodRh === "+" ? "Rh+" : bloodRh === "-" ? "Rh−" : "";
         const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่และ Rh")
@@ -6966,7 +6966,7 @@ function AppInner() {
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
-            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือกเพศ (ไม่บังคับ)"),
+            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก ชาย, หญิง หรือไม่ระบุ"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender,
               note: "ใช้ปรับคำแนะนำหลังบริจาค และคำนวณปริมาณเลือดในร่างกาย" },
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "num", unit: "พ.ศ." },
