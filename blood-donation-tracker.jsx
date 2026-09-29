@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.175";
+const APP_VERSION = "1.0.176";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7426,7 +7426,7 @@ function AppInner() {
           if (v === "" || v == null) return ph(placeholders[key]);
           if (key === "birthYear" && Number(v) > 0) {
             const age = nowBE - Number(v);
-            return <>{String(v)}<span style={{ color: "#9A3B33" }}> · อายุ {age} ปี</span></>;
+            return <>{String(v)}<> · อายุ {age} ปี</></>;
           }
           return String(v);
         };
