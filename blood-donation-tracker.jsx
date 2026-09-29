@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.154";
+const APP_VERSION = "1.0.155";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -197,6 +197,7 @@ const STARTING_COUNT_CAP_MARGIN = 1.2;
 const BLOOD_TYPES = ["A", "B", "AB", "O", "ไม่ทราบ"];
 // Year / weight / height rulers: fold the panel a moment after the scale stops moving (cancelled if it moves again).
 let pickerCloseTimer = null;
+let pickerDirtyKey = null; // ruler row that saved something during this open, so the fold still says "saved" even if the last swipe landed on the same value
 const ABO_ONLY = ["A", "B", "AB", "O"]; // what the profile picker offers ("ไม่ทราบ" stays valid for old data/imports)
 const BLOOD_RH = [["+", "บวก (+)"], ["-", "ลบ (−)"], ["unknown", "ไม่ทราบ"]];
 const GENDERS = [["male", "ชาย"], ["female", "หญิง"], ["none", "ไม่ระบุ"]];
@@ -7373,10 +7374,11 @@ function AppInner() {
           } else if (v !== committed[key]) {
             commitProfile({ [key]: v }, key); changed = true;
           }
+          if (changed) pickerDirtyKey = key;
           clearTimeout(pickerCloseTimer);
           pickerCloseTimer = setTimeout(() => {
             setProfileOpenChoice(o => (o === key ? null : o));
-            if (changed) flashSaved(key);
+            if (pickerDirtyKey === key) { pickerDirtyKey = null; flashSaved(key); }
           }, 1000);
         };
         const pickerPanel = (key) => {
@@ -7530,7 +7532,7 @@ function AppInner() {
                     <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       {r.kind === "choice" || r.kind === "action" || r.kind === "picker" ? (
                         <>
-                          <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
+                          <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); if (pickerDirtyKey && (pickerDirtyKey !== r.key || isOpen)) { clearTimeout(pickerCloseTimer); const dk = pickerDirtyKey; pickerDirtyKey = null; flashSaved(dk); } setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
                             style={{ ...itemStyle, border: "none", cursor: "pointer", background: isOpen ? "#FBEFEC" : "transparent" }}>
                             {iconEl}
                             <span style={{ flex: 1, minWidth: 0 }}>
@@ -7600,7 +7602,7 @@ function AppInner() {
                                   <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4, minHeight: 18 }}>
                                     <button tabIndex={canClear ? 0 : -1} aria-hidden={canClear ? undefined : "true"}
                                       onClick={() => {
-                                        clearTimeout(pickerCloseTimer);
+                                        clearTimeout(pickerCloseTimer); pickerDirtyKey = null;
                                         setProfileOpenChoice(null); setPickerPreview(null);
                                         if (committed[r.key] !== "") commitProfile(r.key === "birthYear" ? { birthYear: "", birthYearApprox: false } : { [r.key]: "" }, r.key);
                                       }}
