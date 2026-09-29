@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.161";
+const APP_VERSION = "1.0.162";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7342,7 +7342,7 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
         };
-        const placeholders = { first: "ใส่ชื่อของคุณ", last: "ใส่นามสกุลของคุณ (ไม่บังคับ)", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ใส่เลข 10 หลักบนบัตร" };
+        const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาคโลหิต" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
