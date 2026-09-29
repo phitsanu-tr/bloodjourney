@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.137";
+const APP_VERSION = "1.0.138";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7517,7 +7517,12 @@ function AppInner() {
                                   const on = bloodType === bt;
                                   return (
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
-                                      onClick={() => { if (!on) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
+                                      onClick={() => {
+                                        if (!on) commitProfile({ bloodType: bt }, "blood");
+                                        if (bloodRh) setProfileOpenChoice(null);
+                                        // Rh still missing: bring it into view so the panel doesn't look finished.
+                                        else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
+                                      }}
                                       style={{ position: "relative", border: "none", background: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", transition: "transform .18s", transform: on ? "translateY(-3px) scale(1.08)" : "none" }}>
                                       <svg viewBox="0 0 52 60" aria-hidden="true" style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }}>
                                         <path d="M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z" fill={on ? "#9A3B33" : "#F7E9E6"} style={{ transition: "fill .2s" }} />
@@ -7527,8 +7532,8 @@ function AppInner() {
                                   );
                                 })}
                               </div>
-                              <div id="prof-blood-rh" style={{ fontSize: 11, color: "#7A6360", margin: "10px 0 6px" }}>Rh</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                              <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · เลือกต่ออีกนิด" : "Rh"}</div>
+                              <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
                                 {bloodRh && (
                                   <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${BLOOD_RH.findIndex(([v]) => v === bloodRh)} * (100% - 6px) / 3)`, width: "calc((100% - 6px) / 3)", borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
                                 )}
