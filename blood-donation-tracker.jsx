@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.124";
+const APP_VERSION = "1.0.125";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -110,6 +110,7 @@ const PRIVACY_POLICY_SECTIONS = [
     heading: "5. สถานที่จัดเก็บข้อมูล",
     body: [
       "ข้อมูลทั้งหมดของคุณถูกจัดเก็บไว้ในเครื่อง/อุปกรณ์ของคุณเองเท่านั้น (local storage) แอปไม่มีเซิร์ฟเวอร์ฐานข้อมูลส่วนกลางสำหรับเก็บข้อมูลผู้ใช้ ไม่มีบัญชีผู้ใช้ และผู้พัฒนาแอปไม่สามารถเข้าถึงหรือมองเห็นข้อมูลของคุณได้เลย",
+      "ไฟล์สำรองข้อมูลที่คุณส่งออกจะอยู่ในที่ที่คุณเลือกเก็บ (เช่น โฟลเดอร์ในเครื่อง หรือบริการคลาวด์ของคุณเอง) คุณเลือกตั้งรหัสผ่านเพื่อเข้ารหัสไฟล์สำรองได้ตอนส่งออก การเข้ารหัสและถอดรหัสเกิดขึ้นในเครื่องของคุณเท่านั้น แอปไม่เก็บและไม่ส่งรหัสผ่านไปที่ใด หากลืมรหัสผ่านจะเปิดไฟล์นั้นไม่ได้และผู้พัฒนากู้คืนให้ไม่ได้ ไฟล์ที่ไม่ได้ตั้งรหัสผ่านจะเป็นข้อความธรรมดาที่ใครได้ไฟล์ไปก็อ่านได้",
       "เนื่องจากข้อมูลอยู่ในเครื่องเท่านั้น หากคุณล้างข้อมูลเบราว์เซอร์ ล้างแคชของแอป LINE ถอนการติดตั้ง หรือเปลี่ยนเครื่อง/เปลี่ยนเบราว์เซอร์ ข้อมูลที่ไม่ได้ส่งออกไว้อาจสูญหายและไม่สามารถกู้คืนได้ — แนะนำให้ใช้ฟังก์ชัน \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเพื่อสำรองข้อมูลเป็นระยะ",
     ],
   },
@@ -1295,6 +1296,96 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
 // underlying field to call .focus() on it after a validation error (it used
 // to be the native <input>'s own ref) -- forwarding it to this button gives
 // the same "put the user's attention there" behavior.
+// ---- Password-protected backup (design 3 of backup-encrypt-designs.html) ----
+// The whole backup JSON is encrypted as one block with AES-256-GCM, using a key
+// derived from the donor's password (PBKDF2-SHA256). Everything happens in the
+// browser; the password and the data never leave the device. The small
+// header (format, KDF settings, salt, IV) is not secret. The header's
+// app/format/version are bound in as additional authenticated data, so
+// editing them makes decryption fail instead of silently proceeding.
+const BACKUP_FORMAT_VERSION = 2;
+const BACKUP_KDF_ITERATIONS = 600000;
+const BACKUP_AAD = new TextEncoder().encode(`BloodJourney|backup|${BACKUP_FORMAT_VERSION}`);
+const backupCryptoError = (code) => Object.assign(new Error(code), { code });
+const canEncryptBackup = () => typeof crypto !== "undefined" && !!crypto.subtle && typeof crypto.getRandomValues === "function";
+const bytesToB64 = (u8) => {
+  let out = "";
+  for (let i = 0; i < u8.length; i += 0x8000) out += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(out);
+};
+const b64ToBytes = (b64) => {
+  const bin = atob(b64);
+  const u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+};
+async function deriveBackupKey(password, salt, iterations, usage) {
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(password).normalize("NFKC")), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations, hash: "SHA-256" }, material, { name: "AES-GCM", length: 256 }, false, [usage]);
+}
+async function encryptBackupText(plainText, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveBackupKey(password, salt, BACKUP_KDF_ITERATIONS, "encrypt");
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: BACKUP_AAD }, key, new TextEncoder().encode(plainText));
+  return JSON.stringify({
+    app: "BloodJourney", format: "backup", version: BACKUP_FORMAT_VERSION, encrypted: true,
+    kdf: { name: "PBKDF2-SHA256", iterations: BACKUP_KDF_ITERATIONS, salt: bytesToB64(salt) },
+    cipher: { name: "AES-256-GCM", iv: bytesToB64(iv) },
+    data: bytesToB64(new Uint8Array(ct)),
+  }, null, 2);
+}
+// The parsed header when `text` is an encrypted backup, otherwise null.
+function readEncryptedBackup(text) {
+  const t = String(text || "").trim();
+  if (t[0] !== "{") return null;
+  try {
+    const p = JSON.parse(t);
+    if (p && p.encrypted === true && p.format === "backup" && typeof p.data === "string") return p;
+  } catch (e) {}
+  return null;
+}
+// Throws an Error with code "BAD_PASSWORD" (wrong password or a modified file
+// -- AES-GCM can't tell those apart) or "UNSUPPORTED" (unreadable header).
+async function decryptBackupText(header, password) {
+  let salt, iv, data, iterations;
+  try {
+    iterations = Number(header && header.kdf && header.kdf.iterations);
+    // Capped so a hand-made file can't make the phone grind for minutes.
+    if (header.version !== BACKUP_FORMAT_VERSION || !Number.isInteger(iterations) || iterations < 100000 || iterations > 2000000) throw new Error("x");
+    salt = b64ToBytes(header.kdf.salt);
+    iv = b64ToBytes(header.cipher.iv);
+    data = b64ToBytes(header.data);
+    if (salt.length !== 16 || iv.length !== 12) throw new Error("x");
+  } catch (e) {
+    throw backupCryptoError("UNSUPPORTED");
+  }
+  const key = await deriveBackupKey(password, salt, iterations, "decrypt");
+  try {
+    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: BACKUP_AAD }, key, data);
+    return new TextDecoder().decode(plain);
+  } catch (e) {
+    throw backupCryptoError("BAD_PASSWORD");
+  }
+}
+// Random passphrase for the "สร้างรหัสให้" button: 5 words out of 2,048 (11 bits
+// each, ~55 bits). 65,536 is a multiple of 2,048, so masking is unbiased.
+function generateBackupPassphrase(words = 5) {
+  const list = BACKUP_WORDLIST.split(" ");
+  return Array.from(crypto.getRandomValues(new Uint16Array(words)), (n) => list[n & 2047]).join("-");
+}
+// level 0 = not accepted, 1 = อ่อน, 2 = พอใช้, 3 = แข็งแรง
+function backupPasswordStrength(pw) {
+  if (pw.length < 8) return { level: 0, ok: false, label: "" };
+  const COMMON = ["12345678", "123456789", "1234567890", "password", "password1", "qwertyui", "qwerty123", "11111111", "00000000", "abcdefgh", "iloveyou"];
+  if (new Set(pw).size < 4 || COMMON.includes(pw.toLowerCase())) return { level: 0, ok: false, label: "เดาง่ายเกินไป ลองเปลี่ยนหรือกดสร้างรหัสให้" };
+  const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter((re) => re.test(pw)).length;
+  const score = (pw.length >= 12 ? 1 : 0) + (pw.length >= 16 ? 1 : 0) + (classes >= 2 ? 1 : 0) + (classes >= 3 ? 1 : 0);
+  if (score <= 1) return { level: 1, ok: true, label: "อ่อน · ยิ่งยาวยิ่งดี" };
+  if (score <= 3) return { level: 2, ok: true, label: "พอใช้" };
+  return { level: 3, ok: true, label: "แข็งแรง" };
+}
+
 // Horizontal ruler (design 4 of profile-number-picker-designs.html): the
 // value reads big above, the scale slides left/right under a fixed red line.
 // Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
@@ -2551,6 +2642,32 @@ function AppInner() {
   const showBackupRestoreRef = useRef(false);
   showBackupRestoreRef.current = showBackupRestore;
   const [backupRestoreTab, setBackupRestoreTab] = useState("export");
+  const backupDialogRef = useRef(null);
+  const exportTabIdx = backupRestoreTab === "export" ? 0 : -1;
+  const importTabIdx = backupRestoreTab === "import" ? 0 : -1;
+  // Password-protected backup (design 3 of backup-encrypt-designs.html).
+  // Passwords live only in memory and are cleared whenever the hub opens or closes.
+  const [exportProtect, setExportProtect] = useState(false);
+  const [exportPw, setExportPw] = useState("");
+  const [exportPw2, setExportPw2] = useState("");
+  const [exportShowPw, setExportShowPw] = useState(false);
+  const [exportGenPw, setExportGenPw] = useState(""); // non-empty = the generated passphrase is in use
+  const [exportSavedAck, setExportSavedAck] = useState(false);
+  const [exportEncrypted, setExportEncrypted] = useState(null); // { key, text }
+  const [exportEncrypting, setExportEncrypting] = useState(false);
+  const exportEncryptRunRef = useRef(0);
+  const [importLock, setImportLock] = useState(null); // { text, name } while asking for the file's password
+  const [importLockPw, setImportLockPw] = useState("");
+  const [importLockShow, setImportLockShow] = useState(false);
+  const [importLockError, setImportLockError] = useState("");
+  const [importLockBusy, setImportLockBusy] = useState(false);
+  const exportStrength = backupPasswordStrength(exportPw);
+  const exportEffectivePw = exportGenPw || (exportStrength.ok && exportPw === exportPw2 ? exportPw : "");
+  const exportKey = exportEffectivePw && exportJsonText ? `${exportEffectivePw}\u0000${exportJsonText}` : "";
+  // What the textarea / download / copy use: the plain JSON, or the
+  // ciphertext once it has been made for the current data + password.
+  const exportOutText = !exportProtect ? exportJsonText : (exportEncrypted && exportKey && exportEncrypted.key === exportKey ? exportEncrypted.text : "");
+  const exportReady = !!exportOutText && (!exportProtect || !exportGenPw || exportSavedAck);
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
   const canShareFiles = useMemo(() => {
@@ -3894,6 +4011,69 @@ function AppInner() {
     } catch (e) {}
   };
 
+  // Encrypts ahead of time (not on the tap) so the share sheet, which needs
+  // to open straight from the tap, has the file ready. Re-runs when the
+  // password or the data changes; the run counter drops stale results.
+  useEffect(() => {
+    if (!exportProtect || !exportKey) {
+      exportEncryptRunRef.current += 1;
+      setExportEncrypting(false);
+      return undefined;
+    }
+    const run = ++exportEncryptRunRef.current;
+    setExportEncrypting(true);
+    const timer = setTimeout(async () => {
+      try {
+        const text = await encryptBackupText(exportJsonText, exportEffectivePw);
+        if (run === exportEncryptRunRef.current) setExportEncrypted({ key: exportKey, text });
+      } catch (e) {
+        if (run === exportEncryptRunRef.current) {
+          setExportEncrypted(null);
+          showToast("error", "เข้ารหัสไม่สำเร็จ ลองอีกครั้ง หรือเลือกไฟล์ปกติแทน");
+        }
+      } finally {
+        if (run === exportEncryptRunRef.current) setExportEncrypting(false);
+      }
+    }, exportGenPw ? 0 : 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exportProtect, exportKey]);
+
+  const resetBackupProtection = () => {
+    setExportProtect(false);
+    setExportPw("");
+    setExportPw2("");
+    setExportShowPw(false);
+    setExportGenPw("");
+    setExportSavedAck(false);
+    setExportEncrypted(null);
+    setImportLock(null);
+    setImportLockPw("");
+    setImportLockShow(false);
+    setImportLockError("");
+    setImportLockBusy(false);
+  };
+  const chooseExportProtect = (on) => {
+    setExportProtect(on);
+    if (!on) {
+      setExportPw(""); setExportPw2(""); setExportGenPw(""); setExportSavedAck(false); setExportEncrypted(null);
+    }
+  };
+  const generateExportPassword = () => {
+    setExportGenPw(generateBackupPassphrase());
+    setExportSavedAck(false);
+    setExportPw("");
+    setExportPw2("");
+  };
+  const copyGeneratedPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(exportGenPw);
+      showToast("success", "คัดลอกรหัสผ่านแล้ว — เก็บไว้ในที่ปลอดภัย เช่นตัวจัดการรหัสผ่านของมือถือ");
+    } catch (e) {
+      showToast("error", "คัดลอกไม่ได้ในแอปนี้ — จดหรือแคปหน้าจอรหัสนี้เก็บไว้แทน");
+    }
+  };
+
   const exportData = async () => {
     try {
       const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
@@ -3916,10 +4096,11 @@ function AppInner() {
   // blob-anchor downloads don't. The old blob-download is kept only as a
   // last-resort fallback for a plain desktop/mobile browser outside LINE.
   const downloadExportFile = async () => {
+    if (!exportReady) return;
     const filename = `donation-backup-${todayLocalStr()}.json`;
     if (isNativeApp) {
       try {
-        const base64Data = btoa(unescape(encodeURIComponent(exportJsonText)));
+        const base64Data = btoa(unescape(encodeURIComponent(exportOutText)));
         await nativeSaveAndShare({ base64Data, filename, mimeType: "application/json", dialogTitle: "บันทึกไฟล์สำรองข้อมูล" });
         showToast("success", "เปิดเมนูบันทึก/แชร์ไฟล์แล้ว");
         markBackedUp();
@@ -3930,7 +4111,7 @@ function AppInner() {
     }
     try {
       if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
-        const file = new File([exportJsonText], filename, { type: "application/json" });
+        const file = new File([exportOutText], filename, { type: "application/json" });
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title: "Blood Journey - ข้อมูลสำรอง" });
           showToast("success", "เปิดเมนูแชร์ไฟล์แล้ว — เลือก \"บันทึกลงไฟล์\" หรือส่งเก็บไว้กับตัวเองได้เลย");
@@ -3951,7 +4132,7 @@ function AppInner() {
     // copy-to-clipboard fallback below has no such limit, so it's the
     // reliable last resort instead.
     try {
-      const blob = new Blob([exportJsonText], { type: "application/json" });
+      const blob = new Blob([exportOutText], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -3976,12 +4157,13 @@ function AppInner() {
   };
 
   const copyExportText = async () => {
+    if (!exportReady) return;
     // Method 1: the modern Clipboard API. Sandboxed iframes (like an
     // artifact preview) often block this with a permissions-policy error,
     // so we never let it stop us from trying the older fallback below.
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(exportJsonText);
+        await navigator.clipboard.writeText(exportOutText);
         showToast("success", "คัดลอกข้อมูลแล้ว — วางเก็บไว้ในไฟล์ข้อความหรือโน้ตของคุณได้เลย");
         markBackedUp();
         return;
@@ -4268,7 +4450,20 @@ function AppInner() {
   // download didn't work and the user only has the copied JSON text — see
   // "คัดลอกข้อความ" in the export modal). Throws on malformed input; callers
   // decide how to report that.
-  const processImportedText = async (text) => {
+  const processImportedText = async (text, meta) => {
+    // A password-protected backup: ask for the password first, then run the
+    // decrypted text through this same function.
+    if (readEncryptedBackup(text)) {
+      if (!canEncryptBackup()) {
+        showToast("error", "เบราว์เซอร์นี้ถอดรหัสไฟล์ไม่ได้ — ลองเปิดแอปด้วยเบราว์เซอร์อื่น");
+        return;
+      }
+      setImportLock({ text, name: (meta && meta.name) || "" });
+      setImportLockPw("");
+      setImportLockShow(false);
+      setImportLockError("");
+      return;
+    }
     const parsed = JSON.parse(text);
       if (!parsed || !Array.isArray(parsed.donations)) {
         throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
@@ -4388,7 +4583,7 @@ function AppInner() {
     setImporting(true);
     try {
       const text = await file.text();
-      await processImportedText(text);
+      await processImportedText(text, { name: file.name });
     } catch (err) {
       showToast("error", "นำเข้าไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็นไฟล์สำรองที่ส่งออกจากแอปนี้");
     } finally {
@@ -4410,6 +4605,7 @@ function AppInner() {
     backupOpenedFromHomeRef.current = fromHome;
     setShowSettings(false);
     setError("");
+    resetBackupProtection();
     setBackupRestoreTab(tab);
     setShowBackupRestore(true);
     if (tab === "export") {
@@ -4421,6 +4617,7 @@ function AppInner() {
 
   const switchBackupRestoreTab = (tab) => {
     setBackupRestoreTab(tab);
+    if (backupDialogRef.current) backupDialogRef.current.scrollTop = 0;
     // Switching tabs should never throw away what the user already typed —
     // only regenerate the export preview (cheap, local, always up to date).
     // pasteImportText is left untouched here; it's only ever cleared by a
@@ -4433,6 +4630,7 @@ function AppInner() {
   const closeBackupRestore = () => {
     setShowBackupRestore(false);
     setShowExportPreview(false);
+    resetBackupProtection();
     if (!backupOpenedFromHomeRef.current) setShowSettings(true);
     backupOpenedFromHomeRef.current = false;
   };
@@ -4452,6 +4650,31 @@ function AppInner() {
       showToast("error", "นำเข้าข้อมูลไม่สำเร็จ — ตรวจสอบว่าวางข้อความที่คัดลอกจากปุ่ม \"คัดลอกข้อความ\" ของแอปนี้ครบถ้วน");
     } finally {
       setImporting(false);
+    }
+  };
+
+  const unlockImport = async () => {
+    if (!importLock || !importLockPw || importLockBusy) return;
+    setImportLockBusy(true);
+    setImportLockError("");
+    let plain = null;
+    try {
+      plain = await decryptBackupText(readEncryptedBackup(importLock.text), importLockPw);
+    } catch (e) {
+      setImportLockError(e && e.code === "UNSUPPORTED"
+        ? "ไฟล์นี้เปิดไม่ได้ — รูปแบบไม่รองรับ อาจมาจากแอปเวอร์ชันอื่นหรือไฟล์เสียหาย"
+        : "รหัสผ่านไม่ถูกต้อง หรือไฟล์ถูกแก้ไข ลองใหม่อีกครั้ง");
+      setImportLockBusy(false);
+      return;
+    }
+    try {
+      setImportLock(null);
+      setImportLockPw("");
+      await processImportedText(plain);
+    } catch (e) {
+      showToast("error", "นำเข้าไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็นไฟล์สำรองที่ส่งออกจากแอปนี้");
+    } finally {
+      setImportLockBusy(false);
     }
   };
 
@@ -7855,7 +8078,7 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22 }}>
+          <div ref={backupDialogRef} className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22, maxHeight: "92vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
@@ -7900,6 +8123,9 @@ function AppInner() {
                 gridArea: "1 / 1",
                 visibility: backupRestoreTab === "export" ? "visible" : "hidden",
                 pointerEvents: backupRestoreTab === "export" ? "auto" : "none",
+                // The password fields make this tab much taller; don't make the
+                // import tab as tall while it's hidden.
+                display: backupRestoreTab !== "export" && exportProtect ? "none" : undefined,
               }} aria-hidden={backupRestoreTab !== "export"}>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
                   <p style={{ margin: "0 0 4px", fontSize: 12, color: "#7A6360" }}>จำนวนรายการบริจาคที่บันทึกไว้</p>
@@ -7909,21 +8135,134 @@ function AppInner() {
                   กด "ดาวน์โหลดไฟล์" เพื่อบันทึกหรือแชร์เป็นไฟล์ หรือถ้าใช้ไม่ได้ ให้กด "คัดลอกข้อความ" แล้วนำไปวางเก็บไว้ในไฟล์ข้อความ/โน้ตของคุณแทนได้เลย
                   <br /><span style={{ fontSize: 11, color: "#B39B96" }}>(ไฟล์นี้ไม่รวมรูปโปรไฟล์ — หลังนำเข้าจะต้องอัปโหลดรูปใหม่ ส่วนรอบบริจาค/ระยะแจ้งเตือนที่ตั้งไว้จะรวมอยู่ในไฟล์นี้ด้วย)</span>
                 </p>
+                {/* Two cards (design 3 of backup-encrypt-designs.html): a plain
+                    file, or one protected with a password. Plain is the default. */}
+                <div role="radiogroup" aria-label="รูปแบบไฟล์สำรอง" style={{ marginBottom: 10 }}>
+                  {[
+                    { on: false, title: "ไฟล์ปกติ", sub: "อ่านและแก้ไขได้ด้วยโปรแกรมทั่วไป ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด" },
+                    { on: true, title: "ป้องกันด้วยรหัสผ่าน", sub: "เข้ารหัสทั้งไฟล์ ต้องใส่รหัสผ่านตอนกู้คืน ลืมรหัสแล้วกู้ไม่ได้", rec: true },
+                  ].map((o) => {
+                    const sel = exportProtect === o.on;
+                    const disabled = o.on && !canEncryptBackup();
+                    return (
+                      <button key={String(o.on)} type="button" role="radio" aria-checked={sel} disabled={disabled}
+                        tabIndex={exportTabIdx}
+                        onClick={() => chooseExportProtect(o.on)}
+                        style={{ display: "flex", gap: 11, alignItems: "flex-start", width: "100%", textAlign: "left", fontFamily: "inherit", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
+                          background: sel ? "#FFFAF9" : "#FFFFFF", border: `1.5px solid ${sel ? "#9A3B33" : "#EEDEDA"}`, borderRadius: 14, padding: "12px 13px", marginBottom: 10 }}>
+                        <span aria-hidden="true" style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${sel ? "#9A3B33" : "#D9C3BE"}`, flexShrink: 0, marginTop: 1, position: "relative", boxSizing: "border-box" }}>
+                          {sel && <span style={{ position: "absolute", inset: 3, borderRadius: "50%", background: "#9A3B33" }} />}
+                        </span>
+                        <span style={{ minWidth: 0 }}>
+                          <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
+                            {o.title}
+                            {o.rec && <span style={{ display: "inline-block", fontSize: 10.5, background: "#9A3B33", color: "#FFF7F5", borderRadius: 8, padding: "1px 7px", marginLeft: 6, fontWeight: 600, verticalAlign: 1 }}>แนะนำ</span>}
+                          </span>
+                          <span style={{ display: "block", fontSize: 11.5, color: "#7A6360", lineHeight: 1.5, marginTop: 1 }}>{disabled ? "เบราว์เซอร์นี้เข้ารหัสไฟล์ไม่ได้" : o.sub}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {exportProtect && (
+                  <div style={{ marginBottom: 4 }}>
+                    {!exportGenPw ? (
+                      <>
+                        <label htmlFor="export-pw" style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
+                          <input id="export-pw" type={exportShowPw ? "text" : "password"} value={exportPw} tabIndex={exportTabIdx}
+                            onChange={(e) => setExportPw(e.target.value)}
+                            autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="ตั้งรหัสผ่าน"
+                            style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
+                          <button type="button" tabIndex={exportTabIdx} onClick={() => setExportShowPw(v => !v)} aria-label={exportShowPw ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={exportShowPw}
+                            style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                            {exportShowPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                        {exportPw.length > 0 && (
+                          <div aria-live="polite">
+                            <div aria-hidden="true" style={{ display: "flex", gap: 4, margin: "8px 0 3px" }}>
+                              {[1, 2, 3].map(n => (
+                                <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2E7D4F" : "#D9A03A") : "#EEDEDA" }} />
+                              ))}
+                            </div>
+                            {exportStrength.label && <div style={{ fontSize: 11.5, color: exportStrength.level === 3 ? "#2E7D4F" : "#B5651D" }}>{exportStrength.label}</div>}
+                          </div>
+                        )}
+                        <label htmlFor="export-pw2" style={{ display: "block", fontSize: 11.5, color: "#7A6360", margin: "10px 0 4px" }}>ยืนยันรหัสผ่าน</label>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2E7D4F" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
+                          <input id="export-pw2" type={exportShowPw ? "text" : "password"} value={exportPw2} tabIndex={exportTabIdx}
+                            onChange={(e) => setExportPw2(e.target.value)}
+                            autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสผ่านอีกครั้ง"
+                            style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
+                          {exportPw2 && exportPw2 === exportPw && exportStrength.ok && <Check size={17} color="#2E7D4F" aria-label="รหัสผ่านตรงกัน" />}
+                        </div>
+                        {exportPw2.length > 0 && exportPw2 !== exportPw && (
+                          <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", margin: "6px 2px 0" }}>รหัสผ่านสองช่องไม่ตรงกัน</div>
+                        )}
+                        <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
+                          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: "#F3EAE8", color: "#9A3B33", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer", margin: "12px 0" }}>
+                          <Dices size={16} /> สร้างรหัสให้
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+                          <div style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านที่แอปสร้างให้</div>
+                          <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                            <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
+                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                              <Copy size={15} /> คัดลอก
+                            </button>
+                            <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
+                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                              <Dices size={15} /> สุ่มใหม่
+                            </button>
+                          </div>
+                          <button type="button" tabIndex={exportTabIdx} onClick={() => { setExportGenPw(""); setExportSavedAck(false); }}
+                            style={{ display: "block", margin: "10px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                            ตั้งรหัสผ่านเอง
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
+                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+                      <div><b style={{ color: "#3A2C29" }}>{exportGenPw ? "เก็บรหัสนี้ไว้ก่อนดาวน์โหลด" : "ลืมรหัส = เปิดไฟล์ไม่ได้"}</b><br />แอปไม่เก็บรหัสผ่านนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้</div>
+                    </div>
+                    {exportGenPw && (
+                      <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.5, color: "#3A2C29", marginBottom: 12, cursor: "pointer" }}>
+                        <input type="checkbox" checked={exportSavedAck} tabIndex={exportTabIdx} onChange={(e) => setExportSavedAck(e.target.checked)}
+                          style={{ width: 20, height: 20, marginTop: 1, accentColor: "#9A3B33", flexShrink: 0 }} />
+                        <span>ฉันคัดลอกหรือจดรหัสนี้ไว้แล้ว</span>
+                      </label>
+                    )}
+                  </div>
+                )}
+
                 <textarea
                   ref={exportTextareaRef}
                   readOnly
-                  tabIndex={backupRestoreTab === "export" ? 0 : -1}
-                  value={exportJsonText}
+                  tabIndex={exportTabIdx}
+                  value={exportOutText}
+                  placeholder={exportProtect ? (exportEncrypting ? "กำลังเข้ารหัส…" : "ข้อความเข้ารหัสจะแสดงที่นี่เมื่อตั้งรหัสผ่านครบ") : ""}
                   onFocus={(e) => e.target.select()}
-                  aria-label="ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"
-                  style={{ width: "100%", height: 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                  aria-label={exportProtect ? "ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก" : "ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"}
+                  style={{ width: "100%", height: exportProtect ? 76 : 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                 />
-                <button onClick={downloadExportFile} tabIndex={backupRestoreTab === "export" ? 0 : -1} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
-                  <Download size={17} /> ดาวน์โหลดไฟล์
+                <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
+                  <Download size={17} /> {exportProtect && exportEncrypting ? "กำลังเข้ารหัส…" : "ดาวน์โหลดไฟล์"}
                 </button>
-                <button onClick={copyExportText} tabIndex={backupRestoreTab === "export" ? 0 : -1} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: "pointer" }}>
+                <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
                   <StickyNote size={16} /> คัดลอกข้อความ
                 </button>
+                {!exportProtect && (
+                  <p style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 11.5, color: "#7A6360", margin: "12px 0 0" }}>
+                    <AlertTriangle size={13} color="#B5651D" aria-hidden="true" /> ไฟล์นี้ไม่ได้เข้ารหัส เก็บไว้ในที่ปลอดภัย
+                  </p>
+                )}
               </div>
 
               <div style={{
@@ -7933,6 +8272,49 @@ function AppInner() {
                 display: "flex",
                 flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "import"}>
+                {importLock ? (
+                  // The chosen file / pasted text is password-protected
+                  // (designs 5 and 6 of backup-encrypt-designs.html).
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 11, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "11px 13px", marginBottom: 12 }}>
+                      <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Lock size={17} color="#9A3B33" /></span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", wordBreak: "break-all" }}>{importLock.name || "ข้อความที่วางไว้"}</div>
+                        <div style={{ fontSize: 11.5, color: "#7A6360" }}>ไฟล์นี้เข้ารหัสอยู่</div>
+                      </div>
+                    </div>
+                    <label htmlFor="import-pw" style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>รหัสผ่านของไฟล์</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: importLockError ? "#FFF6F5" : "#FFFFFF", border: `1px solid ${importLockError ? "#B3261E" : "#E3C8C3"}`, borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
+                      <input id="import-pw" type={importLockShow ? "text" : "password"} value={importLockPw} tabIndex={importTabIdx}
+                        onChange={(e) => { setImportLockPw(e.target.value); if (importLockError) setImportLockError(""); }}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); unlockImport(); } }}
+                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+                        aria-invalid={!!importLockError} aria-describedby={importLockError ? "import-pw-err" : undefined}
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 15, fontFamily: "inherit", color: "#3A2C29" }} />
+                      <button type="button" tabIndex={importTabIdx} onClick={() => setImportLockShow(v => !v)} aria-label={importLockShow ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={importLockShow}
+                        style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                        {importLockShow ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {importLockError && (
+                      <div id="import-pw-err" role="alert" style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 12, color: "#B3261E", margin: "6px 2px 0", lineHeight: 1.5 }}>
+                        <AlertTriangle size={14} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} /> <span>{importLockError}</span>
+                      </div>
+                    )}
+                    <button onClick={unlockImport} disabled={!importLockPw || importLockBusy} tabIndex={importTabIdx} className="btn-primary"
+                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: (!importLockPw || importLockBusy) ? "not-allowed" : "pointer", opacity: (!importLockPw || importLockBusy) ? 0.5 : 1, margin: "14px 0 10px" }}>
+                      <Unlock size={17} /> {importLockBusy ? "กำลังปลดล็อก…" : "ปลดล็อกและนำเข้า"}
+                    </button>
+                    <p style={{ fontSize: 11.5, color: "#7A6360", textAlign: "center", lineHeight: 1.6, margin: "0 0 8px" }}>
+                      {importLockError ? "ลืมรหัส? ไฟล์นี้จะเปิดไม่ได้ ถ้ามีไฟล์สำรองอื่นให้ลองเลือกไฟล์อื่นแทน" : "ถอดรหัสในเครื่องนี้ ไม่ส่งรหัสหรือข้อมูลไปที่ไหน"}
+                    </p>
+                    <button type="button" onClick={() => { setImportLock(null); setImportLockPw(""); setImportLockError(""); }} tabIndex={importTabIdx}
+                      style={{ alignSelf: "center", background: "none", border: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 6 }}>
+                      เลือกไฟล์อื่น
+                    </button>
+                  </>
+                ) : (
+                <>
                 <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
@@ -7973,6 +8355,8 @@ function AppInner() {
                 <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
                   {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
                 </button>
+                </>
+                )}
               </div>
             </div>
           </div>
@@ -8092,3 +8476,9 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
+// Word list for the generated backup passphrase ("สร้างรหัสให้"): the 2,048-word
+// BIP-39 English list (public domain), kept as one string so it costs little to
+// ship. The 5-word passphrase drawn from it is ~55 bits, and PBKDF2 slows
+// every guess further.
+const BACKUP_WORDLIST = "abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual adapt add addict address adjust admit adult advance advice aerobic affair afford afraid again age agent agree ahead aim air airport aisle alarm album alcohol alert alien all alley allow almost alone alpha already also alter always amateur amazing among amount amused analyst anchor ancient anger angle angry animal ankle announce annual another answer antenna antique anxiety any apart apology appear apple approve april arch arctic area arena argue arm armed armor army around arrange arrest arrive arrow art artefact artist artwork ask aspect assault asset assist assume asthma athlete atom attack attend attitude attract auction audit august aunt author auto autumn average avocado avoid awake aware away awesome awful awkward axis baby bachelor bacon badge bag balance balcony ball bamboo banana banner bar barely bargain barrel base basic basket battle beach bean beauty because become beef before begin behave behind believe below belt bench benefit best betray better between beyond bicycle bid bike bind biology bird birth bitter black blade blame blanket blast bleak bless blind blood blossom blouse blue blur blush board boat body boil bomb bone bonus book boost border boring borrow boss bottom bounce box boy bracket brain brand brass brave bread breeze brick bridge brief bright bring brisk broccoli broken bronze broom brother brown brush bubble buddy budget buffalo build bulb bulk bullet bundle bunker burden burger burst bus business busy butter buyer buzz cabbage cabin cable cactus cage cake call calm camera camp can canal cancel candy cannon canoe canvas canyon capable capital captain car carbon card cargo carpet carry cart case cash casino castle casual cat catalog catch category cattle caught cause caution cave ceiling celery cement census century cereal certain chair chalk champion change chaos chapter charge chase chat cheap check cheese chef cherry chest chicken chief child chimney choice choose chronic chuckle chunk churn cigar cinnamon circle citizen city civil claim clap clarify claw clay clean clerk clever click client cliff climb clinic clip clock clog close cloth cloud clown club clump cluster clutch coach coast coconut code coffee coil coin collect color column combine come comfort comic common company concert conduct confirm congress connect consider control convince cook cool copper copy coral core corn correct cost cotton couch country couple course cousin cover coyote crack cradle craft cram crane crash crater crawl crazy cream credit creek crew cricket crime crisp critic crop cross crouch crowd crucial cruel cruise crumble crunch crush cry crystal cube culture cup cupboard curious current curtain curve cushion custom cute cycle dad damage damp dance danger daring dash daughter dawn day deal debate debris decade december decide decline decorate decrease deer defense define defy degree delay deliver demand demise denial dentist deny depart depend deposit depth deputy derive describe desert design desk despair destroy detail detect develop device devote diagram dial diamond diary dice diesel diet differ digital dignity dilemma dinner dinosaur direct dirt disagree discover disease dish dismiss disorder display distance divert divide divorce dizzy doctor document dog doll dolphin domain donate donkey donor door dose double dove draft dragon drama drastic draw dream dress drift drill drink drip drive drop drum dry duck dumb dune during dust dutch duty dwarf dynamic eager eagle early earn earth easily east easy echo ecology economy edge edit educate effort egg eight either elbow elder electric elegant element elephant elevator elite else embark embody embrace emerge emotion employ empower empty enable enact end endless endorse enemy energy enforce engage engine enhance enjoy enlist enough enrich enroll ensure enter entire entry envelope episode equal equip era erase erode erosion error erupt escape essay essence estate eternal ethics evidence evil evoke evolve exact example excess exchange excite exclude excuse execute exercise exhaust exhibit exile exist exit exotic expand expect expire explain expose express extend extra eye eyebrow fabric face faculty fade faint faith fall false fame family famous fan fancy fantasy farm fashion fat fatal father fatigue fault favorite feature february federal fee feed feel female fence festival fetch fever few fiber fiction field figure file film filter final find fine finger finish fire firm first fiscal fish fit fitness fix flag flame flash flat flavor flee flight flip float flock floor flower fluid flush fly foam focus fog foil fold follow food foot force forest forget fork fortune forum forward fossil foster found fox fragile frame frequent fresh friend fringe frog front frost frown frozen fruit fuel fun funny furnace fury future gadget gain galaxy gallery game gap garage garbage garden garlic garment gas gasp gate gather gauge gaze general genius genre gentle genuine gesture ghost giant gift giggle ginger giraffe girl give glad glance glare glass glide glimpse globe gloom glory glove glow glue goat goddess gold good goose gorilla gospel gossip govern gown grab grace grain grant grape grass gravity great green grid grief grit grocery group grow grunt guard guess guide guilt guitar gun gym habit hair half hammer hamster hand happy harbor hard harsh harvest hat have hawk hazard head health heart heavy hedgehog height hello helmet help hen hero hidden high hill hint hip hire history hobby hockey hold hole holiday hollow home honey hood hope horn horror horse hospital host hotel hour hover hub huge human humble humor hundred hungry hunt hurdle hurry hurt husband hybrid ice icon idea identify idle ignore ill illegal illness image imitate immense immune impact impose improve impulse inch include income increase index indicate indoor industry infant inflict inform inhale inherit initial inject injury inmate inner innocent input inquiry insane insect inside inspire install intact interest into invest invite involve iron island isolate issue item ivory jacket jaguar jar jazz jealous jeans jelly jewel job join joke journey joy judge juice jump jungle junior junk just kangaroo keen keep ketchup key kick kid kidney kind kingdom kiss kit kitchen kite kitten kiwi knee knife knock know lab label labor ladder lady lake lamp language laptop large later latin laugh laundry lava law lawn lawsuit layer lazy leader leaf learn leave lecture left leg legal legend leisure lemon lend length lens leopard lesson letter level liar liberty library license life lift light like limb limit link lion liquid list little live lizard load loan lobster local lock logic lonely long loop lottery loud lounge love loyal lucky luggage lumber lunar lunch luxury lyrics machine mad magic magnet maid mail main major make mammal man manage mandate mango mansion manual maple marble march margin marine market marriage mask mass master match material math matrix matter maximum maze meadow mean measure meat mechanic medal media melody melt member memory mention menu mercy merge merit merry mesh message metal method middle midnight milk million mimic mind minimum minor minute miracle mirror misery miss mistake mix mixed mixture mobile model modify mom moment monitor monkey monster month moon moral more morning mosquito mother motion motor mountain mouse move movie much muffin mule multiply muscle museum mushroom music must mutual myself mystery myth naive name napkin narrow nasty nation nature near neck need negative neglect neither nephew nerve nest net network neutral never news next nice night noble noise nominee noodle normal north nose notable note nothing notice novel now nuclear number nurse nut oak obey object oblige obscure observe obtain obvious occur ocean october odor off offer office often oil okay old olive olympic omit once one onion online only open opera opinion oppose option orange orbit orchard order ordinary organ orient original orphan ostrich other outdoor outer output outside oval oven over own owner oxygen oyster ozone pact paddle page pair palace palm panda panel panic panther paper parade parent park parrot party pass patch path patient patrol pattern pause pave payment peace peanut pear peasant pelican pen penalty pencil people pepper perfect permit person pet phone photo phrase physical piano picnic picture piece pig pigeon pill pilot pink pioneer pipe pistol pitch pizza place planet plastic plate play please pledge pluck plug plunge poem poet point polar pole police pond pony pool popular portion position possible post potato pottery poverty powder power practice praise predict prefer prepare present pretty prevent price pride primary print priority prison private prize problem process produce profit program project promote proof property prosper protect proud provide public pudding pull pulp pulse pumpkin punch pupil puppy purchase purity purpose purse push put puzzle pyramid quality quantum quarter question quick quit quiz quote rabbit raccoon race rack radar radio rail rain raise rally ramp ranch random range rapid rare rate rather raven raw razor ready real reason rebel rebuild recall receive recipe record recycle reduce reflect reform refuse region regret regular reject relax release relief rely remain remember remind remove render renew rent reopen repair repeat replace report require rescue resemble resist resource response result retire retreat return reunion reveal review reward rhythm rib ribbon rice rich ride ridge rifle right rigid ring riot ripple risk ritual rival river road roast robot robust rocket romance roof rookie room rose rotate rough round route royal rubber rude rug rule run runway rural sad saddle sadness safe sail salad salmon salon salt salute same sample sand satisfy satoshi sauce sausage save say scale scan scare scatter scene scheme school science scissors scorpion scout scrap screen script scrub sea search season seat second secret section security seed seek segment select sell seminar senior sense sentence series service session settle setup seven shadow shaft shallow share shed shell sheriff shield shift shine ship shiver shock shoe shoot shop short shoulder shove shrimp shrug shuffle shy sibling sick side siege sight sign silent silk silly silver similar simple since sing siren sister situate six size skate sketch ski skill skin skirt skull slab slam sleep slender slice slide slight slim slogan slot slow slush small smart smile smoke smooth snack snake snap sniff snow soap soccer social sock soda soft solar soldier solid solution solve someone song soon sorry sort soul sound soup source south space spare spatial spawn speak special speed spell spend sphere spice spider spike spin spirit split spoil sponsor spoon sport spot spray spread spring spy square squeeze squirrel stable stadium staff stage stairs stamp stand start state stay steak steel stem step stereo stick still sting stock stomach stone stool story stove strategy street strike strong struggle student stuff stumble style subject submit subway success such sudden suffer sugar suggest suit summer sun sunny sunset super supply supreme sure surface surge surprise surround survey suspect sustain swallow swamp swap swarm swear sweet swift swim swing switch sword symbol symptom syrup system table tackle tag tail talent talk tank tape target task taste tattoo taxi teach team tell ten tenant tennis tent term test text thank that theme then theory there they thing this thought three thrive throw thumb thunder ticket tide tiger tilt timber time tiny tip tired tissue title toast tobacco today toddler toe together toilet token tomato tomorrow tone tongue tonight tool tooth top topic topple torch tornado tortoise toss total tourist toward tower town toy track trade traffic tragic train transfer trap trash travel tray treat tree trend trial tribe trick trigger trim trip trophy trouble truck true truly trumpet trust truth try tube tuition tumble tuna tunnel turkey turn turtle twelve twenty twice twin twist two type typical ugly umbrella unable unaware uncle uncover under undo unfair unfold unhappy uniform unique unit universe unknown unlock until unusual unveil update upgrade uphold upon upper upset urban urge usage use used useful useless usual utility vacant vacuum vague valid valley valve van vanish vapor various vast vault vehicle velvet vendor venture venue verb verify version very vessel veteran viable vibrant vicious victory video view village vintage violin virtual virus visa visit visual vital vivid vocal voice void volcano volume vote voyage wage wagon wait walk wall walnut want warfare warm warrior wash wasp waste water wave way wealth weapon wear weasel weather web wedding weekend weird welcome west wet whale what wheat wheel when where whip whisper wide width wife wild will win window wine wing wink winner winter wire wisdom wise wish witness wolf woman wonder wood wool word work world worry worth wrap wreck wrestle wrist write wrong yard year yellow you young youth zebra zero zone zoo";
