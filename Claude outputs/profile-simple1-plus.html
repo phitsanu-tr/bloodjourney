@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โปรไฟล์ แบบ 1 เพิ่มรายละเอียด</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --faint:#B7A5A1; --red:#9A3B33; --line:#EEDEDA; --sep:#F3E7E4; --soft:#F3EAE8; --bg:#FBF6F5; --ok:#2E7D4F; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding-inline: 16px; padding-block: 24px 60px; }
+  h1 { font-size: 21px; font-weight: 600; text-align: center; margin: 0 0 4px; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; max-width: 680px; margin: 0 auto 24px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 26px; max-width: 1400px; margin: 0 auto; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .tag.base { background: #7A6360; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 60px; }
+  .stage { background: rgba(36,26,24,.42); border-radius: 22px; padding: 18px 12px; }
+  .box { background: var(--bg); border-radius: 18px; padding: 20px; }
+  .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .hd b { font-size: 15.5px; font-weight: 700; }
+  .av { position: relative; width: 48px; height: 48px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+  .cam { position: absolute; right: -2px; bottom: -2px; width: 19px; height: 19px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; }
+  .me { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .nm { font-size: 15px; font-weight: 600; } .chg { font-size: 12px; color: var(--red); font-weight: 600; margin-top: 1px; }
+  .it { padding: 9px 0; border-bottom: 1px solid var(--sep); }
+  .it:last-child { border-bottom: none; }
+  .k { font-size: 11.5px; color: var(--mut); display: flex; align-items: center; gap: 5px; }
+  .v { font-size: 15px; color: var(--ink2); margin-top: 1px; display: flex; align-items: center; gap: 8px; }
+  .em { color: var(--faint); }
+  .lock { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; color: var(--mut); margin-top: 14px; }
+  .hint { margin-left: auto; font-size: 11px; color: var(--mut); white-space: nowrap; }
+  .hint.ok { color: var(--ok); }
+  .hint.warn { color: #B5651D; }
+  .btag { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 26px; padding: 0 9px; border-radius: 8px; background: var(--red); color: #FFF7F5; font-weight: 700; font-size: 14px; }
+  .ptag { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 13px; background: var(--soft); color: var(--red); font-weight: 600; font-size: 13px; }
+  .sl { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: .3px; margin: 4px 0 4px; }
+  .grp { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; margin-bottom: 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .cols .it:nth-child(odd) { padding-right: 12px; border-right: 1px solid var(--sep); }
+  .cols .it:nth-child(even) { padding-left: 12px; }
+  .cols .it:nth-last-child(-n+2) { border-bottom: none; }
+  .hero { text-align: center; margin: -6px 0 14px; }
+  .hero .av { width: 72px; height: 72px; font-size: 28px; margin: 0 auto 8px; background: linear-gradient(135deg, #F7E3DF, #F3EAE8); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px #EAD3CE; }
+  .hero .cam { width: 24px; height: 24px; }
+  .hero .nm { font-size: 17px; }
+  .hero .sub { display: flex; justify-content: center; gap: 6px; margin-top: 6px; }
+  .pill { font-size: 11.5px; padding: 3px 10px; border-radius: 12px; background: #fff; border: 1px solid var(--line); color: var(--mut); }
+  .pill.r { background: var(--red); border-color: var(--red); color: #FFF7F5; font-weight: 600; }
+  .prog { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+  .prog .t { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); }
+  .prog .t span { color: var(--mut); }
+  .bar { height: 6px; border-radius: 3px; background: var(--soft); margin-top: 7px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 83%; background: var(--red); border-radius: 3px; }
+  .prog .miss { font-size: 11.5px; color: var(--mut); margin-top: 6px; }
+  .prog .miss b { color: var(--red); font-weight: 600; }
+  .note { max-width: 760px; margin: 32px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.75; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; } .note p { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<h1>แบบ 1 “ดูมีอะไรขึ้นอีกหน่อย”</h1>
+<p class="lead">ทุกแบบยังเป็นรายการสองบรรทัดเหมือนเดิม วิธีแก้ในแถวเหมือนเดิมทุกอย่าง แต่ละแบบเติมรายละเอียดเล็ก ๆ ทีละอย่าง แบบ 8 คือรวมสิ่งที่ผมคิดว่าเข้ากันที่สุด</p>
+<div class="grid" id="grid"></div>
+<div class="note"><h2>หมายเหตุ</h2>
+<p>คำใบ้เกณฑ์ (แบบ 6 และ 8) เปลี่ยนตามค่าจริง: อยู่ในเกณฑ์ขึ้นสีเขียว “✓ ตามเกณฑ์” นอกเกณฑ์ขึ้นสีส้ม เช่น “นอกเกณฑ์ 17–70 ปี” ยังไม่กรอกขึ้นเกณฑ์เฉย ๆ สีเทา</p>
+<p>แถบความครบ (แบบ 7) หายไปเองเมื่อกรอกครบทุกข้อ</p></div>
+<script>
+const P = {
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', cam:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/>',
+  cake:'<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M12 8v3"/>',
+  weight:'<circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/>',
+  drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>', award:'<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+};
+const ic = (n, s = 12, c = '#9A3B33') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${P[n]}</svg>`;
+const head = `<div class="hd"><b>โปรไฟล์ของฉัน</b>${ic('x', 19, '#3A2C29')}</div>`;
+const me = `<div class="me"><span class="av">ต<span class="cam">${ic('cam', 9, '#FFF7F5')}</span></span><div><div class="nm">ต้น</div><div class="chg">เปลี่ยนรูป</div></div></div>`;
+const hero = `<div class="hero"><span class="av">ต<span class="cam">${ic('cam', 11, '#FFF7F5')}</span></span><div class="nm">ต้น</div><div class="chg">เปลี่ยนรูป</div><div class="sub"><span class="pill r">O</span><span class="pill">34 ปี</span><span class="pill">62 กก.</span></div></div>`;
+const lock = `<div class="lock">${ic('lock', 12, '#7A6360')} ข้อมูลเก็บในเครื่องนี้เท่านั้น</div>`;
+const F = [
+  ['first', 'user', 'ชื่อ', 'ต้น'], ['last', 'users', 'นามสกุล', '<span class="em">ยังไม่ได้กรอก</span>'],
+  ['age', 'cake', 'อายุ (ปี)', '34'], ['weight', 'weight', 'น้ำหนัก (กก.)', '62'],
+  ['blood', 'drop', 'หมู่โลหิต', 'O'], ['donor', 'award', 'ประเภทผู้บริจาค', 'บุคคลทั่วไป'],
+];
+const item = (f, o = {}) => {
+  const [k, icon, lab, val] = f;
+  let v = val;
+  if (o.tags && k === 'blood') v = `<span class="btag">O</span>`;
+  if (o.tags && k === 'donor') v = `<span class="ptag">บุคคลทั่วไป</span>`;
+  let hint = '';
+  if (o.hints && k === 'age') hint = '<span class="hint ok">✓ ตามเกณฑ์ 17–70 ปี</span>';
+  if (o.hints && k === 'weight') hint = '<span class="hint ok">✓ ตามเกณฑ์ 45 กก.+</span>';
+  if (o.hints && k === 'donor') hint = '<span class="hint">ใช้กับเข็มที่ระลึก</span>';
+  return `<div class="it"><div class="k">${o.icons ? ic(icon) : ''}${lab}</div><div class="v">${v}${hint}</div></div>`;
+};
+const list = (o = {}, rows = F) => rows.map(f => item(f, o)).join('');
+const V = [
+  ['แบบ 1 ตอนนี้', 'ไว้เทียบ รายการสองบรรทัดล้วน', `${head}${me}${list()}${lock}`, true],
+  ['ไอคอนเล็กหน้าหัวข้อ', 'เติมไอคอนสีแดงขนาดเล็กนำหน้าหัวข้อตัวเล็ก ช่วยกวาดตาหาข้อที่ต้องการ แต่ยังไม่รกเพราะไอคอนเล็กมาก', `${head}${me}${list({ icons: true })}${lock}`],
+  ['หัวโปรไฟล์ใหญ่ขึ้น', 'รูปโปรไฟล์ใหญ่อยู่กลาง มีวงแหวนบาง ๆ รอบรูป ใต้ชื่อมีป้ายสรุปหมู่โลหิต อายุ น้ำหนัก ดูเป็นหน้าของเรามากขึ้น', `${head}${hero}${list()}${lock}`],
+  ['หมู่โลหิตเป็นป้ายแดง', 'หมู่โลหิตเป็นป้ายสีแดงตัวหนา ประเภทผู้บริจาคเป็นป้ายสีอ่อน ข้อมูลที่สำคัญที่สุดของผู้บริจาคเด่นขึ้นมา', `${head}${me}${list({ tags: true })}${lock}`],
+  ['แบ่งกลุ่มในการ์ดขาว', 'แยกเป็น 2 กลุ่ม “ข้อมูลส่วนตัว” กับ “สำหรับการบริจาค” มีหัวข้อตัวแดงและการ์ดขาวแบบหน้าตั้งค่า เป็นระเบียบขึ้น', `${head}${me}<div class="sl">ข้อมูลส่วนตัว</div><div class="grp">${list({}, F.slice(0, 4))}</div><div class="sl">สำหรับการบริจาค</div><div class="grp">${list({}, F.slice(4))}</div>${lock.replace('margin-top:14px', '')}`],
+  ['สองคอลัมน์', 'จับคู่ข้อที่เกี่ยวกัน ชื่อ–นามสกุล, อายุ–น้ำหนัก, หมู่โลหิต–ประเภท ไว้แถวเดียวกัน กล่องเตี้ยลงเกือบครึ่ง', `${head}${me}<div class="cols">${list()}</div>${lock}`],
+  ['บอกเกณฑ์ข้างค่า', 'ข้างค่าอายุและน้ำหนักมีคำเล็ก ๆ บอกว่าอยู่ในเกณฑ์ผู้บริจาคไหม ได้ประโยชน์จริง ไม่ใช่แค่ตกแต่ง', `${head}${me}${list({ hints: true })}${lock}`],
+  ['แถบความครบของโปรไฟล์', 'บนสุดมีแถบบอกว่ากรอกไปแล้วกี่ข้อ และข้อไหนยังขาด ชวนให้กรอกให้ครบ พอครบแล้วแถบหายไปเอง', `${head}${me}<div class="prog"><div class="t">โปรไฟล์ครบ 5 จาก 6 ข้อ <span>83%</span></div><div class="bar"><i></i></div><div class="miss">ยังขาด: <b>นามสกุล</b></div></div>${list()}${lock}`],
+  ['รวม: หัวใหญ่ + ป้ายแดง + เกณฑ์', 'รวมแบบ 2, 3 และ 6 หัวโปรไฟล์มีป้ายสรุป หมู่โลหิตเป็นป้ายแดง และบอกเกณฑ์ข้างอายุกับน้ำหนัก ดูมีอะไรขึ้นแต่ยังโล่ง', `${head}${hero}${list({ tags: true, hints: true })}${lock}`],
+];
+document.getElementById('grid').innerHTML = V.map(([n, d, b, base], i) => `<div><span class="tag ${base ? 'base' : ''}">${base ? 'อ้างอิง' : 'แบบ ' + i}</span><p class="name">${n}</p><p class="desc">${d}</p><div class="stage"><div class="box">${b}</div></div></div>`).join('');
+</script>
+</body>
+</html>

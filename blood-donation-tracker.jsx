@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.108";
+const APP_VERSION = "1.0.109";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2245,7 +2245,10 @@ function AppInner() {
   );
   const [weight, setWeight] = useState("");
   const [bloodType, setBloodType] = useState("");
-  const [donorType, setDonorType] = useState(DEFAULT_DONOR_TYPE);
+  // "" until the donor picks one in their profile (no default is pre-selected
+  // there any more). Everything that depends on it only checks === "monk",
+  // so an unset type still behaves as บุคคลทั่วไป for badges/milestones.
+  const [donorType, setDonorType] = useState("");
   // "ยอดสะสมยกมา" (donations before this app was used) is stored split by
   // donation type — startingCountWhole / startingCountComponent — same as
   // real dated records, so the countdown/eligibility logic and any future
@@ -2694,7 +2697,7 @@ function AppInner() {
           setAge(typeof p.age === "number" ? p.age : "");
           setWeight(typeof p.weight === "number" ? p.weight : "");
           setBloodType(p.bloodType || "");
-          setDonorType(p.donorType === "monk" ? "monk" : DEFAULT_DONOR_TYPE);
+          setDonorType(p.donorType === "monk" || p.donorType === "general" ? p.donorType : "");
           // Migrate legacy single-number profiles (saved before donation
           // type existed) by attributing the whole prior total to "whole".
           const legacyStartingCount = typeof p.startingCount === "number" ? p.startingCount : 0;
@@ -3244,7 +3247,7 @@ function AppInner() {
     try {
       await persistProfile({
         nickname: next.nickname, photo: next.photo, age: next.age, weight: next.weight,
-        bloodType: next.bloodType, donorType: next.donorType === "monk" ? "monk" : DEFAULT_DONOR_TYPE,
+        bloodType: next.bloodType, donorType: next.donorType === "monk" || next.donorType === "general" ? next.donorType : "",
         startingCountWhole: Number(startingCountWhole) || 0,
         startingCountComponent: Number(startingCountComponent) || 0,
         startingCountCreatedAt, startingCountUpdatedAt,
@@ -3254,7 +3257,7 @@ function AppInner() {
       setAge(next.age);
       setWeight(next.weight);
       setBloodType(next.bloodType);
-      setDonorType(next.donorType === "monk" ? "monk" : DEFAULT_DONOR_TYPE);
+      setDonorType(next.donorType === "monk" || next.donorType === "general" ? next.donorType : "");
       setProfileSavedKey(key);
       clearTimeout(profileSavedTimerRef.current);
       profileSavedTimerRef.current = setTimeout(() => setProfileSavedKey(null), 1400);
@@ -4874,6 +4877,7 @@ function AppInner() {
            waiting on a React re-render of the whole app. */
         .prow-edit:focus-within { background: #FBEFEC !important; }
         .prow-edit:focus-within input { color: #3A2C29 !important; }
+        .prow-edit input::placeholder { color: #B7A5A1; opacity: 1; }
         .prow-edit:focus-within input::placeholder { color: transparent; }
         .prow-edit .prow-unit-empty { display: none; }
         .prow-edit:focus-within .prow-unit-empty { display: inline; }
@@ -6684,8 +6688,25 @@ function AppInner() {
         const nameParts = nickname.trim().split(/\s+/).filter(Boolean);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ");
-        const empty = <span style={{ color: "#B7A5A1" }}>ยังไม่ได้กรอก</span>;
-        const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || DONOR_TYPES[0]).label;
+        const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || {}).label;
+        const ph = (t) => <span style={{ color: "#B7A5A1" }}>{t}</span>;
+        // Criteria hint next to age / weight (design 6 of profile-simple1-plus.html),
+        // live from what's typed: grey = not filled, green = within, orange = outside.
+        const criteriaHint = (key) => {
+          // (Donor-type note only once a type is chosen -- next to the longer
+          // "เลือก ..." prompt it would push that onto two lines.)
+          if (key !== "age" && key !== "weight") return key === "donorType" && donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
+          const raw = (profileInline[key] || "").trim();
+          const n = raw === "" ? NaN : Number(raw);
+          if (key === "age") {
+            const range = `${MIN_AGE}–${MAX_AGE} ปี`;
+            if (Number.isNaN(n)) return { text: `เกณฑ์ ${range}`, color: "#7A6360" };
+            return n >= MIN_AGE && n <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#B5651D" };
+          }
+          if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
+          return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
+        };
+        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี (ไม่บังคับ)", age: "เช่น 30", weight: "เช่น 55.5" };
         const groups = [
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
@@ -6694,9 +6715,9 @@ function AppInner() {
             { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "num", unit: "กก." },
           ] },
           { title: "สำหรับการบริจาค", rows: [
-            { key: "bloodType", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : empty,
+            { key: "bloodType", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : ph("เลือก A, B, AB หรือ O"),
               options: BLOOD_TYPES.map(bt => ({ v: bt, label: bt === "ไม่ทราบ" ? "ไม่ระบุ" : bt })), current: bloodType },
-            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel,
+            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือก บุคคลทั่วไป หรือ พระภิกษุสงฆ์"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
           ] },
         ];
@@ -6778,7 +6799,10 @@ function AppInner() {
                 {groups.flatMap(g => g.rows).map((r, ri, all) => {
                   const itemStyle = { display: "block", width: "100%", padding: "9px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
                   const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
-                  const saved = profileSavedKey === r.key && <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>;
+                  const hint = criteriaHint(r.key);
+                  const saved = profileSavedKey === r.key
+                    ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
+                    : hint && <span style={{ flexShrink: 0, fontSize: 11, color: hint.color, whiteSpace: "nowrap" }}>{hint.text}</span>;
                   return (
                     <div key={r.key} data-prow={r.key} style={{ borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       {r.kind === "choice" ? (
@@ -6809,7 +6833,7 @@ function AppInner() {
                               ref={r.key === "first" ? nicknameFirstInputRef : r.key === "last" ? nicknameLastInputRef : undefined}
                               type="text" autoComplete="off" enterKeyHint="done"
                               inputMode={r.key === "age" ? "numeric" : r.key === "weight" ? "decimal" : undefined}
-                              placeholder="ยังไม่ได้กรอก"
+                              placeholder={placeholders[r.key]}
                               value={profileInline[r.key]}
                               onChange={r.kind === "text"
                                 ? handleNameFieldChange(r.key, r.key === "first" ? nicknameFirstInputRef : nicknameLastInputRef)
