@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.173";
+const APP_VERSION = "1.0.174";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7375,13 +7375,13 @@ function AppInner() {
           const n = liveNumber(key);
           if (key === "birthYear") {
             const range = `${MIN_AGE}–${MAX_AGE} ปี`;
-            if (Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
+            if (Number.isNaN(n)) return { text: `อายุ ${range}`, color: "#7A6360" };
             const a = nowBE - n;
             if (birthYearApprox && n === birthYear) return { text: "ปีโดยประมาณ", color: "#9C5515" };
-            return a >= MIN_AGE && a <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#9C5515" };
+            return a >= MIN_AGE && a <= MAX_AGE ? { text: "✓ อยู่ในเกณฑ์", color: "#2E7D4F" } : { text: "✗ อยู่นอกเกณฑ์", color: "#9C5515" };
           }
-          if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
-          return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#9C5515" };
+          if (Number.isNaN(n)) return { text: `น้ำหนัก ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
+          return n >= MIN_WEIGHT ? { text: "✓ อยู่ในเกณฑ์", color: "#2E7D4F" } : { text: "✗ อยู่นอกเกณฑ์", color: "#9C5515" };
         };
         const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาคโลหิต" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
