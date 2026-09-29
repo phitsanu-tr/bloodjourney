@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ปุ่มใช้ค่านี้บนสเกล — 4 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#F6EFEC;font-family:'Mitr',sans-serif;color:#3A2C29;padding:20px 16px 60px}
+h1{font-size:18px;margin:0 0 4px}p.sub{margin:0 0 20px;font-size:13px;color:#7A6360;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:22px;max-width:1500px;margin:auto}
+.lab{font-size:13px;font-weight:600;margin:0 0 4px}.desc{font-size:12px;color:#7A6360;margin:0 0 10px;line-height:1.5;min-height:36px}
+.phone{background:#fff;border-radius:22px;padding:14px 16px 16px;box-shadow:0 2px 14px rgba(90,40,30,.1)}
+.hd{font-size:16px;font-weight:600;margin-bottom:6px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F3E7E4}
+.ico{width:34px;height:34px;border-radius:17px;background:#F3EAE8;flex:none}
+.row small{display:block;font-size:11.5px;color:#7A6360}.row b{font-weight:500;font-size:15px}.ph{color:#B39B96}
+.row .sv{margin-left:auto;font-size:11px;font-weight:600;color:#2E7D4F}
+.pnl{padding:6px 0 6px 46px;position:relative}
+.chip{position:absolute;right:0;top:8px;font-size:11px;font-weight:600;border-radius:10px;padding:3px 8px;background:#E8F4EC;color:#2E7D4F}
+.wrap{padding:34px 0 6px}
+.num{text-align:center;font-variant-numeric:tabular-nums;margin-bottom:2px}.num span.n{font-size:28px;font-weight:700;color:#9A3B33}.num span.u{font-size:13px;color:#7A6360;margin-left:4px}
+.rw{position:relative;height:62px}.rw:before{content:"";position:absolute;left:50%;top:2px;width:3px;height:40px;margin-left:-1.5px;border-radius:2px;background:#9A3B33;z-index:1;pointer-events:none}
+.sc{height:100%;overflow-x:scroll;overflow-y:hidden;display:flex;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent)}
+.sc::-webkit-scrollbar{display:none}.sp{flex:0 0 calc(50% - 4px)}.t{flex:0 0 8px;height:100%;position:relative;scroll-snap-align:center}
+.t i{position:absolute;left:3.5px;top:6px;width:1px;background:#D9C3BE}.t em{position:absolute;left:4px;top:40px;transform:translateX(-50%);font-size:11px;color:#7A6360;font-style:normal}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:4px;min-height:22px}
+.clr{background:none;border:none;font:inherit;font-size:12px;font-weight:600;color:#9A3B33;cursor:pointer;padding:0}
+.use{font:inherit;cursor:pointer}
+/* 1 */.u1{background:none;border:none;font-size:12px;font-weight:600;color:#2E7D4F;padding:0}
+/* 2 */.u2{width:100%;height:44px;margin-top:8px;border-radius:14px;border:none;background:#9A3B33;color:#fff;font-weight:500;font-size:14px}
+/* 3 */.u3{display:inline-flex;align-items:center;gap:4px;margin-left:10px;height:30px;padding:0 12px;border-radius:15px;border:1px solid #2E7D4F;background:#E8F4EC;color:#2E7D4F;font-size:12.5px;font-weight:600;vertical-align:middle}
+/* 4 */.n4{cursor:pointer;display:inline-block;padding:2px 14px;border-radius:14px;border:1.5px dashed #D9B7B1}
+.tip{text-align:center;font-size:11.5px;color:#7A6360;margin-top:2px}
+.reset{margin:10px auto 0;display:block;background:none;border:none;font:inherit;font-size:11.5px;color:#7A6360;text-decoration:underline;cursor:pointer}
+</style></head><body>
+<h1>ปุ่มใช้ค่านี้บนสเกล — 4 แบบ</h1>
+<p class="sub">ตัวอย่างคือน้ำหนัก ตอนเปิดสเกลครั้งแรกที่ยังไม่มีค่าที่บันทึก · เลื่อนสเกลได้ (เลื่อนแล้วบันทึกเองเหมือนเดิม และปุ่มจะหายไป เหลือ "ล้างค่า") · กดปุ่มเพื่อบันทึกค่าที่โชว์อยู่ทันที แล้วแถวจะหุบและขึ้น "✓ บันทึกแล้ว"</p>
+<div class="grid" id="g"></div>
+<script>
+const D=[['1 · ลิงก์เขียวเล็กมุมซ้ายล่าง','คู่กับ "ล้างค่า" ทางขวา เบาที่สุด แต่เล็ก อาจไม่เห็น'],
+['2 · ปุ่มเต็มความกว้างใต้สเกล','"ใช้ค่านี้ 55.0 กก." ชัดที่สุด กดง่ายที่สุด แต่ใหญ่ และดันเนื้อหาลง'],
+['3 · ปุ่มเม็ดยาข้างตัวเลขใหญ่','อยู่ติดค่าที่โชว์ เห็นความสัมพันธ์ทันทีว่า "ค่านี้"'],
+['4 · แตะตัวเลขใหญ่เพื่อใช้ค่า','ไม่มีปุ่มเพิ่ม กรอบเส้นประรอบตัวเลข + คำใบ้ใต้สเกล ไม่รก แต่ต้องรู้ว่าแตะได้']];
+const S=D.map(()=>({open:true,val:null,moved:false,saved:false,cur:55}));
+function ticks(){let h='';for(let w=30;w<=200;w+=.5){const k=Math.round(w*10);const mj=k%100==0,md=!mj&&k%50==0;h+=`<div class="t"><i style="height:${mj?28:md?20:12}px"></i>${mj?`<em>${w}</em>`:''}</div>`}return h}
+const TK=ticks();
+function draw(){document.getElementById('g').innerHTML=D.map((d,i)=>{const s=S[i];const unset=s.val==null&&!s.moved;
+ const shown=(s.cur).toFixed(1);
+ const row=`<div class="row"><span class="ico"></span><span><small>น้ำหนัก (กก.)</small><b class="${s.val==null?'ph':''}">${s.val==null?'เช่น 55.5':s.val}</b></span>${s.saved?'<span class="sv">✓ บันทึกแล้ว</span>':''}</div>`;
+ const use=`<button class="use ${['u1','u2','u3'][i]}" onclick="useIt(${i})">${i==0?'✓ ใช้ค่านี้':i==1?`ใช้ค่านี้ ${shown} กก.`:'✓ ใช้ค่านี้'}</button>`;
+ let panel='';
+ if(s.open){panel=`<div class="pnl"><span class="chip">✓ เกณฑ์ 45+ กก.</span><div class="wrap"><div class="num">${i==3&&unset?`<span class="n4" onclick="useIt(3)"><span class="n">${shown}</span><span class="u">กก.</span></span>`:`<span class="n">${shown}</span><span class="u">กก.</span>`}${i==2&&unset?use:''}</div><div class="rw"><div class="sc" id="sc${i}" onscroll="mv(${i},this)"><div class="sp"></div>${TK}<div class="sp"></div></div></div>
+ <div class="foot"><span>${i==0&&unset?use:''}</span>${unset?'<span></span>':'<button class="clr" onclick="clr('+i+')">ล้างค่า</button>'}</div>${i==1&&unset?use:''}${i==3&&unset?'<div class="tip">แตะตัวเลขเพื่อใช้ค่านี้ · หรือเลื่อนสเกล</div>':''}</div></div>`}
+ return `<div><div class="lab">${d[0]}</div><div class="desc">${d[1]}</div><div class="phone"><div class="hd">ตัวอย่างในโปรไฟล์</div><div class="row"><span class="ico"></span><span><small>ส่วนสูง (ซม.)</small><b class="ph">เช่น 165</b></span></div>${row}${panel}</div><button class="reset" onclick="rst(${i})">รีเซ็ตตัวอย่าง</button></div>`}).join('');
+ S.forEach((s,i)=>{const el=document.getElementById('sc'+i);if(el)el.scrollLeft=Math.round((s.cur-30)*2)*8})}
+let lock=0;
+function mv(i,el){if(lock)return;const s=S[i];const v=30+Math.round(el.scrollLeft/8)/2;if(v===s.cur)return;s.cur=v;
+ if(!s.moved){s.moved=true;s.val=null;draw();return}
+ // update number only
+ const n=el.closest('.pnl').querySelector('.num .n');if(n)n.textContent=v.toFixed(1);
+ clearTimeout(s.t);s.t=setTimeout(()=>{s.val=s.cur.toFixed(1);draw()},250)}
+function useIt(i){const s=S[i];s.val=s.cur.toFixed(1);s.moved=true;s.open=true;draw();setTimeout(()=>{s.open=false;s.saved=true;draw();setTimeout(()=>{s.saved=false;draw()},1500)},600)}
+function clr(i){S[i]={open:false,val:null,moved:false,saved:false,cur:55};draw()}
+function rst(i){S[i]={open:true,val:null,moved:false,saved:false,cur:55};draw()}
+draw();
+</script></body></html>

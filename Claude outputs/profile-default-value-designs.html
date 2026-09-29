@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ค่าเริ่มต้นบนสเกล — 2 แนวทาง</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#F6EFEC;font-family:'Mitr',sans-serif;color:#3A2C29;padding:20px 16px 60px}
+h1{font-size:18px;margin:0 0 4px}h2{font-size:15px;margin:26px 0 2px;max-width:1500px;margin-inline:auto}p.sub{margin:0 auto 12px;font-size:13px;color:#7A6360;line-height:1.5;max-width:1500px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1500px;margin:auto}
+.lab{font-size:13px;font-weight:600;margin:0 0 6px}
+.phone{background:#fff;border-radius:22px;padding:14px 16px 16px;box-shadow:0 2px 14px rgba(90,40,30,.1)}
+.row{display:flex;align-items:center;gap:12px;padding:8px 0}.ico{width:34px;height:34px;border-radius:17px;background:#F3EAE8;flex:none}
+.row small{display:block;font-size:11.5px;color:#7A6360}.row b{font-weight:500;font-size:15px}.ph{color:#B39B96}.row .sv{margin-left:auto;font-size:11px;font-weight:600;color:#2E7D4F}
+.pnl{padding:6px 0 4px 46px;position:relative}.chip{position:absolute;right:0;top:8px;font-size:11px;font-weight:600;border-radius:10px;padding:3px 8px;background:#E8F4EC;color:#2E7D4F}.chip.w{background:#FBEFE3;color:#B5651D}
+.wrap{padding:34px 0 6px}.num{text-align:center;font-variant-numeric:tabular-nums;margin-bottom:2px;min-height:34px}.num .n{font-size:28px;font-weight:700;color:#9A3B33}.num .u{font-size:13px;color:#7A6360;margin:0 0 0 4px}
+.rw{position:relative;height:62px}.rw:before{content:"";position:absolute;left:50%;top:2px;width:3px;height:40px;margin-left:-1.5px;border-radius:2px;background:#9A3B33;z-index:1;pointer-events:none}
+.sc{height:100%;overflow-x:scroll;overflow-y:hidden;display:flex;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(to right,transparent,#000 22%,#000 78%,transparent)}
+.sc::-webkit-scrollbar{display:none}.sp{flex:0 0 calc(50% - 4px)}.t{flex:0 0 8px;height:100%;position:relative;scroll-snap-align:center}
+.t i{position:absolute;left:3.5px;top:6px;width:1px;background:#D9C3BE}.t em{position:absolute;left:4px;top:40px;transform:translateX(-50%);font-size:11px;color:#7A6360;font-style:normal}
+.foot{display:flex;justify-content:flex-end;min-height:22px;margin-top:4px}.clr{background:none;border:none;font:inherit;font-size:12px;font-weight:600;color:#9A3B33;cursor:pointer;padding:0}
+.u3{display:inline-flex;align-items:center;gap:4px;margin-left:10px;height:30px;padding:0 12px;border-radius:15px;border:1px solid #2E7D4F;background:#E8F4EC;color:#2E7D4F;font:inherit;font-size:12.5px;font-weight:600;vertical-align:middle;cursor:pointer}
+.note{font-size:11.5px;color:#7A6360;margin-top:8px;line-height:1.5}
+.reset{margin:8px auto 0;display:block;background:none;border:none;font:inherit;font-size:11.5px;color:#7A6360;text-decoration:underline;cursor:pointer}
+</style></head><body>
+<h1>ค่าเริ่มต้นบนสเกล — 2 แนวทาง</h1>
+<p class="sub">เลื่อนสเกลได้จริง · เลื่อนแล้วบันทึกเอง (ขึ้น "ล้างค่า") · ตอนเปิดครั้งแรกที่ยังไม่มีค่า ค่าที่โชว์เป็นแค่ตำแหน่งเริ่ม ไม่ถูกบันทึกถ้าไม่ได้แตะ</p>
+<h2>A · ที่เสนอ: น้ำหนักใช้เลขไม่กลม, ปีเกิดกับส่วนสูงมีปุ่ม "ใช้ค่านี้"</h2>
+<p class="sub">น้ำหนักเริ่มที่ 55.3 กก. (สเกลละเอียด 0.1 โอกาสตรงกับค่าจริงต่ำ) ไม่ต้องมีปุ่ม · ปีเกิดและส่วนสูงเป็นจำนวนเต็ม จึงมีปุ่มไว้กดรับค่าที่โชว์</p>
+<div class="grid" id="A"></div>
+<h2>B · ง่ายที่สุด: ปุ่ม "ใช้ค่านี้" ทั้งสามสเกล ค่าเริ่มต้นกลมเหมือนเดิม</h2>
+<p class="sub">ไม่ต้องคิดว่าสเกลไหนต้องมีอะไร ทุกสเกลทำงานเหมือนกัน</p>
+<div class="grid" id="B"></div>
+<script>
+const CFG={year:{label:'ปีเกิด (พ.ศ.)',min:2469,max:2569,step:1,dec:0,unit:'',ph:'เช่น 2539',mj:10,md:5,chip:['✓ อายุ 17–70 ปี',0]},
+ height:{label:'ส่วนสูง (ซม.)',min:120,max:220,step:1,dec:0,unit:'ซม.',ph:'เช่น 165',mj:10,md:5,chip:null},
+ weight:{label:'น้ำหนัก (กก.)',min:30,max:200,step:.1,dec:1,unit:'กก.',ph:'เช่น 55.5',mj:10,md:5,chip:['✓ เกณฑ์ 45+ กก.',0]}};
+const DEF={A:{year:2539,height:160,weight:55.3},B:{year:2539,height:160,weight:55}};
+const BTN={A:{year:1,height:1,weight:0},B:{year:1,height:1,weight:1}};
+const S={};for(const g of['A','B'])for(const k in CFG)S[g+k]={open:true,val:null,moved:false,saved:false,cur:DEF[g][k]};
+function tk(c){let h='';const n=Math.round((c.max-c.min)/c.step);for(let i=0;i<=n;i++){const v=c.min+i*c.step,k=Math.round(v/c.step);const mj=k%c.mj==0,md=!mj&&k%c.md==0;h+=`<div class="t"><i style="height:${mj?28:md?20:12}px"></i>${mj?`<em>${Math.round(v)}</em>`:''}</div>`}return h}
+const TK={};for(const k in CFG)TK[k]=tk(CFG[k]);
+const fmt=(c,v)=>c.dec?v.toFixed(c.dec):String(v);
+function card(g,k){const c=CFG[k],s=S[g+k],id=g+k,unset=s.val==null&&!s.moved,showBtn=BTN[g][k]&&unset;
+ const row=`<div class="row"><span class="ico"></span><span><small>${c.label}</small><b class="${s.val==null?'ph':''}">${s.val==null?c.ph:s.val}</b></span>${s.saved?'<span class="sv">✓ บันทึกแล้ว</span>':''}</div>`;
+ let p='';if(s.open)p=`<div class="pnl">${c.chip?`<span class="chip">${c.chip[0]}</span>`:''}<div class="wrap"><div class="num"><span class="n">${fmt(c,s.cur)}</span><span class="u">${c.unit}</span>${showBtn?`<button class="u3" onclick="useIt('${id}')">✓ ใช้ค่านี้</button>`:''}</div><div class="rw"><div class="sc" id="sc${id}" onscroll="mv('${id}',this)"><div class="sp"></div>${TK[k]}<div class="sp"></div></div></div><div class="foot">${unset?'':`<button class="clr" onclick="clr('${id}')">ล้างค่า</button>`}</div></div></div>`;
+ const note=g=='A'&&k=='weight'&&unset&&s.open?'<div class="note">เริ่มที่ 55.3 (ไม่ใช่ 55.0) ให้ต้องเลื่อนเองเพื่อเลือกค่า</div>':'';
+ return `<div><div class="lab">${c.label.replace(/ \(.*/,'')}</div><div class="phone">${row}${p}${note}</div><button class="reset" onclick="rst('${id}')">รีเซ็ต</button></div>`}
+function draw(){for(const g of['A','B']){document.getElementById(g).innerHTML=Object.keys(CFG).map(k=>card(g,k)).join('')}
+ for(const id in S){const el=document.getElementById('sc'+id);if(el){const c=CFG[id.slice(1)];el.scrollLeft=Math.round((S[id].cur-c.min)/c.step)*8}}}
+function mv(id,el){const s=S[id],c=CFG[id.slice(1)];const v=Math.round((c.min+Math.round(el.scrollLeft/8)*c.step)*10)/10;if(v===s.cur)return;s.cur=v;
+ if(!s.moved){s.moved=true;draw();return}
+ const n=el.closest('.pnl').querySelector('.num .n');if(n)n.textContent=fmt(c,v);
+ clearTimeout(s.t);s.t=setTimeout(()=>{s.val=fmt(c,s.cur);draw()},250)}
+function useIt(id){const s=S[id],c=CFG[id.slice(1)];s.val=fmt(c,s.cur);s.moved=true;draw();setTimeout(()=>{s.open=false;s.saved=true;draw();setTimeout(()=>{s.saved=false;draw()},1500)},600)}
+function clr(id){const g=id[0],k=id.slice(1);S[id]={open:false,val:null,moved:false,saved:false,cur:DEF[g][k]};draw()}
+function rst(id){const g=id[0],k=id.slice(1);S[id]={open:true,val:null,moved:false,saved:false,cur:DEF[g][k]};draw()}
+draw();
+</script></body></html>
