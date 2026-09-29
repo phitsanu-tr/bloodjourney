@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.146";
+const APP_VERSION = "1.0.147";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7578,13 +7578,29 @@ function AppInner() {
                           )}
                           {isOpen && r.kind === "choice" && !r.blood && (
                             <div style={{ padding: "10px 0 6px 46px" }}>
-                              <div role="radiogroup" aria-label={r.label} style={chipGrid(r.options.length)}>
-                                {r.options.map(o => (
-                                  <button key={o.v} role="radio" aria-checked={r.current === o.v}
-                                    onClick={() => { if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); closeRowSoon(r.key); }}
-                                    style={chip(r.current === o.v)}>{o.label}</button>
-                                ))}
-                              </div>
+                              {(() => {
+                                // Same sliding segmented bar as the blood group / Rh pickers.
+                                const n = r.options.length;
+                                const idx = r.options.findIndex(o => o.v === r.current);
+                                const longest = Math.max(...r.options.map(o => o.label.length));
+                                return (
+                                  <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                                    {idx >= 0 && (
+                                      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${idx} * (100% - 6px) / ${n})`, width: `calc((100% - 6px) / ${n})`, borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
+                                    )}
+                                    {r.options.map(o => {
+                                      const on = r.current === o.v;
+                                      return (
+                                        <button key={o.v} role="radio" aria-checked={on}
+                                          onClick={() => { if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); closeRowSoon(r.key); }}
+                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
+                                          {o.label}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
                               {r.note && (
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 8, lineHeight: 1.5 }}>
                                   <Info size={13} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} /> {r.note}
