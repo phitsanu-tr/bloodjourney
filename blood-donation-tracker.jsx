@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.151";
+const APP_VERSION = "1.0.152";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7515,7 +7515,7 @@ function AppInner() {
                     : profileOpenChoice === r.key ? null // the panel's chip already says it
                     : hint.color !== "#B5651D" ? null
                     : { ...hint, text: hint.text.startsWith("นอกเกณฑ์") ? "นอกเกณฑ์" : hint.text.startsWith("ต่ำกว่าเกณฑ์") ? "ต่ำกว่าเกณฑ์" : hint.text };
-                  const saved = profileSavedKey === r.key
+                  const saved = profileSavedKey === r.key && profileOpenChoice !== r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
                     : r.kind === "action" ? <ChevronRight size={16} color="#7A6360" aria-hidden="true" style={{ flexShrink: 0 }} />
                     : r.kind === "id" && donorId && profileInline.donorId === donorId ? (
