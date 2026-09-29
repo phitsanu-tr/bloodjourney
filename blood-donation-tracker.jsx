@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.149";
+const APP_VERSION = "1.0.150";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -195,6 +195,8 @@ const COMPONENT_INTERVAL_DAYS = 14;
 // age estimate, without opening the door to obviously fabricated totals.
 const STARTING_COUNT_CAP_MARGIN = 1.2;
 const BLOOD_TYPES = ["A", "B", "AB", "O", "ไม่ทราบ"];
+// Year / weight / height rulers: fold the panel a moment after the scale stops moving (cancelled if it moves again).
+let pickerCloseTimer = null;
 const ABO_ONLY = ["A", "B", "AB", "O"]; // what the profile picker offers ("ไม่ทราบ" stays valid for old data/imports)
 const BLOOD_RH = [["+", "บวก (+)"], ["-", "ลบ (−)"], ["unknown", "ไม่ทราบ"]];
 const GENDERS = [["male", "ชาย"], ["female", "หญิง"], ["none", "ไม่ระบุ"]];
@@ -7364,13 +7366,15 @@ function AppInner() {
           if (v === "" || v == null) return ph(placeholders[key]);
           return String(v);
         };
-        const preview = (key) => (v) => setPickerPreview({ key, value: v });
+        const preview = (key) => (v) => { clearTimeout(pickerCloseTimer); setPickerPreview({ key, value: v }); };
         const settle = (key) => (v) => {
           if (key === "birthYear") {
             if (v !== birthYear || birthYearApprox) commitProfile({ birthYear: v, birthYearApprox: false }, key);
           } else if (v !== committed[key]) {
             commitProfile({ [key]: v }, key);
           }
+          clearTimeout(pickerCloseTimer);
+          pickerCloseTimer = setTimeout(() => setProfileOpenChoice(o => (o === key ? null : o)), 1000);
         };
         const pickerPanel = (key) => {
           if (key === "birthYear") {
