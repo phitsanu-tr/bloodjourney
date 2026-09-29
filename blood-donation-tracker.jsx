@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.157";
+const APP_VERSION = "1.0.158";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1415,7 +1415,7 @@ function backupPasswordStrength(pw) {
 // Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
 // works the same for left- and right-handed use.
 const RULER_TICK = 8;
-function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, unitBefore, caption, onChange, onSettle, onUse, label, ariaUnit }) {
+function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, unitBefore, caption, onChange, onSettle, label, ariaUnit }) {
   const ref = useRef(null);
   const count = Math.round((max - min) / step) + 1;
   const valAt = (i) => Math.round((min + i * step) * 10 ** decimals) / 10 ** decimals;
@@ -1459,20 +1459,12 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
   const shown = String(Number(valAt(idx).toFixed(decimals)));
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", marginBottom: 2, minHeight: 34 }}>
-      <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+      <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums", marginBottom: 2 }}>
         {/* Thai puts พ.ศ. before the year ("พ.ศ. 2546"), units after (162 ซม.). */}
         {unitBefore && <span style={{ fontSize: 13, color: "#7A6360", marginRight: 5 }}>{unitBefore}</span>}
         <span style={{ fontSize: 28, fontWeight: 700, color: "#9A3B33" }}>{shown}</span>
         {unit && <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>{unit}</span>}
         {caption && <span style={{ fontSize: 12, color: "#7A6360", marginLeft: 6 }}>· {caption(valAt(idx))}</span>}
-      </div>
-      {onUse && (
-        <button type="button" onClick={() => onUse(valAt(idx))} aria-label={`ใช้ค่านี้ ${shown}${unit ? " " + (ariaUnit || unit) : ""}`}
-          style={{ position: "relative", marginLeft: 10, height: 30, padding: "0 12px", borderRadius: 15, border: "1px solid #2E7D4F", background: "#E8F4EC", color: "#2E7D4F", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-          <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -4px" }} />✓ ใช้ค่านี้
-        </button>
-      )}
       </div>
       <div style={{ position: "relative", height: 62 }}>
         <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: 2, width: 3, height: 40, marginLeft: -1.5, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
@@ -7414,19 +7406,16 @@ function AppInner() {
           }, 1000);
         };
         const pickerPanel = (key) => {
-          // Until something is saved or the scale is touched, offer "ใช้ค่านี้" so the shown start value can be kept without moving.
-          const untouched = committed[key] === "" && !(pickerPreview && pickerPreview.key === key);
-          const use = untouched ? (v) => settle(key)(v) : undefined;
           if (key === "birthYear") {
             return <HorizontalRuler min={nowBE - 100} max={nowBE} step={1} majorEvery={10} midEvery={5} unitBefore="พ.ศ."
-              caption={(v) => `อายุ ${nowBE - v} ปี`} value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด" onChange={preview(key)} onSettle={settle(key)} onUse={use} />;
+              caption={(v) => `อายุ ${nowBE - v} ปี`} value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด" onChange={preview(key)} onSettle={settle(key)} />;
           }
           if (key === "height") {
             return <HorizontalRuler min={MIN_HEIGHT} max={MAX_HEIGHT} step={1} majorEvery={10} midEvery={5} unit="ซม." ariaUnit="เซนติเมตร"
-              value={height === "" ? 160 : Math.round(Number(height))} label="ส่วนสูง" onChange={preview(key)} onSettle={settle(key)} onUse={use} />;
+              value={height === "" ? 160 : Math.round(Number(height))} label="ส่วนสูง" onChange={preview(key)} onSettle={settle(key)} />;
           }
           return <HorizontalRuler min={30} max={200} step={0.1} decimals={1} majorEvery={10} midEvery={5} unit="กก." ariaUnit="กิโลกรัม"
-            value={weight === "" ? 55 : Math.min(200, Math.max(30, Number(weight)))} label="น้ำหนัก" onChange={preview(key)} onSettle={settle(key)} onUse={use} />;
+            value={weight === "" ? 55 : Math.min(200, Math.max(30, Number(weight)))} label="น้ำหนัก" onChange={preview(key)} onSettle={settle(key)} />;
         };
         const copyDonorId = async () => {
           try {
