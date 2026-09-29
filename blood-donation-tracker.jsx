@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.167";
+const APP_VERSION = "1.0.168";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7622,7 +7622,7 @@ function AppInner() {
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
                                       onClick={() => {
                                         // Tapping the chosen group again takes it back off (nothing selected).
-                                        if (on) { commitProfile({ bloodType: "" }, "blood"); return; }
+                                        if (on) { commitProfile({ bloodType: "", bloodRh: "" }, "blood"); return; } // Rh means little without the group, so it goes too
                                         commitProfile({ bloodType: bt }, "blood");
                                         if (bloodRh) closeBloodSoon(true);
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
@@ -7636,14 +7636,23 @@ function AppInner() {
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · เลือกต่ออีกนิด" : "Rh"}</div>
                               <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
-                                {bloodRh && (
-                                  <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${BLOOD_RH.findIndex(([v]) => v === bloodRh)} * (100% - 6px) / 3)`, width: "calc((100% - 6px) / 3)", borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
-                                )}
+                                {(() => {
+                                  if (bloodRh) lastPickedRef.current.rh = bloodRh;
+                                  const shownIdx = BLOOD_RH.findIndex(([v]) => v === (bloodRh || lastPickedRef.current.rh));
+                                  return shownIdx >= 0 ? (
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / 3)`, width: "calc((100% - 6px) / 3)", borderRadius: 11, background: "#9A3B33", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                  ) : null;
+                                })()}
                                 {BLOOD_RH.map(([v]) => {
                                   const on = bloodRh === v;
                                   return (
                                     <button key={v} role="radio" aria-checked={on}
-                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) closeBloodSoon(!on); }}
+                                      onClick={() => {
+                                        // Tapping the chosen Rh again takes it back off.
+                                        if (on) { commitProfile({ bloodRh: "" }, "blood"); return; }
+                                        commitProfile({ bloodRh: v }, "blood");
+                                        if (bloodType) closeBloodSoon(true);
+                                      }}
                                       style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
