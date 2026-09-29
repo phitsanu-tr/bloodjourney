@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.119";
+const APP_VERSION = "1.0.120";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1295,6 +1295,138 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
 // underlying field to call .focus() on it after a validation error (it used
 // to be the native <input>'s own ref) -- forwarding it to this button gives
 // the same "put the user's attention there" behavior.
+// Scroll-wheel number picker (design 1 of profile-number-picker-designs.html):
+// a scroll-snap column of values with a tinted band marking the selection.
+// onChange fires live while scrolling (for the row preview); onSettle fires
+// once scrolling stops, or on tap / arrow keys (that's when it's saved).
+const WHEEL_ITEM = 36;
+function WheelPicker({ values, value, onChange, onSettle, format = (v) => v, label, width, ariaValueText }) {
+  const ref = useRef(null);
+  const idxRef = useRef(Math.max(0, values.indexOf(value)));
+  const settleTimer = useRef(null);
+  const userScrolled = useRef(false);
+  const [idx, setIdx] = useState(idxRef.current);
+  useEffect(() => {
+    const el = ref.current;
+    if (el) el.scrollTop = idxRef.current * WHEEL_ITEM;
+    return () => clearTimeout(settleTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const pick = (i, smooth) => {
+    i = Math.max(0, Math.min(values.length - 1, i));
+    idxRef.current = i;
+    setIdx(i);
+    ref.current?.scrollTo({ top: i * WHEEL_ITEM, behavior: smooth ? "smooth" : "auto" });
+    onChange?.(values[i]);
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => onSettle?.(values[i]), 250);
+  };
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    const i = Math.max(0, Math.min(values.length - 1, Math.round(el.scrollTop / WHEEL_ITEM)));
+    if (i !== idxRef.current) {
+      idxRef.current = i;
+      setIdx(i);
+      onChange?.(values[i]);
+    }
+    // The first scroll event can be our own initial positioning, which
+    // shouldn't save anything; only settle after a real touch/wheel.
+    if (!userScrolled.current) return;
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => onSettle?.(values[idxRef.current]), 180);
+  };
+  const markUser = () => { userScrolled.current = true; };
+  return (
+    <div style={{ position: "relative", flex: width ? `0 0 ${width}px` : 1, height: WHEEL_ITEM * 5 }}>
+      <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: WHEEL_ITEM * 2, height: WHEEL_ITEM, borderRadius: 10, background: "#FBEFEC", pointerEvents: "none" }} />
+      <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onWheel={markUser} onPointerDown={markUser}
+        role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={values[idx]} aria-valuetext={ariaValueText ? ariaValueText(values[idx]) : String(format(values[idx]))}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowUp") { e.preventDefault(); markUser(); pick(idxRef.current - 1, true); }
+          if (e.key === "ArrowDown") { e.preventDefault(); markUser(); pick(idxRef.current + 1, true); }
+        }}
+        style={{ position: "relative", height: "100%", overflowY: "scroll", scrollSnapType: "y mandatory", overscrollBehavior: "contain", outline: "none",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent)", maskImage: "linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent)" }}>
+        <div style={{ height: WHEEL_ITEM * 2 }} />
+        {values.map((v, i) => (
+          <div key={v} onClick={() => { markUser(); pick(i, true); }}
+            style={{ height: WHEEL_ITEM, lineHeight: `${WHEEL_ITEM}px`, textAlign: "center", scrollSnapAlign: "center", cursor: "pointer", fontVariantNumeric: "tabular-nums",
+              fontSize: i === idx ? 19 : 16, fontWeight: i === idx ? 600 : 400, color: i === idx ? "#3A2C29" : "#B7A5A1" }}>
+            {format(v)}
+          </div>
+        ))}
+        <div style={{ height: WHEEL_ITEM * 2 }} />
+      </div>
+    </div>
+  );
+}
+
+// Vertical ruler for height (design 4 of profile-number-picker-designs.html,
+// turned upright like a height chart): bigger values at the top, 1 cm per
+// tick, a label every 10 cm, the red line in the middle marks the value.
+const RULER_TICK = 8;
+function VerticalRuler({ min, max, value, onChange, onSettle, label }) {
+  const ref = useRef(null);
+  const vals = useMemo(() => Array.from({ length: max - min + 1 }, (_, i) => max - i), [min, max]);
+  const idxRef = useRef(Math.max(0, vals.indexOf(value)));
+  const settleTimer = useRef(null);
+  const userScrolled = useRef(false);
+  const [idx, setIdx] = useState(idxRef.current);
+  const H = WHEEL_ITEM * 5;
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = idxRef.current * RULER_TICK;
+    return () => clearTimeout(settleTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const pick = (i) => {
+    i = Math.max(0, Math.min(vals.length - 1, i));
+    idxRef.current = i; setIdx(i);
+    ref.current?.scrollTo({ top: i * RULER_TICK, behavior: "smooth" });
+    onChange?.(vals[i]);
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => onSettle?.(vals[i]), 250);
+  };
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    const i = Math.max(0, Math.min(vals.length - 1, Math.round(el.scrollTop / RULER_TICK)));
+    if (i !== idxRef.current) { idxRef.current = i; setIdx(i); onChange?.(vals[i]); }
+    if (!userScrolled.current) return;
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => onSettle?.(vals[idxRef.current]), 180);
+  };
+  const markUser = () => { userScrolled.current = true; };
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <div aria-hidden="true" style={{ flex: 1, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+        <span style={{ fontSize: 30, fontWeight: 700, color: "#9A3B33" }}>{vals[idx]}</span>
+        <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>ซม.</span>
+      </div>
+      <div style={{ position: "relative", flex: "0 0 96px", height: H }}>
+        <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: H / 2 - 1.5, height: 3, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
+        <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onWheel={markUser} onPointerDown={markUser}
+          role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={vals[idx]} aria-valuetext={`${vals[idx]} เซนติเมตร`}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowUp") { e.preventDefault(); markUser(); pick(idxRef.current - 1); }
+            if (e.key === "ArrowDown") { e.preventDefault(); markUser(); pick(idxRef.current + 1); }
+          }}
+          style={{ height: "100%", overflowY: "scroll", scrollSnapType: "y mandatory", overscrollBehavior: "contain", outline: "none",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent)", maskImage: "linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent)" }}>
+          <div style={{ height: H / 2 - RULER_TICK / 2 }} />
+          {vals.map((v) => (
+            <div key={v} style={{ position: "relative", height: RULER_TICK, scrollSnapAlign: "center" }}>
+              <span style={{ position: "absolute", right: 0, top: RULER_TICK / 2 - 0.5, height: 1, width: v % 10 === 0 ? 34 : v % 5 === 0 ? 24 : 14, background: v % 10 === 0 ? "#B7A5A1" : "#D9C3BE" }} />
+              {v % 10 === 0 && <span style={{ position: "absolute", left: 0, top: RULER_TICK / 2 - 8, fontSize: 11, lineHeight: "16px", color: "#7A6360", fontVariantNumeric: "tabular-nums" }}>{v}</span>}
+            </div>
+          ))}
+          <div style={{ height: H / 2 - RULER_TICK / 2 }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const DateField = React.forwardRef(function DateField({ value, onChange, maxDate, ariaLabelPrefix, height = 44, fontSize = 14 }, ref) {
   const [open, setOpen] = useState(false);
   const [dialogKey, setDialogKey] = useState(0);
@@ -2323,6 +2455,8 @@ function AppInner() {
   const [profileInlineError, setProfileInlineError] = useState({});
   const [profileOpenChoice, setProfileOpenChoice] = useState(null); // "bloodType" | "donorType" | null
   const [profileSavedKey, setProfileSavedKey] = useState(null);
+  const [pickerPreview, setPickerPreview] = useState(null); // { key, value } while a picker scrolls
+  const weightPartsRef = useRef(null);
   const profileSavedTimerRef = useRef(null);
   const [showRemindPause, setShowRemindPause] = useState(false);
   const [remindPauseChoice, setRemindPauseChoice] = useState("6");
@@ -6937,14 +7071,13 @@ function AppInner() {
         const criteriaHint = (key) => {
           if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
           if (key !== "birthYear" && key !== "weight") return null;
-          const raw = (profileInline[key] || "").trim();
-          let n = raw === "" ? NaN : Number(raw);
+          // Live from the picker while it's being scrolled, else the saved value.
+          const cur = pickerPreview && pickerPreview.key === key ? pickerPreview.value : (key === "birthYear" ? birthYear : weight);
+          const n = cur === "" || cur == null ? NaN : Number(cur);
           if (key === "birthYear") {
             const range = `${MIN_AGE}–${MAX_AGE} ปี`;
-            if (raw.length !== 4 || Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
-            if (n >= 1900 && n <= nowBE - 543) n += 543;
+            if (Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
             const a = nowBE - n;
-            if (a < 0 || a > 120) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
             if (birthYearApprox && n === birthYear) return { text: `อายุ ${a} ปี · ปีโดยประมาณ`, color: "#B5651D" };
             return a >= MIN_AGE && a <= MAX_AGE ? { text: `อายุ ${a} ปี · ✓ ตามเกณฑ์`, color: "#2E7D4F" } : { text: `อายุ ${a} ปี · นอกเกณฑ์`, color: "#B5651D" };
           }
@@ -6968,9 +7101,12 @@ function AppInner() {
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
             { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก ชาย, หญิง หรือไม่ระบุ"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender },
-            { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "num", unit: "พ.ศ." },
-            { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "num", unit: "ซม." },
-            { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "num", unit: "กก." },
+            // Birth year and weight: scroll wheels; height: an upright ruler
+            // (profile-number-picker-designs.html, design 1 + 4). Each saves
+            // once the scroll settles.
+            { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "picker", unit: "พ.ศ." },
+            { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "picker", unit: "ซม." },
+            { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "picker", unit: "กก." },
           ], footer: bloodVolumeL ? (
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7A6360", background: "#FDF6F4", margin: "0 -12px", padding: "9px 12px", borderTop: "1px solid #F3E7E4", borderRadius: "0 0 12px 12px" }}>
               <Droplet size={14} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
@@ -6987,6 +7123,51 @@ function AppInner() {
               onClick: () => { setRemindPauseChoice("6"); setShowRemindPause(true); } },
           ] },
         ];
+        const committed = { birthYear, height, weight };
+        const pickerShown = (key) => {
+          const v = pickerPreview && pickerPreview.key === key ? pickerPreview.value : committed[key];
+          if (v === "" || v == null) return ph(placeholders[key]);
+          return key === "weight" ? Number(v).toFixed(1) : String(v);
+        };
+        const preview = (key) => (v) => setPickerPreview({ key, value: v });
+        const settle = (key) => (v) => {
+          if (key === "birthYear") {
+            if (v !== birthYear || birthYearApprox) commitProfile({ birthYear: v, birthYearApprox: false }, key);
+          } else if (v !== committed[key]) {
+            commitProfile({ [key]: v }, key);
+          }
+        };
+        const kgValues = Array.from({ length: 171 }, (_, i) => 30 + i);
+        const decValues = Array.from({ length: 10 }, (_, i) => i);
+        const w0 = weight === "" ? 55 : Math.min(200, Math.max(30, Number(weight)));
+        const weightParts = { kg: Math.floor(w0), dec: Math.round((w0 - Math.floor(w0)) * 10) % 10 };
+        const weightFrom = () => Math.round((weightPartsRef.current.kg + weightPartsRef.current.dec / 10) * 10) / 10;
+        const pickerPanel = (key) => {
+          if (key === "birthYear") {
+            const years = Array.from({ length: 101 }, (_, i) => nowBE - 100 + i);
+            return <WheelPicker values={years} value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด พ.ศ."
+              ariaValueText={(v) => `พ.ศ. ${v} อายุ ${nowBE - v} ปี`} onChange={preview(key)} onSettle={settle(key)} />;
+          }
+          if (key === "height") {
+            return <VerticalRuler min={MIN_HEIGHT} max={MAX_HEIGHT} value={height === "" ? 160 : Math.round(Number(height))} label="ส่วนสูง เซนติเมตร"
+              onChange={preview(key)} onSettle={settle(key)} />;
+          }
+          if (!weightPartsRef.current) weightPartsRef.current = { ...weightParts };
+          const onPart = (part, fire) => (v) => {
+            weightPartsRef.current = { ...weightPartsRef.current, [part]: v };
+            fire(weightFrom());
+          };
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <WheelPicker values={kgValues} value={weightParts.kg} width={96} label="น้ำหนัก กิโลกรัม"
+                onChange={onPart("kg", preview(key))} onSettle={onPart("kg", settle(key))} />
+              <span aria-hidden="true" style={{ fontSize: 22, fontWeight: 700, color: "#3A2C29" }}>.</span>
+              <WheelPicker values={decValues} value={weightParts.dec} width={60} label="น้ำหนัก ทศนิยม"
+                onChange={onPart("dec", preview(key))} onSettle={onPart("dec", settle(key))} />
+              <span aria-hidden="true" style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>กก.</span>
+            </div>
+          );
+        };
         const copyDonorId = async () => {
           try {
             await navigator.clipboard.writeText(donorId);
@@ -7103,15 +7284,15 @@ function AppInner() {
                   const isOpen = profileOpenChoice === r.key;
                   return (
                     <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      {r.kind === "choice" || r.kind === "action" ? (
+                      {r.kind === "choice" || r.kind === "action" || r.kind === "picker" ? (
                         <>
-                          <button onClick={r.kind === "action" ? r.onClick : () => setProfileOpenChoice(o => (o === r.key ? null : r.key))} aria-expanded={r.kind === "choice" ? isOpen : undefined}
+                          <button onClick={r.kind === "action" ? r.onClick : () => { setPickerPreview(null); weightPartsRef.current = null; setProfileOpenChoice(o => (o === r.key ? null : r.key)); }} aria-expanded={r.kind !== "action" ? isOpen : undefined}
                             style={{ ...itemStyle, border: "none", cursor: "pointer", background: isOpen ? "#FBEFEC" : "transparent" }}>
                             {iconEl}
                             <span style={{ flex: 1, minWidth: 0 }}>
                               {labelEl}
                               <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
-                                <span style={{ flex: 1, fontSize: 15, color: "#3A2C29" }}>{r.value}</span>
+                                <span style={{ flex: 1, fontSize: 15, color: "#3A2C29", fontVariantNumeric: r.kind === "picker" ? "tabular-nums" : undefined }}>{r.kind === "picker" ? pickerShown(r.key) : r.value}</span>
                                 {saved}
                               </span>
                             </span>
@@ -7137,7 +7318,21 @@ function AppInner() {
                               <div style={{ fontSize: 11, color: "#7A6360", marginTop: 8 }}>ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</div>
                             </div>
                           )}
-                          {isOpen && !r.blood && (
+                          {isOpen && r.kind === "picker" && (
+                            <div style={{ padding: "10px 0 6px 46px" }}>
+                              {pickerPanel(r.key)}
+                              {committed[r.key] !== "" && (
+                                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+                                  <button onClick={() => { setProfileOpenChoice(null); setPickerPreview(null); commitProfile(r.key === "birthYear" ? { birthYear: "", birthYearApprox: false } : { [r.key]: "" }, r.key); }}
+                                    style={{ position: "relative", background: "none", border: "none", padding: 0, fontSize: 12, fontWeight: 600, color: "#9A3B33", cursor: "pointer", fontFamily: "inherit" }}>
+                                    <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
+                                    ล้างค่า
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {isOpen && r.kind === "choice" && !r.blood && (
                             <div style={{ padding: "10px 0 6px 46px" }}>
                               <div role="radiogroup" aria-label={r.label} style={chipGrid(r.options.length)}>
                                 {r.options.map(o => (
