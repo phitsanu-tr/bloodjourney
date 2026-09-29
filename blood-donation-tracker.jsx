@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.158";
+const APP_VERSION = "1.0.159";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3622,6 +3622,7 @@ function AppInner() {
     if (key === "donorId") {
       const v = raw.replace(/\s+/g, " ").slice(0, 20);
       if (v === donorId) { revert(); return; }
+      if (v !== "" && !/^\d{10}$/.test(v)) { fail("เลขประจำตัวผู้บริจาคต้องเป็นตัวเลข 10 หลัก"); return; }
       setProfileInline(f => ({ ...f, donorId: v }));
       commitProfile({ donorId: v }, key);
       return;
@@ -4605,7 +4606,7 @@ function AppInner() {
       }
       if (!gender && ["male", "female", "none"].includes(parsed.gender)) profileFieldsToFill.gender = parsed.gender;
       if (height === "" && Number(parsed.height) >= MIN_HEIGHT && Number(parsed.height) <= MAX_HEIGHT) profileFieldsToFill.height = Math.round(Number(parsed.height) * 10) / 10;
-      if (!donorId && typeof parsed.donorId === "string" && parsed.donorId.trim()) profileFieldsToFill.donorId = parsed.donorId.replace(/\s+/g, " ").trim().slice(0, 20);
+      if (!donorId && typeof parsed.donorId === "string" && /^\d{10}$/.test(parsed.donorId.trim())) profileFieldsToFill.donorId = parsed.donorId.trim();
       if (!bloodRh && ["+", "-", "unknown"].includes(parsed.bloodRh)) profileFieldsToFill.bloodRh = parsed.bloodRh;
       if (!remindPauseUntil && typeof parsed.remindPauseUntil === "string" && (parsed.remindPauseUntil === "indefinite" || /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil))) profileFieldsToFill.remindPauseUntil = parsed.remindPauseUntil;
       if (weight === "" && parsed.weight !== undefined && parsed.weight !== "") {
@@ -7341,7 +7342,7 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
         };
-        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165", donorId: "ดูได้จากบัตรผู้บริจาค" };
+        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165", donorId: "เลข 10 หลักบนบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
@@ -7684,13 +7685,13 @@ function AppInner() {
                             <input id={`profile-${r.key}`}
                               ref={r.key === "first" ? nicknameFirstInputRef : r.key === "last" ? nicknameLastInputRef : undefined}
                               type="text" autoComplete="off" enterKeyHint={r.key === "first" ? "next" : "done"}
-                              inputMode={r.key === "birthYear" ? "numeric" : r.key === "weight" || r.key === "height" ? "decimal" : undefined}
+                              inputMode={r.key === "birthYear" || r.key === "donorId" ? "numeric" : r.key === "weight" || r.key === "height" ? "decimal" : undefined}
                               placeholder={placeholders[r.key]}
                               value={profileInline[r.key]}
                               onChange={r.kind === "text"
                                 ? handleNameFieldChange(r.key, r.key === "first" ? nicknameFirstInputRef : nicknameLastInputRef)
                                 : r.kind === "id"
-                                  ? (e) => { const v = e.target.value.replace(/[^0-9A-Za-z\- ]/g, "").slice(0, 20); setProfileInline(f => ({ ...f, donorId: v })); }
+                                  ? (e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 10); setProfileInline(f => ({ ...f, donorId: v })); }
                                   : (e) => { const v = e.target.value.replace(r.key === "birthYear" ? /[^0-9]/g : /[^0-9.]/g, "").slice(0, r.key === "birthYear" ? 4 : 5); setProfileInline(f => ({ ...f, [r.key]: v })); }}
                               onFocus={(e) => {
                                 if (profileOpenChoice) setProfileOpenChoice(null);
