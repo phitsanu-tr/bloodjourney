@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.148";
+const APP_VERSION = "1.0.149";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7303,7 +7303,6 @@ function AppInner() {
         // row shows one short status).
         const criteriaHint = (key) => {
           if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
-          if (key === "height") return Number.isNaN(liveNumber("height")) ? null : { text: "ใช้คำนวณปริมาณเลือด", color: "#7A6360" };
           if (key !== "birthYear" && key !== "weight") return null;
           const n = liveNumber(key);
           if (key === "birthYear") {
