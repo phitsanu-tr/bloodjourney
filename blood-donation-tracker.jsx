@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.130";
+const APP_VERSION = "1.0.131";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7336,8 +7336,8 @@ function AppInner() {
             // (profile-number-picker-designs.html, design 4). Each saves
             // once the scroll settles.
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "picker", unit: "พ.ศ." },
-            { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "picker", unit: "ซม." },
             { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "picker", unit: "กก." },
+            { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "picker", unit: "ซม." },
           ], footer: bloodVolumeL ? (
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7A6360", background: "#FDF6F4", margin: "0 -12px", padding: "9px 12px", borderTop: "1px solid #F3E7E4", borderRadius: "0 0 12px 12px" }}>
               <Droplet size={14} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
