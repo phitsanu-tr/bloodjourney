@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.128";
+const APP_VERSION = "1.0.129";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -111,6 +111,7 @@ const PRIVACY_POLICY_SECTIONS = [
     body: [
       "ข้อมูลทั้งหมดของคุณถูกจัดเก็บไว้ในเครื่อง/อุปกรณ์ของคุณเองเท่านั้น (local storage) แอปไม่มีเซิร์ฟเวอร์ฐานข้อมูลส่วนกลางสำหรับเก็บข้อมูลผู้ใช้ ไม่มีบัญชีผู้ใช้ และผู้พัฒนาแอปไม่สามารถเข้าถึงหรือมองเห็นข้อมูลของคุณได้เลย",
       "ไฟล์สำรองข้อมูลที่คุณส่งออกจะอยู่ในที่ที่คุณเลือกเก็บ (เช่น โฟลเดอร์ในเครื่อง หรือบริการคลาวด์ของคุณเอง) แอปเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเป็นค่าเริ่มต้น (แอปสร้างรหัสให้ หรือคุณตั้งเองได้) การเข้ารหัสและถอดรหัสเกิดขึ้นในเครื่องของคุณเท่านั้น แอปไม่เก็บและไม่ส่งรหัสผ่านไปที่ใด หากลืมรหัสผ่านจะเปิดไฟล์นั้นไม่ได้และผู้พัฒนากู้คืนให้ไม่ได้ หากคุณเลือกส่งออกแบบไม่เข้ารหัสเอง ไฟล์นั้นจะเป็นข้อความธรรมดาที่ใครได้ไฟล์ไปก็อ่านได้",
+      "โดยค่าเริ่มต้นข้อมูลในเครื่องจัดเก็บเป็นข้อความธรรมดา (ไม่เข้ารหัส) แต่คุณเลือกเปิด \"ล็อกแอปด้วย PIN\" ในการตั้งค่าได้ เมื่อเปิดแล้วแอปจะเข้ารหัสข้อมูลที่เก็บในเครื่องด้วย AES-256 โดยใช้กุญแจที่ปกป้องด้วย PIN 6 หลักของคุณ และขอ PIN ทุกครั้งที่เปิดแอป PIN ไม่ถูกเก็บไว้ที่ใดและไม่ถูกส่งออกจากเครื่อง หากลืม PIN ผู้พัฒนากู้ข้อมูลให้ไม่ได้ ต้องล้างข้อมูลในเครื่องแล้วนำเข้าจากไฟล์สำรอง PIN 6 หลักช่วยป้องกันผู้ที่หยิบเครื่องของคุณไป แต่อาจไม่พอต่อผู้ที่คัดลอกข้อมูลออกจากเครื่องไปพยายามเดารหัสภายนอก",
       "เนื่องจากข้อมูลอยู่ในเครื่องเท่านั้น หากคุณล้างข้อมูลเบราว์เซอร์ ล้างแคชของแอป LINE ถอนการติดตั้ง หรือเปลี่ยนเครื่อง/เปลี่ยนเบราว์เซอร์ ข้อมูลที่ไม่ได้ส่งออกไว้อาจสูญหายและไม่สามารถกู้คืนได้ — แนะนำให้ใช้ฟังก์ชัน \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเพื่อสำรองข้อมูลเป็นระยะ",
     ],
   },
@@ -459,7 +460,7 @@ const LS_PREFIX = "bloodjourney:";
 // now" would be misleading. AppInner polls storage.degraded to show a
 // one-time warning modal plus a persistent home-tab banner.
 let storageDegradedFlag = false;
-const storage = {
+const rawStorage = {
   async get(key) {
     if (isNativeApp) {
       try {
@@ -538,6 +539,147 @@ const storage = {
     } catch (e) {}
     delete memoryStore[key];
   },
+};
+
+// ---------------------------------------------------------------------------
+// Optional app lock (design of app-pin-lock-designs.html). When the donor turns
+// it on, the four data records (profile, donations, backupMeta, uiMeta) are
+// stored AES-256-GCM encrypted. A random data key encrypts them; that key is
+// itself wrapped by a key derived from the 6-digit PIN (PBKDF2-SHA256, 600k
+// rounds), so changing the PIN only rewraps one small record. The "lock"
+// record (salt + wrapped key + auto-lock setting) and "consent" stay plain.
+// The unwrapped key lives only in memory (vault.key) and is dropped on lock.
+// A short PIN is a small search space: this keeps out whoever picks up the
+// phone, not someone who copies the storage off it and guesses offline.
+// ---------------------------------------------------------------------------
+const ENC_PREFIX = "enc1:";
+const LOCKED_KEYS = ["profile", "donations", "backupMeta", "uiMeta"];
+const LOCK_ITERATIONS = 600000;
+const PIN_LENGTH = 6;
+const vault = { key: null, enabled: false, record: null };
+const vaultError = (code) => Object.assign(new Error(code), { code });
+const vaultAad = (name) => new TextEncoder().encode(`BJ|vault|${name}`);
+const concatBytes = (a, b) => { const out = new Uint8Array(a.length + b.length); out.set(a, 0); out.set(b, a.length); return out; };
+async function vaultEncrypt(name, text) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: vaultAad(name) }, vault.key, new TextEncoder().encode(text)));
+  return ENC_PREFIX + bytesToB64(concatBytes(iv, ct));
+}
+async function vaultDecrypt(name, stored) {
+  const bytes = b64ToBytes(stored.slice(ENC_PREFIX.length));
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes.slice(0, 12), additionalData: vaultAad(name) }, vault.key, bytes.slice(12));
+  return new TextDecoder().decode(plain);
+}
+async function deriveLockKek(pin, salt, iterations) {
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pin)), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations, hash: "SHA-256" }, material, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+const importDataKey = (raw) => crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+async function vaultWrapRaw(pin, raw, autoLock) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const kek = await deriveLockKek(pin, salt, LOCK_ITERATIONS);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: vaultAad("wrap") }, kek, raw));
+  return { v: 1, iterations: LOCK_ITERATIONS, salt: bytesToB64(salt), wrap: bytesToB64(concatBytes(iv, ct)), autoLock: autoLock || "now" };
+}
+// The raw data key when `pin` is right, otherwise throws code BAD_PIN.
+async function vaultUnwrapRaw(pin) {
+  const rec = vault.record;
+  if (!rec) throw vaultError("NO_LOCK");
+  const iterations = Number(rec.iterations);
+  if (!Number.isInteger(iterations) || iterations < 100000 || iterations > 2000000) throw vaultError("BAD_PIN");
+  try {
+    const kek = await deriveLockKek(pin, b64ToBytes(rec.salt), iterations);
+    const w = b64ToBytes(rec.wrap);
+    return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: w.slice(0, 12), additionalData: vaultAad("wrap") }, kek, w.slice(12)));
+  } catch (e) {
+    throw vaultError("BAD_PIN");
+  }
+}
+async function vaultLoadRecord() {
+  vault.enabled = false;
+  vault.record = null;
+  try {
+    const r = await rawStorage.get("lock");
+    if (r && r.value) {
+      const rec = JSON.parse(r.value);
+      if (rec && rec.v === 1 && typeof rec.wrap === "string" && typeof rec.salt === "string") { vault.record = rec; vault.enabled = true; }
+    }
+  } catch (e) {}
+  return vault.enabled;
+}
+async function vaultUnlock(pin) {
+  vault.key = await importDataKey(await vaultUnwrapRaw(pin));
+}
+const vaultLockNow = () => { vault.key = null; };
+async function vaultEnable(pin, autoLock) {
+  const raw = crypto.getRandomValues(new Uint8Array(32));
+  const rec = await vaultWrapRaw(pin, raw, autoLock);
+  // Record first, data second: if we stop half-way, unencrypted values are
+  // still read as they are and get encrypted the next time they are saved.
+  await rawStorage.set("lock", JSON.stringify(rec));
+  vault.record = rec;
+  vault.enabled = true;
+  vault.key = await importDataKey(raw);
+  for (const k of LOCKED_KEYS) {
+    const r = await rawStorage.get(k);
+    if (r && typeof r.value === "string" && !r.value.startsWith(ENC_PREFIX)) await rawStorage.set(k, await vaultEncrypt(k, r.value));
+  }
+}
+async function vaultDisable(pin) {
+  const raw = await vaultUnwrapRaw(pin);
+  vault.key = await importDataKey(raw);
+  for (const k of LOCKED_KEYS) {
+    const r = await rawStorage.get(k);
+    if (r && typeof r.value === "string" && r.value.startsWith(ENC_PREFIX)) await rawStorage.set(k, await vaultDecrypt(k, r.value));
+  }
+  await rawStorage.delete("lock");
+  vault.key = null;
+  vault.enabled = false;
+  vault.record = null;
+}
+async function vaultChangePin(oldPin, newPin) {
+  const raw = await vaultUnwrapRaw(oldPin);
+  const rec = await vaultWrapRaw(newPin, raw, vault.record && vault.record.autoLock);
+  await rawStorage.set("lock", JSON.stringify(rec));
+  vault.record = rec;
+}
+async function vaultSetAutoLock(mode) {
+  if (!vault.record) return;
+  const rec = { ...vault.record, autoLock: mode };
+  await rawStorage.set("lock", JSON.stringify(rec));
+  vault.record = rec;
+}
+async function vaultWipeEverything() {
+  for (const k of [...LOCKED_KEYS, "consent", "lock"]) await rawStorage.delete(k);
+  vault.key = null; vault.enabled = false; vault.record = null;
+}
+const WEAK_PINS = new Set(["123456", "654321", "012345", "123123", "121212", "112233", "123321", "696969", "520520", "159753", "147258"]);
+function isWeakPin(pin) {
+  if (!/^\d{6}$/.test(pin)) return true;
+  if (/^(\d)\1{5}$/.test(pin) || WEAK_PINS.has(pin)) return true;
+  const d = pin.split("").map(Number);
+  return d.every((n, i) => i === 0 || n - d[i - 1] === 1) || d.every((n, i) => i === 0 || d[i - 1] - n === 1);
+}
+
+// Everything reads and writes through here; only the four data records above
+// are encrypted, and only while the lock is on.
+const storage = {
+  async get(key) {
+    const r = await rawStorage.get(key);
+    if (!r || !LOCKED_KEYS.includes(key) || typeof r.value !== "string" || !r.value.startsWith(ENC_PREFIX)) return r;
+    if (!vault.key) throw vaultError("LOCKED");
+    return { value: await vaultDecrypt(key, r.value) };
+  },
+  async set(key, value) {
+    if (LOCKED_KEYS.includes(key) && vault.enabled) {
+      if (!vault.key) throw vaultError("LOCKED");
+      value = await vaultEncrypt(key, value);
+    }
+    return rawStorage.set(key, value);
+  },
+  delete(key) { return rawStorage.delete(key); },
+  isDegraded() { return rawStorage.isDegraded(); },
 };
 
 // Donor type affects only the wording of the tier-3/2/1 awards — medals for
@@ -2430,8 +2572,215 @@ function initialTabFromUrl() {
   }
 }
 
+// ---- PIN keypad, lock screen and set-up dialog (app-pin-lock-designs.html) ----
+function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false }) {
+  const [v, setV] = useState("");
+  const vRef = useRef("");
+  useEffect(() => { vRef.current = ""; setV(""); }, [clearKey]);
+  const press = (d) => {
+    if (busy || hideKeys || vRef.current.length >= PIN_LENGTH) return;
+    const next = vRef.current + d;
+    vRef.current = next;
+    setV(next);
+    if (next.length === PIN_LENGTH) onComplete(next);
+  };
+  const back = () => {
+    if (busy || hideKeys) return;
+    vRef.current = vRef.current.slice(0, -1);
+    setV(vRef.current);
+  };
+  useEffect(() => {
+    const onKey = (e) => {
+      if (/^\d$/.test(e.key)) press(e.key);
+      else if (e.key === "Backspace") back();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+  const keyStyle = { height: 54, borderRadius: 16, background: "#FFFFFF", border: "1px solid #EEDEDA", fontSize: 21, fontWeight: 600, color: "#3A2C29", fontFamily: "inherit", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", touchAction: "manipulation" };
+  return (
+    <div>
+      <style>{`@keyframes bjPinShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } } @media (prefers-reduced-motion: reduce) { .bj-pin-dots { animation: none !important; } }`}</style>
+      <div className="bj-pin-dots" role="img" aria-label={`กรอกแล้ว ${v.length} จาก ${PIN_LENGTH} หลัก`}
+        style={{ display: "flex", gap: 12, justifyContent: "center", margin: "16px 0 8px", animation: bad ? "bjPinShake 0.4s" : "none" }}>
+        {Array.from({ length: PIN_LENGTH }, (_, k) => (
+          <span key={k} style={{ width: 14, height: 14, borderRadius: "50%", boxSizing: "border-box",
+            border: `2px solid ${bad ? "#B3261E" : k < v.length ? "#9A3B33" : "#D9C3BE"}`,
+            background: k < v.length ? (bad ? "#B3261E" : "#9A3B33") : "transparent" }} />
+        ))}
+      </div>
+      {!hideKeys && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, margin: "14px 6px 4px", maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
+            <button key={n} type="button" onClick={() => press(n)} disabled={busy} aria-label={n} style={keyStyle}>{n}</button>
+          ))}
+          <span />
+          <button type="button" onClick={() => press("0")} disabled={busy} aria-label="0" style={keyStyle}>0</button>
+          <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", border: "none" }}><X size={22} color="#7A6360" /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LockScreen({ onUnlock, onForget }) {
+  const [bad, setBad] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [clearKey, setClearKey] = useState(0);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotAck, setForgotAck] = useState(false);
+  const [wiping, setWiping] = useState(false);
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+  const submit = async (pin) => {
+    setBusy(true);
+    try {
+      await onUnlock(pin);
+    } catch (e) {
+      if (!mountedRef.current) return;
+      setBusy(false);
+      setBad(true);
+      setTimeout(() => { if (!mountedRef.current) return; setBad(false); setClearKey(k => k + 1); }, 700);
+    }
+  };
+  return (
+    <div role="dialog" aria-modal="true" aria-label="ใส่ PIN เพื่อเปิดแอป" style={{ position: "fixed", inset: 0, zIndex: 200, background: "#FBF6F5", overflowY: "auto", display: "flex", justifyContent: "center", fontFamily: "'Mitr', 'Inter', sans-serif", color: "#241A18" }}>
+      <div style={{ width: "100%", maxWidth: 380, padding: "56px 24px 32px", textAlign: "center", margin: "auto 0" }}>
+        <div style={{ width: 56, height: 56, borderRadius: 18, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 6px 14px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+          <Droplet size={28} color="#FFF7F5" />
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>Blood Journey</div>
+        <p aria-live="polite" style={{ fontSize: 12.5, margin: "4px 0 0", minHeight: 20, color: bad ? "#B3261E" : "#7A6360" }}>
+          {bad ? "PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง" : busy ? "กำลังตรวจสอบ…" : "ใส่ PIN เพื่อเปิดแอป"}
+        </p>
+        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} onComplete={submit} />
+        <button type="button" onClick={() => { setForgotAck(false); setShowForgot(true); }}
+          style={{ marginTop: 14, background: "none", border: "none", color: "#7A6360", fontSize: 12.5, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
+          ลืม PIN?
+        </button>
+      </div>
+      {showForgot && (
+        <div role="alertdialog" aria-modal="true" aria-label="ลืม PIN" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 210, padding: 24 }}>
+          <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 18, padding: "20px 18px 16px", textAlign: "left", boxShadow: "0 8px 30px rgba(58,44,41,0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15.5, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>
+              <AlertTriangle size={19} color="#B3261E" aria-hidden="true" /> ลืม PIN?
+            </div>
+            <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5C4A46", margin: "0 0 12px" }}>ข้อมูลที่เข้ารหัสไว้ในเครื่องนี้จะเปิดไม่ได้อีก ทางเดียวคือล้างข้อมูลในเครื่อง แล้วนำเข้าจากไฟล์สำรอง (ต้องมีไฟล์และรหัสของไฟล์สำรอง)</p>
+            <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.5, color: "#3A2C29", marginBottom: 14, cursor: "pointer" }}>
+              <input type="checkbox" checked={forgotAck} onChange={(e) => setForgotAck(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1, accentColor: "#9A3B33", flexShrink: 0 }} />
+              <span>เข้าใจแล้ว ข้อมูลในเครื่องนี้จะถูกลบ</span>
+            </label>
+            <button type="button" onClick={() => setShowForgot(false)}
+              style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", color: "#FFF7F5", fontFamily: "inherit", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
+              กลับไปลองใส่ PIN
+            </button>
+            <button type="button" disabled={!forgotAck || wiping} onClick={async () => { setWiping(true); await onForget(); }}
+              style={{ width: "100%", padding: "12px 0", borderRadius: 14, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#9A3B33", fontSize: 14, fontFamily: "inherit", cursor: forgotAck && !wiping ? "pointer" : "not-allowed", opacity: forgotAck && !wiping ? 1 : 0.45 }}>
+              {wiping ? "กำลังล้างข้อมูล…" : "ล้างข้อมูลและเริ่มใหม่"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// mode: "enable" | "change" | "disable". onVerify(pin) throws when the PIN is wrong;
+// onSubmit({ oldPin, newPin }) does the work and throws code BAD_PIN for a wrong old PIN.
+function PinFlowDialog({ mode, onClose, onVerify, onSubmit }) {
+  const steps = mode === "enable" ? ["new", "confirm"] : mode === "change" ? ["old", "new", "confirm"] : ["old"];
+  const [si, setSi] = useState(0);
+  const [oldPin, setOldPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [msg, setMsg] = useState("");
+  const [bad, setBad] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [clearKey, setClearKey] = useState(0);
+  const step = steps[si];
+  const flash = (text, backToNew) => {
+    setBad(true);
+    setMsg(text);
+    setTimeout(() => {
+      setBad(false);
+      setClearKey(k => k + 1);
+      if (backToNew) { setNewPin(""); setSi(steps.indexOf("new")); setMsg(""); }
+    }, 900);
+  };
+  const title = mode === "enable" ? "ตั้ง PIN" : mode === "change" ? "เปลี่ยน PIN" : "ปิดล็อกแอป";
+  const heading = step === "old" ? (mode === "disable" ? "ใส่ PIN เพื่อปิดล็อก" : "ใส่ PIN ปัจจุบัน") : step === "new" ? (mode === "change" ? "ตั้ง PIN ใหม่ 6 หลัก" : "ตั้ง PIN 6 หลัก") : "พิมพ์ PIN อีกครั้ง";
+  const sub = step === "old" && mode === "disable" ? "ข้อมูลในเครื่องจะกลับเป็นไม่เข้ารหัส"
+    : step === "new" ? "ใช้เปิดแอปทุกครั้ง อย่าใช้เลขที่เดาง่าย เช่น 123456 หรือวันเกิด" : "";
+  const complete = async (pin) => {
+    setMsg("");
+    if (step === "old") {
+      setBusy(true);
+      try {
+        if (mode === "disable") { await onSubmit({ oldPin: pin }); return; }
+        await onVerify(pin);
+        setOldPin(pin); setSi(si + 1); setClearKey(k => k + 1);
+      } catch (e) {
+        flash("PIN ไม่ถูกต้อง ลองใหม่อีกครั้ง");
+      } finally { setBusy(false); }
+      return;
+    }
+    if (step === "new") {
+      if (isWeakPin(pin)) { flash("PIN นี้เดาง่ายเกินไป เช่น 123456 หรือเลขซ้ำ ลองเลขอื่น"); return; }
+      setNewPin(pin); setSi(si + 1); setClearKey(k => k + 1);
+      return;
+    }
+    if (pin !== newPin) { flash("PIN สองครั้งไม่ตรงกัน ลองตั้งใหม่อีกครั้ง", true); return; }
+    setReady(true);
+  };
+  const finish = async () => {
+    setBusy(true);
+    try { await onSubmit({ oldPin, newPin }); }
+    catch (e) { setBusy(false); setMsg("ทำไม่สำเร็จ ลองอีกครั้ง"); }
+  };
+  return (
+    <div role="dialog" aria-modal="true" aria-label={title} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 55, padding: 20 }}>
+      <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div style={{ fontSize: 15.5, fontWeight: 700 }}>{title}</div>
+          <button onClick={onClose} disabled={busy} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+        </div>
+        {steps.length > 1 && (
+          <div aria-hidden="true" style={{ display: "flex", gap: 6, justifyContent: "center", margin: "0 0 8px" }}>
+            {steps.map((_, k) => <span key={k} style={{ width: 22, height: 4, borderRadius: 2, background: k <= si ? "#9A3B33" : "#EEDEDA" }} />)}
+          </div>
+        )}
+        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "6px 0 2px" }}>{ready ? "PIN ตรงกันแล้ว" : heading}</div>
+        {sub && !ready && <p style={{ textAlign: "center", fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "0 8px" }}>{sub}</p>}
+        <div aria-live="polite" style={{ textAlign: "center", fontSize: 12.5, color: "#B3261E", minHeight: msg ? 20 : 0, margin: msg ? "6px 8px 0" : 0 }}>{msg}</div>
+        <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} />
+        {ready && (
+          <>
+            <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", margin: "10px 0 12px", textAlign: "left" }}>
+              <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div><b style={{ color: "#3A2C29" }}>ลืม PIN = เปิดข้อมูลในเครื่องไม่ได้</b><br />ผู้พัฒนากู้ให้ไม่ได้ ต้องล้างข้อมูลแล้วนำเข้าจากไฟล์สำรอง <b>ควรสำรองข้อมูลไว้ก่อน</b></div>
+            </div>
+            <button type="button" onClick={finish} disabled={busy} className="btn-primary"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: busy ? "wait" : "pointer", opacity: busy ? 0.6 : 1 }}>
+              <Check size={17} /> {busy ? "กำลังทำงาน…" : mode === "change" ? "บันทึก PIN ใหม่" : "เปิดล็อกแอป"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function AppInner() {
-  const [phase, setPhase] = useState("loading"); // loading | consent | app | error
+  const [phase, setPhase] = useState("loading"); // loading | consent | locked | app | error
+  const phaseRef = useRef("loading");
+  phaseRef.current = phase;
+  // Optional PIN lock (see the vault helpers above the components).
+  const [lockEnabled, setLockEnabled] = useState(false);
+  const [lockAuto, setLockAuto] = useState("now"); // now | 1m | 5m
+  const [softLocked, setSoftLocked] = useState(false);
+  const [pinFlow, setPinFlow] = useState(null); // null | "enable" | "change" | "disable"
+  const hiddenAtRef = useRef(0);
   const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge | eligibility | faq
   const [nickname, setNickname] = useState("");
   const [photo, setPhoto] = useState("");
@@ -2966,6 +3315,17 @@ function AppInner() {
         await finishLoading("consent");
         return;
       }
+      await vaultLoadRecord();
+      setLockEnabled(vault.enabled);
+      setLockAuto(vault.record && vault.record.autoLock ? vault.record.autoLock : "now");
+      if (vault.enabled && !vault.key) {
+        // Locked: nothing is read until the right PIN is entered.
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        setPhase("locked");
+        return;
+      }
       const [profileRes, donationsRes, backupRes, uiRes] = await Promise.all([
         storage.get("profile").catch(() => null),
         storage.get("donations").catch(() => null),
@@ -3061,6 +3421,61 @@ function AppInner() {
   loadRef.current = load;
 
   useEffect(() => { load(); }, [load]);
+
+  // ---- PIN lock actions ----
+  const unlockApp = async (pin) => {
+    await vaultUnlock(pin); // throws on a wrong PIN
+    if (phaseRef.current === "locked") await loadRef.current({ soft: true });
+    setSoftLocked(false);
+  };
+  const forgetPinAndWipe = async () => {
+    await vaultWipeEverything();
+    try { window.location.reload(); } catch (e) {}
+  };
+  const lockNow = async () => {
+    if (phaseRef.current !== "app" || !vault.enabled) return;
+    setSoftLocked(true);
+    setPinFlow(null);
+    setShowSettings(false);
+    // Let any save that is still in flight finish before the key is dropped.
+    try { await Promise.all([donationsWriteQueueRef.current, uiMetaWriteQueueRef.current, profileWriteQueueRef.current]); } catch (e) {}
+    vaultLockNow();
+  };
+  const lockNowRef = useRef(lockNow);
+  lockNowRef.current = lockNow;
+  useEffect(() => {
+    if (!lockEnabled) return undefined;
+    const limit = lockAuto === "5m" ? 300000 : lockAuto === "1m" ? 60000 : 0;
+    const onVis = () => {
+      if (document.hidden) {
+        hiddenAtRef.current = Date.now();
+        if (limit === 0) lockNowRef.current();
+      } else if (limit > 0 && hiddenAtRef.current && Date.now() - hiddenAtRef.current >= limit) {
+        lockNowRef.current();
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [lockEnabled, lockAuto]);
+  const submitPinFlow = async ({ oldPin, newPin }) => {
+    if (pinFlow === "enable") {
+      await vaultEnable(newPin, lockAuto);
+      setLockEnabled(true);
+      showToast("success", "เปิดล็อกแอปแล้ว — ข้อมูลในเครื่องเข้ารหัสแล้ว");
+    } else if (pinFlow === "change") {
+      await vaultChangePin(oldPin, newPin);
+      showToast("success", "เปลี่ยน PIN แล้ว");
+    } else if (pinFlow === "disable") {
+      await vaultDisable(oldPin);
+      setLockEnabled(false);
+      showToast("success", "ปิดล็อกแอปแล้ว");
+    }
+    setPinFlow(null);
+  };
+  const chooseLockAuto = async (mode) => {
+    setLockAuto(mode);
+    try { await vaultSetAutoLock(mode); } catch (e) {}
+  };
 
   useEffect(() => {
     if (tab !== "home") return;
@@ -3966,6 +4381,9 @@ function AppInner() {
       await storage.delete("consent").catch(() => {});
       await storage.delete("backupMeta").catch(() => {});
       await storage.delete("uiMeta").catch(() => {});
+      await vaultWipeEverything();
+      setLockEnabled(false);
+      setSoftLocked(false);
       setDonations([]);
       setNickname("");
       setPhoto("");
@@ -5284,6 +5702,10 @@ function AppInner() {
     }
     return null;
   }, [form.date, form.type, donations, editingId, effectiveCycleDays, effectiveComponentCycleDays]);
+
+  if (phase === "locked") {
+    return <LockScreen onUnlock={unlockApp} onForget={forgetPinAndWipe} />;
+  }
 
   if (phase === "loading") {
     return (
@@ -7937,6 +8359,13 @@ function AppInner() {
         </div>
       )}
 
+      {pinFlow && (
+        <PinFlowDialog key={pinFlow} mode={pinFlow} onClose={() => setPinFlow(null)}
+          onVerify={async (pin) => { await vaultUnwrapRaw(pin); }}
+          onSubmit={submitPinFlow} />
+      )}
+      {softLocked && phase === "app" && <LockScreen onUnlock={unlockApp} onForget={forgetPinAndWipe} />}
+
       {showSettings && (
         <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
@@ -7957,6 +8386,45 @@ function AppInner() {
                 <Trash2 size={16} color="#B3261E" /> ลบข้อมูลทั้งหมด
               </button>
             </div>
+
+            {canEncryptBackup() && (
+              <>
+                <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>ความปลอดภัย</div>
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px", marginBottom: lockEnabled ? 8 : 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: lockEnabled ? "1px solid #F3E7E4" : "none" }}>
+                    <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Lock size={17} color="#9A3B33" /></span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ล็อกแอปด้วย PIN</div>
+                      <div style={{ fontSize: 11.5, color: lockEnabled ? "#2E7D4F" : "#7A6360" }}>{lockEnabled ? "เปิดอยู่ · ข้อมูลในเครื่องเข้ารหัสแล้ว" : "ไม่บังคับ · เข้ารหัสข้อมูลในเครื่องด้วย"}</div>
+                    </div>
+                    <button type="button" role="switch" aria-checked={lockEnabled} aria-label="ล็อกแอปด้วย PIN" onClick={() => setPinFlow(lockEnabled ? "disable" : "enable")}
+                      style={{ width: 44, height: 26, borderRadius: 13, border: "none", background: lockEnabled ? "#9A3B33" : "#D9C3BE", position: "relative", cursor: "pointer", flexShrink: 0, padding: 0 }}>
+                      <span style={{ position: "absolute", top: 3, left: lockEnabled ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", transition: "left 0.15s" }} />
+                    </button>
+                  </div>
+                  {lockEnabled && (
+                    <>
+                      <button type="button" onClick={() => setPinFlow("change")} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#3A2C29", fontFamily: "inherit" }}>
+                        เปลี่ยน PIN <ChevronRight size={18} color="#7A6360" />
+                      </button>
+                      <div style={{ padding: "12px 0" }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ล็อกอัตโนมัติ</div>
+                        <div role="radiogroup" aria-label="ล็อกอัตโนมัติ" style={{ display: "flex", background: "#F3E7E4", borderRadius: 10, padding: 3, marginTop: 8 }}>
+                          {[{ k: "now", t: "ทันที" }, { k: "1m", t: "1 นาที" }, { k: "5m", t: "5 นาที" }].map((o) => (
+                            <button key={o.k} type="button" role="radio" aria-checked={lockAuto === o.k} onClick={() => chooseLockAuto(o.k)}
+                              style={{ flex: 1, border: "none", padding: "7px 0", borderRadius: 8, fontFamily: "inherit", fontSize: 12, cursor: "pointer", background: lockAuto === o.k ? "#FFFFFF" : "transparent", color: lockAuto === o.k ? "#8A2F28" : "#7A6360", fontWeight: lockAuto === o.k ? 600 : 400, boxShadow: lockAuto === o.k ? "0 1px 2px rgba(58,44,41,0.12)" : "none" }}>{o.t}</button>
+                          ))}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>เมื่อออกจากแอปแล้วกลับมาเปิดใหม่</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.6, margin: "0 4px 18px" }}>
+                  {lockEnabled ? "การเข้ารหัสใช้ AES-256 และกุญแจจาก PIN ในเครื่องนี้เท่านั้น ลืม PIN แล้วกู้ให้ไม่ได้ ควรมีไฟล์สำรองไว้" : "ตอนนี้ข้อมูลเก็บในเครื่องคุณเท่านั้น แต่ไม่ได้เข้ารหัส ถ้าเปิดล็อก คนที่หยิบเครื่องคุณไปจะเปิดดูข้อมูลไม่ได้"}
+                </div>
+              </>
+            )}
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>การเตือน</div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "12px 12px 14px", marginBottom: 18 }}>
