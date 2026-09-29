@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.109";
+const APP_VERSION = "1.0.110";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2697,7 +2697,11 @@ function AppInner() {
           setAge(typeof p.age === "number" ? p.age : "");
           setWeight(typeof p.weight === "number" ? p.weight : "");
           setBloodType(p.bloodType || "");
-          setDonorType(p.donorType === "monk" || p.donorType === "general" ? p.donorType : "");
+          // Older versions pre-selected "general" and saved it for everyone, so a
+          // stored "general" only counts as the donor's own choice when it was
+          // saved with donorTypeSet (v1.0.110+). "monk" was never a default,
+          // so it's always kept.
+          setDonorType(p.donorType === "monk" ? "monk" : (p.donorType === "general" && p.donorTypeSet) ? "general" : "");
           // Migrate legacy single-number profiles (saved before donation
           // type existed) by attributing the whole prior total to "whole".
           const legacyStartingCount = typeof p.startingCount === "number" ? p.startingCount : 0;
@@ -3026,8 +3030,12 @@ function AppInner() {
   // that gap the same way it was closed for uiMeta and donations.
   const profileWriteQueueRef = useRef(Promise.resolve());
   const persistProfile = (payload) => {
+    // Every caller passes the current donorType from state, which is only
+    // ever non-empty once the donor picked it (see the load() migration), so
+    // the flag can be derived here instead of threading it through each call.
+    const withFlag = { ...payload, donorTypeSet: payload.donorType === "general" || payload.donorType === "monk" };
     profileWriteQueueRef.current = profileWriteQueueRef.current
-      .then(() => storage.set("profile", JSON.stringify(payload)))
+      .then(() => storage.set("profile", JSON.stringify(withFlag)))
       .catch(() => {});
     return profileWriteQueueRef.current;
   };
