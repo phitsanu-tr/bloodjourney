@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.106";
+const APP_VERSION = "1.0.107";
 const CONSENT_VERSION = "v1";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
@@ -2271,7 +2271,6 @@ function AppInner() {
   // own on blur / Enter; blood type and donor type expand their options
   // inside the row. No pop-up sheet, no whole-form save button.
   const [profileInline, setProfileInline] = useState({ first: "", last: "", age: "", weight: "" });
-  const [profileInlineFocus, setProfileInlineFocus] = useState(null);
   const [profileInlineError, setProfileInlineError] = useState({});
   const [profileOpenChoice, setProfileOpenChoice] = useState(null); // "bloodType" | "donorType" | null
   const [profileSavedKey, setProfileSavedKey] = useState(null);
@@ -3192,7 +3191,6 @@ function AppInner() {
       weight: (weight === "" || weight == null) ? "" : String(weight),
     });
     setProfileInlineError({});
-    setProfileInlineFocus(null);
     setProfileOpenChoice(null);
     setShowPhotoMenu(false);
     profileOpenerRef.current = document.activeElement;
@@ -4870,6 +4868,15 @@ function AppInner() {
           font-family: inherit;
         }
         @keyframes ptrSpin { to { transform: rotate(360deg); } }
+        /* Profile inline-edit rows: the editing look (tint, darker text,
+           hidden placeholder, unit shown on an empty field) is pure CSS via
+           :focus-within, so tapping a row paints instantly instead of
+           waiting on a React re-render of the whole app. */
+        .prow-edit:focus-within { background: #FBEFEC !important; }
+        .prow-edit:focus-within input { color: #3A2C29 !important; }
+        .prow-edit:focus-within input::placeholder { color: transparent; }
+        .prow-edit .prow-unit-empty { display: none; }
+        .prow-edit:focus-within .prow-unit-empty { display: inline; }
         @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes sheetDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
         /* Centered dialogs (design "2" from form-dialog-motion-7-designs.html):
@@ -6767,9 +6774,9 @@ function AppInner() {
                   <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>{g.title}</div>
                   <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 4px", marginBottom: gi === groups.length - 1 ? 14 : 18 }}>
                     {g.rows.map((r, ri) => {
-                      const focused = profileInlineFocus === r.key || profileOpenChoice === r.key;
+                      const focused = profileOpenChoice === r.key;
                       const rowStyle = { width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 46, padding: "0 8px", borderRadius: 9,
-                        background: focused ? "#FBEFEC" : "transparent", transition: "background 0.15s", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" };
+                        background: focused ? "#FBEFEC" : "transparent", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" };
                       return (
                         <div key={r.key} data-prow={r.key} style={{ borderTop: ri ? "1px solid #F3E7E4" : "none", padding: "0" }}>
                           {r.kind === "choice" ? (
@@ -6779,7 +6786,7 @@ function AppInner() {
                                 <r.Icon size={16} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
                                 <span style={{ flexShrink: 0 }}>{r.label}</span>
                                 <span style={{ marginLeft: "auto", color: "#7A6360", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.value}</span>
-                                {trail(r.key, <ChevronDown size={14} color="#B7A5A1" style={{ flexShrink: 0, transition: "transform 0.15s", transform: profileOpenChoice === r.key ? "rotate(180deg)" : "none" }} aria-hidden="true" />)}
+                                {trail(r.key, <ChevronDown size={14} color="#B7A5A1" style={{ flexShrink: 0, transform: profileOpenChoice === r.key ? "rotate(180deg)" : "none" }} aria-hidden="true" />)}
                               </button>
                               {profileOpenChoice === r.key && (
                                 <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "6px 8px 12px 34px" }}>
@@ -6792,26 +6799,40 @@ function AppInner() {
                               )}
                             </>
                           ) : (
-                            <label htmlFor={`profile-${r.key}`} style={{ ...rowStyle, cursor: "text" }}>
+                            <label htmlFor={`profile-${r.key}`} className="prow-edit" style={{ ...rowStyle, cursor: "text" }}>
                               <r.Icon size={16} color="#9A3B33" style={{ flexShrink: 0 }} aria-hidden="true" />
                               <span style={{ flexShrink: 0 }}>{r.label}</span>
                               <input id={`profile-${r.key}`}
                                 ref={r.key === "first" ? nicknameFirstInputRef : r.key === "last" ? nicknameLastInputRef : undefined}
                                 type="text" autoComplete="off" enterKeyHint="done"
                                 inputMode={r.key === "age" ? "numeric" : r.key === "weight" ? "decimal" : undefined}
-                                placeholder={profileInlineFocus === r.key ? "" : "ยังไม่ได้กรอก"}
+                                placeholder="ยังไม่ได้กรอก"
                                 value={profileInline[r.key]}
                                 onChange={r.kind === "text"
                                   ? handleNameFieldChange(r.key, r.key === "first" ? nicknameFirstInputRef : nicknameLastInputRef)
                                   : (e) => { const v = e.target.value.replace(r.key === "age" ? /[^0-9]/g : /[^0-9.]/g, "").slice(0, 5); setProfileInline(f => ({ ...f, [r.key]: v })); }}
                                 onFocus={(e) => {
-                                  setProfileInlineFocus(r.key);
-                                  setProfileOpenChoice(null);
-                                  setProfileInlineError(er => ({ ...er, [r.key]: undefined }));
+                                  // No state updates unless something actually needs clearing --
+                                  // the focus look itself is CSS (see .prow-edit above).
+                                  if (profileOpenChoice) setProfileOpenChoice(null);
+                                  if (profileInlineError[r.key]) setProfileInlineError(er => ({ ...er, [r.key]: undefined }));
+                                  // Only scroll if the on-screen keyboard actually ends up covering
+                                  // this row -- and do it the moment the keyboard finishes opening
+                                  // (visualViewport resize), not on a fixed timer. The earlier fixed
+                                  // 300ms smooth scroll moved the box after every tap even when
+                                  // nothing was hidden, which read as a lag.
                                   const rowEl = e.currentTarget.closest("[data-prow]");
-                                  setTimeout(() => rowEl?.scrollIntoView?.({ block: "center", behavior: "smooth" }), 300);
+                                  const vv = window.visualViewport;
+                                  if (rowEl && vv) {
+                                    const ensure = () => {
+                                      const rb = rowEl.getBoundingClientRect().bottom;
+                                      if (rb > vv.offsetTop + vv.height - 8) rowEl.scrollIntoView({ block: "nearest" });
+                                    };
+                                    vv.addEventListener("resize", ensure, { once: true });
+                                    setTimeout(() => vv.removeEventListener("resize", ensure), 1000);
+                                  }
                                 }}
-                                onBlur={() => { setProfileInlineFocus(null); commitProfileField(r.key); }}
+                                onBlur={() => commitProfileField(r.key)}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); }
                                   if (e.key === "Escape") {
@@ -6822,8 +6843,8 @@ function AppInner() {
                                   }
                                 }}
                                 style={{ flex: 1, minWidth: 0, textAlign: "right", border: "none", background: "none", outline: "none", padding: 0, fontSize: 13.5, fontFamily: "inherit",
-                                  color: profileInlineFocus === r.key ? "#3A2C29" : "#7A6360", caretColor: "#9A3B33" }} />
-                              {r.unit && (profileInline[r.key] !== "" || profileInlineFocus === r.key) && <span style={{ color: "#7A6360", flexShrink: 0 }}>{r.unit}</span>}
+                                  color: "#7A6360", caretColor: "#9A3B33" }} />
+                              {r.unit && <span className={profileInline[r.key] === "" ? "prow-unit-empty" : undefined} style={{ color: "#7A6360", flexShrink: 0 }}>{r.unit}</span>}
                               {trail(r.key, <Pencil size={13} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />)}
                             </label>
                           )}
