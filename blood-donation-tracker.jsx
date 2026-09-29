@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.133";
+const APP_VERSION = "1.0.134";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7513,10 +7513,10 @@ function AppInner() {
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
                               <div role="radiogroup" aria-labelledby="prof-blood-abo" style={chipGrid(4)}>
-                                {BLOOD_TYPES.map(bt => (
+                                {BLOOD_TYPES.filter(bt => bt !== "ไม่ทราบ").map(bt => (
                                   <button key={bt} role="radio" aria-checked={bloodType === bt}
                                     onClick={() => { if (bt !== bloodType) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
-                                    style={{ ...chip(bloodType === bt), gridColumn: bt === "ไม่ทราบ" ? "span 2" : undefined }}>{bt}</button>
+                                    style={chip(bloodType === bt)}>{bt}</button>
                                 ))}
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: "#7A6360", margin: "10px 0 6px" }}>Rh</div>
