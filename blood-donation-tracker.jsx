@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.160";
+const APP_VERSION = "1.0.161";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7342,11 +7342,11 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
         };
-        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165", donorId: "เลข 10 หลักบนบัตรผู้บริจาค" };
+        const placeholders = { first: "ใส่ชื่อของคุณ", last: "ใส่นามสกุลของคุณ (ไม่บังคับ)", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ใส่เลข 10 หลักบนบัตร" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
-        const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่และ Rh")
+        const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่โลหิต")
           : <span style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
               {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
               {rhSign && (
@@ -7360,7 +7360,7 @@ function AppInner() {
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
-            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก ชาย, หญิง หรือไม่ระบุ"),
+            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือกเพศ"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender },
             // Birth year, height and weight: horizontal rulers
             // (profile-number-picker-designs.html, design 4). Each saves
@@ -7372,7 +7372,7 @@ function AppInner() {
           { title: "สำหรับการบริจาค", rows: [
             { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาคโลหิต", kind: "id" },
             { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
-            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือก บุคคลทั่วไป หรือ พระภิกษุสงฆ์"),
+            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือกประเภทผู้บริจาค"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
             { key: "pause", Icon: BellOff, label: "พักการเตือนชั่วคราว", kind: "action",
               value: paused ? (remindPauseUntil === "indefinite" ? "พักอยู่ จนกว่าจะเปิดเอง" : `พักถึง ${toBuddhistDate(remindPauseUntil)}`) : "ปิดอยู่",
