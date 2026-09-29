@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.132";
+const APP_VERSION = "1.0.133";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2763,7 +2763,7 @@ function PinFlowDialog({ mode, onClose, onVerify, onSubmit }) {
           </div>
         )}
         <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "14px 12px 12px" }}>
-        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "2px 0 2px" }}>{ready ? "PIN ตรงกันแล้ว" : heading}</div>
+        <div style={{ textAlign: "center", fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "2px 0 2px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>{ready && <Check size={18} color="#2E7D4F" aria-hidden="true" />}{ready ? "ยืนยัน PIN สำเร็จ" : heading}</div>
         {sub && !ready && <p style={{ textAlign: "center", fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "0 8px" }}>{sub}</p>}
         <div aria-live="polite" style={{ textAlign: "center", fontSize: 12.5, color: "#B3261E", minHeight: msg ? 20 : 0, margin: msg ? "6px 8px 0" : 0 }}>{msg}</div>
         <PinPad clearKey={clearKey} bad={bad} busy={busy || bad} hideKeys={ready} onComplete={complete} keyBg="#FBF6F5" />
