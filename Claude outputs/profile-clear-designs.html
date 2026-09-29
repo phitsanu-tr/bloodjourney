@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ปุ่มล้างข้อมูลโปรไฟล์ — 4 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#F6EFEC;font-family:'Mitr',sans-serif;color:#3A2C29;padding:20px 16px 60px}
+h1{font-size:18px;margin:0 0 4px}p.sub{margin:0 0 20px;font-size:13px;color:#7A6360}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:22px;max-width:1500px;margin:auto}
+.lab{font-size:13px;font-weight:600;margin:0 0 4px}.desc{font-size:12px;color:#7A6360;margin:0 0 10px;line-height:1.5}
+.phone{position:relative;background:#fff;border-radius:22px;padding:14px 16px 16px;box-shadow:0 2px 14px rgba(90,40,30,.1);min-height:470px;overflow:hidden}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.hd b{font-size:16px}
+.x{width:32px;height:32px;border-radius:16px;border:none;background:#F3EAE8;color:#7A6360;font-size:16px;cursor:pointer}
+.grp{font-size:11.5px;font-weight:600;color:#9A3B33;margin:10px 0 4px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F3E7E4;font-size:14px}
+.row span:last-child{color:#7A6360;font-size:13px}.row .ph{color:#B39B96}
+.mute{color:#B39B96}
+.danger{color:#B3261E}
+/* 1 text link */
+.link{display:block;margin:16px auto 0;background:none;border:none;font:inherit;font-size:12.5px;font-weight:600;color:#B3261E;cursor:pointer;padding:10px 14px}
+.hint{text-align:center;font-size:11px;color:#7A6360;margin-top:2px}.hint a{color:#9A3B33;text-decoration:underline;cursor:pointer}
+/* 2 outline + inline confirm */
+.outl{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:14px;height:44px;border-radius:14px;border:1px solid #E9C4BF;background:#fff;color:#B3261E;font:inherit;font-weight:500;font-size:14px;cursor:pointer}
+.inl{margin-top:14px;border-radius:14px;background:#FDF1EF;border:1px solid #F0CFCA;padding:12px 12px 12px}
+.inl p{margin:0 0 4px;font-size:13.5px;font-weight:600}.inl small{display:block;font-size:12px;color:#7A6360;line-height:1.5;margin-bottom:10px}
+.btns{display:flex;gap:8px}.btns button{flex:1;height:42px;border-radius:12px;font:inherit;font-weight:500;font-size:14px;cursor:pointer;border:1px solid #E3C8C3;background:#fff;color:#3A2C29}
+.btns .go{background:#B3261E;border-color:#B3261E;color:#fff}
+/* 3 menu */
+.menu{position:absolute;right:16px;top:52px;background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(60,30,20,.2);padding:6px;z-index:5;min-width:200px}
+.menu button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:none;font:inherit;font-size:14px;padding:11px 10px;border-radius:10px;cursor:pointer;color:#B3261E}
+.menu button:hover{background:#FDF1EF}
+/* 4 row card */
+.card{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 12px;border-radius:14px;border:1px solid #F3E7E4;background:#fff;width:100%;font:inherit;text-align:left;cursor:pointer}
+.ico{width:34px;height:34px;border-radius:10px;background:#FDF1EF;display:flex;align-items:center;justify-content:center;flex:none}
+.card b{display:block;font-size:14px;font-weight:500;color:#B3261E}.card small{font-size:11.5px;color:#7A6360}
+/* dialog */
+.scrim{position:absolute;inset:0;background:rgba(36,26,24,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9}
+.dlg{background:#fff;border-radius:18px;padding:18px;width:100%}
+.dlg h3{margin:0 0 6px;font-size:16px}.dlg p{margin:0 0 10px;font-size:13px;color:#7A6360;line-height:1.55}
+.ls{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12.5px;margin-bottom:10px}.ls div:before{content:"✕ ";color:#B3261E;font-size:11px}
+.keep{display:flex;gap:8px;align-items:flex-start;background:#E8F4EC;color:#2E7D4F;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45;margin-bottom:14px}
+.done{position:absolute;left:16px;right:16px;bottom:14px;background:#3A2C29;color:#fff;border-radius:12px;padding:10px 14px;font-size:13px;text-align:center;z-index:10}
+.reset{margin:10px auto 0;display:block;background:none;border:none;font:inherit;font-size:11.5px;color:#7A6360;text-decoration:underline;cursor:pointer}
+</style></head><body>
+<h1>ปุ่มล้างข้อมูลโปรไฟล์ — 4 แบบ</h1>
+<p class="sub">กดปุ่มในแต่ละแบบได้เลย · ล้างเฉพาะโปรไฟล์ ประวัติการบริจาคยังอยู่ · "รีเซ็ตตัวอย่าง" เพื่อลองใหม่</p>
+<div class="grid" id="g"></div>
+<script>
+const T='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
+const rowsFull=[['ชื่อ','ท้อป สมชาย'],['ปีเกิด','พ.ศ. 2545'],['เพศ','ชาย'],['น้ำหนัก','55.6 กก.'],['หมู่โลหิต','O Rh⁺'],['เลขประจำตัว','12345']];
+const rowsEmpty=[['ชื่อ','ใส่ชื่อ'],['ปีเกิด','ใส่ปีเกิด'],['เพศ','เลือก'],['น้ำหนัก','ใส่น้ำหนัก'],['หมู่โลหิต','เลือก'],['เลขประจำตัว','ใส่เลข']];
+const st=[{cleared:false,step:0},{cleared:false,step:0},{cleared:false,step:0},{cleared:false,step:0}];
+const info={
+ 0:['1 · ข้อความแดงเล็กท้ายกล่อง','เบาที่สุด ไม่รบกวนหน้าแรก กดแล้วมีหน้าต่างยืนยัน พร้อมลิงก์ไปตั้งค่า'],
+ 1:['2 · ปุ่มขอบแดงบาง + ยืนยันในที่','ไม่มีหน้าต่างเด้ง ยืนยันขยายอยู่ตรงนั้น 2 ปุ่ม เห็นชัดกว่าแบบ 1'],
+ 2:['3 · ซ่อนในเมนู ⋯ มุมบน','หน้าโปรไฟล์สะอาดที่สุด กดผิดยากสุด แต่หาเจอยากกว่า'],
+ 3:['4 · แถวการ์ดท้ายรายการ','ดูเป็นส่วนหนึ่งของรายการ มีคำอธิบายบรรทัดล่าง กดแล้วมีหน้าต่างบอกว่าจะล้างอะไรบ้าง']};
+function rows(i){const r=st[i].cleared?rowsEmpty:rowsFull;return '<div class="grp">ข้อมูลส่วนตัว</div>'+r.slice(0,3).map(x=>`<div class="row"><span>${x[0]}</span><span class="${st[i].cleared?'ph':''}">${x[1]}</span></div>`).join('')+'<div class="grp">เลือด</div>'+r.slice(3).map(x=>`<div class="row"><span>${x[0]}</span><span class="${st[i].cleared?'ph':''}">${x[1]}</span></div>`).join('')}
+const dlg=(i,btn)=>`<div class="scrim"><div class="dlg"><h3>ล้างข้อมูลโปรไฟล์?</h3><p>จะล้างข้อมูลเหล่านี้ออกจากเครื่อง และกู้คืนไม่ได้</p><div class="ls"><div>ชื่อ-นามสกุล</div><div>ปีเกิด</div><div>เพศ</div><div>ส่วนสูง</div><div>น้ำหนัก</div><div>หมู่โลหิต / Rh</div><div>ประเภทผู้บริจาค</div><div>เลขประจำตัว</div></div><div class="keep">✓ ประวัติการบริจาคและสถิติทั้งหมดยังอยู่ครบ</div><div class="btns"><button onclick="s(${i},0)">ยกเลิก</button><button class="go" onclick="clr(${i})">ล้างข้อมูล</button></div></div></div>`;
+function s(i,v){st[i].step=v;draw()}
+function clr(i){st[i].cleared=true;st[i].step=0;st[i].toast=1;draw();setTimeout(()=>{st[i].toast=0;draw()},2200)}
+function rst(i){st[i]={cleared:false,step:0};draw()}
+function body(i){const c=st[i].cleared;let h='';
+ if(i==0){h=rows(i)+(c?'':`<button class="link" onclick="s(0,1)">ล้างข้อมูลโปรไฟล์</button><div class="hint">ต้องการลบทั้งหมดรวมประวัติ → <a>ไปที่ตั้งค่า</a></div>`)+(st[0].step?dlg(0):'')}
+ if(i==1){h=rows(i)+(c?'':st[1].step?`<div class="inl"><p>ล้างข้อมูลโปรไฟล์?</p><small>ชื่อ ปีเกิด เพศ ส่วนสูง น้ำหนัก หมู่โลหิต ประเภทผู้บริจาค เลขประจำตัว จะหายไป กู้คืนไม่ได้ · ประวัติการบริจาคยังอยู่</small><div class="btns"><button onclick="s(1,0)">ยกเลิก</button><button class="go" onclick="clr(1)">ล้างข้อมูล</button></div></div>`:`<button class="outl" onclick="s(1,1)">${T} ล้างข้อมูลโปรไฟล์</button>`)}
+ if(i==2){h=rows(i)+(st[2].step==2?dlg(2):'')+(st[2].step==1?`<div class="menu"><button onclick="s(2,${c?0:2})" ${c?'disabled style="color:#B39B96"':''}>${T} ล้างข้อมูลโปรไฟล์</button></div>`:'')}
+ if(i==3){h=rows(i)+(c?'':`<button class="card" onclick="s(3,1)"><span class="ico" style="color:#B3261E">${T}</span><span><b>ล้างข้อมูลโปรไฟล์</b><small>ประวัติการบริจาคไม่ถูกลบ</small></span></button>`)+(st[3].step?dlg(3):'')}
+ return h}
+function draw(){document.getElementById('g').innerHTML=[0,1,2,3].map(i=>`<div><div class="lab">${info[i][0]}</div><div class="desc">${info[i][1]}</div><div class="phone"><div class="hd"><b>โปรไฟล์ของฉัน</b>${i==2?`<span style="display:flex;gap:6px"><button class="x" aria-label="เมนู" onclick="s(2,st[2].step==1?0:1)">⋯</button><button class="x">✕</button></span>`:'<button class="x">✕</button>'}</div>${body(i)}${st[i].toast?'<div class="done">ล้างข้อมูลโปรไฟล์แล้ว</div>':''}</div><button class="reset" onclick="rst(${i})">รีเซ็ตตัวอย่าง</button></div>`).join('')}
+draw();
+</script></body></html>
