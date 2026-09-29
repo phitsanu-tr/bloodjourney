@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.128";
+const APP_VERSION = "1.0.129";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7293,18 +7293,25 @@ function AppInner() {
         // Criteria hint on the right of a row: grey = not filled, green =
         // within, orange = outside. Birth year shows the age it works out to.
         const nowBE = thaiYearNow();
+        // Live value of a picker row: what is being scrolled, else the saved one.
+        const liveNumber = (key) => {
+          const cur = pickerPreview && pickerPreview.key === key ? pickerPreview.value : (key === "birthYear" ? birthYear : key === "height" ? height : weight);
+          return cur === "" || cur == null ? NaN : Number(cur);
+        };
+        // Age goes next to the "ปีเกิด" label (not on the right, where every
+        // row shows one short status).
+        const ageOf = () => { const n = liveNumber("birthYear"); return Number.isNaN(n) ? null : nowBE - n; };
         const criteriaHint = (key) => {
           if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
+          if (key === "height") return Number.isNaN(liveNumber("height")) ? null : { text: "ใช้คำนวณปริมาณเลือด", color: "#7A6360" };
           if (key !== "birthYear" && key !== "weight") return null;
-          // Live from the picker while it's being scrolled, else the saved value.
-          const cur = pickerPreview && pickerPreview.key === key ? pickerPreview.value : (key === "birthYear" ? birthYear : weight);
-          const n = cur === "" || cur == null ? NaN : Number(cur);
+          const n = liveNumber(key);
           if (key === "birthYear") {
             const range = `${MIN_AGE}–${MAX_AGE} ปี`;
             if (Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
             const a = nowBE - n;
-            if (birthYearApprox && n === birthYear) return { text: `อายุ ${a} ปี · ปีโดยประมาณ`, color: "#B5651D" };
-            return a >= MIN_AGE && a <= MAX_AGE ? { text: `อายุ ${a} ปี · ✓ ตามเกณฑ์`, color: "#2E7D4F" } : { text: `อายุ ${a} ปี · นอกเกณฑ์`, color: "#B5651D" };
+            if (birthYearApprox && n === birthYear) return { text: "ปีโดยประมาณ", color: "#B5651D" };
+            return a >= MIN_AGE && a <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#B5651D" };
           }
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
@@ -7474,7 +7481,7 @@ function AppInner() {
                       <r.Icon size={17} color="#9A3B33" />
                     </span>
                   );
-                  const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
+                  const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}{r.key === "birthYear" && ageOf() !== null ? ` · อายุ ${ageOf()} ปี` : ""}</span>;
                   const hint = criteriaHint(r.key);
                   const saved = profileSavedKey === r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
