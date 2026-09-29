@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รูปแบบแก้โปรไฟล์</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --red:#9A3B33; --line:#EEDEDA; --line2:#E3C8C3; --sep:#F3E7E4; --soft:#F3EAE8; --bg:#FBF6F5; --tint:#FBEFEC; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding-inline: 16px; padding-block: 24px 60px; }
+  h1 { font-size: 21px; font-weight: 600; text-align: center; margin: 0 0 4px; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; max-width: 700px; margin: 0 auto 22px; line-height: 1.6; }
+  .grid { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; max-width: 1560px; margin: 0 auto; }
+  .panel { width: 360px; max-width: 100%; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 100px; }
+  .stage { background: rgba(36,26,24,.45); border-radius: 26px; padding: 22px 12px; }
+  .box { background: var(--bg); border-radius: 18px; padding: 20px; }
+  .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .hd b { font-size: 15.5px; font-weight: 700; }
+  .me { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .av { position: relative; width: 52px; height: 52px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+  .cam { position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; }
+  .nmin { font: inherit; font-size: 15px; font-weight: 600; color: var(--ink2); border: none; background: none; outline: none; padding: 2px 0; width: 100%; border-bottom: 1.5px dashed transparent; }
+  .nmin:focus { border-bottom-color: var(--red); }
+  .nmin::placeholder { color: #B7A5A1; font-weight: 500; }
+  .chg { font-size: 12.5px; color: var(--red); font-weight: 600; margin-top: 2px; }
+  .sl { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: .3px; margin: 0 0 6px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0 4px; margin-bottom: 16px; }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 8px; font-size: 13.5px; color: var(--ink2); }
+  .card > * + * { border-top: 1px solid var(--sep); }
+  .row .lab { flex-shrink: 0; }
+  .lock { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; color: var(--mut); }
+  button { font: inherit; cursor: pointer; }
+  [hidden] { display: none !important; }
+  .seg button { white-space: nowrap; }
+
+  /* A: direct controls */
+  .step { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .sb { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line2); background: #fff; color: var(--red); font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .sv { min-width: 58px; text-align: center; font-weight: 600; font-size: 14.5px; }
+  .sv small { font-weight: 400; color: var(--mut); font-size: 12px; margin-left: 2px; }
+  .seg { display: flex; background: var(--soft); border-radius: 10px; padding: 3px; margin-left: auto; }
+  .seg button { border: none; background: none; min-height: 34px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--mut); }
+  .seg button.on { background: #fff; color: var(--red); box-shadow: 0 1px 3px rgba(36,26,24,.12); }
+  .rowcol { padding: 10px 8px 12px; }
+  .rowcol .top { display: flex; align-items: center; gap: 10px; font-size: 13.5px; margin-bottom: 8px; }
+
+  /* B: stat tiles */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .tile { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; min-height: 86px; display: flex; flex-direction: column; text-align: left; }
+  .tile .tk { font-size: 11.5px; color: var(--mut); display: flex; align-items: center; gap: 5px; }
+  .tile .tv { font-size: 24px; font-weight: 700; color: var(--ink2); margin-top: 4px; line-height: 1.1; }
+  .tile .tv small { font-size: 12px; font-weight: 500; color: var(--mut); margin-left: 3px; }
+  .tile .tv.sm { font-size: 15px; margin-top: 8px; }
+  .tile.on { border-color: var(--red); box-shadow: 0 0 0 3px rgba(154,59,51,.1); }
+  .tile .mini { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: auto; }
+  .tile .mini .sb { width: 34px; height: 34px; }
+  .tile .choices { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .tile .choices [data-c] { display: inline-flex; align-items: center; min-height: 30px; padding: 0 9px; border-radius: 15px; border: 1px solid var(--line2); background: #fff; font-size: 12px; font-weight: 600; color: var(--ink2); }
+  .tile .choices [data-c].on { background: var(--red); border-color: var(--red); color: #FFF7F5; }
+
+  /* C: ruler */
+  .val { margin-left: auto; color: var(--mut); }
+  .val b { color: var(--ink2); font-weight: 600; }
+  .ruler-wrap { position: relative; padding: 6px 0 12px; }
+  .ruler { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 calc(50% - 5px); height: 54px; align-items: flex-end; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+  .ruler::-webkit-scrollbar { display: none; }
+  .tick { flex: 0 0 10px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+  .tick i { width: 1.5px; height: 12px; background: #D9C4BF; border-radius: 1px; }
+  .tick.major i { height: 22px; background: #B7A5A1; }
+  .tick span { position: absolute; top: 0; font-size: 10px; color: var(--mut); }
+  .needle { position: absolute; left: 50%; bottom: 12px; width: 3px; height: 34px; margin-left: -1.5px; background: var(--red); border-radius: 2px; pointer-events: none; }
+
+  /* D: wheel */
+  .wheel-wrap { position: relative; height: 150px; margin: 4px 0 10px; }
+  .wheel { height: 150px; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; padding: 55px 0; text-align: center; -webkit-mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); }
+  .wheel::-webkit-scrollbar { display: none; }
+  .wheel div { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 17px; color: var(--mut); }
+  .wheel div.cur { color: var(--ink2); font-weight: 700; font-size: 20px; }
+  .wheel-band { position: absolute; left: 8px; right: 8px; top: 55px; height: 40px; border-radius: 10px; background: var(--tint); z-index: -1; }
+  .wheel-wrap { z-index: 0; isolation: isolate; }
+  .wheel-unit { position: absolute; right: 40px; top: 55px; line-height: 40px; font-size: 13px; color: var(--mut); pointer-events: none; }
+  .open-row { background: var(--tint); border-radius: 9px; }
+  .chipset { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 8px 12px 34px; }
+  .chipset button { min-height: 40px; min-width: 50px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--line2); background: #fff; font-size: 13.5px; font-weight: 600; color: var(--ink2); }
+  .chipset button.on { background: var(--red); border-color: var(--red); color: #FFF7F5; }
+  .note { max-width: 780px; margin: 32px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.75; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; }
+  .note p { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<h1>รูปแบบอื่นสำหรับแก้โปรไฟล์</h1>
+<p class="lead">ทุกแบบอยู่ในกล่องลอยแบบเดียวกับหน้าตั้งค่า และลองกดได้จริงในหน้านี้ แต่ละแบบเน้นใช้นิ้วแตะหรือเลื่อน แทบไม่ต้องใช้คีย์บอร์ด (พิมพ์แค่ชื่อ) ทุกการเปลี่ยนบันทึกทันที</p>
+<div class="grid" id="grid"></div>
+<div class="note">
+  <h2>เทียบกันสั้น ๆ</h2>
+  <p><b>แบบ 1</b> เห็นและแก้ได้ทุกอย่างทันทีไม่ต้องกางอะไร แต่ปรับอายุจาก 34 ไป 60 ต้องแตะหลายครั้ง (กดค้างเพื่อเร่งได้) · <b>แบบ 2</b> ตัวเลขใหญ่อ่านง่ายสุด เหมาะกับผู้สูงอายุ · <b>แบบ 3</b> ปัดทีเดียวไปไกลได้ สนุกมือ แต่ต้องเล็งให้ตรงค่า · <b>แบบ 4</b> คุ้นมือคน iPhone ที่สุด แต่กินที่แนวตั้งตอนกาง</p>
+  <p>ชื่อ-นามสกุลยังพิมพ์ได้ตรงหัวกล่อง (แตะที่ชื่อแล้วพิมพ์) เพราะชื่อเลือกจากรายการไม่ได้</p>
+</div>
+<script>
+const P = {
+  cake:'<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/>',
+  weight:'<circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/>',
+  drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  award:'<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', cam:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', down:'<path d="m6 9 6 6 6-6"/>', pen:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
+};
+const ic = (n, s = 16, c = '#9A3B33') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${P[n]}</svg>`;
+const BT = ['A', 'B', 'AB', 'O', 'ไม่ระบุ'];
+const shell = (inner) => `<div class="stage"><div class="box"><div class="hd"><b>โปรไฟล์ของฉัน</b>${ic('x', 19, '#3A2C29')}</div>
+<div class="me"><span class="av">ต<span class="cam">${ic('cam', 10, '#FFF7F5')}</span></span><div style="flex:1;min-width:0"><input class="nmin" value="ต้น" placeholder="แตะเพื่อใส่ชื่อ" aria-label="ชื่อ-นามสกุล"><div class="chg">เปลี่ยนรูป</div></div>${ic('pen', 13, '#B7A5A1')}</div>
+${inner}<div class="lock">${ic('lock', 12, '#7A6360')} ข้อมูลเก็บในเครื่องนี้เท่านั้น</div></div></div>`;
+
+const A = shell(`<div class="sl">ข้อมูลส่วนตัว</div><div class="card">
+<div class="row">${ic('cake')}<span class="lab">อายุ</span><div class="step" data-step="age" data-v="34" data-min="0" data-max="120" data-d="1" data-u="ปี"><button class="sb" data-dir="-1" aria-label="ลดอายุ">−</button><span class="sv"></span><button class="sb" data-dir="1" aria-label="เพิ่มอายุ">+</button></div></div>
+<div class="row">${ic('weight')}<span class="lab">น้ำหนัก</span><div class="step" data-step="w" data-v="62" data-min="0" data-max="300" data-d="0.5" data-u="กก."><button class="sb" data-dir="-1" aria-label="ลดน้ำหนัก">−</button><span class="sv"></span><button class="sb" data-dir="1" aria-label="เพิ่มน้ำหนัก">+</button></div></div>
+</div><div class="sl">สำหรับการบริจาค</div><div class="card">
+<div class="rowcol"><div class="top">${ic('drop')}<span>หมู่โลหิต</span></div><div class="seg" style="margin-left:0">${BT.map(b => `<button class="${b === 'O' ? 'on' : ''}" style="flex:1">${b}</button>`).join('')}</div></div>
+<div class="row">${ic('award')}<span class="lab">ประเภท</span><div class="seg"><button class="on">บุคคลทั่วไป</button><button>พระภิกษุสงฆ์</button></div></div>
+</div>`);
+
+const B = shell(`<div class="tiles">
+<button class="tile" data-tile="age" data-v="34" data-min="0" data-max="120" data-d="1" data-u="ปี"><span class="tk">${ic('cake', 13)} อายุ</span><span class="tv"></span><span class="mini" hidden><span class="sb" data-dir="-1">−</span><span class="sb" data-dir="1">+</span></span></button>
+<button class="tile" data-tile="w" data-v="62" data-min="0" data-max="300" data-d="0.5" data-u="กก."><span class="tk">${ic('weight', 13)} น้ำหนัก</span><span class="tv"></span><span class="mini" hidden><span class="sb" data-dir="-1">−</span><span class="sb" data-dir="1">+</span></span></button>
+<button class="tile on" data-tilec="bt"><span class="tk">${ic('drop', 13)} หมู่โลหิต</span><span class="tv">O</span><span class="choices">${BT.map(b => `<span role="button" class="${b === 'O' ? 'on' : ''}" data-c="${b}">${b}</span>`).join('')}</span></button>
+<button class="tile" data-tilec="dt"><span class="tk">${ic('award', 13)} ประเภทผู้บริจาค</span><span class="tv sm">บุคคลทั่วไป</span><span class="choices" hidden><span role="button" class="on" data-c="บุคคลทั่วไป">บุคคลทั่วไป</span><span role="button" data-c="พระภิกษุสงฆ์">พระภิกษุสงฆ์</span></span></button>
+</div>`);
+
+const ruler = (key, min, max, step, v, unit, majorEvery) => {
+  let t = ''; let i = 0;
+  for (let x = min; x <= max + 1e-9; x = Math.round((x + step) * 10) / 10, i++) {
+    const major = Math.abs(x % majorEvery) < 1e-9;
+    t += `<div class="tick ${major ? 'major' : ''}" data-x="${x}">${major ? `<span>${x}</span>` : ''}<i></i></div>`;
+  }
+  return `<div class="ruler-wrap" data-rw="${key}"><div class="ruler" data-min="${min}" data-step="${step}" data-v="${v}" data-u="${unit}">${t}</div><div class="needle"></div></div>`;
+};
+const C = shell(`<div class="sl">ข้อมูลส่วนตัว</div><div class="card">
+<div><div class="row">${ic('cake')}<span class="lab">อายุ</span><span class="val" data-show="age"><b>34</b> ปี</span></div>${ruler('age', 15, 80, 1, 34, 'ปี', 5)}</div>
+<div><div class="row">${ic('weight')}<span class="lab">น้ำหนัก</span><span class="val" data-show="w"><b>62</b> กก.</span></div>${ruler('w', 40, 120, 0.5, 62, 'กก.', 5)}</div>
+</div><div class="sl">สำหรับการบริจาค</div><div class="card">
+<div class="row">${ic('drop')}<span class="lab">หมู่โลหิต</span><div class="seg">${BT.slice(0, 4).map(b => `<button class="${b === 'O' ? 'on' : ''}">${b}</button>`).join('')}<button>?</button></div></div>
+<div class="row">${ic('award')}<span class="lab">ประเภท</span><div class="seg"><button class="on">ทั่วไป</button><button>พระสงฆ์</button></div></div>
+</div>`);
+
+const wheel = (min, max, v, unit) => { let t = ''; for (let x = min; x <= max; x++) t += `<div data-x="${x}" class="${x === v ? 'cur' : ''}">${x}</div>`; return `<div class="wheel-wrap"><div class="wheel-band"></div><div class="wheel" data-v="${v}">${t}</div><span class="wheel-unit">${unit}</span></div>`; };
+const D = shell(`<div class="sl">ข้อมูลส่วนตัว</div><div class="card">
+<div data-wrow="age"><div class="row open-row" data-toggle="age">${ic('cake')}<span class="lab">อายุ</span><span class="val" data-show="age"><b>34</b> ปี</span>${ic('down', 14, '#B7A5A1')}</div><div class="wbody">${wheel(15, 80, 34, 'ปี')}</div></div>
+<div data-wrow="w"><div class="row" data-toggle="w">${ic('weight')}<span class="lab">น้ำหนัก</span><span class="val" data-show="w"><b>62</b> กก.</span>${ic('down', 14, '#B7A5A1')}</div><div class="wbody" hidden>${wheel(40, 150, 62, 'กก.')}</div></div>
+</div><div class="sl">สำหรับการบริจาค</div><div class="card">
+<div data-wrow="bt"><div class="row" data-toggle="bt">${ic('drop')}<span class="lab">หมู่โลหิต</span><span class="val"><b>O</b></span>${ic('down', 14, '#B7A5A1')}</div><div class="wbody chipset" hidden>${BT.map(b => `<button class="${b === 'O' ? 'on' : ''}">${b}</button>`).join('')}</div></div>
+<div data-wrow="dt"><div class="row" data-toggle="dt">${ic('award')}<span class="lab">ประเภทผู้บริจาค</span><span class="val"><b>บุคคลทั่วไป</b></span>${ic('down', 14, '#B7A5A1')}</div><div class="wbody chipset" hidden><button class="on">บุคคลทั่วไป</button><button>พระภิกษุสงฆ์</button></div></div>
+</div>`);
+
+const V = [
+  ['ปุ่มควบคุมอยู่ในแถวเลย', 'ทุกอย่างปรับได้ทันทีโดยไม่ต้องกางอะไร อายุกับน้ำหนักมีปุ่ม − / + ในแถว (น้ำหนักทีละ 0.5 กก. กดค้างเพื่อเร่ง) หมู่โลหิตกับประเภทเป็นสวิตช์เลือกที่เห็นครบทุกตัวเลือก แตะครั้งเดียวจบ', A],
+  ['ช่องตัวเลขใหญ่', 'ข้อมูลเป็นช่องสี่เหลี่ยม 2×2 ตัวเลขใหญ่อ่านง่าย แตะช่องแล้วช่องนั้นขึ้นปุ่ม − / + หรือตัวเลือกให้เลือกในช่องเลย (ในภาพ: ช่องหมู่โลหิตกำลังเปิดอยู่)', B],
+  ['ไม้บรรทัดเลื่อน', 'อายุกับน้ำหนักเป็นไม้บรรทัดให้ปัดซ้ายขวา ขีดแดงตรงกลางคือค่าที่เลือก ปัดทีเดียวไปไกลได้ ไม่ต้องกดหลายครั้ง เหมือนแอปสุขภาพหลายตัว (ลองปัดดู)', C],
+  ['ล้อหมุนเลือก', 'แตะแถวแล้วกางล้อหมุนแบบนาฬิกาปลุกใน iPhone ปัดขึ้นลงเลือกค่า หมู่โลหิตกับประเภทกางเป็นตัวเลือก คุ้นมือที่สุดสำหรับคนใช้ iPhone (ในภาพ: แถวอายุกางอยู่)', D],
+];
+document.getElementById('grid').innerHTML = V.map(([n, d, html], i) => `<div class="panel" data-v="${i}"><span class="tag">แบบ ${i + 1}</span><p class="name">${n}</p><p class="desc">${d}</p>${html}</div>`).join('');
+
+const fmt = (v, d) => d < 1 ? (Math.round(v * 10) / 10).toString() : String(Math.round(v));
+// A steppers (with press-and-hold acceleration)
+document.querySelectorAll('.step[data-step]').forEach(st => {
+  const sv = st.querySelector('.sv'); const d = +st.dataset.d, min = +st.dataset.min, max = +st.dataset.max;
+  const draw = () => sv.innerHTML = `${fmt(+st.dataset.v, d)}<small>${st.dataset.u}</small>`; draw();
+  st.querySelectorAll('.sb').forEach(b => {
+    let t, iv;
+    const bump = () => { st.dataset.v = Math.min(max, Math.max(min, +st.dataset.v + d * +b.dataset.dir)); draw(); };
+    b.addEventListener('pointerdown', () => { bump(); t = setTimeout(() => iv = setInterval(bump, 80), 400); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => { clearTimeout(t); clearInterval(iv); }));
+  });
+});
+// segmented
+document.querySelectorAll('.seg, .chipset').forEach(seg => seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  const w = seg.closest('[data-wrow]'); if (w) { w.querySelector('.val b').textContent = b.textContent; }
+})));
+// B tiles
+document.querySelectorAll('[data-tile]').forEach(t => {
+  const tv = t.querySelector('.tv'); const d = +t.dataset.d, min = +t.dataset.min, max = +t.dataset.max;
+  const draw = () => tv.innerHTML = `${fmt(+t.dataset.v, d)}<small>${t.dataset.u}</small>`; draw();
+  t.querySelectorAll('.sb').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); t.dataset.v = Math.min(max, Math.max(min, +t.dataset.v + d * +b.dataset.dir)); draw(); }));
+});
+document.querySelectorAll('.tiles').forEach(tiles => tiles.querySelectorAll('.tile').forEach(t => t.addEventListener('click', () => {
+  const was = t.classList.contains('on');
+  tiles.querySelectorAll('.tile').forEach(x => { x.classList.remove('on'); const m = x.querySelector('.mini, .choices'); if (m) m.hidden = true; });
+  if (!was) { t.classList.add('on'); const m = t.querySelector('.mini, .choices'); if (m) m.hidden = false; }
+})));
+document.querySelectorAll('.tile .choices [data-c]').forEach(c => c.addEventListener('click', (e) => {
+  e.stopPropagation(); const t = c.closest('.tile');
+  t.querySelectorAll('[data-c]').forEach(x => x.classList.toggle('on', x === c)); t.querySelector('.tv').textContent = c.dataset.c;
+}));
+// C ruler
+document.querySelectorAll('.ruler').forEach(r => {
+  const min = +r.dataset.min, step = +r.dataset.step; const key = r.closest('[data-rw]').dataset.rw;
+  const show = r.closest('.panel').querySelector(`[data-show="${key}"] b`);
+  const idx = Math.round((+r.dataset.v - min) / step);
+  requestAnimationFrame(() => { r.scrollLeft = idx * 10; });
+  r.addEventListener('scroll', () => { const i = Math.round(r.scrollLeft / 10); show.textContent = fmt(min + i * step, step); });
+});
+// D wheel
+document.querySelectorAll('.wheel').forEach(w => {
+  const items = [...w.children]; const v = +w.dataset.v; const i0 = items.findIndex(x => +x.dataset.x === v);
+  const show = w.closest('[data-wrow]').querySelector('.val b');
+  const set = () => { if (!w.offsetParent) return; const i = Math.round(w.scrollTop / 40); items.forEach((x, j) => x.classList.toggle('cur', j === i)); if (items[i]) show.textContent = items[i].dataset.x; };
+  const init = () => { w.scrollTop = i0 * 40; set(); };
+  requestAnimationFrame(init); w._init = init;
+  w.addEventListener('scroll', set);
+  items.forEach((x, j) => x.addEventListener('click', () => w.scrollTo({ top: j * 40, behavior: 'smooth' })));
+});
+document.querySelectorAll('[data-toggle]').forEach(row => row.addEventListener('click', () => {
+  const card = row.closest('.card').parentElement;
+  const wrow = row.parentElement; const body = wrow.querySelector('.wbody'); const was = !body.hidden;
+  card.querySelectorAll('[data-wrow]').forEach(x => { x.querySelector('.wbody').hidden = true; x.querySelector('.row').classList.remove('open-row'); });
+  if (!was) { body.hidden = false; row.classList.add('open-row'); const w = body.querySelector('.wheel'); if (w) requestAnimationFrame(w._init); }
+}));
+</script>
+</body>
+</html>

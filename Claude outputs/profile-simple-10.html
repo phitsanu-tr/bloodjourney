@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โปรไฟล์แบบเรียบง่าย</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap">
+<style>
+  :root { --ink:#241A18; --ink2:#3A2C29; --mut:#7A6360; --faint:#B7A5A1; --red:#9A3B33; --line:#EEDEDA; --sep:#F3E7E4; --soft:#F3EAE8; --bg:#FBF6F5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #EFE6E4; font-family: Mitr, system-ui, sans-serif; color: var(--ink); padding-inline: 16px; padding-block: 24px 60px; }
+  h1 { font-size: 21px; font-weight: 600; text-align: center; margin: 0 0 4px; }
+  .lead { text-align: center; color: var(--mut); font-size: 13px; max-width: 680px; margin: 0 auto 24px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 26px; max-width: 1400px; margin: 0 auto; }
+  .panel { min-width: 0; }
+  .tag { display: inline-block; background: var(--red); color: #FFF7F5; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 20px; margin-bottom: 6px; }
+  .name { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .desc { font-size: 12.5px; color: #5C4A46; line-height: 1.6; margin: 0 0 12px; min-height: 60px; }
+  .stage { background: rgba(36,26,24,.42); border-radius: 22px; padding: 18px 12px; }
+  .box { background: var(--bg); border-radius: 18px; padding: 20px; }
+  .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .hd b { font-size: 15.5px; font-weight: 700; }
+  .x { width: 19px; height: 19px; }
+  .av { width: 48px; height: 48px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+  .me { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .nm { font-size: 15px; font-weight: 600; } .chg { font-size: 12px; color: var(--red); font-weight: 600; margin-top: 1px; }
+  .em { color: var(--faint) !important; font-weight: 400 !important; }
+  .edit { background: #FBEFEC; border-radius: 8px; }
+  .caret { display: inline-block; width: 1.5px; height: 1em; background: var(--red); vertical-align: -2px; margin-left: 1px; }
+
+  /* 1 two-line list */
+  .l2 .it { padding: 9px 0; border-bottom: 1px solid var(--sep); }
+  .l2 .it:last-child { border: none; }
+  .l2 .k { font-size: 11.5px; color: var(--mut); } .l2 .v { font-size: 15px; color: var(--ink2); margin-top: 1px; }
+  /* 2 underline */
+  .ul .f { margin-bottom: 14px; } .ul .k { font-size: 11.5px; color: var(--mut); }
+  .ul .v { font-size: 15px; color: var(--ink2); padding: 5px 0 6px; border-bottom: 1.5px solid var(--line); }
+  .ul .f.on .v { border-bottom-color: var(--red); }
+  .ul .two { display: flex; gap: 14px; } .ul .two .f { flex: 1; }
+  /* 3 plain rows */
+  .pr { background: #fff; border-radius: 12px; }
+  .pr .r { display: flex; justify-content: space-between; align-items: center; min-height: 46px; padding: 0 14px; font-size: 13.5px; color: var(--ink2); }
+  .pr .r + .r { border-top: 1px solid var(--sep); } .pr .r span:last-child { color: var(--mut); }
+  /* 4 sentence */
+  .sent { font-size: 17px; line-height: 2.1; color: var(--ink2); }
+  .blank { color: var(--red); font-weight: 600; border-bottom: 1.5px dashed #D9A39C; padding: 0 3px; white-space: nowrap; }
+  .blank.em { border-bottom-color: #E3C8C3; }
+  /* 5 summary strip */
+  .strip { display: flex; background: #fff; border-radius: 14px; margin-bottom: 12px; }
+  .strip > div { flex: 1; text-align: center; padding: 12px 4px; } .strip > div + div { border-left: 1px solid var(--sep); }
+  .strip b { display: block; font-size: 22px; font-weight: 700; color: var(--ink2); line-height: 1.2; } .strip small { font-size: 11px; color: var(--mut); }
+  .sub { font-size: 12.5px; color: var(--mut); text-align: center; }
+  /* 6 chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; background: #fff; border: 1px solid var(--line); font-size: 13.5px; color: var(--ink2); }
+  .chip i { font-style: normal; color: var(--mut); font-size: 12px; }
+  .chip.em { border-style: dashed; }
+  /* 7 definition list */
+  .dl { display: grid; grid-template-columns: 96px 1fr; row-gap: 14px; font-size: 14px; }
+  .dl dt { color: var(--mut); font-size: 13px; } .dl dd { margin: 0; color: var(--ink2); }
+  /* 8 soft filled fields */
+  .soft .f { background: var(--soft); border-radius: 12px; padding: 8px 14px 9px; margin-bottom: 8px; }
+  .soft .k { font-size: 11px; color: var(--mut); } .soft .v { font-size: 15px; color: var(--ink2); }
+  .soft .two { display: flex; gap: 8px; } .soft .two .f { flex: 1; }
+  /* 9 centered minimal */
+  .cen { text-align: center; margin-bottom: 14px; } .cen .av { margin: 0 auto 8px; width: 64px; height: 64px; font-size: 24px; }
+  .thin .r { display: flex; justify-content: space-between; padding: 11px 2px; font-size: 14px; color: var(--ink2); border-bottom: 1px solid var(--line); }
+  .thin .r span:first-child { color: var(--mut); }
+  /* 10 id card */
+  .idc { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .idc .top { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); margin-bottom: 12px; }
+  .idc .g { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
+  .idc .k { font-size: 11px; color: var(--mut); } .idc .v { font-size: 15px; font-weight: 600; color: var(--ink2); }
+  .note { max-width: 760px; margin: 32px auto 0; background: #fff; border-radius: 16px; padding: 16px 20px; font-size: 13px; line-height: 1.75; color: #5C4A46; }
+  .note h2 { font-size: 14.5px; margin: 0 0 6px; color: var(--ink2); font-weight: 600; } .note p { margin: 0; }
+</style>
+</head>
+<body>
+<h1>หน้าโปรไฟล์ แบบเรียบง่าย 10 แบบ</h1>
+<p class="lead">ตัดไอคอน สี และกรอบที่ไม่จำเป็นออกให้มากที่สุด ทุกแบบอยู่ในกล่องลอยเหมือนหน้าตั้งค่า แตะค่าเพื่อแก้ได้ตรงนั้น ส่วนที่เป็นสีชมพูอ่อนพร้อมเคอร์เซอร์คือตัวอย่างตอนกำลังแก้</p>
+<div class="grid" id="grid"></div>
+<div class="note"><h2>ใช้ร่วมกันทุกแบบ</h2><p>แตะค่าแล้วพิมพ์ได้ทันที (ชื่อ นามสกุล อายุ น้ำหนัก) บันทึกเองตอนแตะออกหรือกด “เสร็จ” หมู่โลหิตกับประเภทผู้บริจาค แตะแล้วเลือกจากตัวเลือกเล็ก ๆ ที่กางออกมา เหมือนที่ทำในแอปตอนนี้ ต่างกันแค่หน้าตา</p></div>
+<script>
+const X = '<svg class="x" viewBox="0 0 24 24" fill="none" stroke="#3A2C29" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+const head = (t = 'โปรไฟล์ของฉัน') => `<div class="hd"><b>${t}</b>${X}</div>`;
+const me = `<div class="me"><span class="av">ต</span><div><div class="nm">ต้น</div><div class="chg">เปลี่ยนรูป</div></div></div>`;
+const C = '<span class="caret"></span>';
+const D = [
+  ['รายการสองบรรทัด', 'ชื่อหัวข้อตัวเล็กสีเทาอยู่บน ค่าตัวใหญ่อยู่ล่าง ไม่มีไอคอน ไม่มีกรอบ อ่านง่ายจากบนลงล่าง',
+    `${head()}${me}<div class="l2">${[['ชื่อ','ต้น'],['นามสกุล','<span class="em">ยังไม่ได้กรอก</span>'],['อายุ',`<span class="edit" style="padding:0 4px">34${C} ปี</span>`],['น้ำหนัก','62 กก.'],['หมู่โลหิต','O'],['ประเภทผู้บริจาค','บุคคลทั่วไป']].map(([k,v])=>`<div class="it"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>`],
+  ['ขีดเส้นใต้', 'แต่ละข้อมีแค่เส้นบาง ๆ ใต้ค่า ตอนแก้เส้นเปลี่ยนเป็นสีแดง คล้ายกรอกแบบฟอร์มกระดาษ',
+    `${head()}${me}<div class="ul"><div class="two"><div class="f"><div class="k">ชื่อ</div><div class="v">ต้น</div></div><div class="f"><div class="k">นามสกุล</div><div class="v em">—</div></div></div><div class="two"><div class="f on"><div class="k">อายุ (ปี)</div><div class="v">34${C}</div></div><div class="f"><div class="k">น้ำหนัก (กก.)</div><div class="v">62</div></div></div><div class="two"><div class="f"><div class="k">หมู่โลหิต</div><div class="v">O</div></div><div class="f"><div class="k">ประเภท</div><div class="v">บุคคลทั่วไป</div></div></div></div>`],
+  ['แถวเรียบ ไม่มีไอคอน', 'เหมือนหน้าตั้งค่า แต่ตัดไอคอนหน้าแถวและลูกศรท้ายแถวออก เหลือแค่ชื่อหัวข้อซ้าย ค่าขวา',
+    `${head()}${me}<div class="pr">${[['ชื่อ','ต้น'],['นามสกุล','<span class="em">ยังไม่ได้กรอก</span>'],['อายุ','34 ปี'],['น้ำหนัก','62 กก.'],['หมู่โลหิต','O'],['ประเภทผู้บริจาค','บุคคลทั่วไป']].map(([k,v],i)=>`<div class="r ${i===2?'edit':''}"><span>${k}</span><span>${i===2?'<span style="color:#3A2C29">34'+C+' ปี</span>':v}</span></div>`).join('')}</div>`],
+  ['เขียนเป็นประโยค', 'ข้อมูลเรียงเป็นประโยคอ่านเหมือนแนะนำตัว คำที่ขีดเส้นประคือช่องที่แตะแก้ได้ เป็นกันเองที่สุด',
+    `${head()}<div class="sent">ฉันชื่อ <span class="blank">ต้น</span> <span class="blank em">นามสกุล</span><br>อายุ <span class="blank edit">34${C}</span> ปี หนัก <span class="blank">62</span> กก.<br>หมู่โลหิต <span class="blank">O</span><br>บริจาคในฐานะ <span class="blank">บุคคลทั่วไป</span></div>`],
+  ['ตัวเลขใหญ่แถวเดียว', 'อายุ น้ำหนัก และหมู่โลหิตเป็นตัวเลขใหญ่เรียงแถวเดียว แตะตัวไหนแก้ตัวนั้น ชื่อกับประเภทอยู่ด้านบนและล่าง',
+    `${head()}${me}<div class="strip"><div class="edit" style="border-radius:14px 0 0 14px"><b>34${C}</b><small>ปี</small></div><div><b>62</b><small>กก.</small></div><div><b>O</b><small>หมู่โลหิต</small></div></div><div class="sub">บุคคลทั่วไป · <span style="color:#9A3B33;font-weight:600">เปลี่ยน</span></div>`],
+  ['ป้ายเม็ดยา', 'ข้อมูลเป็นป้ายมนเรียงต่อกัน ข้อที่ยังไม่กรอกเป็นป้ายเส้นประ แตะป้ายเพื่อแก้ กะทัดรัดที่สุด',
+    `${head()}${me}<div class="chips"><span class="chip"><i>ชื่อ</i>ต้น</span><span class="chip em"><i>+ นามสกุล</i></span><span class="chip edit"><i>อายุ</i>34${C} ปี</span><span class="chip"><i>น้ำหนัก</i>62 กก.</span><span class="chip"><i>หมู่โลหิต</i>O</span><span class="chip"><i>ประเภท</i>บุคคลทั่วไป</span></div>`],
+  ['ตารางสองคอลัมน์', 'หัวข้อชิดซ้ายเป็นคอลัมน์เดียว ค่าเรียงตรงกันในคอลัมน์ที่สอง ไม่มีเส้นคั่นเลย โปร่งมาก',
+    `${head()}${me}<dl class="dl"><dt>ชื่อ</dt><dd>ต้น</dd><dt>นามสกุล</dt><dd class="em">ยังไม่ได้กรอก</dd><dt>อายุ</dt><dd><span class="edit" style="padding:0 4px">34${C} ปี</span></dd><dt>น้ำหนัก</dt><dd>62 กก.</dd><dt>หมู่โลหิต</dt><dd>O</dd><dt>ประเภท</dt><dd>บุคคลทั่วไป</dd></dl>`],
+  ['ช่องสีเทาอ่อน', 'แต่ละข้อเป็นแผ่นสีเทาอมชมพูไม่มีเส้นขอบ มีหัวข้อตัวเล็กในแผ่น ดูออกว่าแตะได้โดยไม่ต้องมีไอคอน',
+    `${head()}${me}<div class="soft"><div class="two"><div class="f"><div class="k">ชื่อ</div><div class="v">ต้น</div></div><div class="f"><div class="k">นามสกุล</div><div class="v em">—</div></div></div><div class="two"><div class="f" style="background:#fff;box-shadow:0 0 0 1.5px #9A3B33 inset"><div class="k">อายุ</div><div class="v">34${C} ปี</div></div><div class="f"><div class="k">น้ำหนัก</div><div class="v">62 กก.</div></div></div><div class="two"><div class="f"><div class="k">หมู่โลหิต</div><div class="v">O</div></div><div class="f"><div class="k">ประเภท</div><div class="v">บุคคลทั่วไป</div></div></div></div>`],
+  ['รูปกลาง เส้นบาง', 'รูปโปรไฟล์กลางกล่อง ใต้ลงมาเป็นรายการมีแค่เส้นบาง ๆ คั่น ไม่มีการ์ดขาว ไม่มีหัวข้อกลุ่ม',
+    `${head('')}<div class="cen" style="margin-top:-22px"><span class="av">ต</span><div class="nm">ต้น</div><div class="chg">เปลี่ยนรูป</div></div><div class="thin">${[['ชื่อ','ต้น'],['นามสกุล','<span class="em">ยังไม่ได้กรอก</span>'],['อายุ',`<span class="edit" style="padding:0 4px">34${C} ปี</span>`],['น้ำหนัก','62 กก.'],['หมู่โลหิต','O'],['ประเภทผู้บริจาค','บุคคลทั่วไป']].map(([k,v])=>`<div class="r"><span>${k}</span><span>${v}</span></div>`).join('')}</div>`],
+  ['บัตรเรียบ', 'ข้อมูลอยู่ในบัตรขาวใบเดียว รูปและชื่อด้านบน ข้อมูลอื่นเป็นตาราง 2×2 ตัวหนาอ่านง่าย ไม่มีสีตกแต่ง',
+    `${head()}<div class="idc"><div class="top"><span class="av">ต</span><div><div class="nm">ต้น <span class="em" style="font-size:13px">+ นามสกุล</span></div><div class="chg">เปลี่ยนรูป</div></div></div><div class="g"><div><div class="k">อายุ</div><div class="v edit" style="display:inline-block;padding:0 4px">34${C} ปี</div></div><div><div class="k">น้ำหนัก</div><div class="v">62 กก.</div></div><div><div class="k">หมู่โลหิต</div><div class="v">O</div></div><div><div class="k">ประเภท</div><div class="v">บุคคลทั่วไป</div></div></div></div>`],
+];
+document.getElementById('grid').innerHTML = D.map(([n, d, b], i) => `<div class="panel"><span class="tag">แบบ ${i + 1}</span><p class="name">${n}</p><p class="desc">${d}</p><div class="stage"><div class="box">${b}</div></div></div>`).join('');
+</script>
+</body>
+</html>
