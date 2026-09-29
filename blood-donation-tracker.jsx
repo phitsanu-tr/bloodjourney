@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.115";
+const APP_VERSION = "1.0.116";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6967,8 +6967,7 @@ function AppInner() {
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
             { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก ชาย, หญิง หรือไม่ระบุ"),
-              options: GENDERS.map(([v, label]) => ({ v, label })), current: gender,
-              note: "ใช้ปรับคำแนะนำหลังบริจาค และคำนวณปริมาณเลือดในร่างกาย" },
+              options: GENDERS.map(([v, label]) => ({ v, label })), current: gender },
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "num", unit: "พ.ศ." },
             { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "num", unit: "ซม." },
             { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "num", unit: "กก." },
