@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.150";
+const APP_VERSION = "1.0.151";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7368,13 +7368,17 @@ function AppInner() {
         };
         const preview = (key) => (v) => { clearTimeout(pickerCloseTimer); setPickerPreview({ key, value: v }); };
         const settle = (key) => (v) => {
+          let changed = false;
           if (key === "birthYear") {
-            if (v !== birthYear || birthYearApprox) commitProfile({ birthYear: v, birthYearApprox: false }, key);
+            if (v !== birthYear || birthYearApprox) { commitProfile({ birthYear: v, birthYearApprox: false }, key); changed = true; }
           } else if (v !== committed[key]) {
-            commitProfile({ [key]: v }, key);
+            commitProfile({ [key]: v }, key); changed = true;
           }
           clearTimeout(pickerCloseTimer);
-          pickerCloseTimer = setTimeout(() => setProfileOpenChoice(o => (o === key ? null : o)), 1000);
+          pickerCloseTimer = setTimeout(() => {
+            setProfileOpenChoice(o => (o === key ? null : o));
+            if (changed) flashSaved(key);
+          }, 1000);
         };
         const pickerPanel = (key) => {
           if (key === "birthYear") {
@@ -7400,8 +7404,17 @@ function AppInner() {
         // chip in a row is the same width (padding kept small for Rh labels).
         // Let the chosen option settle for a beat before the panel folds, and only close it
         // if the user hasn't moved on to another row meanwhile.
-        const closeRowSoon = (key) => setTimeout(() => setProfileOpenChoice(o => (o === key ? null : o)), 420);
-        const closeBloodSoon = () => closeRowSoon("blood");
+        // After the panel has folded, show "✓ บันทึกแล้ว" on the row (only when something was actually saved).
+        const flashSaved = (key) => {
+          setProfileSavedKey(key);
+          clearTimeout(profileSavedTimerRef.current);
+          profileSavedTimerRef.current = setTimeout(() => setProfileSavedKey(null), 1400);
+        };
+        const closeRowSoon = (key, changed) => setTimeout(() => {
+          setProfileOpenChoice(o => (o === key ? null : o));
+          if (changed) flashSaved(key);
+        }, 420);
+        const closeBloodSoon = (changed) => closeRowSoon("blood", changed);
         const chipGrid = (cols) => ({ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 8 });
         const chip = (on) => ({ minHeight: 40, minWidth: 0, padding: "0 6px", whiteSpace: "nowrap", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
@@ -7542,7 +7555,7 @@ function AppInner() {
                                     <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
                                       onClick={() => {
                                         if (!on) commitProfile({ bloodType: bt }, "blood");
-                                        if (bloodRh) closeBloodSoon();
+                                        if (bloodRh) closeBloodSoon(!on);
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
@@ -7561,7 +7574,7 @@ function AppInner() {
                                   const on = bloodRh === v;
                                   return (
                                     <button key={v} role="radio" aria-checked={on}
-                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) closeBloodSoon(); }}
+                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) closeBloodSoon(!on); }}
                                       style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
@@ -7607,7 +7620,7 @@ function AppInner() {
                                       const on = r.current === o.v;
                                       return (
                                         <button key={o.v} role="radio" aria-checked={on}
-                                          onClick={() => { if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); closeRowSoon(r.key); }}
+                                          onClick={() => { if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); closeRowSoon(r.key, o.v !== r.current); }}
                                           style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
                                           {o.label}
                                         </button>
