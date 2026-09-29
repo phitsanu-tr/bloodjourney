@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.123";
+const APP_VERSION = "1.0.124";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1300,7 +1300,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
 // Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
 // works the same for left- and right-handed use.
 const RULER_TICK = 8;
-function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, caption, onChange, onSettle, label, ariaUnit }) {
+function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, unitBefore, caption, onChange, onSettle, label, ariaUnit }) {
   const ref = useRef(null);
   const count = Math.round((max - min) / step) + 1;
   const valAt = (i) => Math.round((min + i * step) * 10 ** decimals) / 10 ** decimals;
@@ -1345,14 +1345,16 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
   return (
     <div>
       <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums", marginBottom: 2 }}>
+        {/* Thai puts พ.ศ. before the year ("พ.ศ. 2546"), units after (162 ซม.). */}
+        {unitBefore && <span style={{ fontSize: 13, color: "#7A6360", marginRight: 5 }}>{unitBefore}</span>}
         <span style={{ fontSize: 28, fontWeight: 700, color: "#9A3B33" }}>{shown}</span>
-        <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>{unit}</span>
+        {unit && <span style={{ fontSize: 13, color: "#7A6360", marginLeft: 4 }}>{unit}</span>}
         {caption && <span style={{ fontSize: 12, color: "#7A6360", marginLeft: 6 }}>· {caption(valAt(idx))}</span>}
       </div>
       <div style={{ position: "relative", height: 62 }}>
         <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: 2, width: 3, height: 40, marginLeft: -1.5, borderRadius: 2, background: "#9A3B33", zIndex: 1, pointerEvents: "none" }} />
         <div ref={ref} className="no-scrollbar" onScroll={onScroll} onTouchStart={markUser} onPointerDown={markUser}
-          role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={valAt(idx)} aria-valuetext={`${shown} ${ariaUnit || unit}${caption ? " " + caption(valAt(idx)) : ""}`}
+          role="spinbutton" tabIndex={0} aria-label={label} aria-valuenow={valAt(idx)} aria-valuetext={`${unitBefore ? unitBefore + " " : ""}${shown}${unit ? " " + (ariaUnit || unit) : ""}${caption ? " " + caption(valAt(idx)) : ""}`}
           onKeyDown={(e) => {
             if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); markUser(); pick(idxRef.current + 1); }
             if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); markUser(); pick(idxRef.current - 1); }
@@ -7091,7 +7093,7 @@ function AppInner() {
         };
         const pickerPanel = (key) => {
           if (key === "birthYear") {
-            return <HorizontalRuler min={nowBE - 100} max={nowBE} step={1} majorEvery={10} midEvery={5} unit="พ.ศ." ariaUnit="พ.ศ."
+            return <HorizontalRuler min={nowBE - 100} max={nowBE} step={1} majorEvery={10} midEvery={5} unitBefore="พ.ศ."
               caption={(v) => `อายุ ${nowBE - v} ปี`} value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด" onChange={preview(key)} onSettle={settle(key)} />;
           }
           if (key === "height") {
