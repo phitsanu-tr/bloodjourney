@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.112";
+const APP_VERSION = "1.0.113";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2767,11 +2767,11 @@ function AppInner() {
           setRemindPauseUntil(typeof p.remindPauseUntil === "string" ? p.remindPauseUntil : "");
           setWeight(typeof p.weight === "number" ? p.weight : "");
           setBloodType(p.bloodType || "");
-          // Older versions pre-selected "general" and saved it for everyone, so a
-          // stored "general" only counts as the donor's own choice when it was
-          // saved with donorTypeSet (v1.0.110+). "monk" was never a default,
-          // so it's always kept.
-          setDonorType(p.donorType === "monk" ? "monk" : (p.donorType === "general" && p.donorTypeSet) ? "general" : "");
+          // Older versions could save "general" without the donor choosing it
+          // (a pre-selected default, then the reset bug), so "general" only
+          // counts when saved with donorTypePicked (v1.0.113+). "monk" was
+          // never a default, so it's always kept.
+          setDonorType(p.donorType === "monk" ? "monk" : (p.donorType === "general" && p.donorTypePicked) ? "general" : "");
           // Migrate legacy single-number profiles (saved before donation
           // type existed) by attributing the whole prior total to "whole".
           const legacyStartingCount = typeof p.startingCount === "number" ? p.startingCount : 0;
@@ -3117,7 +3117,10 @@ function AppInner() {
     // `age` is derived from birthYear now and is never stored; the newer
     // fields come from profileExtrasRef unless the caller passes them.
     const { age: _derivedAge, ...rest } = payload;
-    const withFlag = { ...profileExtrasRef.current, ...rest, donorTypeSet: payload.donorType === "general" || payload.donorType === "monk" };
+    // donorTypePicked replaces donorTypeSet (v1.0.113): "ลบข้อมูลทั้งหมด" used
+    // to reset the state to "general", so the next save marked it as picked.
+    const { donorTypeSet: _oldFlag, ...clean } = { ...profileExtrasRef.current, ...rest };
+    const withFlag = { ...clean, donorTypePicked: payload.donorType === "general" || payload.donorType === "monk" };
     profileWriteQueueRef.current = profileWriteQueueRef.current
       .then(() => storage.set("profile", JSON.stringify(withFlag)))
       .catch(() => {});
@@ -3743,7 +3746,7 @@ function AppInner() {
       setRemindPauseUntil("");
       setWeight("");
       setBloodType("");
-      setDonorType(DEFAULT_DONOR_TYPE);
+      setDonorType("");
       setStartingCountWhole("");
       setStartingCountComponent("");
       setStartingCountCreatedAt("");
