@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.131";
+const APP_VERSION = "1.0.132";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2629,7 +2629,7 @@ function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys 
           ))}
           <span />
           <button type="button" onClick={() => press(order[9])} disabled={busy} aria-label={order[9]} style={keyStyle}>{order[9]}</button>
-          <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", border: "none" }}><X size={22} color="#7A6360" /></button>
+          <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", border: "none", fontSize: 16, fontWeight: 500, color: "#7A6360" }}>ลบ</button>
         </div>
       )}
     </div>
@@ -2721,9 +2721,9 @@ function PinFlowDialog({ mode, onClose, onVerify, onSubmit }) {
     }, 900);
   };
   const title = mode === "enable" ? "ตั้ง PIN" : mode === "change" ? "เปลี่ยน PIN" : "ปิดล็อกแอป";
-  const heading = step === "old" ? (mode === "disable" ? "ใส่ PIN เพื่อปิดล็อก" : "ใส่ PIN ปัจจุบัน") : step === "new" ? (mode === "change" ? "ตั้ง PIN ใหม่ 6 หลัก" : "ตั้ง PIN 6 หลัก") : "พิมพ์ PIN อีกครั้ง";
+  const heading = step === "old" ? (mode === "disable" ? "ใส่ PIN เพื่อปิดล็อก" : "ใส่ PIN ปัจจุบัน") : step === "new" ? (mode === "change" ? "ตั้ง PIN ใหม่ 6 หลัก" : "ตั้ง PIN 6 หลัก") : "ยืนยัน PIN";
   const sub = step === "old" && mode === "disable" ? "ข้อมูลในเครื่องจะกลับเป็นไม่เข้ารหัส"
-    : step === "new" ? "ใช้เปิดแอปทุกครั้ง อย่าใช้เลขที่เดาง่าย เช่น 123456 หรือวันเกิด" : "";
+    : "";
   const complete = async (pin) => {
     setMsg("");
     if (step === "old") {
