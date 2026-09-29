@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.134";
+const APP_VERSION = "1.0.135";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7512,20 +7512,38 @@ function AppInner() {
                           {isOpen && r.blood && (
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={chipGrid(4)}>
-                                {BLOOD_TYPES.filter(bt => bt !== "ไม่ทราบ").map(bt => (
-                                  <button key={bt} role="radio" aria-checked={bloodType === bt}
-                                    onClick={() => { if (bt !== bloodType) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
-                                    style={chip(bloodType === bt)}>{bt}</button>
-                                ))}
+                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ ...chipGrid(4), paddingTop: 5 }}>
+                                {BLOOD_TYPES.filter(bt => bt !== "ไม่ทราบ").map(bt => {
+                                  const on = bloodType === bt;
+                                  return (
+                                    <button key={bt} role="radio" aria-checked={on} aria-label={`หมู่ ${bt}`}
+                                      onClick={() => { if (!on) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
+                                      style={{ position: "relative", border: "none", background: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", transition: "transform .18s", transform: on ? "translateY(-3px) scale(1.08)" : "none" }}>
+                                      <svg viewBox="0 0 52 60" aria-hidden="true" style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }}>
+                                        <path d="M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z" fill={on ? "#9A3B33" : "#F7E9E6"} style={{ transition: "fill .2s" }} />
+                                        {/* glint sits on the upper right shoulder, clear of the letters */}
+                                        <path d="M36 21C39 25 40.5 28 41 32" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" style={{ opacity: on ? 0.5 : 0, transition: "opacity .2s" }} />
+                                      </svg>
+                                      <span aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, top: "50%", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif", fontSize: 19, fontWeight: 500, lineHeight: 1, color: on ? "#fff" : "#9A3B33", transition: "color .2s" }}>{bt}</span>
+                                    </button>
+                                  );
+                                })}
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: "#7A6360", margin: "10px 0 6px" }}>Rh</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={chipGrid(3)}>
-                                {BLOOD_RH.map(([v, label]) => (
-                                  <button key={v} role="radio" aria-checked={bloodRh === v}
-                                    onClick={() => { if (v !== bloodRh) commitProfile({ bloodRh: v }, "blood"); if (bloodType) setProfileOpenChoice(null); }}
-                                    style={chip(bloodRh === v)}>{label}</button>
-                                ))}
+                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                                {bloodRh && (
+                                  <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${BLOOD_RH.findIndex(([v]) => v === bloodRh)} * (100% - 6px) / 3)`, width: "calc((100% - 6px) / 3)", borderRadius: 11, background: "#9A3B33", transition: "left .22s" }} />
+                                )}
+                                {BLOOD_RH.map(([v]) => {
+                                  const on = bloodRh === v;
+                                  return (
+                                    <button key={v} role="radio" aria-checked={on}
+                                      onClick={() => { if (!on) commitProfile({ bloodRh: v }, "blood"); if (bloodType) setProfileOpenChoice(null); }}
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
+                                      {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
+                                    </button>
+                                  );
+                                })}
                               </div>
                               <div style={{ fontSize: 11, color: "#7A6360", marginTop: 8 }}>ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</div>
                             </div>
