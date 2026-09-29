@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.113";
+const APP_VERSION = "1.0.114";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6936,7 +6936,6 @@ function AppInner() {
         const nowBE = thaiYearNow();
         const criteriaHint = (key) => {
           if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
-          if (key === "gender" || key === "height") return { text: "ไม่บังคับ", color: "#7A6360" };
           if (key !== "birthYear" && key !== "weight") return null;
           const raw = (profileInline[key] || "").trim();
           let n = raw === "" ? NaN : Number(raw);
@@ -6967,7 +6966,7 @@ function AppInner() {
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
-            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก (ไม่บังคับ)"),
+            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือกเพศ (ไม่บังคับ)"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender,
               note: "ใช้ปรับคำแนะนำหลังบริจาค และคำนวณปริมาณเลือดในร่างกาย" },
             { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "num", unit: "พ.ศ." },
