@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.126";
+const APP_VERSION = "1.0.127";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4553,12 +4553,13 @@ function AppInner() {
       if (height === "" && Number(parsed.height) >= MIN_HEIGHT && Number(parsed.height) <= MAX_HEIGHT) profileFieldsToFill.height = Math.round(Number(parsed.height) * 10) / 10;
       if (!donorId && typeof parsed.donorId === "string" && parsed.donorId.trim()) profileFieldsToFill.donorId = parsed.donorId.replace(/\s+/g, " ").trim().slice(0, 20);
       if (!bloodRh && ["+", "-", "unknown"].includes(parsed.bloodRh)) profileFieldsToFill.bloodRh = parsed.bloodRh;
-      if (!remindPauseUntil && typeof parsed.remindPauseUntil === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil)) profileFieldsToFill.remindPauseUntil = parsed.remindPauseUntil;
+      if (!remindPauseUntil && typeof parsed.remindPauseUntil === "string" && (parsed.remindPauseUntil === "indefinite" || /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil))) profileFieldsToFill.remindPauseUntil = parsed.remindPauseUntil;
       if (weight === "" && parsed.weight !== undefined && parsed.weight !== "") {
         const weightNum = Number(parsed.weight);
         if (!Number.isNaN(weightNum) && weightNum >= 0 && weightNum <= 300) profileFieldsToFill.weight = Math.round(weightNum * 10) / 10;
       }
       if (!bloodType && parsed.bloodType && BLOOD_TYPES.includes(parsed.bloodType)) profileFieldsToFill.bloodType = parsed.bloodType;
+      if (!donorType && (parsed.donorType === "general" || parsed.donorType === "monk")) profileFieldsToFill.donorType = parsed.donorType;
     setPendingImport({
       incoming,
       duplicateCount,
@@ -4720,7 +4721,7 @@ function AppInner() {
         ...Object.fromEntries(["birthYear", "birthYearApprox", "gender", "height", "donorId", "bloodRh", "remindPauseUntil"].filter(k => k in fill).map(k => [k, fill[k]])),
         weight: "weight" in fill ? fill.weight : weight,
         bloodType: "bloodType" in fill ? fill.bloodType : bloodType,
-        donorType,
+        donorType: "donorType" in fill ? fill.donorType : donorType,
         startingCountWhole: Number(startingCountWhole) || 0,
         startingCountComponent: Number(startingCountComponent) || 0,
         startingCountCreatedAt,
@@ -4735,6 +4736,7 @@ function AppInner() {
       if ("remindPauseUntil" in fill) setRemindPauseUntil(fill.remindPauseUntil);
       if ("weight" in fill) setWeight(fill.weight);
       if ("bloodType" in fill) setBloodType(fill.bloodType);
+      if ("donorType" in fill) setDonorType(fill.donorType);
       persistProfile(nextProfile);
     }
     showToast("success", `นำเข้าสำเร็จ — เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ`);
@@ -8078,7 +8080,7 @@ function AppInner() {
             )}
             {Object.keys(pendingImport.profileFieldsToFill || {}).length > 0 && (
               <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 8px" }}>
-                จะเติมข้อมูลโปรไฟล์ที่ยังว่างอยู่ให้ด้วย: {Object.keys(pendingImport.profileFieldsToFill).map(k => ({ nickname: "ชื่อ-นามสกุล", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต" }[k])).filter(Boolean).join(", ")}
+                จะเติมข้อมูลโปรไฟล์ที่ยังว่างอยู่ให้ด้วย: {Object.keys(pendingImport.profileFieldsToFill).map(k => ({ nickname: "ชื่อ-นามสกุล", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" }[k])).filter(Boolean).join(", ")}
                 <br /><span style={{ fontSize: 11.5, color: "#B39B96" }}>(ช่องที่คุณกรอกไว้แล้วจะไม่ถูกเขียนทับ)</span>
               </p>
             )}
