@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.117";
+const APP_VERSION = "1.0.118";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7114,7 +7114,7 @@ function AppInner() {
                             </span>
                           </button>
                           {isOpen && r.blood && (
-                            <div style={{ padding: "2px 0 12px 46px" }}>
+                            <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
                               <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                                 {BLOOD_TYPES.map(bt => (
@@ -7135,7 +7135,7 @@ function AppInner() {
                             </div>
                           )}
                           {isOpen && !r.blood && (
-                            <div style={{ padding: "4px 0 12px 46px" }}>
+                            <div style={{ padding: "10px 0 6px 46px" }}>
                               <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                                 {r.options.map(o => (
                                   <button key={o.v} role="radio" aria-checked={r.current === o.v}
