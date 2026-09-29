@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.170";
+const APP_VERSION = "1.0.171";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7725,9 +7725,6 @@ function AppInner() {
                                   </div>
                                 );
                               })()}
-                              {r.key === "donorType" && (
-                                <div style={{ fontSize: 12, color: "#7A6360", marginTop: 8, lineHeight: 1.5 }}>ใช้กับเข็มที่ระลึก</div>
-                              )}
                               {r.note && (
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 8, lineHeight: 1.5 }}>
                                   <Info size={13} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} /> {r.note}
