@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,8 +57,10 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.111";
-const CONSENT_VERSION = "v1";
+const APP_VERSION = "1.0.112";
+// v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
+// used for after-donation advice and a blood-volume estimate.
+const CONSENT_VERSION = "v2";
 
 // Full PDPA-style privacy policy shown in the "ความเป็นส่วนตัว" modal
 // (Settings → ความเป็นส่วนตัว). Kept as data (not raw JSX) so it's easy to
@@ -66,7 +68,7 @@ const CONSENT_VERSION = "v1";
 // PRIVACY_POLICY_CONTACT_EMAIL should be reviewed/replaced with whatever
 // contact channel is actually appropriate before this goes to real users —
 // currently set to the developer's own address as a placeholder.
-const PRIVACY_POLICY_EFFECTIVE_DATE = "19 กันยายน 2569";
+const PRIVACY_POLICY_EFFECTIVE_DATE = "29 กันยายน 2569";
 const PRIVACY_POLICY_CONTACT_EMAIL = "phitsanu.trs@gmail.com";
 const PRIVACY_POLICY_SECTIONS = [
   {
@@ -79,11 +81,12 @@ const PRIVACY_POLICY_SECTIONS = [
   {
     heading: "2. ข้อมูลที่แอปเก็บรวบรวม",
     body: [
-      "ข้อมูลโปรไฟล์ (ไม่บังคับ): ชื่อเล่น/ชื่อที่แสดง, อายุ, น้ำหนัก, หมู่โลหิต, จำนวนครั้งที่เคยบริจาคมาก่อนใช้แอป (ยอดสะสมยกมา)",
+      "ข้อมูลโปรไฟล์ (ไม่บังคับทุกช่อง): ชื่อ-นามสกุลที่แสดง, ปีเกิด (แอปคำนวณอายุให้), เพศ, ส่วนสูง, น้ำหนัก, หมู่โลหิตและ Rh, เลขประจำตัวผู้บริจาคโลหิต, ประเภทผู้บริจาค, จำนวนครั้งที่เคยบริจาคมาก่อนใช้แอป (ยอดสะสมยกมา)",
+      "การพักการเตือน: แอปเก็บเพียงวันที่ที่จะกลับมาเตือน ไม่ถามและไม่เก็บเหตุผลที่พัก (เช่น การตั้งครรภ์หรือให้นมบุตร)",
       "ข้อมูลรายการบริจาค: วันที่, เวลา, ประเภทการบริจาค (โลหิตรวม/พลาสมา-เกล็ดเลือด), สถานที่บริจาค, บันทึกช่วยจำที่คุณพิมพ์เอง — ทั้งหมดนี้กรอกโดยคุณเองทีละรายการ",
       "ข้อมูลการตั้งค่า: รอบระยะเวลาที่สามารถบริจาคซ้ำได้ (ค่าเริ่มต้น 90 วัน), สถานะการให้ความยินยอม และวันที่ให้ความยินยอม",
       "ข้อมูลจาก LINE (เฉพาะเมื่อเปิดผ่าน LINE): แอปขอสิทธิ์ LIFF เพียงขอบเขต openid เท่านั้น ซึ่งใช้ยืนยันบริบทการเปิดแอปผ่าน LINE ในทางเทคนิค แอปไม่ได้ดึงชื่อ รูปโปรไฟล์ หรือ LINE User ID ของคุณไปเก็บหรือใช้งานแต่อย่างใด",
-      "แอปไม่เก็บและไม่ขอข้อมูลที่ระบุตัวตนได้ เช่น เลขบัตรประชาชน เบอร์โทรศัพท์ อีเมล หรือที่อยู่",
+      "แอปไม่เก็บและไม่ขอเลขบัตรประชาชน เบอร์โทรศัพท์ อีเมล หรือที่อยู่ ส่วนเลขประจำตัวผู้บริจาคโลหิตเก็บเฉพาะเมื่อคุณกรอกเอง เพื่อให้เปิดดูหรือคัดลอกได้สะดวกตอนกรอกใบสมัครบริจาค และจะไม่แสดงบนการ์ดแชร์",
     ],
   },
   {
@@ -91,6 +94,7 @@ const PRIVACY_POLICY_SECTIONS = [
     body: [
       "เพื่อให้คุณสามารถบันทึกและดูประวัติการบริจาคโลหิตของตนเองได้",
       "เพื่อคำนวณสถิติ ความก้าวหน้า และวันที่สามารถบริจาคครั้งถัดไป",
+      "เพื่อแสดงคำแนะนำหลังบริจาคที่เหมาะกับเพศที่คุณเลือก และประมาณปริมาณเลือดในร่างกายจากเพศ ส่วนสูง และน้ำหนัก (ค่าประมาณ ไม่ใช่การวินิจฉัยทางการแพทย์)",
       "เพื่อแสดงเหรียญ/ตราสัญลักษณ์ความสำเร็จตามจำนวนครั้งสะสม และสร้างการ์ดภาพสำหรับแชร์ (เมื่อคุณเลือกทำเอง)",
       "เพื่อแจ้งเตือนหรือช่วยเพิ่มกำหนดการบริจาคครั้งถัดไปลงในปฏิทินของคุณ (เมื่อคุณเลือกทำเอง)",
       "แอปไม่ใช้ข้อมูลของคุณเพื่อการโฆษณา การวิเคราะห์พฤติกรรมผู้ใช้ในภาพรวม (analytics) หรือส่งต่อให้บุคคลที่สามเพื่อวัตถุประสงค์ทางการตลาดใด ๆ",
@@ -190,6 +194,35 @@ const COMPONENT_INTERVAL_DAYS = 14;
 // age estimate, without opening the door to obviously fabricated totals.
 const STARTING_COUNT_CAP_MARGIN = 1.2;
 const BLOOD_TYPES = ["A", "B", "AB", "O", "ไม่ทราบ"];
+const BLOOD_RH = [["+", "บวก (+)"], ["-", "ลบ (−)"], ["unknown", "ไม่ทราบ"]];
+const GENDERS = [["male", "ชาย"], ["female", "หญิง"], ["none", "ไม่ระบุ"]];
+const MIN_HEIGHT = 100;
+const MAX_HEIGHT = 230;
+// Profile stores the birth year (พ.ศ.) instead of an age, so the age keeps
+// itself up to date. Age is "this year minus birth year" — may be one more
+// than the donor's exact age before their birthday, which is fine for a
+// 17-70 check.
+const thaiYearNow = () => new Date().getFullYear() + 543;
+// Estimated total blood volume in litres (Nadler 1962). Needs height (cm),
+// weight (kg) and gender; "none" (ไม่ระบุ) uses the midpoint of the two
+// formulas. Returns null when anything is missing.
+function estimateBloodVolumeL(gender, heightCm, weightKg) {
+  const h = Number(heightCm) / 100, w = Number(weightKg);
+  if (!gender || !h || !w) return null;
+  const male = 0.3669 * h ** 3 + 0.03219 * w + 0.6041;
+  const female = 0.3561 * h ** 3 + 0.03308 * w + 0.1833;
+  return gender === "male" ? male : gender === "female" ? female : (male + female) / 2;
+}
+// Reminder pause: "" (off), "indefinite", or a YYYY-MM-DD date the pause
+// runs through. A date in the past simply means it's no longer paused.
+const isRemindPaused = (until) => until === "indefinite" || (!!until && until >= todayLocalStr());
+const REMIND_PAUSE_OPTIONS = [["3", "3 เดือน"], ["6", "6 เดือน"], ["12", "1 ปี"], ["indefinite", "จนกว่าจะเปิดเอง"]];
+function remindPauseUntilFor(choice) {
+  if (choice === "indefinite") return "indefinite";
+  const d = new Date();
+  d.setMonth(d.getMonth() + Number(choice));
+  return dateToLocalStr(d);
+}
 // Thai consonants/vowels/tone marks (U+0E01–U+0E3A, U+0E40–U+0E4E) — this
 // deliberately excludes the Thai digits (U+0E50–U+0E59) and punctuation
 // (Fongman/Angkhankhu/Khomut) that sit in the same Unicode block, since the
@@ -2218,7 +2251,20 @@ function AppInner() {
   const profileEditSessionRef = useRef(0);
   const nicknameFirstInputRef = useRef(null);
   const nicknameLastInputRef = useRef(null);
-  const [age, setAge] = useState("");
+  const [birthYear, setBirthYear] = useState(""); // พ.ศ. (number) or ""
+  // true when birthYear was worked out from an age saved by an older
+  // version (age → this year minus age), until the donor confirms/edits it.
+  const [birthYearApprox, setBirthYearApprox] = useState(false);
+  const age = birthYear === "" ? "" : Math.max(0, thaiYearNow() - birthYear);
+  const [gender, setGender] = useState(""); // "male" | "female" | "none" | ""
+  const [height, setHeight] = useState(""); // cm or ""
+  const [donorId, setDonorId] = useState(""); // เลขประจำตัวผู้บริจาคโลหิต
+  const [bloodRh, setBloodRh] = useState(""); // "+" | "-" | "unknown" | ""
+  const [remindPauseUntil, setRemindPauseUntil] = useState(""); // YYYY-MM-DD or ""
+  // Latest values of the newer profile fields, so every existing
+  // persistProfile call site keeps them without threading each one through.
+  const profileExtrasRef = useRef({});
+  profileExtrasRef.current = { birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil };
   // Per-donor ceilings on the "เคยบริจาคมาแล้วกี่ครั้ง" starting-count inputs
   // (see WHOLE_BLOOD_INTERVAL_DAYS/COMPONENT_INTERVAL_DAYS/
   // STARTING_COUNT_CAP_MARGIN above): scoped to this donor's own actual
@@ -2273,11 +2319,15 @@ function AppInner() {
   // into the row (borderless, the row tints while editing) and saved on its
   // own on blur / Enter; blood type and donor type expand their options
   // inside the row. No pop-up sheet, no whole-form save button.
-  const [profileInline, setProfileInline] = useState({ first: "", last: "", age: "", weight: "" });
+  const [profileInline, setProfileInline] = useState({ first: "", last: "", birthYear: "", weight: "", height: "", donorId: "" });
   const [profileInlineError, setProfileInlineError] = useState({});
   const [profileOpenChoice, setProfileOpenChoice] = useState(null); // "bloodType" | "donorType" | null
   const [profileSavedKey, setProfileSavedKey] = useState(null);
   const profileSavedTimerRef = useRef(null);
+  const [showRemindPause, setShowRemindPause] = useState(false);
+  const [remindPauseChoice, setRemindPauseChoice] = useState("6");
+  const showRemindPauseRef = useRef(false);
+  showRemindPauseRef.current = showRemindPause;
   const [donations, setDonations] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -2296,6 +2346,9 @@ function AppInner() {
   const [startingCountDraftComponent, setStartingCountDraftComponent] = useState("");
   const [confirmDeleteStartingCount, setConfirmDeleteStartingCount] = useState(false);
   const [checkedConsent, setCheckedConsent] = useState(false);
+  // true when an older consent version is on file (returning user asked to
+  // confirm the updated policy) rather than a first-time user.
+  const [consentIsUpdate, setConsentIsUpdate] = useState(false);
   // First-time "+" tap onboarding: ask up front whether this is the user's
   // very first donation ever, or they've donated before (so we should
   // capture a running "ยอดยกมา" count instead of forcing a dated record).
@@ -2356,6 +2409,7 @@ function AppInner() {
     ? Math.min(MAX_BACKUP_REMINDER_GAP, Math.max(MIN_BACKUP_REMINDER_GAP, Math.round(Number(backupReminderGap)))) : DEFAULT_BACKUP_REMINDER_GAP;
   const [dismissedEligibilityAge, setDismissedEligibilityAge] = useState(null);
   const [dismissedEligibilityWeight, setDismissedEligibilityWeight] = useState(null);
+  const [dismissedCareFor, setDismissedCareFor] = useState(null); // donation id whose after-care card was closed
   // Snoozes the home-tab "อยากให้เตือนวันครบกำหนดไหม ?" prompt for the rest of
   // the day it was dismissed on. Stored per donation type — { whole: { dueDate,
   // dismissedOn }, component: {...} } — so dismissing one type's reminder never
@@ -2668,6 +2722,7 @@ function AppInner() {
         try {
           const parsedConsent = JSON.parse(consentRes.value);
           consentValid = !!parsedConsent?.given && parsedConsent.version === CONSENT_VERSION;
+          setConsentIsUpdate(!!parsedConsent?.given && !consentValid);
         } catch (e) {
           consentValid = false;
         }
@@ -2694,7 +2749,22 @@ function AppInner() {
           // (saveProfile explicitly allows 0) back into "" on every reload —
           // same bug class as the sibling numeric settings loaded just below
           // (cycleDays etc.), which correctly gate on `typeof === "number"`.
-          setAge(typeof p.age === "number" ? p.age : "");
+          if (typeof p.birthYear === "number") {
+            setBirthYear(p.birthYear);
+            setBirthYearApprox(!!p.birthYearApprox);
+          } else if (typeof p.age === "number") {
+            // Saved by a version that stored age: estimate the birth year once.
+            setBirthYear(thaiYearNow() - p.age);
+            setBirthYearApprox(true);
+          } else {
+            setBirthYear("");
+            setBirthYearApprox(false);
+          }
+          setGender(["male", "female", "none"].includes(p.gender) ? p.gender : "");
+          setHeight(typeof p.height === "number" ? p.height : "");
+          setDonorId(typeof p.donorId === "string" ? p.donorId : "");
+          setBloodRh(["+", "-", "unknown"].includes(p.bloodRh) ? p.bloodRh : "");
+          setRemindPauseUntil(typeof p.remindPauseUntil === "string" ? p.remindPauseUntil : "");
           setWeight(typeof p.weight === "number" ? p.weight : "");
           setBloodType(p.bloodType || "");
           // Older versions pre-selected "general" and saved it for everyone, so a
@@ -2729,6 +2799,7 @@ function AppInner() {
           setBackupReminderGap(typeof u.backupReminderGap === "number" && u.backupReminderGap >= MIN_BACKUP_REMINDER_GAP && u.backupReminderGap <= MAX_BACKUP_REMINDER_GAP ? u.backupReminderGap : DEFAULT_BACKUP_REMINDER_GAP);
           setDismissedEligibilityAge(typeof u.dismissedEligibilityAge === "number" ? u.dismissedEligibilityAge : null);
           setDismissedEligibilityWeight(typeof u.dismissedEligibilityWeight === "number" ? u.dismissedEligibilityWeight : null);
+          setDismissedCareFor(typeof u.dismissedCareFor === "string" ? u.dismissedCareFor : null);
           if (typeof u.showInfoPills === "boolean") setShowInfoPills(u.showInfoPills);
           if (u.dismissedReminders && typeof u.dismissedReminders === "object") {
             setDismissedReminders(u.dismissedReminders);
@@ -2837,6 +2908,8 @@ function AppInner() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== "Escape") return;
+      // The pause sheet sits on top of the profile: close just that one.
+      if (showRemindPauseRef.current) { setShowRemindPause(false); return; }
       setShowProfile(false);
       setProfileOpenChoice(null);
       setShowForm(false);
@@ -2951,7 +3024,15 @@ function AppInner() {
     setError("");
     try {
       await storage.set("consent", JSON.stringify({ given: true, at: new Date().toISOString(), version: CONSENT_VERSION }));
-      setPhase("app");
+      // load() stopped at the consent check, so a returning user's profile
+      // and history haven't been read yet -- read them now (soft: no splash)
+      // before showing the app, or it would start from empty state.
+      if (consentIsUpdate) {
+        setConsentIsUpdate(false);
+        await loadRef.current({ soft: true });
+      } else {
+        setPhase("app");
+      }
     } catch (e) {
       setError("บันทึกความยินยอมไม่สำเร็จ ลองอีกครั้ง");
     } finally {
@@ -3033,7 +3114,10 @@ function AppInner() {
     // Every caller passes the current donorType from state, which is only
     // ever non-empty once the donor picked it (see the load() migration), so
     // the flag can be derived here instead of threading it through each call.
-    const withFlag = { ...payload, donorTypeSet: payload.donorType === "general" || payload.donorType === "monk" };
+    // `age` is derived from birthYear now and is never stored; the newer
+    // fields come from profileExtrasRef unless the caller passes them.
+    const { age: _derivedAge, ...rest } = payload;
+    const withFlag = { ...profileExtrasRef.current, ...rest, donorTypeSet: payload.donorType === "general" || payload.donorType === "monk" };
     profileWriteQueueRef.current = profileWriteQueueRef.current
       .then(() => storage.set("profile", JSON.stringify(withFlag)))
       .catch(() => {});
@@ -3198,8 +3282,10 @@ function AppInner() {
     setProfileInline({
       first: parts[0] || "",
       last: parts.slice(1).join(" "),
-      age: (age === "" || age == null) ? "" : String(age),
+      birthYear: birthYear === "" ? "" : String(birthYear),
       weight: (weight === "" || weight == null) ? "" : String(weight),
+      height: height === "" ? "" : String(height),
+      donorId,
     });
     setProfileInlineError({});
     setProfileOpenChoice(null);
@@ -3251,20 +3337,28 @@ function AppInner() {
   // Saves one or more profile fields straight away (inline editing), keeping
   // every other saved field as it is.
   const commitProfile = async (patch, key) => {
-    const next = { nickname, photo, age, weight, bloodType, donorType, ...patch };
+    const next = { nickname, photo, weight, bloodType, donorType, ...profileExtrasRef.current, ...patch };
     try {
       await persistProfile({
-        nickname: next.nickname, photo: next.photo, age: next.age, weight: next.weight,
+        nickname: next.nickname, photo: next.photo, weight: next.weight,
         bloodType: next.bloodType, donorType: next.donorType === "monk" || next.donorType === "general" ? next.donorType : "",
+        birthYear: next.birthYear, birthYearApprox: next.birthYearApprox, gender: next.gender, height: next.height,
+        donorId: next.donorId, bloodRh: next.bloodRh, remindPauseUntil: next.remindPauseUntil,
         startingCountWhole: Number(startingCountWhole) || 0,
         startingCountComponent: Number(startingCountComponent) || 0,
         startingCountCreatedAt, startingCountUpdatedAt,
       });
       checkStorageHealth();
       setNickname(next.nickname);
-      setAge(next.age);
       setWeight(next.weight);
       setBloodType(next.bloodType);
+      setBirthYear(next.birthYear);
+      setBirthYearApprox(next.birthYearApprox);
+      setGender(next.gender);
+      setHeight(next.height);
+      setDonorId(next.donorId);
+      setBloodRh(next.bloodRh);
+      setRemindPauseUntil(next.remindPauseUntil);
       setDonorType(next.donorType === "monk" || next.donorType === "general" ? next.donorType : "");
       setProfileSavedKey(key);
       clearTimeout(profileSavedTimerRef.current);
@@ -3282,26 +3376,47 @@ function AppInner() {
       return;
     }
     const raw = (d[key] || "").trim();
-    const current = key === "age" ? age : weight;
+    const current = { birthYear, weight, height, donorId }[key];
     const revert = () => setProfileInline(f => ({ ...f, [key]: (current === "" || current == null) ? "" : String(current) }));
+    const fail = (msg) => { setProfileInlineError(er => ({ ...er, [key]: msg })); revert(); };
+    if (key === "donorId") {
+      const v = raw.replace(/\s+/g, " ").slice(0, 20);
+      if (v === donorId) { revert(); return; }
+      setProfileInline(f => ({ ...f, donorId: v }));
+      commitProfile({ donorId: v }, key);
+      return;
+    }
     let val = "";
     if (raw !== "") {
-      const n = Number(raw);
-      if (key === "age" && (Number.isNaN(n) || !Number.isInteger(n) || n < 0 || n > 120)) {
-        setProfileInlineError(er => ({ ...er, age: "อายุต้องเป็นจำนวนเต็มระหว่าง 0-120 ปี" }));
-        revert();
-        return;
+      let n = Number(raw);
+      if (key === "birthYear") {
+        const nowBE = thaiYearNow();
+        // Typed a ค.ศ. year (e.g. 1992) — convert instead of rejecting.
+        if (Number.isInteger(n) && n >= 1900 && n <= nowBE - 543) n += 543;
+        if (Number.isNaN(n) || !Number.isInteger(n) || n < nowBE - 120 || n > nowBE) {
+          fail(`ใส่ปีเกิดเป็น พ.ศ. 4 หลัก เช่น ${nowBE - 30}`);
+          return;
+        }
       }
       if (key === "weight" && (Number.isNaN(n) || n < 0 || n > 300)) {
-        setProfileInlineError(er => ({ ...er, weight: "น้ำหนักต้องเป็นตัวเลขระหว่าง 0-300 กก." }));
-        revert();
+        fail("น้ำหนักต้องเป็นตัวเลขระหว่าง 0-300 กก.");
         return;
       }
-      val = key === "weight" ? Math.round(n * 10) / 10 : n;
+      if (key === "height" && (Number.isNaN(n) || n < MIN_HEIGHT || n > MAX_HEIGHT)) {
+        fail(`ส่วนสูงต้องเป็นตัวเลขระหว่าง ${MIN_HEIGHT}-${MAX_HEIGHT} ซม.`);
+        return;
+      }
+      val = key === "birthYear" ? n : Math.round(n * 10) / 10;
     }
-    if (val === current || (val === "" && (current === "" || current == null))) { revert(); return; }
+    const approxPatch = key === "birthYear" ? { birthYearApprox: false } : {};
+    if (val === current || (val === "" && (current === "" || current == null))) {
+      revert();
+      // Re-entering the same estimated year still confirms it.
+      if (key === "birthYear" && birthYearApprox && val !== "") commitProfile(approxPatch, key);
+      return;
+    }
     setProfileInline(f => ({ ...f, [key]: val === "" ? "" : String(val) }));
-    commitProfile({ [key]: val }, key);
+    commitProfile({ [key]: val, ...approxPatch }, key);
   };
 
   const openAddForm = () => {
@@ -3619,7 +3734,13 @@ function AppInner() {
       setDonations([]);
       setNickname("");
       setPhoto("");
-      setAge("");
+      setBirthYear("");
+      setBirthYearApprox(false);
+      setGender("");
+      setHeight("");
+      setDonorId("");
+      setBloodRh("");
+      setRemindPauseUntil("");
       setWeight("");
       setBloodType("");
       setDonorType(DEFAULT_DONOR_TYPE);
@@ -3684,7 +3805,7 @@ function AppInner() {
 
   const exportData = async () => {
     try {
-      const payload = { nickname, age, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
+      const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
       setShowExportPreview(true);
@@ -4110,10 +4231,23 @@ function AppInner() {
         const sanitizedImportedNickname = sanitizeNameInput(String(parsed.nickname)).trim();
         if (sanitizedImportedNickname) profileFieldsToFill.nickname = sanitizedImportedNickname;
       }
-      if (age === "" && parsed.age !== undefined && parsed.age !== "") {
+      if (birthYear === "") {
+        const nowBE = thaiYearNow();
+        const byNum = Number(parsed.birthYear);
         const ageNum = Number(parsed.age);
-        if (!Number.isNaN(ageNum) && Number.isInteger(ageNum) && ageNum >= 0 && ageNum <= 120) profileFieldsToFill.age = ageNum;
+        if (parsed.birthYear !== undefined && parsed.birthYear !== "" && Number.isInteger(byNum) && byNum >= nowBE - 120 && byNum <= nowBE) {
+          profileFieldsToFill.birthYear = byNum;
+          profileFieldsToFill.birthYearApprox = !!parsed.birthYearApprox;
+        } else if (parsed.age !== undefined && parsed.age !== "" && Number.isInteger(ageNum) && ageNum >= 0 && ageNum <= 120) {
+          profileFieldsToFill.birthYear = nowBE - ageNum;
+          profileFieldsToFill.birthYearApprox = true;
+        }
       }
+      if (!gender && ["male", "female", "none"].includes(parsed.gender)) profileFieldsToFill.gender = parsed.gender;
+      if (height === "" && Number(parsed.height) >= MIN_HEIGHT && Number(parsed.height) <= MAX_HEIGHT) profileFieldsToFill.height = Math.round(Number(parsed.height) * 10) / 10;
+      if (!donorId && typeof parsed.donorId === "string" && parsed.donorId.trim()) profileFieldsToFill.donorId = parsed.donorId.replace(/\s+/g, " ").trim().slice(0, 20);
+      if (!bloodRh && ["+", "-", "unknown"].includes(parsed.bloodRh)) profileFieldsToFill.bloodRh = parsed.bloodRh;
+      if (!remindPauseUntil && typeof parsed.remindPauseUntil === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil)) profileFieldsToFill.remindPauseUntil = parsed.remindPauseUntil;
       if (weight === "" && parsed.weight !== undefined && parsed.weight !== "") {
         const weightNum = Number(parsed.weight);
         if (!Number.isNaN(weightNum) && weightNum >= 0 && weightNum <= 300) profileFieldsToFill.weight = Math.round(weightNum * 10) / 10;
@@ -4248,7 +4382,8 @@ function AppInner() {
       const nextProfile = {
         nickname: "nickname" in fill ? fill.nickname : nickname,
         photo,
-        age: "age" in fill ? fill.age : age,
+        ...profileExtrasRef.current,
+        ...Object.fromEntries(["birthYear", "birthYearApprox", "gender", "height", "donorId", "bloodRh", "remindPauseUntil"].filter(k => k in fill).map(k => [k, fill[k]])),
         weight: "weight" in fill ? fill.weight : weight,
         bloodType: "bloodType" in fill ? fill.bloodType : bloodType,
         donorType,
@@ -4258,7 +4393,12 @@ function AppInner() {
         startingCountUpdatedAt,
       };
       if ("nickname" in fill) setNickname(fill.nickname);
-      if ("age" in fill) setAge(fill.age);
+      if ("birthYear" in fill) { setBirthYear(fill.birthYear); setBirthYearApprox(!!fill.birthYearApprox); }
+      if ("gender" in fill) setGender(fill.gender);
+      if ("height" in fill) setHeight(fill.height);
+      if ("donorId" in fill) setDonorId(fill.donorId);
+      if ("bloodRh" in fill) setBloodRh(fill.bloodRh);
+      if ("remindPauseUntil" in fill) setRemindPauseUntil(fill.remindPauseUntil);
       if ("weight" in fill) setWeight(fill.weight);
       if ("bloodType" in fill) setBloodType(fill.bloodType);
       persistProfile(nextProfile);
@@ -4281,6 +4421,10 @@ function AppInner() {
   // needs to change when donations itself changes.
   const sorted = useMemo(() => [...donations].sort((a,b) => new Date(b.date) - new Date(a.date)), [donations]);
   const last = sorted[0];
+  // After-donation care card (design 5 of profile-gender-height-designs.html):
+  // on home for the day of the latest donation and the two days after.
+  const careDaysSince = last ? daysBetween(parseLocalDate(last.date), new Date()) : null;
+  const showCareCard = !!last && careDaysSince >= 0 && careDaysSince <= 2 && dismissedCareFor !== last.id;
   const startingCountWholeNum = Number(startingCountWhole) || 0;
   const startingCountComponentNum = Number(startingCountComponent) || 0;
   const startingCountNum = startingCountWholeNum + startingCountComponentNum;
@@ -4320,6 +4464,7 @@ function AppInner() {
   const nextEligible = effectiveLastDateStr ? new Date(parseLocalDate(effectiveLastDateStr).getTime() + activeCycleDays * 86400000) : null;
   const daysLeft = nextEligible ? daysBetween(new Date(), new Date(nextEligible)) : 0;
   const isEligible = !nextEligible || daysLeft <= 0;
+  const remindPaused = isRemindPaused(remindPauseUntil);
   const activeTypeDismiss = dismissedReminders[activeCountdownType];
   const reminderDismissed = !!activeTypeDismiss
     && activeTypeDismiss.dueDate === (nextEligible ? dateToLocalStr(nextEligible) : "")
@@ -5049,7 +5194,12 @@ function AppInner() {
             </div>
           </div>
 
-          <h1 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.4, margin: "0 0 8px" }}>ก่อนเริ่มใช้งาน</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.4, margin: "0 0 8px" }}>{consentIsUpdate ? "นโยบายความเป็นส่วนตัวมีการปรับปรุง" : "ก่อนเริ่มใช้งาน"}</h1>
+          {consentIsUpdate && (
+            <p style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.7, margin: "0 0 12px", background: "#FBEFEC", borderRadius: 12, padding: "10px 14px" }}>
+              โปรไฟล์มีช่องใหม่ที่เลือกกรอกได้ ได้แก่ ปีเกิด เพศ ส่วนสูง เลขประจำตัวผู้บริจาค และ Rh จึงขอให้ยืนยันความยินยอมอีกครั้ง ข้อมูลเดิมของคุณยังอยู่ครบ
+            </p>
+          )}
           <p style={{ fontSize: 14.5, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 20px" }}>
             แอปนี้ช่วยให้คุณบันทึกวันที่บริจาคเลือดด้วยตัวเอง เพื่อดูจำนวนครั้งสะสมและวันที่บริจาคได้ครั้งถัดไป
           </p>
@@ -5061,7 +5211,7 @@ function AppInner() {
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: "#5C4A46", lineHeight: 1.8 }}>
               <li>ข้อมูลวันที่บริจาคถือเป็น <b>ข้อมูลสุขภาพ</b> ซึ่งเป็นข้อมูลอ่อนไหวตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA)</li>
-              <li>เก็บเฉพาะสิ่งที่คุณกรอกเอง — วันที่, สถานที่ (ถ้าระบุ), บันทึกช่วยจำ</li>
+              <li>เก็บเฉพาะสิ่งที่คุณกรอกเอง — วันที่, สถานที่ (ถ้าระบุ), บันทึกช่วยจำ และข้อมูลโปรไฟล์ที่เลือกกรอก (เช่น ปีเกิด เพศ ส่วนสูง น้ำหนัก หมู่โลหิต เลขประจำตัวผู้บริจาค)</li>
               <li>ใช้เพื่อคำนวณจำนวนครั้งและวันครบกำหนดบริจาคครั้งถัดไปเท่านั้น ไม่แชร์ให้บุคคลหรือหน่วยงานอื่น</li>
               <li>เมื่อเปิดผ่าน LINE แอปขอสิทธิ์เพียงยืนยันบริบทการเปิดแอป (openid) และเมื่อคุณเลือกสร้างการ์ดแชร์หรือเพิ่มลงปฏิทิน ข้อมูลเท่าที่จำเป็นจะถูกเข้ารหัสส่งผ่านลิงก์ชั่วคราวเพื่อเปิดในเบราว์เซอร์ภายนอกเท่านั้น</li>
               <li>คุณลบข้อมูลทั้งหมด หรือส่งออกข้อมูลเป็นไฟล์ได้ตลอดเวลาในหน้าตั้งค่า</li>
@@ -5084,7 +5234,7 @@ function AppInner() {
           <button disabled={!checkedConsent || saving} onClick={giveConsent} className="btn-primary"
             style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 15, fontWeight: 600,
               opacity: checkedConsent ? 1 : 0.45, cursor: checkedConsent ? "pointer" : "not-allowed" }}>
-            {saving ? "กำลังบันทึก..." : "ยินยอมและเริ่มใช้งาน"}
+            {saving ? "กำลังบันทึก..." : consentIsUpdate ? "ยินยอมและใช้งานต่อ" : "ยินยอมและเริ่มใช้งาน"}
           </button>
         </div>
       )}
@@ -5357,12 +5507,23 @@ function AppInner() {
                         show the checkmark -- isEligible is true by default when there's
                         no nextEligible date yet, but a checkmark next to "no history"
                         reads as a false confirmation rather than a neutral empty state. */}
-                    {totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0)
+                    {remindPaused ? <BellOff size={18} />
+                      : totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0)
                       ? <Info size={18} />
                       : isEligible ? <CheckCircle2 size={18} /> : <Clock size={18} />}
                   </span>
                   <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1 }}>
-                    {effectiveLastDateStr ? (
+                    {remindPaused ? (
+                      // Donor paused reminders (profile → พักการเตือนชั่วคราว).
+                      <>
+                        <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</div>
+                        <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
+                        <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
+                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
+                          เปิดการเตือน หรือเปลี่ยนระยะเวลา <ChevronRight size={13} />
+                        </button>
+                      </>
+                    ) : effectiveLastDateStr ? (
                       isEligible ? (
                         // Eligible again -- previously the card stopped at this
                         // one line with nothing to do next. Links straight to the
@@ -5420,7 +5581,7 @@ function AppInner() {
                     along the wait actually is. Only makes sense once there's an
                     actual last-donation date to count from and the donor isn't
                     already eligible again. */}
-                {effectiveLastDateStr && !isEligible && daysLeft > 0 && (
+                {effectiveLastDateStr && !isEligible && daysLeft > 0 && !remindPaused && (
                   <div key={`${activeCountdownType}-progress`} role="progressbar" aria-label="ความคืบหน้าของช่วงพักฟื้นก่อนบริจาคครั้งถัดไป"
                     aria-valuemin={0} aria-valuemax={activeCycleDays} aria-valuenow={Math.max(0, activeCycleDays - daysLeft)}
                     style={{ marginTop: 10, height: 5, borderRadius: 3, background: "rgba(255,247,245,0.2)", overflow: "hidden", position: "relative", zIndex: 1, animation: "fadeSwap 0.4s ease" }}>
@@ -5458,6 +5619,36 @@ function AppInner() {
                 <span style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
                 <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
               </button>
+
+              {showCareCard && (() => {
+                const items = [
+                  { Icon: GlassWater, text: "ดื่มน้ำมากกว่าปกติ และงดยกของหนักหรือออกกำลังหนักในวันที่บริจาค" },
+                ];
+                // Iron tablets come with whole-blood donations; apheresis
+                // (พลาสมา/เกล็ดเลือด) takes back the red cells.
+                if (last.type !== "component") {
+                  items.push({ Icon: Pill, text: "กินยาธาตุเหล็กที่ได้รับตามที่เจ้าหน้าที่แนะนำ เลี่ยงกินพร้อมนม ชา กาแฟ น้ำส้มช่วยให้ดูดซึมดีขึ้น" });
+                  if (gender === "female") items.push({ Icon: Info, text: "ผู้หญิงเสียธาตุเหล็กทุกเดือนจากประจำเดือน จึงควรกินยาธาตุเหล็กให้ครบ ช่วยให้ครั้งหน้าผ่านการตรวจความเข้มข้นเลือด" });
+                }
+                return (
+                  <div role="region" aria-label="ดูแลตัวเองหลังบริจาค" style={{ position: "relative", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: "14px 15px 8px", marginBottom: 16 }}>
+                    <button onClick={() => { setDismissedCareFor(last.id); persistUiMeta({ dismissedCareFor: last.id }); }} aria-label="ปิดคำแนะนำหลังบริจาค"
+                      style={{ position: "absolute", top: 4, right: 4, width: 44, height: 44, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                      <X size={16} />
+                    </button>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9A3B33" }}>หลังบริจาค · {careDaysSince === 0 ? "วันนี้" : careDaysSince === 1 ? "เมื่อวาน" : "2 วันก่อน"}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", margin: "2px 0 6px" }}>ดูแลตัวเองหลังบริจาค</div>
+                    {items.map(({ Icon, text }) => (
+                      <div key={text} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.55, color: "#4A3A37", padding: "6px 0" }}>
+                        <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={15} color="#9A3B33" />
+                        </span>
+                        <span style={{ paddingTop: 4 }}>{text}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* New-user shortcuts (design 1 from new-user-home-7-designs.html;
                   briefly tried the design 5 checklist): the two other ways to
@@ -5509,7 +5700,7 @@ function AppInner() {
                 if (needsBackupReminder) queue.push("backup");
                 if (ageOutOfRange && !ageWarningDismissed) queue.push("age");
                 if (weightBelowMin && !weightWarningDismissed) queue.push("weight");
-                if (effectiveLastDateStr && !isEligible && !reminderDismissed) queue.push("calendar");
+                if (effectiveLastDateStr && !isEligible && !reminderDismissed && !remindPaused) queue.push("calendar");
                 if (queue.length === 0) return null;
                 const multi = queue.length > 1;
                 const activeIdx = Math.min(reminderIdx, queue.length - 1);
@@ -6066,6 +6257,45 @@ function AppInner() {
                     {(stats.estVolumeMl / 1000).toFixed(stats.estVolumeMl % 1000 === 0 ? 0 : 1)} <span style={{ fontSize: 12, fontWeight: 500 }}>ลิตร (โดยประมาณ)</span>
                   </div>
                   <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>คำนวณที่ 350 มล./ครั้ง</div>
+                  {/* Compared with the donor's own blood volume (design 6 of
+                      profile-gender-height-designs.html) once gender, height
+                      and weight are in the profile. */}
+                  {totalCount > 0 && (() => {
+                    const bodyL = estimateBloodVolumeL(gender, height, weight);
+                    if (!bodyL) {
+                      return (
+                        <button onClick={openProfile}
+                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", marginTop: 10, padding: "10px 12px", background: "#FDF6F4", border: "1px dashed #E3C8C3", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                          <span style={{ flex: 1, fontSize: 12, color: "#5C4A46", lineHeight: 1.5 }}>เลือดคุณมีกี่ลิตร? ใส่เพศ ส่วนสูง และน้ำหนักในโปรไฟล์ เพื่อเทียบกับที่ให้ไปทั้งหมด</span>
+                          <ChevronRight size={16} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
+                        </button>
+                      );
+                    }
+                    const times = stats.estVolumeMl / 1000 / bodyL;
+                    const full = Math.floor(times);
+                    const frac = times - full;
+                    const shown = Math.min(full, 10);
+                    const drop = (fill, i) => (
+                      <svg key={i} width="20" height="26" viewBox="0 0 24 30" aria-hidden="true" style={{ flexShrink: 0 }}>
+                        <defs><clipPath id={`bvdrop-${i}`}><path d="M12 1C9.5 7.5 2 12.5 2 19a10 10 0 0 0 20 0C22 12.5 14.5 7.5 12 1Z" /></clipPath></defs>
+                        <path d="M12 1C9.5 7.5 2 12.5 2 19a10 10 0 0 0 20 0C22 12.5 14.5 7.5 12 1Z" fill="#F3EAE8" />
+                        <rect x="0" y={30 - 30 * fill} width="24" height={30 * fill} fill="#9A3B33" clipPath={`url(#bvdrop-${i})`} />
+                      </svg>
+                    );
+                    return (
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
+                        <div style={{ fontSize: 12.5, color: "#5C4A46" }}>
+                          {times >= 1 ? <>เท่ากับเลือดทั้งตัวคุณ <b style={{ color: "#9A3B33" }}>{times.toFixed(1)} เท่า</b></> : <>เท่ากับ <b style={{ color: "#9A3B33" }}>{Math.round(times * 100)}%</b> ของเลือดทั้งตัวคุณ</>}
+                        </div>
+                        <div aria-hidden="true" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 8 }}>
+                          {Array.from({ length: shown }, (_, i) => drop(1, i))}
+                          {full <= 10 && frac > 0.05 && drop(frac, "f")}
+                          {full > 10 && <span style={{ fontSize: 11.5, color: "#7A6360" }}>+{full - 10}</span>}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>เลือดในร่างกายประมาณ {bodyL.toFixed(1)} ลิตร · ครั้งละ 350 มล. ≈ {Math.round(0.35 / bodyL * 100)}% (คำนวณจากเพศ ส่วนสูง น้ำหนัก)</div>
+                      </div>
+                    );
+                  })()}
                   {totalCount > 0 && (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#5C4A46" }}>
@@ -6698,37 +6928,72 @@ function AppInner() {
         const lastName = nameParts.slice(1).join(" ");
         const donorLabel = (DONOR_TYPES.find(d => d.key === donorType) || {}).label;
         const ph = (t) => <span style={{ color: "#B7A5A1" }}>{t}</span>;
-        // Criteria hint next to age / weight (design 6 of profile-simple1-plus.html),
-        // live from what's typed: grey = not filled, green = within, orange = outside.
+        // Criteria hint on the right of a row: grey = not filled, green =
+        // within, orange = outside. Birth year shows the age it works out to.
+        const nowBE = thaiYearNow();
         const criteriaHint = (key) => {
-          // (Donor-type note only once a type is chosen -- next to the longer
-          // "เลือก ..." prompt it would push that onto two lines.)
-          if (key !== "age" && key !== "weight") return key === "donorType" && donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
+          if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
+          if (key === "gender" || key === "height") return { text: "ไม่บังคับ", color: "#7A6360" };
+          if (key !== "birthYear" && key !== "weight") return null;
           const raw = (profileInline[key] || "").trim();
-          const n = raw === "" ? NaN : Number(raw);
-          if (key === "age") {
+          let n = raw === "" ? NaN : Number(raw);
+          if (key === "birthYear") {
             const range = `${MIN_AGE}–${MAX_AGE} ปี`;
-            if (Number.isNaN(n)) return { text: `เกณฑ์ ${range}`, color: "#7A6360" };
-            return n >= MIN_AGE && n <= MAX_AGE ? { text: `✓ ตามเกณฑ์ ${range}`, color: "#2E7D4F" } : { text: `นอกเกณฑ์ ${range}`, color: "#B5651D" };
+            if (raw.length !== 4 || Number.isNaN(n)) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
+            if (n >= 1900 && n <= nowBE - 543) n += 543;
+            const a = nowBE - n;
+            if (a < 0 || a > 120) return { text: `เกณฑ์อายุ ${range}`, color: "#7A6360" };
+            if (birthYearApprox && n === birthYear) return { text: `อายุ ${a} ปี · ปีโดยประมาณ`, color: "#B5651D" };
+            return a >= MIN_AGE && a <= MAX_AGE ? { text: `อายุ ${a} ปี · ✓ ตามเกณฑ์`, color: "#2E7D4F" } : { text: `อายุ ${a} ปี · นอกเกณฑ์`, color: "#B5651D" };
           }
           if (Number.isNaN(n)) return { text: `เกณฑ์ ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: `✓ ตามเกณฑ์ ${MIN_WEIGHT} กก.+`, color: "#2E7D4F" } : { text: `ต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`, color: "#B5651D" };
         };
-        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี (ไม่บังคับ)", age: "เช่น 30", weight: "เช่น 55.5" };
+        const placeholders = { first: "เช่น สมชาย", last: "เช่น ใจดี (ไม่บังคับ)", birthYear: `เช่น ${nowBE - 30}`, weight: "เช่น 55.5", height: "เช่น 165 (ไม่บังคับ)", donorId: "ดูได้จากบัตรผู้บริจาค" };
+        const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
+        const rhLabel = bloodRh === "+" ? "Rh+" : bloodRh === "-" ? "Rh−" : "";
+        const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่และ Rh")
+          : <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
+              {rhLabel && <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 8px", borderRadius: 11, background: "#9A3B33", color: "#FFF7F5", fontSize: 12, fontWeight: 600 }}>{rhLabel}</span>}
+              {bloodRh === "unknown" && <span style={{ fontSize: 12.5, color: "#7A6360" }}>Rh ไม่ทราบ</span>}
+            </span>;
+        const paused = isRemindPaused(remindPauseUntil);
+        const bloodVolumeL = estimateBloodVolumeL(gender, height, weight);
         const groups = [
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
-            { key: "age", Icon: Cake, label: "อายุ", kind: "num", unit: "ปี" },
+            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือก (ไม่บังคับ)"),
+              options: GENDERS.map(([v, label]) => ({ v, label })), current: gender,
+              note: "ใช้ปรับคำแนะนำหลังบริจาค และคำนวณปริมาณเลือดในร่างกาย" },
+            { key: "birthYear", Icon: Cake, label: "ปีเกิด", kind: "num", unit: "พ.ศ." },
+            { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "num", unit: "ซม." },
             { key: "weight", Icon: Weight, label: "น้ำหนัก", kind: "num", unit: "กก." },
-          ] },
+          ], footer: bloodVolumeL ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7A6360", background: "#FDF6F4", margin: "0 -12px", padding: "9px 12px", borderTop: "1px solid #F3E7E4", borderRadius: "0 0 12px 12px" }}>
+              <Droplet size={14} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
+              <span>เลือดในร่างกายประมาณ <b style={{ color: "#9A3B33" }}>{bloodVolumeL.toFixed(1)} ลิตร</b></span>
+            </div>
+          ) : null },
           { title: "สำหรับการบริจาค", rows: [
-            { key: "bloodType", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : bloodType) : ph("เลือก A, B, AB หรือ O"),
-              options: BLOOD_TYPES.map(bt => ({ v: bt, label: bt === "ไม่ทราบ" ? "ไม่ระบุ" : bt })), current: bloodType },
+            { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาคโลหิต", kind: "id" },
+            { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
             { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือก บุคคลทั่วไป หรือ พระภิกษุสงฆ์"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
+            { key: "pause", Icon: BellOff, label: "พักการเตือนชั่วคราว", kind: "action",
+              value: paused ? (remindPauseUntil === "indefinite" ? "พักอยู่ จนกว่าจะเปิดเอง" : `พักถึง ${toBuddhistDate(remindPauseUntil)}`) : "ปิดอยู่",
+              onClick: () => { setRemindPauseChoice("6"); setShowRemindPause(true); } },
           ] },
         ];
+        const copyDonorId = async () => {
+          try {
+            await navigator.clipboard.writeText(donorId);
+            showToast("success", "คัดลอกเลขผู้บริจาคแล้ว");
+          } catch (e) {
+            showToast("error", "คัดลอกไม่ได้ในแอปนี้ — กดค้างที่ตัวเลขเพื่อคัดลอกเอง");
+          }
+        };
         const chip = (on) => ({ minHeight: 40, minWidth: 50, padding: "0 14px", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
         const trail = (key, icon) => profileSavedKey === key
@@ -6798,16 +7063,17 @@ function AppInner() {
                 </div>
               </div>
 
-              {/* Simple two-line list (design 1 from profile-simple-10.html):
-                  small grey label above, the value below, thin separators, no
-                  icons or cards. Values are typed in place (the item tints
-                  while focused, via .prow-edit:focus-within); blood type and
-                  donor type expand their options under the item. */}
-              <div style={{ marginBottom: 16 }}>
-                {groups.flatMap(g => g.rows).map((r, ri, all) => {
+              {/* Two boxes with red group titles (design 2 of profile-boxes-6.html,
+                  grouping ก of profile-donorform-designs.html, plus gender and
+                  height from profile-gender-height-designs.html). Values are
+                  typed in place (the item tints while focused, via
+                  .prow-edit:focus-within); choices expand under the item. */}
+              {groups.map(g => (
+                <div key={g.title} style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9A3B33", margin: "0 0 6px 2px" }}>{g.title}</div>
+                  <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px" }}>
+                {g.rows.map((r, ri, all) => {
                   const itemStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "9px 8px", margin: "0 -8px", borderRadius: 9, textAlign: "left", fontFamily: "inherit", background: "transparent", boxSizing: "content-box" };
-                  // Icon in a soft pink circle (design 3 of profile-icons-8.html),
-                  // the same treatment as the new-user rows on the home tab.
                   const iconEl = (
                     <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <r.Icon size={17} color="#9A3B33" />
@@ -6817,13 +7083,22 @@ function AppInner() {
                   const hint = criteriaHint(r.key);
                   const saved = profileSavedKey === r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
+                    : r.kind === "action" ? <ChevronRight size={16} color="#7A6360" aria-hidden="true" style={{ flexShrink: 0 }} />
+                    : r.kind === "id" && donorId && profileInline.donorId === donorId ? (
+                      <button type="button" onClick={(e) => { e.preventDefault(); copyDonorId(); }} aria-label="คัดลอกเลขประจำตัวผู้บริจาค"
+                        style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 600, color: "#9A3B33", background: "#F3EAE8", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontFamily: "inherit" }}>
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -4px" }} />
+                        <Copy size={13} /> คัดลอก
+                      </button>
+                    )
                     : hint && <span style={{ flexShrink: 0, fontSize: 11, color: hint.color, whiteSpace: "nowrap" }}>{hint.text}</span>;
+                  const isOpen = profileOpenChoice === r.key;
                   return (
                     <div key={r.key} data-prow={r.key} style={{ borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      {r.kind === "choice" ? (
+                      {r.kind === "choice" || r.kind === "action" ? (
                         <>
-                          <button onClick={() => setProfileOpenChoice(o => (o === r.key ? null : r.key))} aria-expanded={profileOpenChoice === r.key}
-                            style={{ ...itemStyle, border: "none", cursor: "pointer", background: profileOpenChoice === r.key ? "#FBEFEC" : "transparent" }}>
+                          <button onClick={r.kind === "action" ? r.onClick : () => setProfileOpenChoice(o => (o === r.key ? null : r.key))} aria-expanded={r.kind === "choice" ? isOpen : undefined}
+                            style={{ ...itemStyle, border: "none", cursor: "pointer", background: isOpen ? "#FBEFEC" : "transparent" }}>
                             {iconEl}
                             <span style={{ flex: 1, minWidth: 0 }}>
                               {labelEl}
@@ -6833,13 +7108,41 @@ function AppInner() {
                               </span>
                             </span>
                           </button>
-                          {profileOpenChoice === r.key && (
-                            <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "4px 0 12px 46px" }}>
-                              {r.options.map(o => (
-                                <button key={o.v} role="radio" aria-checked={r.current === o.v}
-                                  onClick={() => { setProfileOpenChoice(null); if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); }}
-                                  style={chip(r.current === o.v)}>{o.label}</button>
-                              ))}
+                          {isOpen && r.blood && (
+                            <div style={{ padding: "2px 0 12px 46px" }}>
+                              <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
+                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                {BLOOD_TYPES.map(bt => (
+                                  <button key={bt} role="radio" aria-checked={bloodType === bt}
+                                    onClick={() => { if (bt !== bloodType) commitProfile({ bloodType: bt }, "blood"); if (bloodRh) setProfileOpenChoice(null); }}
+                                    style={chip(bloodType === bt)}>{bt === "ไม่ทราบ" ? "ไม่ทราบ" : bt}</button>
+                                ))}
+                              </div>
+                              <div id="prof-blood-rh" style={{ fontSize: 11, color: "#7A6360", margin: "10px 0 6px" }}>Rh</div>
+                              <div role="radiogroup" aria-labelledby="prof-blood-rh" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                {BLOOD_RH.map(([v, label]) => (
+                                  <button key={v} role="radio" aria-checked={bloodRh === v}
+                                    onClick={() => { if (v !== bloodRh) commitProfile({ bloodRh: v }, "blood"); if (bloodType) setProfileOpenChoice(null); }}
+                                    style={chip(bloodRh === v)}>{label}</button>
+                                ))}
+                              </div>
+                              <div style={{ fontSize: 11, color: "#7A6360", marginTop: 8 }}>ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</div>
+                            </div>
+                          )}
+                          {isOpen && !r.blood && (
+                            <div style={{ padding: "4px 0 12px 46px" }}>
+                              <div role="radiogroup" aria-label={r.label} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                {r.options.map(o => (
+                                  <button key={o.v} role="radio" aria-checked={r.current === o.v}
+                                    onClick={() => { setProfileOpenChoice(null); if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key); }}
+                                    style={chip(r.current === o.v)}>{o.label}</button>
+                                ))}
+                              </div>
+                              {r.note && (
+                                <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 8, lineHeight: 1.5 }}>
+                                  <Info size={13} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} /> {r.note}
+                                </div>
+                              )}
                             </div>
                           )}
                         </>
@@ -6852,12 +7155,14 @@ function AppInner() {
                             <input id={`profile-${r.key}`}
                               ref={r.key === "first" ? nicknameFirstInputRef : r.key === "last" ? nicknameLastInputRef : undefined}
                               type="text" autoComplete="off" enterKeyHint="done"
-                              inputMode={r.key === "age" ? "numeric" : r.key === "weight" ? "decimal" : undefined}
+                              inputMode={r.key === "birthYear" ? "numeric" : r.key === "weight" || r.key === "height" ? "decimal" : undefined}
                               placeholder={placeholders[r.key]}
                               value={profileInline[r.key]}
                               onChange={r.kind === "text"
                                 ? handleNameFieldChange(r.key, r.key === "first" ? nicknameFirstInputRef : nicknameLastInputRef)
-                                : (e) => { const v = e.target.value.replace(r.key === "age" ? /[^0-9]/g : /[^0-9.]/g, "").slice(0, 5); setProfileInline(f => ({ ...f, [r.key]: v })); }}
+                                : r.kind === "id"
+                                  ? (e) => { const v = e.target.value.replace(/[^0-9A-Za-z\- ]/g, "").slice(0, 20); setProfileInline(f => ({ ...f, donorId: v })); }
+                                  : (e) => { const v = e.target.value.replace(r.key === "birthYear" ? /[^0-9]/g : /[^0-9.]/g, "").slice(0, r.key === "birthYear" ? 4 : 5); setProfileInline(f => ({ ...f, [r.key]: v })); }}
                               onFocus={(e) => {
                                 if (profileOpenChoice) setProfileOpenChoice(null);
                                 if (profileInlineError[r.key]) setProfileInlineError(er => ({ ...er, [r.key]: undefined }));
@@ -6876,12 +7181,12 @@ function AppInner() {
                                 if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); }
                                 if (e.key === "Escape") {
                                   e.stopPropagation();
-                                  const cur = r.key === "first" ? firstName : r.key === "last" ? lastName : r.key === "age" ? age : weight;
+                                  const cur = { first: firstName, last: lastName, birthYear, weight, height, donorId }[r.key];
                                   setProfileInline(f => ({ ...f, [r.key]: cur === "" || cur == null ? "" : String(cur) }));
                                   setTimeout(() => e.target.blur(), 0);
                                 }
                               }}
-                              style={{ flex: 1, minWidth: 0, border: "none", background: "none", outline: "none", padding: 0, fontSize: 15, fontFamily: "inherit", color: "#3A2C29", caretColor: "#9A3B33" }} />
+                              style={{ flex: 1, minWidth: 0, border: "none", background: "none", outline: "none", padding: 0, fontSize: 15, fontFamily: "inherit", color: "#3A2C29", caretColor: "#9A3B33", letterSpacing: r.kind === "id" ? 0.5 : undefined }} />
                             {saved}
                           </span>
                           </span>
@@ -6893,14 +7198,86 @@ function AppInner() {
                     </div>
                   );
                 })}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360" }}>
+                    {g.footer}
+                  </div>
+                </div>
+              ))}
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360" }}>
                 <Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น
               </div>
             </div>
           </div>
 
           </>
+        );
+      })()}
+
+      {/* Reminder pause (design 4 of profile-gender-height-designs.html):
+          pick how long, never why -- a pregnancy or breastfeeding reason
+          would be health data, so the app only keeps the end date. */}
+      {showRemindPause && (() => {
+        const paused = isRemindPaused(remindPauseUntil);
+        const until = remindPauseUntilFor(remindPauseChoice);
+        const close = () => setShowRemindPause(false);
+        const apply = async (val) => {
+          await commitProfile({ remindPauseUntil: val }, "pause");
+          close();
+          showToast("success", val ? "พักการเตือนแล้ว" : "เปิดการเตือนแล้ว");
+        };
+        const chipStyle = (on) => ({ minHeight: 40, padding: "0 14px", borderRadius: 20, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+          border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
+        return (
+          <div role="dialog" aria-modal="true" aria-label="พักการเตือนชั่วคราว"
+            onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+            style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
+            <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
+                <button onClick={close} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
+                  <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
+                  <X size={19} />
+                </button>
+              </div>
+              <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ระหว่างพัก หน้าหลักจะไม่ชวนให้ไปบริจาคหรือเพิ่มนัดลงปฏิทิน ประวัติเดิมยังอยู่ครบ</p>
+              {paused && (
+                <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3A2C29", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
+                  <BellOff size={15} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
+                  {remindPauseUntil === "indefinite" ? "ตอนนี้พักอยู่ จนกว่าจะเปิดเอง" : `ตอนนี้พักอยู่ถึง ${toBuddhistDate(remindPauseUntil)}`}
+                </div>
+              )}
+              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px" }}>
+                <div id="remind-pause-len" style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>{paused ? "เปลี่ยนเป็นพักไว้" : "พักไว้"}</div>
+                <div role="radiogroup" aria-labelledby="remind-pause-len" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {REMIND_PAUSE_OPTIONS.map(([v, label]) => (
+                    <button key={v} role="radio" aria-checked={remindPauseChoice === v} onClick={() => setRemindPauseChoice(v)} style={chipStyle(remindPauseChoice === v)}>{label}</button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
+                  <span style={{ color: "#7A6360" }}>เตือนอีกครั้ง</span>
+                  <span style={{ color: "#3A2C29", fontWeight: 600 }}>{until === "indefinite" ? "เมื่อคุณเปิดเอง" : toBuddhistDate(until)}</span>
+                </div>
+              </div>
+              {gender === "female" && (
+                <div style={{ display: "flex", gap: 9, background: "#FBEFEC", borderRadius: 12, padding: "11px 12px", marginTop: 12, fontSize: 12.5, lineHeight: 1.6, color: "#5C4A46" }}>
+                  <Info size={15} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
+                  <div><b style={{ color: "#3A2C29" }}>สำหรับคุณแม่</b><br />ช่วงตั้งครรภ์และให้นมบุตรต้องงดบริจาค หลังคลอดหรือแท้งบุตรรอ 6 เดือน (เกณฑ์สภากาชาดไทย)</div>
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 12 }}>
+                <Lock size={12} color="#7A6360" aria-hidden="true" /> แอปไม่ถามและไม่เก็บเหตุผลที่พัก
+              </div>
+              <button onClick={() => apply(until)}
+                style={{ width: "100%", marginTop: 14, minHeight: 46, borderRadius: 12, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                {paused ? "เปลี่ยนระยะเวลาพัก" : "เริ่มพักการเตือน"}
+              </button>
+              {paused && (
+                <button onClick={() => apply("")}
+                  style={{ width: "100%", marginTop: 8, minHeight: 46, borderRadius: 12, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                  เปิดการเตือนตอนนี้
+                </button>
+              )}
+            </div>
+          </div>
         );
       })()}
 
@@ -7318,7 +7695,7 @@ function AppInner() {
             )}
             {Object.keys(pendingImport.profileFieldsToFill || {}).length > 0 && (
               <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 8px" }}>
-                จะเติมข้อมูลโปรไฟล์ที่ยังว่างอยู่ให้ด้วย: {Object.keys(pendingImport.profileFieldsToFill).map(k => ({ nickname: "ชื่อ-นามสกุล", age: "อายุ", weight: "น้ำหนัก", bloodType: "หมู่โลหิต" }[k])).join(", ")}
+                จะเติมข้อมูลโปรไฟล์ที่ยังว่างอยู่ให้ด้วย: {Object.keys(pendingImport.profileFieldsToFill).map(k => ({ nickname: "ชื่อ-นามสกุล", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต" }[k])).filter(Boolean).join(", ")}
                 <br /><span style={{ fontSize: 11.5, color: "#B39B96" }}>(ช่องที่คุณกรอกไว้แล้วจะไม่ถูกเขียนทับ)</span>
               </p>
             )}
