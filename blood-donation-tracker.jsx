@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.122";
+const APP_VERSION = "1.0.123";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1340,7 +1340,8 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
     settleTimer.current = setTimeout(() => onSettle?.(valAt(idxRef.current)), 180);
   };
   const markUser = () => { userScrolled.current = true; };
-  const shown = valAt(idx).toFixed(decimals);
+  // Whole numbers drop the ".0" (50 rather than 50.0).
+  const shown = String(Number(valAt(idx).toFixed(decimals)));
   return (
     <div>
       <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums", marginBottom: 2 }}>
@@ -7078,7 +7079,7 @@ function AppInner() {
         const pickerShown = (key) => {
           const v = pickerPreview && pickerPreview.key === key ? pickerPreview.value : committed[key];
           if (v === "" || v == null) return ph(placeholders[key]);
-          return key === "weight" ? Number(v).toFixed(1) : String(v);
+          return String(v);
         };
         const preview = (key) => (v) => setPickerPreview({ key, value: v });
         const settle = (key) => (v) => {
