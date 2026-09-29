@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.172";
+const APP_VERSION = "1.0.173";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7426,7 +7426,7 @@ function AppInner() {
           if (v === "" || v == null) return ph(placeholders[key]);
           if (key === "birthYear" && Number(v) > 0) {
             const age = nowBE - Number(v);
-            return <>{String(v)}<span style={{ fontSize: 13, color: "#7A6360" }}> · อายุ {age} ปี</span></>;
+            return <>{String(v)}<span style={{ color: "#9A3B33" }}> · อายุ {age} ปี</span></>;
           }
           return String(v);
         };
@@ -7448,7 +7448,7 @@ function AppInner() {
         const pickerPanel = (key) => {
           if (key === "birthYear") {
             return <HorizontalRuler min={nowBE - 100} max={nowBE} step={1} majorEvery={10} midEvery={5} unitBefore="พ.ศ."
-              caption={(v) => `อายุ ${nowBE - v} ปี`} value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด" onChange={preview(key)} onSettle={settle(key)} />;
+              value={birthYear === "" ? nowBE - 30 : birthYear} label="ปีเกิด" onChange={preview(key)} onSettle={settle(key)} />;
           }
           if (key === "height") {
             return <HorizontalRuler min={MIN_HEIGHT} max={MAX_HEIGHT} step={1} majorEvery={10} midEvery={5} unit="ซม." ariaUnit="เซนติเมตร"
