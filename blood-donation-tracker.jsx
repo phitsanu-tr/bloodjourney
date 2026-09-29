@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.129";
+const APP_VERSION = "1.0.130";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7300,7 +7300,6 @@ function AppInner() {
         };
         // Age goes next to the "ปีเกิด" label (not on the right, where every
         // row shows one short status).
-        const ageOf = () => { const n = liveNumber("birthYear"); return Number.isNaN(n) ? null : nowBE - n; };
         const criteriaHint = (key) => {
           if (key === "donorType") return donorType ? { text: "ใช้กับเข็มที่ระลึก", color: "#7A6360" } : null;
           if (key === "height") return Number.isNaN(liveNumber("height")) ? null : { text: "ใช้คำนวณปริมาณเลือด", color: "#7A6360" };
@@ -7481,7 +7480,7 @@ function AppInner() {
                       <r.Icon size={17} color="#9A3B33" />
                     </span>
                   );
-                  const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}{r.key === "birthYear" && ageOf() !== null ? ` · อายุ ${ageOf()} ปี` : ""}</span>;
+                  const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
                   const hint = criteriaHint(r.key);
                   const saved = profileSavedKey === r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
