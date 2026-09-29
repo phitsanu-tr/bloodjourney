@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.166";
+const APP_VERSION = "1.0.167";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7691,7 +7691,7 @@ function AppInner() {
                                 const idx = r.options.findIndex(o => o.v === r.current);
                                 if (idx >= 0) lastPickedRef.current[r.key] = idx;
                                 const shownIdx = idx >= 0 ? idx : (lastPickedRef.current[r.key] ?? -1);
-                                const canClear = r.key === "donorType"; // gender already has "ไม่ระบุ"
+                                const canClear = r.key === "donorType" || r.key === "gender"; // tapping the chosen option again clears it
                                 const longest = Math.max(...r.options.map(o => o.label.length));
                                 return (
                                   <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
@@ -7703,7 +7703,7 @@ function AppInner() {
                                       return (
                                         <button key={o.v} role="radio" aria-checked={on}
                                           onClick={() => {
-                                            // Donor type: tapping the chosen option again takes it back off.
+                                            // Donor type / gender: tapping the chosen option again takes it back off.
                                             if (canClear && o.v === r.current) { commitProfile({ [r.key]: "" }, r.key); return; }
                                             if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key);
                                             closeRowSoon(r.key, o.v !== r.current);
