@@ -1,0 +1,91 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rh ข้อความ 6 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{border:1px solid var(--soft);border-radius:14px;padding:14px 14px 12px}
+.lab{font-size:12px;color:var(--mut);margin:0 0 8px}.lab.m{margin-top:12px}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-top:4px}
+.d{border:0;background:none;position:relative;transition:transform .18s}
+.d svg{width:100%;height:auto;display:block;overflow:visible}
+.d path.b{fill:#F7E9E6;transition:.2s}
+.d .t{position:absolute;left:0;right:0;top:46%;text-align:center;font-size:19px;line-height:1;color:var(--red)}
+.d.on{transform:translateY(-3px) scale(1.08)}.d.on path.b{fill:var(--red)}.d.on .t{color:#fff}
+.d .g{opacity:0;transition:.2s}.d.on .g{opacity:.45}
+.hint{font-size:11px;color:var(--mut);margin:8px 0 0}
+.on{color:#fff}
+/* g1 tiles */
+.g1{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.g1 button{height:54px;border:1px solid var(--line);background:#fff;border-radius:14px;font-size:20px;color:var(--ink);transition:.15s}
+.g1 button.on{background:var(--red);border-color:var(--red);color:#fff}
+.g1 button.u{font-size:14px;color:var(--mut)}.g1 button.u.on{color:#fff}
+/* g2 segmented 3 */
+.g2{display:flex;background:var(--bg);border:1px solid var(--soft);border-radius:14px;padding:3px;position:relative}
+.g2 button{flex:1;border:0;background:none;border-radius:11px;height:42px;font-size:17px;color:var(--mut);position:relative;z-index:1;transition:color .2s}
+.g2 button.u{font-size:13px}
+.g2 button.on{color:#fff}
+.g2 i{position:absolute;top:3px;bottom:3px;width:calc(33.333% - 2px);border-radius:11px;background:var(--red);transition:left .22s;z-index:0}
+/* g3 underline text */
+.g3{display:flex;border-bottom:1.5px solid var(--soft)}
+.g3 button{flex:1;background:none;border:0;height:46px;font-size:19px;color:#B9A5A1;position:relative;transition:.15s}
+.g3 button.u{font-size:14px}
+.g3 button.on{color:var(--red)}
+.g3 button.on::after{content:"";position:absolute;left:18%;right:18%;bottom:-1.5px;height:3px;border-radius:2px;background:var(--red)}
+/* g4 two-line */
+.g4{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.g4 button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:8px 0 7px;color:var(--ink);line-height:1;transition:.15s}
+.g4 small{display:block;font-family:Prompt;font-size:11px;color:var(--mut);margin-bottom:3px}
+.g4 b{font-size:26px;font-weight:500;display:block;height:28px}
+.g4 b.q{font-size:15px;line-height:28px}
+.g4 button.on{background:var(--red);border-color:var(--red);color:#fff}.g4 button.on small{color:#fff;opacity:.85}
+/* g5 label sticker */
+.g5{display:flex;gap:10px;flex-wrap:wrap}
+.g5 button{border:1.5px dashed var(--line);background:var(--bg);border-radius:10px;padding:9px 16px;font-size:18px;color:var(--ink);letter-spacing:.3px;transition:.15s;position:relative}
+.g5 button.u{font-size:13px;border-style:dashed;color:var(--mut);background:#fff}
+.g5 button.on{border:1.5px solid var(--red);background:#fff;color:var(--red);box-shadow:3px 3px 0 var(--red);transform:translate(-2px,-2px)}
+/* g6 coins */
+.g6{display:flex;gap:10px;align-items:center}
+.g6 button{width:64px;height:64px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:19px;color:var(--ink);transition:.15s}
+.g6 button.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 0 4px #F3D9D5}
+.g6 .ul{margin-left:auto;background:none;border:0;font-family:Prompt;font-size:12.5px;color:var(--mut);text-decoration:underline;width:auto;height:auto;border-radius:0;box-shadow:none}
+.g6 .ul.on{color:var(--red);font-weight:500;background:none;box-shadow:none}
+</style></head><body>
+<h1>Rh เป็นข้อความ — 6 แบบ (ไม่ใช้หยด)</h1>
+<p class="sub">แถวหมู่ยังเป็นหยดประกาย · Rh ใช้ตัวอักษร "Rh+" "Rh−" และ "ไม่ทราบ" · กดเล่นได้</p>
+<div class="grid" id="root"></div>
+<script>
+const ABO=['A','B','AB','O'],DROP='M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z';
+const GL='<path class="g" d="M15 40a11 11 0 0 0 8 10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>';
+const ids=['g1','g2','g3','g4','g5','g6'];const abo={},rh={};ids.forEach(i=>{abo[i]='A';rh[i]='+'});
+const info=[['1 · ปุ่มสี่เหลี่ยมมน','ปุ่ม 3 ช่องเท่ากัน ตัวหนังสือ Rh+ / Rh− ใหญ่ ตรงไปตรงมาที่สุด'],
+['2 · แถบเดียว 3 ช่อง','เหมือนสวิตช์ iOS แถบสีแดงเลื่อนไปหาช่องที่เลือก กะทัดรัด'],
+['3 · ตัวอักษรขีดเส้นใต้','ไม่มีกรอบ ตัวที่เลือกเป็นสีแดงมีเส้นใต้ เรียบและเบาที่สุด'],
+['4 · สองบรรทัด Rh / เครื่องหมาย','คำว่า Rh ตัวเล็กบน เครื่องหมาย + / − ตัวใหญ่ล่าง ในปุ่มสี่เหลี่ยม'],
+['5 · ป้ายสติกเกอร์','กรอบเส้นประเหมือนป้ายติดถุงเลือด เลือกแล้วกลายเป็นป้ายมีเงาแข็งลอยขึ้น'],
+['6 · เหรียญกลม','ปุ่มกลมมีข้อความ Rh+ / Rh− ตัวที่เลือกมีวงเรืองรอบ "ไม่ทราบ" เป็นลิงก์']];
+const root=document.getElementById('root');
+ids.forEach((id,i)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<p class="tag">${info[i][0]}</p><p class="desc">${info[i][1]}</p><div class="pane" id="${id}"></div>`;root.append(c)});
+const aboRow=id=>`<p class="lab">หมู่</p><div class="row4">${ABO.map(a=>`<button class="d ${abo[id]===a?'on':''}" data-a="${a}"><svg viewBox="0 0 52 60"><path class="b" d="${DROP}"/>${GL}</svg><span class="t">${a}</span></button>`).join('')}</div><p class="lab m">Rh</p>`;
+const foot='<p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>';
+const O=[['+','Rh+'],['-','Rh−'],['?','ไม่ทราบ']];
+const btn=(id,v,txt,cls='')=>`<button class="${cls} ${v==='?'?'u':''} ${rh[id]===v?'on':''}" data-r="${v}">${txt}</button>`;
+const idx=id=>['+','-','?'].indexOf(rh[id]);
+const draw={
+g1:id=>aboRow(id)+`<div class="g1">${O.map(o=>btn(id,o[0],o[1])).join('')}</div>`+foot,
+g2:id=>aboRow(id)+`<div class="g2"><i style="left:calc(${idx(id)*33.333}% + 2px)"></i>${O.map(o=>btn(id,o[0],o[1])).join('')}</div>`+foot,
+g3:id=>aboRow(id)+`<div class="g3">${O.map(o=>btn(id,o[0],o[1])).join('')}</div>`+foot,
+g4:id=>aboRow(id)+`<div class="g4">${[['+','+'],['-','−']].map(o=>`<button class="${rh[id]===o[0]?'on':''}" data-r="${o[0]}"><small>Rh</small><b>${o[1]}</b></button>`).join('')}<button class="${rh[id]==='?'?'on':''}" data-r="?"><small>Rh</small><b class="q">ไม่ทราบ</b></button></div>`+foot,
+g5:id=>aboRow(id)+`<div class="g5">${O.map(o=>btn(id,o[0],o[1])).join('')}</div>`+foot,
+g6:id=>aboRow(id)+`<div class="g6">${btn(id,'+','Rh+')}${btn(id,'-','Rh−')}<button class="ul ${rh[id]==='?'?'on':''}" data-r="?">ไม่ทราบ</button></div>`+foot};
+function render(id){const p=document.getElementById(id);p.innerHTML=draw[id](id);
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{abo[id]=b.dataset.a;render(id)});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rh[id]=b.dataset.r;render(id)})}
+ids.forEach(render);
+</script></body></html>

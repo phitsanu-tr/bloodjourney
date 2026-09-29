@@ -1,0 +1,51 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>หมู่โลหิต แสดงผลแบบยกกำลัง</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.box{background:#fff;border:1px solid var(--soft);border-radius:16px;padding:0 10px}
+.row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--soft)}
+.row:last-child{border:0}
+.ic{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex:none}
+.ic svg{width:16px;height:16px}
+.lb{font-size:11px;color:var(--mut);display:block}
+.vl{font-size:15px;display:flex;align-items:baseline;gap:6px;min-height:22px}
+.vl.ph{color:#B9A5A1}
+.state{margin-left:auto;font-size:10.5px;color:#B9A5A1;text-align:right;max-width:90px;line-height:1.2}
+sup{font-size:.62em;line-height:0;position:relative;top:-.15em;font-weight:500}
+/* style tweaks */
+.s1 .t{font-family:Mitr;font-size:20px;font-weight:500}.s1 sup{font-size:.7em;color:var(--red)}
+.s2 .t{font-family:Mitr;font-size:17px;font-weight:500}.s2 .rh{font-family:Mitr;font-size:15px;color:var(--mut)}.s2 .rh sup{color:var(--red);font-size:.75em}
+.s3 .t{font-family:Mitr;font-size:20px;font-weight:500}.s3 sup{color:var(--red);font-size:.7em}.s3 small{font-size:12px;color:var(--mut)}
+.s4 .t{font-family:Mitr;font-size:22px;font-weight:600;color:var(--red)}.s4 sup{font-size:.7em}
+.s5 .t{font-family:Mitr;font-size:17px;font-weight:500}.s5 .rh{font-family:Mitr;font-size:12.5px;color:#fff;background:var(--red);border-radius:9px;padding:1px 7px 2px}.s5 .rh sup{color:#fff;font-size:.8em;top:-.1em}
+</style></head><body>
+<h1>หมู่โลหิต — แสดงผลแบบยกกำลัง 5 แบบ</h1>
+<p class="sub">ส่วนที่เห็นในแถว "หมู่โลหิต" ตอนพับแผง · Rh ไม่ทราบ = แสดงแค่หมู่ · 5 สถานะต่อแบบ</p>
+<div class="grid" id="root"></div>
+<script>
+const DROP='<svg viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/></svg>';
+const S=[
+ {t:'O',rh:'+',note:'Rh บวก'},{t:'O',rh:'-',note:'Rh ลบ'},{t:'AB',rh:'unknown',note:'Rh ไม่ทราบ → แสดงแค่หมู่'},{t:'B',rh:'',note:'ยังไม่เลือก Rh → แสดงแค่หมู่'},{t:'',rh:'',note:'ยังไม่เลือกอะไร'}];
+const sym=r=>r==='+'?'+':'−';
+const styles=[
+ ['s1','1 · O⁺ / O⁻ (เครื่องหมายเป็นเลขยกกำลังติดตัวอักษร)','แบบกะทัดรัดที่สุด เครื่องหมายสีแดงยกขึ้นเหมือนสัญลักษณ์ทางการแพทย์ ไม่มีคำว่า Rh',
+   s=>`<span class="t">${s.t}${s.rh==='+'||s.rh==='-'?`<sup>${sym(s.rh)}</sup>`:''}</span>`],
+ ['s2','2 · O Rh⁺ / O Rh⁻','คำว่า Rh เป็นสีเทาตัวเล็ก ตามด้วยเครื่องหมายยกกำลัง ตรงกับตัวอย่างที่ให้มามากที่สุด',
+   s=>`<span class="t">${s.t}</span>${s.rh==='+'||s.rh==='-'?`<span class="rh">Rh<sup>${sym(s.rh)}</sup></span>`:''}`],
+ ['s3','3 · O⁺ + คำอ่านสีเทาต่อท้าย','O⁺ ตัวใหญ่ แล้วมีคำ "Rh บวก" / "Rh ลบ" ตัวเล็กสีเทา สำหรับคนที่ไม่คุ้นสัญลักษณ์',
+   s=>`<span class="t">${s.t}${s.rh==='+'||s.rh==='-'?`<sup>${sym(s.rh)}</sup>`:''}</span>${s.rh==='+'||s.rh==='-'?`<small>Rh ${s.rh==='+'?'บวก':'ลบ'}</small>`:''}`],
+ ['s4','4 · O⁺ ตัวแดงใหญ่','หมู่โลหิตเป็นตัวเด่นสีแดงทั้งตัว ให้เป็นจุดสนใจของหน้า',
+   s=>`<span class="t">${s.t}${s.rh==='+'||s.rh==='-'?`<sup>${sym(s.rh)}</sup>`:''}</span>`],
+ ['s5','5 · O + ป้าย Rh⁺ เล็กสีแดง','คงป้ายสีแดงแบบเดิมไว้ แต่เปลี่ยนข้อความเป็น Rh⁺ ยกกำลัง ตัวหมู่เป็นตัวธรรมดา',
+   s=>`<span class="t">${s.t}</span>${s.rh==='+'||s.rh==='-'?`<span class="rh">Rh<sup>${sym(s.rh)}</sup></span>`:''}`]];
+const root=document.getElementById('root');
+styles.forEach(([cls,tag,desc,fn])=>{const c=document.createElement('div');c.className='card '+cls;
+ c.innerHTML=`<p class="tag">${tag}</p><p class="desc">${desc}</p><div class="box">${S.map(s=>`<div class="row"><span class="ic">${DROP}</span><span><span class="lb">หมู่โลหิต</span><span class="vl ${s.t?'':'ph'}">${s.t?fn(s):'เลือกหมู่และ Rh'}</span></span><span class="state">${s.note}</span></div>`).join('')}</div>`;root.append(c)});
+</script></body></html>

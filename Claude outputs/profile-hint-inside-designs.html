@@ -1,0 +1,70 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เกณฑ์อยู่ในแผงเลือกค่า</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4;--ok:#2E7D4F;--bad:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:52px}
+.box{background:#fff;border:1px solid var(--soft);border-radius:16px;padding:0 10px}
+.row{border-bottom:1px solid var(--soft);padding:4px 0}.row:last-child{border:0}
+.rh{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:12px}
+.row.open>.rh{background:#FBEFEC}
+.ic{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex:none;font-family:Mitr;font-size:13px}
+.lb{font-size:11px;color:var(--mut);display:block}.vl{font-size:15px;display:block}.vl.ph{color:#B9A5A1}
+.tr{margin-left:auto;font-size:11.5px;text-align:right;color:var(--mut)}
+.tr.bad{color:var(--bad);font-weight:500}
+.panel{padding:6px 4px 12px;position:relative}
+.val{text-align:center;padding-top:10px}
+.val small{font-size:12px;color:var(--mut)}.val b{font-family:Mitr;font-size:34px;color:var(--red);font-weight:500;margin:0 6px}
+.cap{font-size:12.5px;color:var(--mut)}
+.ruler{height:52px;margin:8px 0 2px;background:repeating-linear-gradient(90deg,#DCCBC7 0 1px,transparent 1px 9px);mask:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);-webkit-mask:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);position:relative;-webkit-mask-composite:source-over}
+.ruler::after{content:"";position:absolute;left:50%;top:-4px;bottom:8px;width:3px;margin-left:-1.5px;background:var(--red);border-radius:2px}
+input[type=range]{width:100%;accent-color:var(--red);margin:0}
+.hint{font-size:11.5px;color:var(--ok);font-weight:500}
+.hint.bad{color:var(--bad)}
+/* A corner text */
+.A .corner{position:absolute;top:2px;right:2px}
+/* B chip */
+.B .corner{position:absolute;top:0;right:0;background:#E8F4EC;color:var(--ok);padding:3px 10px;border-radius:12px;font-size:11.5px;font-weight:500}
+.B .corner.bad{background:#FBE9E7;color:var(--bad)}
+/* C below */
+.C .below{text-align:center;margin-top:4px}
+/* D caption line */
+.D .val .cap{display:block;margin-top:2px}
+.state{font-size:11px;color:var(--mut);margin:0 0 6px}
+.two{display:grid;gap:14px}
+</style></head><body>
+<h1>ย้ายข้อความเกณฑ์เข้าไปในแผงเลือกค่า — 4 แบบ</h1>
+<p class="sub">แถวที่พับไว้จะสะอาด ไม่มีข้อความเขียวรก · ข้อความเกณฑ์ไปอยู่ในแผงตอนกดเลือกค่า · ลากสไลเดอร์เพื่อลองค่านอกเกณฑ์ (ปีเกิดที่ทำให้อายุ &lt; 17 หรือ &gt; 70, น้ำหนัก &lt; 45)</p>
+<div class="grid" id="root"></div>
+<script>
+const NOW=2569;
+const V=[['A','A · ตัวหนังสือมุมขวาบนของแผง','ข้อความเขียว "✓ ตามเกณฑ์ 17–70 ปี" อยู่มุมขวาบนของแผง ตามที่คุณบอก ค่าและไม้บรรทัดอยู่กลางเหมือนเดิม'],
+['B','B · ป้ายเล็กมุมขวาบน','เหมือน A แต่เป็นป้ายพื้นอ่อน (เขียวเมื่อผ่าน แดงเมื่อไม่ผ่าน) เห็นสถานะชัดกว่า'],
+['C','C · บรรทัดใต้ไม้บรรทัด','ข้อความอยู่กึ่งกลางใต้ไม้บรรทัด ไม่แย่งความสนใจจากตัวเลขใหญ่'],
+['D','D · รวมกับบรรทัดอายุ','ปีเกิดใช้บรรทัดเดียวกับ "อายุ 30 ปี" → "อายุ 30 ปี ✓ ตามเกณฑ์" น้ำหนักแสดงใต้ตัวเลข']];
+const root=document.getElementById('root');
+V.forEach(([k,t,d])=>{const c=document.createElement('div');c.className='card '+k;c.id=k;c.innerHTML=`<p class="tag">${t}</p><p class="desc">${d}</p><div id="${k}b"></div>`;root.append(c);render(k,{year:2539,w:65})});
+function info(st){const age=NOW-st.year;const yOk=age>=17&&age<=70;const wOk=st.w>=45;return{age,yOk,wOk}}
+function render(k,st){const {age,yOk,wOk}=info(st);
+ const yTxt=yOk?'✓ ตามเกณฑ์ 17–70 ปี':`นอกเกณฑ์ 17–70 ปี`;const wTxt=wOk?'✓ ตามเกณฑ์ 45 กก. ขึ้นไป':'ต่ำกว่าเกณฑ์ 45 กก.';
+ const collapsed=(lab,ic,val,bad)=>`<div class="row"><div class="rh"><span class="ic">${ic}</span><span><span class="lb">${lab}</span><span class="vl">${val}</span></span>${bad?`<span class="tr bad">${bad}</span>`:''}</div></div>`;
+ const panelHint=(ok,txt)=>{
+  if(k==='A')return `<span class="corner hint ${ok?'':'bad'}">${txt}</span>`;
+  if(k==='B')return `<span class="corner ${ok?'':'bad'}">${txt}</span>`;return ''};
+ const below=(ok,txt)=>k==='C'?`<div class="below hint ${ok?'':'bad'}">${txt}</div>`:'';
+ const yCap=k==='D'?`<span class="cap"> · อายุ ${age} ปี <span class="hint ${yOk?'':'bad'}">${yOk?'✓ ตามเกณฑ์':'นอกเกณฑ์ 17–70 ปี'}</span></span>`:`<span class="cap"> · อายุ ${age} ปี</span>`;
+ const wCap=k==='D'?`<div class="hint ${wOk?'':'bad'}" style="margin-top:2px">${wTxt}</div>`:'';
+ const panel=(lab,ic,valHtml,ok,txt,extra,slider)=>`<div class="row open"><div class="rh"><span class="ic">${ic}</span><span><span class="lb">${lab}</span><span class="vl">${slider.show}</span></span></div><div class="panel">${panelHint(ok,txt)}<div class="val">${valHtml}${extra||''}</div><div class="ruler"></div>${below(ok,txt)}${slider.input}</div></div>`;
+ document.getElementById(k+'b').innerHTML=`<p class="state">แถวที่พับไว้ (ตอนนี้ไม่มีข้อความเกณฑ์ ยกเว้นเตือนสีแดงถ้านอกเกณฑ์)</p><div class="box">${collapsed('ปีเกิด (พ.ศ.)','ปี',st.year,yOk?'':'นอกเกณฑ์')}${collapsed('น้ำหนัก (กก.)','นน',st.w,wOk?'':'ต่ำกว่าเกณฑ์')}${collapsed('ส่วนสูง (ซม.)','สส','175','')}</div>
+ <p class="state" style="margin-top:14px">ตอนกดเปิดแผงเลือกค่า</p><div class="box two">
+ ${panel('ปีเกิด (พ.ศ.)','ปี',`<small>พ.ศ.</small><b>${st.year}</b>${yCap}`,yOk,yTxt,'',{show:st.year,input:`<input type="range" min="2480" max="2569" value="${st.year}" data-y>`})}
+ ${panel('น้ำหนัก (กก.)','นน',`<b>${st.w.toFixed(1)}</b><small>กก.</small>`,wOk,wTxt,wCap,{show:st.w.toFixed(1),input:`<input type="range" min="30" max="120" step="0.5" value="${st.w}" data-w>`})}</div>`;
+ const el=document.getElementById(k+'b');
+ el.querySelector('[data-y]').oninput=e=>{st.year=+e.target.value;render(k,st)};
+ el.querySelector('[data-w]').oninput=e=>{st.w=+e.target.value;render(k,st)}}
+</script></body></html>

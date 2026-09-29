@@ -1,0 +1,148 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>หมู่โลหิต 6 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 1px 0 var(--soft)}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}
+.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{background:#fff;border:1px solid var(--soft);border-radius:14px;padding:14px}
+.lab{font-size:12.5px;color:var(--mut);margin:0 0 8px}
+.hint{font-size:12px;color:var(--mut);margin:10px 0 0}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--ink);font-size:15px;padding:10px 0;flex:1;min-width:0}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.ghost{background:none;border:0;color:var(--mut);font-family:Prompt;font-size:12.5px;text-decoration:underline;padding:6px 0}
+.ghost.on{color:var(--red);font-weight:600}
+/* A grid 8 */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 0;font-size:16px;color:var(--ink)}
+.tile.on{background:var(--red);color:#fff;border-color:var(--red)}
+.tile small{font-size:11px;opacity:.75;margin-left:1px}
+/* B segmented */
+.seg{display:flex;background:var(--bg);border:1px solid var(--soft);border-radius:12px;padding:3px;position:relative}
+.seg button{flex:1;border:0;background:none;padding:9px 0;font-size:15px;color:var(--mut);border-radius:9px;position:relative;z-index:1;transition:color .2s}
+.seg button.on{color:#fff}
+.seg i{position:absolute;top:3px;bottom:3px;border-radius:9px;background:var(--red);transition:left .22s,width .22s;z-index:0}
+/* C preview */
+.hero{display:flex;align-items:center;gap:14px;background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.drop{width:52px;height:60px;flex:none}
+.hero b{font-family:Mitr;font-size:28px;color:var(--red);line-height:1}
+.hero span{font-size:12px;color:var(--mut);display:block;margin-top:3px}
+.sq{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sq button{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:14px;font-size:20px;color:var(--ink)}
+.sq button.on{background:var(--red);color:#fff;border-color:var(--red)}
+.rh{display:flex;gap:8px;margin-top:10px}
+.rh button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 0;font-size:14px;color:var(--ink)}
+.rh button.on{background:var(--red);color:#fff;border-color:var(--red)}
+/* D toggle */
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--soft)}
+.line:first-of-type{border-top:0}
+.sw{width:74px;height:34px;border-radius:999px;background:var(--soft);position:relative;border:0;padding:0;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:left .2s}
+.sw.pos{background:var(--red)}.sw.pos::after{left:43px}
+.sw span{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:16px;color:#fff}
+.sw .p{left:12px}.sw .n{right:12px;color:var(--mut)}
+.sw.pos .n{display:none}.sw:not(.pos) .p{display:none}
+/* E wheel */
+.wheel{display:flex;gap:10px;position:relative;height:150px}
+.col{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;text-align:center;padding:55px 0;position:relative;z-index:1}
+.col::-webkit-scrollbar{display:none}
+.col div{height:40px;line-height:40px;scroll-snap-align:center;font-family:Mitr;font-size:19px;color:#B9A5A1;transition:.15s}
+.col div.on{color:var(--red);font-size:23px}
+.band{position:absolute;left:0;right:0;top:55px;height:40px;background:var(--bg);border-radius:10px;z-index:0}
+.mask{position:absolute;inset:0;background:linear-gradient(#fff 0,#fff0 35%,#fff0 65%,#fff 100%);pointer-events:none;z-index:2}
+/* F stepper */
+.step{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.dot{width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--mut);font-size:12px;display:flex;align-items:center;justify-content:center;font-family:Mitr}
+.dot.on{background:var(--red);color:#fff}
+.ln{flex:1;height:2px;background:var(--soft)}
+.ln.on{background:var(--red)}
+.sum{font-family:Mitr;color:var(--red);font-size:15px}
+</style></head><body>
+<h1>หมู่โลหิต — 6 รูปแบบ</h1>
+<p class="sub">กดเล่นได้ทุกแบบ · ข้อมูลเดิมยังแยกเป็น "หมู่" กับ "Rh" เหมือนเดิม (ไม่ต้องแก้ที่เก็บข้อมูล)</p>
+<div class="grid" id="root"></div>
+<script>
+const $=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d.firstElementChild};
+const root=document.getElementById('root');
+const ABO=['A','B','AB','O'];
+const S={a:{abo:'',rh:''},b:{abo:'',rh:''},c:{abo:'A',rh:'+'},d:{abo:'',rh:'+'},e:{abo:'A',rh:'+'},f:{abo:'',rh:''}};
+function card(id,title,desc,body){const c=$(`<div class="card"><p class="tag">${title}</p><p class="desc">${desc}</p><div class="pane" id="${id}"></div></div>`);root.append(c);return c.querySelector('.pane')}
+const DROP=`<svg class="drop" viewBox="0 0 52 60"><path d="M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z" fill="#9A3B33"/><path d="M15 40a11 11 0 0 0 8 10" stroke="#fff" stroke-opacity=".45" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+const rhLabel=r=>r==='+'?'บวก (+)':r==='-'?'ลบ (−)':r==='?'?'ไม่ทราบ':'';
+
+/* A: 8 combined tiles */
+function A(){const p=document.getElementById('a'),s=S.a;
+ const cur=s.abo&&s.rh?(s.abo+'|'+s.rh):'';
+ let h=`<p class="lab">หมู่โลหิต · แตะครั้งเดียวได้ทั้งหมู่และ Rh</p><div class="g4">`;
+ for(const r of ['+','-'])for(const a of ABO){const on=cur===a+'|'+r;h+=`<button class="tile ${on?'on':''}" data-v="${a}|${r}">${a}<small>${r==='+'?'+':'−'}</small></button>`}
+ h+=`</div><div class="row" style="margin-top:8px"><button class="chip ${s.abo&&s.rh==='?'?'on':''}" data-v="only" style="font-size:13px">รู้แค่หมู่ ไม่ทราบ Rh</button><button class="chip ${cur===''&&s.abo==='?'?'on':''}" data-v="unk" style="font-size:13px">ไม่ทราบ</button></div>
+ <p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>`;
+ p.innerHTML=h;p.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const v=b.dataset.v;
+  if(v==='unk')S.a={abo:'?',rh:'?'};else if(v==='only'){S.a={abo:S.a.abo&&S.a.abo!=='?'?S.a.abo:'A',rh:'?'}}else{const[a,r]=v.split('|');S.a={abo:a,rh:r}}A()})}
+/* B: two segmented bars */
+function seg(items,val,key,st){const w=100/items.length;const i=items.findIndex(x=>x[0]===val);
+ return `<div class="seg" data-k="${key}">${i>=0?`<i style="left:calc(${i*w}% + 3px);width:calc(${w}% - 6px)"></i>`:''}${items.map(x=>`<button class="${x[0]===val?'on':''}" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`}
+function B(){const p=document.getElementById('b'),s=S.b;
+ p.innerHTML=`<p class="lab">หมู่</p>${seg(ABO.map(x=>[x,x]),s.abo,'abo')}<button class="ghost ${s.abo==='?'?'on':''}" data-u="abo">ไม่ทราบหมู่</button>
+ <p class="lab" style="margin-top:6px">Rh</p>${seg([['+','บวก (+)'],['-','ลบ (−)']],s.rh,'rh')}<button class="ghost ${s.rh==='?'?'on':''}" data-u="rh">ไม่ทราบ Rh</button>
+ <p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>`;
+ p.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.b[b.parentElement.dataset.k]=b.dataset.v;B()});
+ p.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.b[b.dataset.u]='?';B()})}
+/* C: live preview + square tiles */
+function C(){const p=document.getElementById('c'),s=S.c;
+ const big=(s.abo&&s.abo!=='?'?s.abo:'?')+(s.rh==='+'?'+':s.rh==='-'?'−':'');
+ p.innerHTML=`<div class="hero">${DROP}<div><b>${big}</b><span>${s.abo&&s.abo!=='?'?'หมู่ '+s.abo+' · Rh '+(rhLabel(s.rh)||'ยังไม่เลือก'):'ยังไม่ได้เลือกหมู่'}</span></div></div>
+ <div class="sq">${ABO.map(a=>`<button class="${s.abo===a?'on':''}" data-a="${a}">${a}</button>`).join('')}</div>
+ <div class="rh">${[['+','บวก (+)'],['-','ลบ (−)'],['?','ไม่ทราบ']].map(x=>`<button class="${s.rh===x[0]?'on':''}" data-r="${x[0]}">${x[1]}</button>`).join('')}</div>
+ <button class="ghost ${s.abo==='?'?'on':''}" data-a="?" style="margin-top:6px">ไม่ทราบหมู่</button>`;
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{S.c.abo=b.dataset.a;C()});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.c.rh=b.dataset.r;C()})}
+/* D: toggle for Rh */
+function D(){const p=document.getElementById('d'),s=S.d;
+ p.innerHTML=`<div class="line" style="display:block;border:0;padding-top:0"><p class="lab">หมู่</p><div class="sq" style="grid-template-columns:repeat(4,1fr)">${ABO.map(a=>`<button style="aspect-ratio:auto;padding:10px 0" class="${s.abo===a?'on':''}" data-a="${a}">${a}</button>`).join('')}</div></div>
+ <div class="line"><div><div style="font-size:14px">Rh</div><div style="font-size:12px;color:var(--mut)">${s.rh==='?'?'ไม่ทราบ':s.rh==='+'?'บวก — พบมากที่สุด':'ลบ — พบน้อย'}</div></div>
+ <button class="sw ${s.rh==='+'?'pos':''}" data-sw aria-label="สลับ Rh"><span class="p">+</span><span class="n">−</span></button></div>
+ <div class="line" style="padding-bottom:0"><button class="ghost ${s.abo==='?'?'on':''}" data-a="?">ไม่ทราบหมู่</button><button class="ghost ${s.rh==='?'?'on':''}" data-r="?">ไม่ทราบ Rh</button></div>`;
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{S.d.abo=b.dataset.a;D()});
+ p.querySelector('[data-sw]').onclick=()=>{S.d.rh=S.d.rh==='+'?'-':'+';D()};
+ p.querySelector('[data-r]').onclick=()=>{S.d.rh='?';D()}}
+/* E: two-column wheel */
+function E(){const p=document.getElementById('e'),s=S.e;
+ const A=['A','B','AB','O','ไม่ทราบ'],R=[['+','บวก (+)'],['-','ลบ (−)'],['?','ไม่ทราบ']];
+ p.innerHTML=`<p class="lab">เลื่อนเพื่อเลือก · หมู่ | Rh</p><div class="wheel"><div class="band"></div>
+ <div class="col" id="ca">${A.map(x=>`<div>${x}</div>`).join('')}</div><div class="col" id="cr">${R.map(x=>`<div>${x[1]}</div>`).join('')}</div><div class="mask"></div></div>
+ <p class="hint" id="esum"></p>`;
+ const ca=p.querySelector('#ca'),cr=p.querySelector('#cr');
+ const sync=(el,list,set)=>{const i=Math.max(0,Math.min(list.length-1,Math.round(el.scrollTop/40)));[...el.children].forEach((c,j)=>c.classList.toggle('on',j===i));set(i)};
+ const upd=()=>{p.querySelector('#esum').innerHTML='เลือกอยู่: <span class="sum">'+(S.e.abo==='?'?'ไม่ทราบหมู่':S.e.abo)+' '+(S.e.rh==='+'?'+':S.e.rh==='-'?'−':'· ไม่ทราบ Rh')+'</span>'};
+ ca.onscroll=()=>sync(ca,A,i=>{S.e.abo=i===4?'?':A[i];upd()});cr.onscroll=()=>sync(cr,R,i=>{S.e.rh=R[i][0];upd()});
+ ca.scrollTop=A.indexOf(s.abo)*40;cr.scrollTop=R.findIndex(x=>x[0]===s.rh)*40;sync(ca,A,()=>{});sync(cr,R,()=>{});upd()}
+/* F: two-step wizard */
+function F(){const p=document.getElementById('f'),s=S.f;
+ const step=!s.abo?1:2;
+ const done=s.abo&&s.rh;
+ let h=`<div class="step"><div class="dot on">1</div><div class="ln ${s.abo?'on':''}"></div><div class="dot ${s.abo?'on':''}">2</div><div class="ln ${done?'on':''}"></div><div class="dot ${done?'on':''}">✓</div></div>`;
+ if(done){h+=`<div class="hero">${DROP}<div><b>${s.abo==='?'?'?':s.abo}${s.rh==='+'?'+':s.rh==='-'?'−':''}</b><span>หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo} · Rh ${rhLabel(s.rh)}</span></div></div><button class="ghost" data-x>แก้ไข</button>`}
+ else if(step===1){h+=`<p class="lab">หมู่อะไร</p><div class="g4">${ABO.map(a=>`<button class="tile" data-a="${a}">${a}</button>`).join('')}</div><button class="ghost" data-a="?">ไม่ทราบ</button>`}
+ else{h+=`<p class="lab">หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo} · แล้ว Rh ล่ะ</p><div class="row">${[['+','บวก (+)'],['-','ลบ (−)'],['?','ไม่ทราบ']].map(x=>`<button class="chip" data-r="${x[0]}">${x[1]}</button>`).join('')}</div><button class="ghost" data-back>← เปลี่ยนหมู่</button><p class="hint">คนไทยส่วนใหญ่เป็น Rh บวก</p>`}
+ p.innerHTML=h;
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{S.f.abo=b.dataset.a;S.f.rh='';F()});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.f.rh=b.dataset.r;F()});
+ const bk=p.querySelector('[data-back]');if(bk)bk.onclick=()=>{S.f={abo:'',rh:''};F()};
+ const x=p.querySelector('[data-x]');if(x)x.onclick=()=>{S.f={abo:'',rh:''};F()}}
+card('a','A · ตาราง 8 ช่อง','หมู่+Rh รวมเป็นแตะเดียว เห็นทุกตัวเลือกในจอเดียว ไม่ต้องมีหัวข้อแยก');
+card('b','B · แถบเลือก (Segmented)','หมู่ 4 ช่องอยู่แถวเดียว Rh 2 ช่อง กะทัดรัดที่สุด มีแถบสีเลื่อนตาม');
+card('c','C · พรีวิวหยดเลือด','ตัวอักษรใหญ่โชว์หมู่ที่เลือกแบบสด ๆ ใต้ลงมาเป็นปุ่มเลือก');
+card('d','D · สวิตช์ Rh','หมู่เป็นปุ่ม ส่วน Rh เป็นสวิตช์ +/− เพราะมีแค่ 2 ค่าหลัก ไม่ทราบเป็นลิงก์เล็ก');
+card('e','E · ล้อเลื่อน (Wheel)','เลื่อนแบบเดียวกับไม้บรรทัดปีเกิด/น้ำหนัก ให้ทั้งกล่องโปรไฟล์ใช้ท่าเดียวกัน');
+card('f','F · ทีละขั้น','ถามหมู่ก่อน แล้วค่อยถาม Rh เสร็จแล้วสรุปเป็นการ์ดใหญ่ แตะเพื่อแก้');
+A();B();C();D();E();F();
+</script></body></html>

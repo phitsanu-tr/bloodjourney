@@ -1,0 +1,73 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rh หยดจิ๋วมีข้อความ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{border:1px solid var(--soft);border-radius:14px;padding:14px 14px 12px}
+.lab{font-size:12px;color:var(--mut);margin:0 0 8px}.lab.m{margin-top:12px}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-top:4px}
+.d{border:0;background:none;position:relative;transition:transform .18s}
+.d svg{width:100%;height:auto;display:block;overflow:visible}
+.d path.b{fill:#F7E9E6;transition:.2s}
+.d .t{position:absolute;left:0;right:0;top:46%;text-align:center;font-size:19px;line-height:1;color:var(--red)}
+.d.on{transform:translateY(-3px) scale(1.08)}.d.on path.b{fill:var(--red)}.d.on .t{color:#fff}
+.d .g{opacity:0;transition:.2s}.d.on .g{opacity:.45}
+.hint{font-size:11px;color:var(--mut);margin:8px 0 0}
+/* rh drops */
+.rr{display:grid;gap:8px;align-items:end;padding-top:4px}
+.rr.c3{grid-template-columns:repeat(3,1fr)}.rr.c4{grid-template-columns:repeat(4,1fr)}
+.md{position:relative;border:0;background:none;transition:transform .18s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.md svg{width:100%;display:block;overflow:visible}
+.md path.b{fill:#F7E9E6;transition:.2s}
+.md .t{position:absolute;left:0;right:0;text-align:center;color:var(--red);line-height:1;transition:color .2s}
+.md.on{transform:translateY(-3px) scale(1.06)}.md.on path.b{fill:var(--red)}.md.on .t{color:#fff}
+.md .g{opacity:0;transition:.2s}.md.on .g{opacity:.45}
+.md .cap{font-family:Prompt;font-size:11.5px;color:var(--mut)}.md.on .cap{color:var(--red);font-weight:500}
+.md.unk path.b{fill:#fff;stroke:var(--line);stroke-width:2;stroke-dasharray:4 3}.md.unk.on path.b{fill:var(--red);stroke:var(--red);stroke-dasharray:none}
+.md.unk .t{color:var(--mut)}.md.unk.on .t{color:#fff}
+.unkl{background:none;border:0;font-family:Prompt;font-size:12.5px;color:var(--mut);text-decoration:underline;padding:6px 0}.unkl.on{color:var(--red);font-weight:500}
+.f1 .t{top:50%;font-size:16px}
+.f2 .t{top:38%}.f2 .t small{display:block;font-family:Prompt;font-size:10px;opacity:.85;margin-bottom:2px}.f2 .t b{font-weight:500;font-size:22px}
+.f3 .t{top:50%;font-size:18px}
+.f4 .t{top:52%;font-size:15px}
+.f5 .t{top:50%;font-size:17px}
+.f5 .sub2{font-size:11px;color:var(--mut)}
+</style></head><body>
+<h1>Rh หยดจิ๋ว — ตัวอักษรในหยด 5 แบบ</h1>
+<p class="sub">แถวหมู่เป็นแบบหยดประกาย · เปลี่ยนเฉพาะแถว Rh ให้ใช้ข้อความ "Rh+ / Rh−" · กดเล่นได้</p>
+<div class="grid" id="root"></div>
+<script>
+const ABO=['A','B','AB','O'],DROP='M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z';
+const GL='<path class="g" d="M15 40a11 11 0 0 0 8 10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>';
+const ids=['f1','f2','f3','f4','f5'];const abo={},rh={};ids.forEach(i=>{abo[i]='A';rh[i]='+'});
+const info=[
+['1 · Rh+ / Rh− ในหยด','ข้อความสั้น ๆ "Rh+" "Rh−" อยู่กลางหยด หยดกว้างขึ้นเล็กน้อยให้พอดีตัวอักษร'],
+['2 · "Rh" เล็ก บน เครื่องหมายใหญ่','หยดละ 2 บรรทัด คำว่า Rh ตัวเล็กอยู่บน เครื่องหมาย + / − ตัวใหญ่อยู่ล่าง'],
+['3 · Rh+ / Rh− + ไม่ทราบเป็นหยดเส้นประ','ครบ 3 ตัวเลือกเป็นหยดหมด "ไม่ทราบ" เป็นหยดเส้นประ ไม่ต้องมีลิงก์แยก'],
+['4 · หยดมีตัวอักษร + คำอ่านใต้หยด','ในหยดเป็น Rh+ / Rh− ใต้หยดเขียนว่า บวก / ลบ สำหรับคนที่ไม่คุ้นสัญลักษณ์'],
+['5 · เหมือนแบบ 3 แต่ข้อความยาว','"Rh บวก" / "Rh ลบ" เป็นคำเต็มในหยดใหญ่ อ่านง่ายที่สุด กินที่มากสุด']];
+const root=document.getElementById('root');
+ids.forEach((id,i)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<p class="tag">${info[i][0]}</p><p class="desc">${info[i][1]}</p><div class="pane ${id}" id="${id}"></div>`;root.append(c)});
+const aboRow=id=>`<p class="lab">หมู่</p><div class="row4">${ABO.map(a=>`<button class="d ${abo[id]===a?'on':''}" data-a="${a}"><svg viewBox="0 0 52 60"><path class="b" d="${DROP}"/>${GL}</svg><span class="t">${a}</span></button>`).join('')}</div><p class="lab m">Rh</p>`;
+const foot='<p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>';
+const dropBtn=(id,v,inner,cap,cls='')=>`<button class="md ${cls} ${rh[id]===v?'on':''}" data-r="${v}" aria-label="Rh ${v==='+'?'บวก':v==='-'?'ลบ':'ไม่ทราบ'}"><svg viewBox="0 0 52 60"><path class="b" d="${DROP}"/>${cls.includes('unk')?'':GL}</svg><span class="t">${inner}</span>${cap?`<span class="cap">${cap}</span>`:''}</button>`;
+const draw={
+f1:id=>aboRow(id)+`<div class="rr c4">${dropBtn(id,'+','Rh+')}${dropBtn(id,'-','Rh−')}<span></span><span></span></div><button class="unkl ${rh[id]==='?'?'on':''}" data-r="?">ไม่ทราบ Rh</button>`+foot,
+f2:id=>aboRow(id)+`<div class="rr c4">${dropBtn(id,'+','<small>Rh</small><b>+</b>')}${dropBtn(id,'-','<small>Rh</small><b>−</b>')}<span></span><span></span></div><button class="unkl ${rh[id]==='?'?'on':''}" data-r="?">ไม่ทราบ Rh</button>`+foot,
+f3:id=>aboRow(id)+`<div class="rr c4">${dropBtn(id,'+','Rh+')}${dropBtn(id,'-','Rh−')}${dropBtn(id,'?','?','','unk')}<span></span></div>`+foot,
+f4:id=>aboRow(id)+`<div class="rr c4">${dropBtn(id,'+','Rh+','บวก')}${dropBtn(id,'-','Rh−','ลบ')}${dropBtn(id,'?','?','ไม่ทราบ','unk')}<span></span></div>`+foot,
+f5:id=>aboRow(id)+`<div class="rr c3">${dropBtn(id,'+','Rh<br>บวก')}${dropBtn(id,'-','Rh<br>ลบ')}${dropBtn(id,'?','Rh<br>?','','unk')}</div>`+foot};
+function render(id){const p=document.getElementById(id);p.innerHTML=draw[id](id);
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{abo[id]=b.dataset.a;render(id)});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rh[id]=b.dataset.r;render(id)})}
+ids.forEach(render);
+// f1,f2 need an unknown option too: add link
+['f1','f2'].forEach(id=>{const o=render;});
+</script></body></html>

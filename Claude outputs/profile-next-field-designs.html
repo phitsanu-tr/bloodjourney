@@ -1,0 +1,90 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ไล่กรอกโปรไฟล์ 3 แบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:52px}
+.phone{position:relative;height:600px;border:1px solid var(--soft);border-radius:22px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;padding:10px}
+.box{background:#fff;border:1px solid var(--soft);border-radius:16px;padding:0 10px}
+.row{border-bottom:1px solid var(--soft);padding:4px 0}.row:last-child{border:0}
+.rh{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 6px;border-radius:12px;font-family:inherit;cursor:pointer}
+.row.open>.rh{background:#FBEFEC}
+.ic{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:15px;flex:none;font-family:Mitr}
+.lb{font-size:11px;color:var(--mut);display:block}.vl{font-size:15px;display:block}.vl.ph{color:#B9A5A1}
+.ok{margin-left:auto;font-size:11px;color:#1d7a46}
+.panel{padding:8px 4px 10px 50px}
+.inp{width:100%;border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;font:inherit;font-size:15px;outline:none;background:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{flex:1;min-width:70px;border:1px solid var(--line);background:#fff;border-radius:20px;height:38px;font-family:Mitr;font-size:13.5px;color:var(--ink)}
+.chips button.on{background:var(--red);border-color:var(--red);color:#fff}
+.step{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:#fff;border-radius:14px;padding:6px}
+.step button{width:44px;height:38px;border:0;background:var(--soft);border-radius:10px;font-size:20px;color:var(--red)}
+.step b{font-family:Mitr;font-size:20px;font-weight:500}
+.next{display:flex;justify-content:flex-end;margin-top:10px}
+.next button{min-height:38px;padding:0 20px;border:0;border-radius:20px;background:var(--red);color:#fff;font-family:Mitr;font-size:14px}
+.next button.ghost{background:none;color:var(--mut);font-family:Prompt;text-decoration:underline;padding:0 10px}
+.kb{background:#D3D6DB;padding:8px 6px 10px;flex:none}
+.kb .keys{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:6px}
+.kb .keys i{background:#fff;border-radius:5px;height:30px;box-shadow:0 1px 0 #0003}
+.kb .bar{display:flex;gap:4px}.kb .bar i{background:#fff;border-radius:6px;height:34px;flex:1;box-shadow:0 1px 0 #0003}
+.kb .bar i:first-child{flex:.5;background:#AEB3BA}.kb .bar button{flex:1.2;border:0;border-radius:6px;background:var(--red);color:#fff;font-family:Mitr;font-size:14px;height:34px}
+.prog{display:flex;gap:5px;padding:8px 12px 0}.prog span{flex:1;height:5px;border-radius:3px;background:var(--soft)}.prog span.f{background:var(--red)}
+.pl{padding:2px 12px 0;font-size:11.5px;color:var(--mut)}
+.done{position:absolute;left:12px;right:12px;bottom:12px;background:#1d7a46;color:#fff;border-radius:14px;padding:11px 14px;font-size:13.5px;text-align:center;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none}
+.done.show{opacity:1;transform:none}
+</style></head><body>
+<h1>กรอกโปรไฟล์แล้วไล่ไปช่องถัดไป — 3 แบบ</h1>
+<p class="sub">กดเล่นได้ · ช่องข้อความมีคีย์บอร์ดจำลอง ปุ่มมุมขวาล่างของคีย์บอร์ดคือ "Enter" · ลองกดที่ปุ่มสีแดงในคีย์บอร์ด</p>
+<div class="grid" id="root"></div>
+<script>
+const ROWS=[
+ {k:'first',l:'ชื่อ',t:'text',ic:'ช',ph:'เช่น สมชาย'},
+ {k:'last',l:'นามสกุล',t:'text',ic:'น',ph:'เช่น ใจดี'},
+ {k:'gender',l:'เพศ',t:'choice',ic:'เพ',ph:'เลือก ชาย, หญิง หรือไม่ระบุ',opts:['ชาย','หญิง','ไม่ระบุ']},
+ {k:'year',l:'ปีเกิด (พ.ศ.)',t:'num',ic:'ปี',ph:'เช่น 2539',def:2539,step:1},
+ {k:'weight',l:'น้ำหนัก (กก.)',t:'num',ic:'นน',ph:'เช่น 55.5',def:55,step:0.5},
+ {k:'height',l:'ส่วนสูง (ซม.)',t:'num',ic:'สส',ph:'เช่น 165',def:165,step:1}];
+const cfg=[
+ {id:'p1',tag:'1 · เบา — Enter ไล่เฉพาะช่องพิมพ์',desc:'กด Enter ที่ชื่อ → ไปนามสกุล → ไปเปิดแผงเพศ แล้วหยุด (ที่เหลือเป็นตัวเลือก/ไม้บรรทัด ผู้ใช้กดเอง) ปุ่มคีย์บอร์ดเปลี่ยนเป็น "ถัดไป"',mode:'light',pre:{}},
+ {id:'p2',tag:'2 · ปุ่ม "ถัดไป" ในทุกแผง',desc:'ทุกแถวมีปุ่ม "ถัดไป" ไปแถวถัดลงไปตามลำดับ ใช้ได้กับตัวเลือกและไม้บรรทัดด้วย ช่องพิมพ์กด Enter ได้เหมือนกัน แถวสุดท้ายเป็น "เสร็จ"',mode:'seq',pre:{}},
+ {id:'p3',tag:'3 · ถัดไป + ข้ามช่องที่กรอกแล้ว + แถบความคืบหน้า',desc:'เริ่มตรงไหนก็ได้ ปุ่ม "ถัดไป" จะข้ามแถวที่มีข้อมูลแล้วไปช่องที่ยังว่าง (ตัวอย่างนี้ชื่อกับน้ำหนักกรอกไว้แล้ว) ครบแล้วขึ้น "ครบแล้ว ✓"',mode:'skip',pre:{first:'พิษณุ',weight:65}}];
+const root=document.getElementById('root');
+cfg.forEach(c=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<p class="tag">${c.tag}</p><p class="desc">${c.desc}</p><div class="phone" id="${c.id}"></div>`;root.append(d);
+ const st={vals:{...c.pre},open:c.mode==='skip'?'last':'first'};render(c,st)});
+function nextIdx(c,st,from){for(let i=from+1;i<ROWS.length;i++){if(c.mode!=='skip'||st.vals[ROWS[i].k]==null||st.vals[ROWS[i].k]==='')return i}return -1}
+function advance(c,st,fromKey){const i=ROWS.findIndex(r=>r.k===fromKey);
+ if(c.mode==='light'){const r=ROWS[i];if(r.t==='text'&&i+1<ROWS.length){st.open=ROWS[i+1].k}else st.open=null;}
+ else{const n=nextIdx(c,st,i);if(n<0){st.open=null;st.finished=true}else st.open=ROWS[n].k}
+ render(c,st)}
+function render(c,st){const p=document.getElementById(c.id);const filled=ROWS.filter(r=>st.vals[r.k]!=null&&st.vals[r.k]!=='').length;
+ const openRow=ROWS.find(r=>r.k===st.open);
+ let h='';
+ if(c.mode==='skip')h+=`<div class="prog">${ROWS.map(r=>`<span class="${st.vals[r.k]!=null&&st.vals[r.k]!==''?'f':''}"></span>`).join('')}</div><div class="pl">กรอกแล้ว ${filled}/${ROWS.length}</div>`;
+ h+='<div class="scroll"><div class="box">'+ROWS.map((r,i)=>{const v=st.vals[r.k];const has=v!=null&&v!=='';const isOpen=st.open===r.k;
+  const last=i===ROWS.length-1;
+  let panel='';
+  if(isOpen){
+   if(r.t==='text')panel=`<input class="inp" id="${c.id}-in" value="${v||''}" placeholder="${r.ph}" autocomplete="off">`;
+   else if(r.t==='choice')panel=`<div class="chips">${r.opts.map(o=>`<button class="${v===o?'on':''}" data-set="${r.k}" data-v="${o}">${o}</button>`).join('')}</div>`;
+   else panel=`<div class="step"><button data-dec="${r.k}">−</button><b>${has?v:r.def}</b><button data-inc="${r.k}">+</button></div>`;
+   if(c.mode!=='light'||r.t!=='text'){const lbl=last?'เสร็จ':'ถัดไป';panel+=`<div class="next">${c.mode==='light'?'<button class="ghost" data-close>เสร็จ</button>':`<button data-next="${r.k}">${lbl}${last?'':' →'}</button>`}</div>`}
+  }
+  return `<div class="row ${isOpen?'open':''}"><button class="rh" data-open="${r.k}"><span class="ic">${r.ic}</span><span><span class="lb">${r.l}</span><span class="vl ${has?'':'ph'}">${has?v:r.ph}</span></span>${has&&!isOpen?'<span class="ok">✓ บันทึกแล้ว</span>':''}</button>${isOpen?`<div class="panel">${panel}</div>`:''}</div>`}).join('')+'</div></div>';
+ if(openRow&&openRow.t==='text'){const i=ROWS.indexOf(openRow);const isLastText=c.mode==='light'?false:i===ROWS.length-1;const lbl=isLastText?'เสร็จ':'ถัดไป';
+  h+=`<div class="kb"><div class="keys">${'<i></i>'.repeat(10)}</div><div class="keys">${'<i></i>'.repeat(10)}</div><div class="bar"><i></i><i></i><i style="flex:3"></i><button data-enter="${openRow.k}">${lbl}</button></div></div>`}
+ h+=`<div class="done ${st.finished?'show':''}">ครบแล้ว ✓ โปรไฟล์พร้อมใช้งาน</div>`;
+ p.innerHTML=h;
+ p.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{st.open=st.open===b.dataset.open?null:b.dataset.open;st.finished=false;render(c,st)});
+ const inp=p.querySelector('.inp');if(inp){inp.oninput=()=>{const k=st.open;st.vals[k]=inp.value;};inp.onkeydown=e=>{if(e.key==='Enter'){st.vals[st.open]=inp.value;advance(c,st,st.open)}};inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length)}
+ p.querySelectorAll('[data-enter]').forEach(b=>b.onclick=()=>{if(inp)st.vals[st.open]=inp.value;advance(c,st,b.dataset.enter)});
+ p.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{st.vals[b.dataset.set]=b.dataset.v;render(c,st)});
+ p.querySelectorAll('[data-inc],[data-dec]').forEach(b=>b.onclick=()=>{const k=b.dataset.inc||b.dataset.dec,r=ROWS.find(x=>x.k===k);const cur=st.vals[k]!=null&&st.vals[k]!==''?Number(st.vals[k]):r.def;st.vals[k]=+(cur+(b.dataset.inc?1:-1)*r.step).toFixed(1);render(c,st)});
+ p.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>{const r=ROWS.find(x=>x.k===b.dataset.next);if(r.t==='num'&&(st.vals[r.k]==null||st.vals[r.k]===''))st.vals[r.k]=r.def;advance(c,st,b.dataset.next)});
+ p.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{st.open=null;render(c,st)});
+}
+</script></body></html>

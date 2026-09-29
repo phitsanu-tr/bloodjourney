@@ -1,0 +1,78 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>หมู่โลหิต แบบ C + Rh</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{border:1px solid var(--soft);border-radius:14px;padding:14px}
+.lab{font-size:12.5px;color:var(--mut);margin:12px 0 8px}.lab:first-child{margin-top:0}
+.hint{font-size:12px;color:var(--mut);margin:10px 0 0}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hero{display:flex;align-items:center;gap:14px;background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.drop{width:52px;height:60px;flex:none}
+.hero b{font-family:Mitr;font-size:28px;color:var(--red);line-height:1}.hero span{font-size:12px;color:var(--mut);display:block;margin-top:3px}
+.sq{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sq button{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:14px;font-size:20px;color:var(--ink)}
+.on{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important}
+.rh{display:flex;gap:8px}
+.rh button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 0;font-size:14px;color:var(--ink)}
+.ghost{background:none;border:0;color:var(--mut);font-family:Prompt;font-size:12.5px;text-decoration:underline;padding:6px 0}
+.ghost.on{background:none!important;color:var(--red)!important;font-weight:600}
+/* C2 inside hero */
+.rhin{margin-left:auto;display:flex;flex-direction:column;gap:6px}
+.rhin button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:5px 12px;font-size:13px;color:var(--ink);min-width:64px}
+/* C3 big pills w/ desc */
+.big{display:grid;gap:8px}
+.big button{display:flex;align-items:center;justify-content:space-between;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 14px;color:var(--ink)}
+.big b{font-size:15px;font-weight:500}.big small{font-family:Prompt;font-size:11.5px;opacity:.75;display:block;font-weight:400}
+.big i{font-style:normal;font-size:22px}
+/* C4 stacked hero */
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;border:0;background:var(--bg);border-radius:10px;padding:8px 0;font-size:13.5px;color:var(--mut)}
+.tabs button.act{background:#fff;color:var(--ink);box-shadow:0 0 0 1.5px var(--red)}
+</style></head><body>
+<h1>หมู่โลหิต แบบ C + Rh — 4 แบบ</h1>
+<p class="sub">ทุกแบบมีพรีวิวหยดเลือด · หยดทึบ = Rh บวก, หยดโปร่ง = Rh ลบ, หยดจาง = ยังไม่เลือก · กดเล่นได้</p>
+<div class="grid" id="root"></div>
+<script>
+const $=h=>{const d=document.createElement('div');d.innerHTML=h;return d.firstElementChild};
+const root=document.getElementById('root'),ABO=['A','B','AB','O'];
+const S={a:{abo:'A',rh:'+'},b:{abo:'A',rh:'+'},c:{abo:'A',rh:'-'},d:{abo:'A',rh:'',tab:'abo'}};
+function card(id,t,d){const c=$(`<div class="card"><p class="tag">${t}</p><p class="desc">${d}</p><div class="pane" id="${id}"></div></div>`);root.append(c)}
+function drop(rh){const fill=rh==='+'?'#9A3B33':rh==='-'?'none':'#E3C8C3';
+ return `<svg class="drop" viewBox="0 0 52 60"><path d="M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z" fill="${fill}" stroke="${rh==='-'?'#9A3B33':'none'}" stroke-width="3"/>${rh==='+'?'<path d="M15 40a11 11 0 0 0 8 10" stroke="#fff" stroke-opacity=".45" stroke-width="3" fill="none" stroke-linecap="round"/>':''}</svg>`}
+const sym=r=>r==='+'?'+':r==='-'?'−':'';
+const rhL=r=>r==='+'?'บวก (+)':r==='-'?'ลบ (−)':r==='?'?'ไม่ทราบ':'ยังไม่เลือก';
+const big=s=>(s.abo&&s.abo!=='?'?s.abo:'?')+sym(s.rh);
+const aboRow=(s,k)=>`<div class="sq">${ABO.map(a=>`<button class="${s.abo===a?'on':''}" data-a="${a}">${a}</button>`).join('')}</div><button class="ghost ${s.abo==='?'?'on':''}" data-a="?">ไม่ทราบหมู่</button>`;
+function wire(p,s,f){p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{s.abo=b.dataset.a;f()});p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{s.rh=b.dataset.r;f()});p.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{s.tab=b.dataset.t;f()})}
+function A(){const p=document.getElementById('a'),s=S.a;
+ p.innerHTML=`<div class="hero">${drop(s.rh)}<div><b>${big(s)}</b><span>หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo} · Rh ${rhL(s.rh)}</span></div></div>
+ <p class="lab">หมู่</p>${aboRow(s)}<p class="lab">Rh</p>
+ <div class="rh">${[['+','บวก (+)'],['-','ลบ (−)'],['?','ไม่ทราบ']].map(x=>`<button class="${s.rh===x[0]?'on':''}" data-r="${x[0]}">${x[1]}</button>`).join('')}</div>
+ <p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>`;wire(p,s,A)}
+function B(){const p=document.getElementById('b'),s=S.b;
+ p.innerHTML=`<div class="hero">${drop(s.rh)}<div><b>${big(s)}</b><span>หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo}</span></div>
+ <div class="rhin">${[['+','+ บวก'],['-','− ลบ'],['?','ไม่ทราบ']].map(x=>`<button class="${s.rh===x[0]?'on':''}" data-r="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+ <p class="lab">หมู่</p>${aboRow(s)}<p class="hint">Rh เลือกได้ที่การ์ดด้านบน · ดูได้จากบัตรผู้บริจาค</p>`;wire(p,s,B)}
+function C(){const p=document.getElementById('c'),s=S.c;
+ const o=[['+','บวก (+)','พบบ่อย'],['-','ลบ (−)','พบน้อย'],['?','ไม่ทราบ','ดูได้จากบัตรผู้บริจาค']];
+ p.innerHTML=`<div class="hero">${drop(s.rh)}<div><b>${big(s)}</b><span>หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo} · Rh ${rhL(s.rh)}</span></div></div>
+ <p class="lab">หมู่</p>${aboRow(s)}<p class="lab">Rh</p>
+ <div class="big">${o.map(x=>`<button class="${s.rh===x[0]?'on':''}" data-r="${x[0]}"><span><b>${x[1]}</b><small>${x[2]}</small></span><i>${x[0]==='?'?'?':x[0]==='+'?'+':'−'}</i></button>`).join('')}</div>`;wire(p,s,C)}
+function D(){const p=document.getElementById('d'),s=S.d;
+ p.innerHTML=`<div class="hero">${drop(s.rh)}<div><b>${big(s)}</b><span>หมู่ ${s.abo==='?'?'ไม่ทราบ':s.abo} · Rh ${rhL(s.rh)}</span></div></div>
+ <div class="tabs"><button class="${s.tab==='abo'?'act':''}" data-t="abo">หมู่ ${s.abo||'–'}</button><button class="${s.tab==='rh'?'act':''}" data-t="rh">Rh ${sym(s.rh)||rhL(s.rh)}</button></div>
+ ${s.tab==='abo'?aboRow(s):`<div class="rh">${[['+','บวก (+)'],['-','ลบ (−)'],['?','ไม่ทราบ']].map(x=>`<button class="${s.rh===x[0]?'on':''}" data-r="${x[0]}">${x[1]}</button>`).join('')}</div><p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>`}`;
+ wire(p,s,()=>{if(s.tab==='abo'&&s.abo&&!s.rh)s.tab='rh';D()})}
+card('a','C1 · C เดิม + หัวข้อ Rh','เติมหัวข้อ "หมู่" และ "Rh" ให้ชัด พร้อมคำแนะนำท้ายกล่อง หยดเปลี่ยนตาม Rh');
+card('b','C2 · Rh อยู่ในการ์ดพรีวิว','ปุ่ม Rh ย้ายไปอยู่ข้างตัวอักษรใหญ่ในการ์ด ล่างเหลือแค่เลือกหมู่ ประหยัดที่');
+card('c','C3 · Rh ปุ่มใหญ่มีคำอธิบาย','Rh เป็นแถวปุ่มใหญ่ พร้อมคำอธิบายสั้น ๆ ใต้แต่ละตัวเลือก อ่านง่ายที่สุด');
+card('d','C4 · แท็บ หมู่ | Rh','การ์ดพรีวิวอยู่บน มีแท็บสลับ เลือกหมู่เสร็จเด้งไป Rh ให้อัตโนมัติ');
+A();B();C();D();
+</script></body></html>

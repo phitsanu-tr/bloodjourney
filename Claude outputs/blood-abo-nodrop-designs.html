@@ -1,0 +1,79 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>หมู่โลหิต ไม่ใช้หยด</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{border:1px solid var(--soft);border-radius:14px;padding:14px 14px 12px}
+.lab{font-size:12px;color:var(--mut);margin:0 0 8px}.lab.m{margin-top:12px}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+.hint{font-size:11px;color:var(--mut);margin:8px 0 0}
+/* Rh bar (same as app) */
+.rh{position:relative;display:flex;background:var(--bg);border:1px solid var(--soft);border-radius:14px;padding:3px}
+.rh i{position:absolute;top:3px;bottom:3px;width:calc((100% - 6px)/3);border-radius:11px;background:var(--red);transition:left .22s}
+.rh button{position:relative;z-index:1;flex:1;height:42px;border:0;background:none;border-radius:11px;font-size:17px;color:var(--mut);transition:color .2s}
+.rh button.u{font-size:13.5px}.rh button.on{color:#fff}
+/* a1 segmented 4 */
+.a1{position:relative;display:flex;background:var(--bg);border:1px solid var(--soft);border-radius:14px;padding:3px}
+.a1 i{position:absolute;top:3px;bottom:3px;width:calc((100% - 6px)/4);border-radius:11px;background:var(--red);transition:left .22s}
+.a1 button{position:relative;z-index:1;flex:1;height:42px;border:0;background:none;border-radius:11px;font-size:18px;color:var(--mut);transition:color .2s}
+.a1 button.on{color:#fff}
+/* a2 tiles */
+.a2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.a2 button{height:56px;border:1px solid var(--line);background:#fff;border-radius:14px;font-size:20px;color:var(--ink);transition:.15s}
+.a2 button.on{background:var(--red);border-color:var(--red);color:#fff}
+/* a3 coins */
+.a3{display:flex;justify-content:space-between}
+.a3 button{width:62px;height:62px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:19px;color:var(--ink);transition:.15s}
+.a3 button.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 0 4px #F3D9D5}
+/* a4 underline */
+.a4{display:flex;border-bottom:1.5px solid var(--soft)}
+.a4 button{flex:1;height:48px;border:0;background:none;font-size:21px;color:#B9A5A1;position:relative;transition:.15s}
+.a4 button.on{color:var(--red)}
+.a4 button.on::after{content:"";position:absolute;left:22%;right:22%;bottom:-1.5px;height:3px;border-radius:2px;background:var(--red)}
+/* a5 tall cards with rank ticks */
+.a5{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.a5 button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 0 10px;color:var(--ink);transition:.15s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.a5 button b{font-size:26px;font-weight:500;line-height:1}
+.a5 button small{display:block;width:16px;height:3px;border-radius:2px;background:var(--soft);transition:.15s}
+.a5 button.on{background:var(--bg);border-color:var(--red);color:var(--red)}
+.a5 button.on small{background:var(--red);width:22px}
+/* a6 capsule (earlier look) */
+.a6{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.a6 button{height:44px;border:1px solid var(--line);background:#fff;border-radius:22px;font-size:16px;color:var(--ink);transition:.15s}
+.a6 button.on{background:var(--red);border-color:var(--red);color:#fff}
+</style></head><body>
+<h1>หมู่โลหิต ไม่ใช้หยด — 6 แบบ</h1>
+<p class="sub">แถว Rh เป็นแถบสลับแบบเดียวกับในแอปตอนนี้ · เทียบว่าแถวหมู่แบบไหนเข้ากับมันที่สุด · กดเล่นได้</p>
+<div class="grid" id="root"></div>
+<script>
+const ABO=['A','B','AB','O'];
+const ids=['a1','a2','a3','a4','a5','a6'];const abo={},rh={};ids.forEach(i=>{abo[i]='O';rh[i]='-'});
+const info=[['1 · แถบสลับ 4 ช่อง','หน้าตาเดียวกับแถบ Rh ด้านล่างเป๊ะ เป็นชุดเดียวกัน แถบสีเลื่อนตาม'],
+['2 · ปุ่มสี่เหลี่ยมมนใหญ่','ปุ่มแยก 4 ช่อง ตัวอักษรใหญ่ กดง่าย ตัวที่เลือกเป็นสีแดงทึบ'],
+['3 · เหรียญกลม','ปุ่มกลม 4 เม็ด ตัวที่เลือกมีวงเรืองรอบ'],
+['4 · ตัวอักษรขีดเส้นใต้','ไม่มีกรอบ เรียบที่สุด ตัวที่เลือกเป็นสีแดงมีเส้นใต้'],
+['5 · การ์ดสูง มีขีดบอกสถานะ','การ์ดสูงตัวอักษรใหญ่ มีขีดสั้นด้านล่างเป็นสีแดงเมื่อเลือก พื้นอ่อน ไม่ทึบมาก'],
+['6 · แคปซูล (แบบเดิมก่อนใช้หยด)','กลับไปแบบแคปซูลกลม 4 ช่องแบบเดิม']];
+const root=document.getElementById('root');
+ids.forEach((id,i)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<p class="tag">${info[i][0]}</p><p class="desc">${info[i][1]}</p><div class="pane" id="${id}"></div>`;root.append(c)});
+const RH=[['+','Rh+'],['-','Rh−'],['unknown','ไม่ทราบ']];
+const rhRow=id=>{const i=RH.findIndex(x=>x[0]===rh[id]);return `<p class="lab m">Rh</p><div class="rh"><i style="left:calc(3px + ${i}*(100% - 6px)/3)"></i>${RH.map(x=>`<button class="${x[0]==='unknown'?'u':''} ${rh[id]===x[0]?'on':''}" data-r="${x[0]}">${x[1]}</button>`).join('')}</div><p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>`};
+const btns=(id,extra='')=>ABO.map(a=>`<button class="${abo[id]===a?'on':''}" data-a="${a}">${extra?`<b>${a}</b><small></small>`:a}</button>`).join('');
+const draw={
+a1:id=>`<p class="lab">หมู่</p><div class="a1"><i style="left:calc(3px + ${ABO.indexOf(abo[id])}*(100% - 6px)/4)"></i>${btns(id)}</div>`,
+a2:id=>`<p class="lab">หมู่</p><div class="a2">${btns(id)}</div>`,
+a3:id=>`<p class="lab">หมู่</p><div class="a3">${btns(id)}</div>`,
+a4:id=>`<p class="lab">หมู่</p><div class="a4">${btns(id)}</div>`,
+a5:id=>`<p class="lab">หมู่</p><div class="a5">${btns(id,1)}</div>`,
+a6:id=>`<p class="lab">หมู่</p><div class="a6">${btns(id)}</div>`};
+function render(id){const p=document.getElementById(id);p.innerHTML=draw[id](id)+rhRow(id);
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{abo[id]=b.dataset.a;render(id)});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rh[id]=b.dataset.r;render(id)})}
+ids.forEach(render);
+</script></body></html>

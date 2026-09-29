@@ -1,0 +1,97 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rh 6 รูปแบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.pane{border:1px solid var(--soft);border-radius:14px;padding:14px 14px 12px}
+.lab{font-size:12px;color:var(--mut);margin:0 0 8px}.lab.m{margin-top:12px}
+button{font-family:Mitr;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-top:4px}
+.d{border:0;background:none;position:relative;transition:transform .18s}
+.d svg{width:100%;height:auto;display:block;overflow:visible}
+.d path.b{fill:#F7E9E6;transition:.2s}
+.d .t{position:absolute;left:0;right:0;top:46%;text-align:center;font-size:19px;line-height:1;color:var(--red)}
+.d.on{transform:translateY(-3px) scale(1.08)}.d.on path.b{fill:var(--red)}.d.on .t{color:#fff}
+.d .g{opacity:0;transition:.2s}.d.on .g{opacity:.45}
+.hint{font-size:11px;color:var(--mut);margin:8px 0 0}
+.unk{background:none;border:0;font-family:Prompt;font-size:12.5px;color:var(--mut);text-decoration:underline;padding:6px 0}
+.unk.on{color:var(--red);font-weight:500}
+/* r1 circle glyph */
+.r1{display:flex;gap:10px;align-items:center}
+.r1 .c{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:30px;line-height:1;color:var(--ink);font-weight:400;transition:.15s}
+.r1 .c.on{background:var(--red);border-color:var(--red);color:#fff}
+.r1 .unk{margin-left:auto}
+/* r2 segmented */
+.seg{display:flex;background:var(--bg);border:1px solid var(--soft);border-radius:14px;padding:3px;position:relative}
+.seg button{flex:1;border:0;background:none;border-radius:11px;padding:7px 0 6px;color:var(--mut);position:relative;z-index:1;transition:color .2s;line-height:1.1}
+.seg button b{display:block;font-size:22px;font-weight:500}.seg button small{font-family:Prompt;font-size:11px}
+.seg button.on{color:#fff}
+.seg i{position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:11px;background:var(--red);transition:left .22s;z-index:0}
+/* r3 mini drops with sign */
+.r3{display:flex;gap:14px;align-items:flex-end}
+.r3 .md{width:58px;position:relative;border:0;background:none;transition:.18s}
+.r3 .md svg{width:100%;display:block;overflow:visible}
+.r3 .md path{fill:#F7E9E6;transition:.2s}
+.r3 .md .t{position:absolute;left:0;right:0;top:44%;text-align:center;font-size:24px;line-height:1;color:var(--red)}
+.r3 .md.on{transform:translateY(-3px) scale(1.08)}.r3 .md.on path{fill:var(--red)}.r3 .md.on .t{color:#fff}
+.r3 .unk{margin-left:auto}
+/* r4 toggle */
+.r4{display:flex;align-items:center;gap:12px}
+.sw{width:96px;height:44px;border-radius:999px;background:var(--soft);position:relative;border:0;flex:none;transition:.2s}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:36px;height:36px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0003;transition:left .2s}
+.sw.pos{background:var(--red)}.sw.pos::after{left:56px}
+.sw span{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:22px}
+.sw .p{left:16px;color:#fff;opacity:0}.sw .n{right:16px;color:var(--mut)}
+.sw.pos .p{opacity:1}.sw.pos .n{opacity:0}
+.sw.none{background:var(--soft)}.sw.none::after{left:30px}.sw.none span{opacity:.6}.sw.none .p{color:var(--mut);opacity:.6}
+.r4 .txt b{font-family:Mitr;font-weight:500;font-size:15px;display:block}.r4 .txt span{font-size:11.5px;color:var(--mut)}
+/* r5 medical cross */
+.r5{display:flex;gap:10px;align-items:center}
+.r5 .x{width:58px;height:58px;border-radius:16px;border:1.5px solid var(--line);background:#fff;transition:.15s;display:flex;align-items:center;justify-content:center}
+.r5 .x svg{width:28px;height:28px}
+.r5 .x path{stroke:var(--ink);stroke-width:4.5;stroke-linecap:round;fill:none}
+.r5 .x.on{background:var(--red);border-color:var(--red)}.r5 .x.on path{stroke:#fff}
+.r5 .unk{margin-left:auto}
+/* r6 chip with sign badge */
+.r6{display:flex;gap:8px}
+.r6 button{flex:1;border:1px solid var(--line);background:#fff;border-radius:999px;height:46px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;color:var(--ink)}
+.r6 button i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}
+.r6 button.on{background:var(--red);border-color:var(--red);color:#fff}.r6 button.on i{background:#fff}
+</style></head><body>
+<h1>Rh — 6 รูปแบบ (ใช้กับหมู่แบบหยดประกาย)</h1>
+<p class="sub">แถวหมู่เป็นแบบ 2 เหมือนเดิม เปลี่ยนเฉพาะปุ่ม "บวก (+) / ลบ (−) / ไม่ทราบ" · กดเล่นได้</p>
+<div class="grid" id="root"></div>
+<script>
+const ABO=['A','B','AB','O'],DROP='M26 3C26 3 6 25 6 39a20 20 0 0 0 40 0C46 25 26 3 26 3z';
+const GL='<path class="g" d="M15 40a11 11 0 0 0 8 10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>';
+const ids=['r1','r2','r3','r4','r5','r6'];const abo={},rh={};ids.forEach((i,k)=>{abo[i]='A';rh[i]=k===3?'':'+'});
+const info=[['1 · วงกลมเครื่องหมาย','ปุ่มกลมใหญ่ ตัวเครื่องหมาย + / − ตัวโตอ่านง่าย ไม่ต้องอ่านคำ "ไม่ทราบ" เป็นลิงก์เล็กขวา'],
+['2 · แถบสลับ + / −','แถบเดียว 2 ช่อง เครื่องหมายใหญ่ มีคำ บวก/ลบ ตัวเล็กใต้ แถบสีเลื่อนตาม'],
+['3 · หยดจิ๋วมีเครื่องหมาย','หยดเลือดเล็ก 2 หยดพร้อม + / − ธีมเดียวกับแถวหมู่ ยกขึ้นเมื่อเลือก'],
+['4 · สวิตช์','สวิตช์เลื่อน + / − เพราะมีแค่ 2 ค่า ข้อความอธิบายอยู่ข้าง ๆ (ยังไม่เลือก = ปุ่มอยู่กลาง)'],
+['5 · กากบาทการแพทย์','ไอคอน + และ − เป็นเส้นวาด ในกรอบสี่เหลี่ยมมน ดูเป็นสัญลักษณ์การแพทย์'],
+['6 · แคปซูลมีวงเครื่องหมาย','คงรูปแคปซูล มีวงกลมเล็กใส่ + / − นำหน้าคำ บวก/ลบ']];
+const root=document.getElementById('root');
+ids.forEach((id,i)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<p class="tag">${info[i][0]}</p><p class="desc">${info[i][1]}</p><div class="pane" id="${id}"></div>`;root.append(c)});
+const aboRow=id=>`<p class="lab">หมู่</p><div class="row4">${ABO.map(a=>`<button class="d ${abo[id]===a?'on':''}" data-a="${a}"><svg viewBox="0 0 52 60"><path class="b" d="${DROP}"/>${GL}</svg><span class="t">${a}</span></button>`).join('')}</div><p class="lab m">Rh</p>`;
+const foot='<p class="hint">ดูได้จากบัตรผู้บริจาค คนไทยส่วนใหญ่เป็น Rh บวก</p>';
+const unk=id=>`<button class="unk ${rh[id]==='?'?'on':''}" data-r="?">ไม่ทราบ</button>`;
+const draw={
+r1:id=>aboRow(id)+`<div class="r1"><button class="c ${rh[id]==='+'?'on':''}" data-r="+" aria-label="บวก">+</button><button class="c ${rh[id]==='-'?'on':''}" data-r="-" aria-label="ลบ">−</button>${unk(id)}</div>`+foot,
+r2:id=>aboRow(id)+`<div class="seg"><i style="left:${rh[id]==='-'?'50%':'3px'};${rh[id]==='+'||rh[id]==='-'?'':'display:none'}"></i><button class="${rh[id]==='+'?'on':''}" data-r="+"><b>+</b><small>บวก</small></button><button class="${rh[id]==='-'?'on':''}" data-r="-"><b>−</b><small>ลบ</small></button></div>${unk(id)}`+foot,
+r3:id=>aboRow(id)+`<div class="r3">${[['+','+'],['-','−']].map(x=>`<button class="md ${rh[id]===x[0]?'on':''}" data-r="${x[0]}" aria-label="${x[0]==='+'?'บวก':'ลบ'}"><svg viewBox="0 0 52 60"><path d="${DROP}"/></svg><span class="t">${x[1]}</span></button>`).join('')}${unk(id)}</div>`+foot,
+r4:id=>aboRow(id)+`<div class="r4"><button class="sw ${rh[id]==='+'?'pos':rh[id]===''||rh[id]==='?'?'none':''}" data-sw aria-label="สลับ Rh"><span class="p">+</span><span class="n">−</span></button><div class="txt"><b>${rh[id]==='+'?'Rh บวก':rh[id]==='-'?'Rh ลบ':rh[id]==='?'?'ไม่ทราบ':'แตะเพื่อเลือก'}</b><span>${rh[id]==='+'?'พบบ่อย':rh[id]==='-'?'พบน้อย':'เลื่อนสวิตช์ได้'}</span></div>${unk(id)}</div>`+foot,
+r5:id=>aboRow(id)+`<div class="r5"><button class="x ${rh[id]==='+'?'on':''}" data-r="+" aria-label="บวก"><svg viewBox="0 0 28 28"><path d="M14 4v20M4 14h20"/></svg></button><button class="x ${rh[id]==='-'?'on':''}" data-r="-" aria-label="ลบ"><svg viewBox="0 0 28 28"><path d="M4 14h20"/></svg></button>${unk(id)}</div>`+foot,
+r6:id=>aboRow(id)+`<div class="r6"><button class="${rh[id]==='+'?'on':''}" data-r="+"><i>+</i>บวก</button><button class="${rh[id]==='-'?'on':''}" data-r="-"><i>−</i>ลบ</button></div>${unk(id)}`+foot};
+function render(id){const p=document.getElementById(id);p.innerHTML=draw[id](id);
+ p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{abo[id]=b.dataset.a;render(id)});
+ p.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rh[id]=b.dataset.r;render(id)});
+ const sw=p.querySelector('[data-sw]');if(sw)sw.onclick=()=>{rh[id]=rh[id]==='+'?'-':'+';render(id)}}
+ids.forEach(render);
+</script></body></html>

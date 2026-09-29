@@ -1,0 +1,47 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rh ยกกำลัง ไม่มีป้าย</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--red:#9A3B33;--ink:#3A2C29;--mut:#7A6360;--line:#E3C8C3;--soft:#F3E7E4;--bg:#FDF6F4}
+*{box-sizing:border-box}
+body{margin:0;background:#EFE6E3;font-family:'Prompt',sans-serif;color:var(--ink);padding:24px 16px}
+h1{font-family:Mitr;font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;padding:16px}
+.tag{font-family:Mitr;font-size:15px;margin:0 0 2px}.desc{font-size:12px;color:var(--mut);margin:0 0 12px;min-height:34px}
+.box{background:#fff;border:1px solid var(--soft);border-radius:16px;padding:0 10px}
+.row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--soft)}.row:last-child{border:0}
+.ic{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex:none}
+.ic svg{width:16px;height:16px}
+.lb{font-size:11px;color:var(--mut);display:block}
+.vl{font-size:15px;display:flex;align-items:baseline;gap:6px;min-height:22px}.vl.ph{color:#B9A5A1}
+.state{margin-left:auto;font-size:10.5px;color:#B9A5A1;text-align:right;max-width:100px;line-height:1.2}
+sup{line-height:0;position:relative}
+.rh{font-family:Mitr;font-weight:500}
+/* a: red */
+.a .rh{font-size:14px;color:var(--red)}.a sup{font-size:.78em;top:-.2em;margin-left:1px}
+/* b: grey Rh, red sign */
+.b .rh{font-size:14px;color:var(--mut)}.b sup{font-size:.85em;top:-.2em;margin-left:1px;color:var(--red);font-weight:600}
+/* c: ink, same size as letter feel */
+.c .rh{font-size:15px;color:var(--ink)}.c sup{font-size:.8em;top:-.22em;margin-left:1px;color:var(--red);font-weight:600}
+/* d: dot separator */
+.d .dot{color:#C9B3AF}.d .rh{font-size:14px;color:var(--red)}.d sup{font-size:.78em;top:-.2em;margin-left:1px}
+/* e: bigger sign, tight */
+.e .rh{font-size:14px;color:var(--red)}.e sup{font-size:.98em;top:-.14em;margin-left:0;font-weight:600}
+</style></head><body>
+<h1>Rh ยกกำลัง ไม่มีป้าย — 5 แบบ</h1>
+<p class="sub">แบบ 5 เดิม (O + ป้าย Rh⁺) แต่ตัดป้ายออกให้เหลือข้อความล้วน · Rh ไม่ทราบ / ยังไม่เลือก = แสดงแค่หมู่</p>
+<div class="grid" id="root"></div>
+<script>
+const DROP='<svg viewBox="0 0 24 24" fill="none" stroke="#9A3B33" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10.5a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/></svg>';
+const S=[{t:'O',rh:'+',n:'Rh บวก'},{t:'O',rh:'-',n:'Rh ลบ'},{t:'AB',rh:'unknown',n:'Rh ไม่ทราบ'},{t:'B',rh:'',n:'ยังไม่เลือก Rh'},{t:'',rh:'',n:'ยังไม่เลือกอะไร'}];
+const sg=r=>r==='+'?'+':'−';const has=r=>r==='+'||r==='-';
+const V=[['a','A · Rh⁺ สีแดง','ตัวหมู่สีปกติ ส่วน Rh⁺ ทั้งชุดเป็นสีแดง (สีเดียวกับป้ายเดิม)',s=>`<span>${s.t}</span>${has(s.rh)?`<span class="rh">Rh<sup>${sg(s.rh)}</sup></span>`:''}`],
+['b','B · Rh สีเทา เครื่องหมายสีแดง','คำว่า Rh เป็นสีเทาอ่อน เน้นเฉพาะ + / − ด้วยสีแดง อ่านง่าย ไม่แย่งตัวหมู่',s=>`<span>${s.t}</span>${has(s.rh)?`<span class="rh">Rh<sup>${sg(s.rh)}</sup></span>`:''}`],
+['c','C · Rh สีเข้ม เครื่องหมายสีแดง','คำว่า Rh เป็นสีเข้มเท่าตัวหมู่ เครื่องหมายสีแดงหนา ดูเป็นชุดเดียวกับตัวหมู่มากขึ้น',s=>`<span>${s.t}</span>${has(s.rh)?`<span class="rh">Rh<sup>${sg(s.rh)}</sup></span>`:''}`],
+['d','D · คั่นด้วยจุด O · Rh⁺','มีจุดเล็กสีเทาคั่นระหว่างหมู่กับ Rh แยกสองส่วนชัดขึ้น',s=>`<span>${s.t}</span>${has(s.rh)?`<span class="dot">·</span><span class="rh">Rh<sup>${sg(s.rh)}</sup></span>`:''}`],
+['e','E · เครื่องหมายยกสูง ตัวใหญ่','+ / − ใหญ่ขึ้นและยกสูงกว่าเดิม เห็นชัดสุดบนจอเล็ก',s=>`<span>${s.t}</span>${has(s.rh)?`<span class="rh">Rh<sup>${sg(s.rh)}</sup></span>`:''}`]];
+const root=document.getElementById('root');
+V.forEach(([cls,tag,desc,fn])=>{const c=document.createElement('div');c.className='card '+cls;
+ c.innerHTML=`<p class="tag">${tag}</p><p class="desc">${desc}</p><div class="box">${S.map(s=>`<div class="row"><span class="ic">${DROP}</span><span><span class="lb">หมู่โลหิต</span><span class="vl ${s.t?'':'ph'}">${s.t?fn(s):'เลือกหมู่และ Rh'}</span></span><span class="state">${s.n}</span></div>`).join('')}</div>`;root.append(c)});
+</script></body></html>
