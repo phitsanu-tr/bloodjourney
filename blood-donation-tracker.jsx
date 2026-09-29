@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.140";
+const APP_VERSION = "1.0.141";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7596,7 +7596,7 @@ function AppInner() {
                           <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
                             <input id={`profile-${r.key}`}
                               ref={r.key === "first" ? nicknameFirstInputRef : r.key === "last" ? nicknameLastInputRef : undefined}
-                              type="text" autoComplete="off" enterKeyHint="done"
+                              type="text" autoComplete="off" enterKeyHint={r.key === "first" ? "next" : "done"}
                               inputMode={r.key === "birthYear" ? "numeric" : r.key === "weight" || r.key === "height" ? "decimal" : undefined}
                               placeholder={placeholders[r.key]}
                               value={profileInline[r.key]}
@@ -7620,7 +7620,12 @@ function AppInner() {
                               }}
                               onBlur={() => commitProfileField(r.key)}
                               onKeyDown={(e) => {
-                                if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); }
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  // ชื่อ → Enter moves focus straight to นามสกุล (saving ชื่อ via blur); everything else just finishes.
+                                  if (r.key === "first" && nicknameLastInputRef.current) nicknameLastInputRef.current.focus();
+                                  else e.currentTarget.blur();
+                                }
                                 if (e.key === "Escape") {
                                   e.stopPropagation();
                                   const cur = { first: firstName, last: lastName, birthYear, weight, height, donorId }[r.key];
