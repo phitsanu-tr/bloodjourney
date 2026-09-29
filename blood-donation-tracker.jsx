@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.130";
+const APP_VERSION = "1.0.131";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2572,11 +2572,24 @@ function initialTabFromUrl() {
   }
 }
 
+function shuffledDigits() {
+  const d = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  const r = crypto.getRandomValues(new Uint32Array(d.length));
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = r[i] % (i + 1);
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
 // ---- PIN keypad, lock screen and set-up dialog (app-pin-lock-designs.html) ----
 function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys = false, keyBg = "#FFFFFF" }) {
   const [v, setV] = useState("");
   const vRef = useRef("");
-  useEffect(() => { vRef.current = ""; setV(""); }, [clearKey]);
+  // Digits are laid out in a random order (like a banking keypad) so the
+  // PIN can't be read off finger positions or smudges. Reshuffled each time
+  // the pad is cleared (a wrong PIN, or moving to the next step).
+  const [order, setOrder] = useState(() => shuffledDigits());
+  useEffect(() => { vRef.current = ""; setV(""); setOrder(shuffledDigits()); }, [clearKey]);
   const press = (d) => {
     if (busy || hideKeys || vRef.current.length >= PIN_LENGTH) return;
     const next = vRef.current + d;
@@ -2611,11 +2624,11 @@ function PinPad({ clearKey = 0, bad = false, busy = false, onComplete, hideKeys 
       </div>
       {!hideKeys && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, margin: "14px 6px 4px", maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
+          {order.slice(0, 9).map((n) => (
             <button key={n} type="button" onClick={() => press(n)} disabled={busy} aria-label={n} style={keyStyle}>{n}</button>
           ))}
           <span />
-          <button type="button" onClick={() => press("0")} disabled={busy} aria-label="0" style={keyStyle}>0</button>
+          <button type="button" onClick={() => press(order[9])} disabled={busy} aria-label={order[9]} style={keyStyle}>{order[9]}</button>
           <button type="button" onClick={back} disabled={busy} aria-label="ลบตัวเลข" style={{ ...keyStyle, background: "none", border: "none" }}><X size={22} color="#7A6360" /></button>
         </div>
       )}
