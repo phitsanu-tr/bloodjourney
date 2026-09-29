@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.147";
+const APP_VERSION = "1.0.148";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7491,6 +7491,14 @@ function AppInner() {
                   );
                   const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
                   const hint = criteriaHint(r.key);
+                  // Year / weight: the full criteria text lives in the picker panel (chip, top right).
+                  // The collapsed row only flags a problem, in a short form; ✓ and "criteria" hints stay out of the first screen.
+                  const isCriteriaRow = r.key === "birthYear" || r.key === "weight";
+                  const rowHint = !hint ? null
+                    : !isCriteriaRow ? hint
+                    : profileOpenChoice === r.key ? null // the panel's chip already says it
+                    : hint.color !== "#B5651D" ? null
+                    : { ...hint, text: hint.text.startsWith("นอกเกณฑ์") ? "นอกเกณฑ์" : hint.text.startsWith("ต่ำกว่าเกณฑ์") ? "ต่ำกว่าเกณฑ์" : hint.text };
                   const saved = profileSavedKey === r.key
                     ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2E7D4F", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
                     : r.kind === "action" ? <ChevronRight size={16} color="#7A6360" aria-hidden="true" style={{ flexShrink: 0 }} />
@@ -7501,7 +7509,7 @@ function AppInner() {
                         <Copy size={13} /> คัดลอก
                       </button>
                     )
-                    : hint && <span style={{ flexShrink: 0, fontSize: 11, color: hint.color, whiteSpace: "nowrap" }}>{hint.text}</span>;
+                    : rowHint && <span style={{ flexShrink: 0, fontSize: 11, color: rowHint.color, whiteSpace: "nowrap" }}>{rowHint.text}</span>;
                   const isOpen = profileOpenChoice === r.key;
                   return (
                     <div key={r.key} data-prow={r.key} style={{ padding: "4px 0", borderBottom: ri < all.length - 1 ? "1px solid #F3E7E4" : "none" }}>
@@ -7563,7 +7571,11 @@ function AppInner() {
                           {isOpen && r.kind === "picker" && (
                             // Rulers use the row's full width so the scale is centred on
                             // screen (easy from either hand).
-                            <div style={{ padding: "10px 0 6px" }}>
+                            <div style={{ position: "relative", padding: isCriteriaRow ? "34px 0 6px" : "10px 0 6px" }}>
+                              {isCriteriaRow && hint && (
+                                <span role="status" style={{ position: "absolute", top: 8, right: 0, fontSize: 11.5, fontWeight: 500, padding: "3px 10px", borderRadius: 12, whiteSpace: "nowrap",
+                                  color: hint.color, background: hint.color === "#2E7D4F" ? "#E8F4EC" : hint.color === "#B5651D" ? "#FBEFE3" : "#F3EAE8" }}>{hint.text}</span>
+                              )}
                               {pickerPanel(r.key)}
                               {committed[r.key] !== "" && (
                                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
