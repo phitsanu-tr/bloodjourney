@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.179";
+const APP_VERSION = "1.0.180";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4718,6 +4718,7 @@ function AppInner() {
   // Settings when opened from the Settings rows, or straight back to the
   // home tab when opened from the home "ยังไม่ได้สำรองข้อมูล" banner.
   const backupOpenedFromHomeRef = useRef(false);
+  const privacyFromProfileRef = useRef(false); // privacy opened from the profile footer → closing returns there, not to settings
   const openBackupRestore = (tab, { fromHome = false } = {}) => {
     backupOpenedFromHomeRef.current = fromHome;
     setShowSettings(false);
@@ -7810,8 +7811,12 @@ function AppInner() {
                   </div>
                 </div>
               )}
-<div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11.5, color: "#7A6360", marginTop: 10 }}>
-                <Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", columnGap: 12, rowGap: 2, fontSize: 11.5, color: "#7A6360", marginTop: 10 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}><Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น</span>
+                <button type="button" onClick={() => { privacyFromProfileRef.current = true; setProfileOpenChoice(null); setShowProfile(false); setShowPrivacy(true); }}
+                  style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", color: "#9A3B33", textDecoration: "underline" }}>
+                  <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ความเป็นส่วนตัว
+                </button>
               </div>
               </div>
             </div>
@@ -8214,7 +8219,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, padding: 22, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4, flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <button onClick={() => { setShowPrivacy(false); setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 0 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
