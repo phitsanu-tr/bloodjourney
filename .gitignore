@@ -1,3 +1,6 @@
 _to_delete/
 backups/
 .DS_Store
+backups/
+.DS_Store
+Claude outputs/
