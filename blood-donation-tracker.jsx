@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.191";
+const APP_VERSION = "1.0.192";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7513,7 +7513,7 @@ function AppInner() {
             onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
-              <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px", position: "relative", zIndex: 1, boxShadow: profileScrolled ? "0 6px 10px -6px rgba(58,44,41,0.16)" : "0 0 0 rgba(58,44,41,0)", transition: "box-shadow .18s" }}>
+              <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px" }}>
                 <div style={{ fontSize: 15.5, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
                 <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
@@ -7521,7 +7521,7 @@ function AppInner() {
                 </button>
               </div>
               <div ref={profileScrollRef} className="no-scrollbar" onScroll={(e) => { const sc = e.currentTarget.scrollTop > 2; setProfileScrolled(v => (v === sc ? v : sc)); }}
-                style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px" }}>
+                style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px", ...(profileScrolled ? { WebkitMaskImage: "linear-gradient(transparent 0, #000 18px)", maskImage: "linear-gradient(transparent 0, #000 18px)" } : null) }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label={photo ? "เปลี่ยนรูปโปรไฟล์" : "เพิ่มรูปโปรไฟล์"}
