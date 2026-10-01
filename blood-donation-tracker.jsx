@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.272";
+const APP_VERSION = "1.0.273";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1450,21 +1450,15 @@ function useKeyboardSafeBox(active) {
     if (!active || !vv) { setBox(null); return undefined; }
     const ua = navigator.userAgent || "";
     const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    let last = "";
     const update = () => {
-      const covered = window.innerHeight - vv.height;
-      const next = covered > 80 ? { top: Math.round(vv.offsetTop), height: Math.round(Math.max(220, vv.height - (isIOS ? 56 : 0))) } : null;
-      const key = next ? `${next.top}:${next.height}` : "";
-      if (key === last) return; // no re-render per viewport tick (that fed back into iOS's own scrolling)
-      last = key;
-      setBox(next);
+      const covered = window.innerHeight - vv.height - vv.offsetTop;
+      if (covered > 80) setBox({ top: vv.offsetTop, height: Math.max(220, vv.height - (isIOS ? 56 : 0)) });
+      else setBox(null);
     };
-    // iOS pans the visual viewport a moment after the keyboard resize, so re-read once it settles.
-    let t = 0;
-    const onResize = () => { update(); clearTimeout(t); t = setTimeout(update, 300); };
     update();
-    vv.addEventListener("resize", onResize);
-    return () => { vv.removeEventListener("resize", onResize); clearTimeout(t); setBox(null); };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); setBox(null); };
   }, [active]);
   return box;
 }
@@ -2958,45 +2952,46 @@ function AppInner() {
   const kbBox = useKeyboardSafeBox(showForm || showStartingCountQuickEntry || editingStartingCount);
   const kbWrap = kbBox ? { top: kbBox.top, bottom: "auto", height: kbBox.height } : null;
   const kbInner = kbBox ? { maxHeight: kbBox.height - 16, overflowY: "auto" } : null;
+  const scrollLockYRef = useRef(0);
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
     || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId
     || viewStartingCount || editingStartingCount;
+  const scrollRestoreTimersRef = useRef([]);
   useEffect(() => {
-    if (!anyModalOpen) return undefined;
-    // Lock without moving the page. The old lock (body position:fixed + top:-scrollY, then scrollTo
-    // on close) fought iOS's own keyboard scrolling: after typing in a dialog the layout and visual
-    // viewports ended up offset, so the next dialog's taps/scroll hit nothing ("frozen" screen).
-    // overflow:hidden keeps scrollY untouched, so nothing has to be restored on close.
-    const html = document.documentElement;
-    const body = document.body;
-    const prev = { ho: html.style.overflow, bo: body.style.overflow, hob: html.style.overscrollBehavior };
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    html.style.overscrollBehavior = "none";
-    // Older iOS ignores overflow:hidden for touch scrolling, so also swallow drags that aren't inside
-    // something that can scroll itself (dialog bodies, sheets, horizontal pickers).
-    const canScroll = (el) => {
-      for (let n = el; n && n !== body && n !== html; n = n.parentElement) {
-        const cs = window.getComputedStyle(n);
-        if (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1) return true;
-        if (/(auto|scroll)/.test(cs.overflowX) && n.scrollWidth > n.clientWidth + 1) return true;
-      }
-      return false;
-    };
-    const onTouchMove = (e) => {
-      if (e.touches && e.touches.length > 1) return;
-      if (!canScroll(e.target) && e.cancelable) e.preventDefault();
-    };
-    document.addEventListener("touchmove", onTouchMove, { passive: false });
-    return () => {
-      document.removeEventListener("touchmove", onTouchMove);
-      blurActiveInput();
-      html.style.overflow = prev.ho;
-      body.style.overflow = prev.bo;
-      html.style.overscrollBehavior = prev.hob;
-    };
+    if (anyModalOpen) {
+      // A reopen right after a close must cancel the previous close's pending scroll restores,
+      // otherwise they fire against the new lock (iOS then leaves the page dead to scroll/taps).
+      scrollRestoreTimersRef.current.forEach((t) => { try { cancelAnimationFrame(t); clearTimeout(t); } catch (e) { /* ignore */ } });
+      scrollRestoreTimersRef.current = [];
+      const body = document.body;
+      // Never read scrollY while the body is already fixed (it would be 0 and the page would jump).
+      if (body.style.position !== "fixed") scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollLockYRef.current}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      return () => {
+        blurActiveInput();
+        body.style.position = "";
+        body.style.top = "";
+        body.style.left = "";
+        body.style.right = "";
+        body.style.width = "";
+        const y = scrollLockYRef.current;
+        const restore = () => { if (document.body.style.position !== "fixed") window.scrollTo(0, y); };
+        restore();
+        // iOS can leave the visual viewport offset after the keyboard closes; re-assert the position
+        // once layout has settled so the page is scrollable/tappable again.
+        scrollRestoreTimersRef.current = [
+          requestAnimationFrame(restore),
+          setTimeout(restore, 150),
+          setTimeout(restore, 400),
+        ];
+      };
+    }
   }, [anyModalOpen]);
 
   // Header show/hide on scroll direction, matching the familiar Facebook-app
