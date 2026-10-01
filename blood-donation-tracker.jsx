@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.248";
+const APP_VERSION = "1.0.249";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2419,23 +2419,23 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontSize: String(orderNumber).length >= 3 ? 11.5 : 15, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: String(orderNumber).length >= 3 ? 12 : 14, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
+          <div style={{ fontSize: 10, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", flexWrap: "wrap", alignItems: "baseline", columnGap: 7 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}><span style={{ ...HIST_ICON_BOX, alignSelf: "center" }}><Calendar size={13} color="#9A3B33" /></span>{toBuddhistDate(d.date)}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}><span style={{ ...HIST_ICON_BOX, alignSelf: "center" }}><Calendar size={12} color="#9A3B33" /></span>{toBuddhistDate(d.date)}</span>
           {d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", whiteSpace: "nowrap" }}>{`เวลา\u00A0${d.time}\u00A0น.`}</span>}
         </div>
         <div style={{ marginTop: 5 }}>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: d.location ? "#7A6360" : "#A38D89", marginTop: 5 }}>
-          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={13} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location || "—"}</span>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.location ? "#7A6360" : "#A38D89", marginTop: 5 }}>
+          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location || "—"}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: d.note ? "#7A6360" : "#A38D89", marginTop: 4 }}>
-          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={13} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.note || "—"}</span>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.note ? "#7A6360" : "#A38D89", marginTop: 4 }}>
+          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.note || "—"}</span>
         </div>
       </div>
       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
