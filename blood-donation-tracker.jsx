@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.183";
+const APP_VERSION = "1.0.184";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2531,6 +2531,7 @@ function AppInner() {
   const [remindPauseChoice, setRemindPauseChoice] = useState("6");
   const showRemindPauseRef = useRef(false);
   showRemindPauseRef.current = showRemindPause;
+  const showClearProfileRef = useRef(false);
   const [donations, setDonations] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -2540,6 +2541,7 @@ function AppInner() {
   const [showSettings, setShowSettings] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
+  showClearProfileRef.current = showClearProfile;
   const profileBoxRef = useRef(null);
   const lastPickedRef = useRef({}); // last chosen option per profile row, so the highlight can fade out in place
   const profileScrollRef = useRef(null);
@@ -3188,6 +3190,8 @@ function AppInner() {
       if (e.key !== "Escape") return;
       // The pause sheet sits on top of the profile: close just that one.
       if (showRemindPauseRef.current) { setShowRemindPause(false); return; }
+      // The clear-profile confirm also sits on top of the profile: Escape closes only it.
+      if (showClearProfileRef.current) { setShowClearProfile(false); return; }
       setShowProfile(false);
       setProfileOpenChoice(null);
       setShowForm(false);
