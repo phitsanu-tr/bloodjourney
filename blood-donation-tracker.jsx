@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.203";
+const APP_VERSION = "1.0.204";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5783,44 +5783,21 @@ function AppInner() {
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                <div style={{ position: "relative", flexShrink: 0 }}>
-                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label="รูปโปรไฟล์"
-                    style={{ width: 40, height: 40, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
-                    {photo ? (
-                      <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : nickname ? (
-                      <span style={{ fontSize: 16, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0]}</span>
-                    ) : (
-                      <User size={18} color="#9A3B33" />
-                    )}
-                  </button>
-                  <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: "50%", background: "#9A3B33", border: "2px solid #FBF6F5", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                    <Camera size={9} color="#FFF7F5" />
-                  </div>
-                  {showPhotoMenu && !showProfile && (
-                    <>
-                      <div onClick={() => setShowPhotoMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 180 }}>
-                        <button onClick={() => { setShowPhotoMenu(false); photoCameraInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
-                          <Camera size={15} color="#9A3B33" /> ถ่ายรูปใหม่
-                        </button>
-                        <button onClick={() => { setShowPhotoMenu(false); photoGalleryInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
-                          <ImageIcon size={15} color="#9A3B33" /> เลือกจากคลังภาพ
-                        </button>
-                        {photo && (
-                          <button onClick={removePhoto} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", textAlign: "left" }}>
-                            <Trash2 size={15} color="#B3261E" /> ลบรูปโปรไฟล์
-                          </button>
-                        )}
-                      </div>
-                    </>
+                {/* Display-only avatar: photo is changed from the profile, not from here */}
+                <div role="img" aria-label="รูปโปรไฟล์" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {photo ? (
+                    <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : nickname ? (
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0]}</span>
+                  ) : (
+                    <User size={18} color="#9A3B33" />
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
                   {nickname ? (
-                    <button onClick={openProfile} style={{ display: "block", background: "none", border: "none", padding: "12px 0", margin: "-8px 0", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2C29", textAlign: "left", lineHeight: 1.4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4, overflowWrap: "anywhere" }}>
                       สวัสดี, คุณ{/^[A-Za-z]/.test(nickname.trim()) ? " " : ""}{nickname}
-                    </button>
+                    </div>
                   ) : totalCount === 0 ? (
                     // Only asks "have you donated today?" for someone with genuinely
                     // no history at all -- previously this greeting showed for anyone
