@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.239";
+const APP_VERSION = "1.0.240";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8403,7 +8403,16 @@ function AppInner() {
         const vTint = DONATION_TYPE_TINT[vd.type === "component" ? "component" : "whole"];
         const vn = donationOrderMap[vd.id];
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
-        const lblS = { width: 50, textAlign: "center", flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
+        // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
+        // sizes it), and every label starts at that block's left edge so all three share one left edge.
+        const lbl = (t) => (
+          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", paddingTop: 3, fontSize: 11.5, color: "#A38D89" }}>
+            <div style={{ position: "relative" }}>
+              <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
+              <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
+            </div>
+          </div>
+        );
         const valS = { flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
@@ -8425,9 +8434,9 @@ function AppInner() {
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                <div style={rowS}><div style={lblS}>ประเภท</div><div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
-                <div style={rowS}><div style={lblS}>สถานที่</div><div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
-                <div style={rowS}><div style={lblS}>โน้ต</div><div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
+                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
+                <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
+                <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
               </div>
               {vd.loggedAt && (
                 <div style={{ marginTop: 10, background: "#FCF8F7", borderRadius: 10, padding: "8px 12px", fontSize: 11, color: "#8E7773", lineHeight: 1.6 }}>
