@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
 import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.242";
+const APP_VERSION = "1.0.243";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2385,6 +2385,27 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // row doesn't also cause every other row's memo comparison to fail.
 // Fixed 14px icon column for the meta lines of a history row, so every line's text starts at the
 // same x (icons of 13-14px are centred in it) instead of drifting with each icon's own width.
+// One-line "saved / last edited" note under the detail modal's table. The row labels above are one
+// block centred in a 50px column (as wide as the word "ประเภท"), so this line starts at that block's
+// left edge: we measure a hidden "ประเภท" in the same font size and indent by (50 - width) / 2.
+function ModalMetaLine({ children }) {
+  const ghostRef = useRef(null);
+  const [pad, setPad] = useState(5.5);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const w = ghostRef.current ? ghostRef.current.getBoundingClientRect().width : 0;
+      if (w > 0 && w < 50) setPad((50 - w) / 2);
+    };
+    measure();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
+  }, []);
+  return (
+    <div style={{ position: "relative", padding: `10px 0 2px ${pad}px`, fontSize: 11.5, color: "#8E7773", lineHeight: 1.6 }}>
+      <span ref={ghostRef} aria-hidden="true" style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap" }}>ประเภท</span>
+      {children}
+    </div>
+  );
+}
 const HIST_ICON_BOX = { width: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onView, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
@@ -8438,9 +8459,9 @@ function AppInner() {
                 <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
                 <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
                 {vd.loggedAt && (
-                  <div style={{ padding: "10px 0 2px", fontSize: 11.5, color: "#8E7773", lineHeight: 1.6 }}>
+                  <ModalMetaLine>
                     {(vd.createdAt && vd.createdAt !== vd.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(vd.loggedAt)}
-                  </div>
+                  </ModalMetaLine>
                 )}
               </div>
             </div>
