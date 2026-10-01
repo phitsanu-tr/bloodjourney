@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.289";
+const APP_VERSION = "1.0.290";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6654,6 +6654,7 @@ function AppInner() {
                             <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
                               <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span> เคยบริจาคมาแล้ว {startingCountNum} ครั้ง
                             </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplet size={12} color="#9A3B33" /></span> โลหิตรวม {startingCountWholeNum} ครั้ง</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span> พลาสมา/เกล็ดเลือด {startingCountComponentNum} ครั้ง</div>
                           </div>
@@ -6662,6 +6663,7 @@ function AppInner() {
                             <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
                               <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span> เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง
                             </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}>
                               {(historyTypeFilter === "component" || (historyTypeFilter === "all" && startingCountComponentNum > 0))
                                 ? <><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span> พลาสมา/เกล็ดเลือด {displayedStartingCount} ครั้ง</>
