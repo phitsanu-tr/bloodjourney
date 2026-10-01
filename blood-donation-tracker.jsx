@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.264";
+const APP_VERSION = "1.0.265";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2656,6 +2656,8 @@ function AppInner() {
   // clutter, especially now that cards can grow taller with longer notes.
   const [openActionMenuId, setOpenActionMenuId] = useState(null);
   const [editingStartingCount, setEditingStartingCount] = useState(false);
+  const [viewStartingCount, setViewStartingCount] = useState(false);
+  const [startingCountEditError, setStartingCountEditError] = useState("");
   const [startingCountDraftWhole, setStartingCountDraftWhole] = useState("");
   const [startingCountDraftComponent, setStartingCountDraftComponent] = useState("");
   const [confirmDeleteStartingCount, setConfirmDeleteStartingCount] = useState(false);
@@ -2917,7 +2919,8 @@ function AppInner() {
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
-    || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId;
+    || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId
+    || viewStartingCount || editingStartingCount;
   useEffect(() => {
     if (anyModalOpen) {
       scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
@@ -3291,6 +3294,7 @@ function AppInner() {
       setConfirmDeleteId(null);
       setViewDonationId(null);
       setEditingStartingCount(false);
+      setViewStartingCount(false);
       setConfirmDeleteStartingCount(false);
       setShowOnboardingChoice(false);
       setShowStartingCountQuickEntry(false);
@@ -4072,11 +4076,14 @@ function AppInner() {
   const openEditStartingCount = () => {
     setStartingCountDraftWhole(startingCountWhole || "");
     setStartingCountDraftComponent(startingCountComponent || "");
+    setStartingCountEditError("");
+    setViewStartingCount(false);
     setEditingStartingCount(true);
   };
 
   const cancelEditStartingCount = () => {
     setEditingStartingCount(false);
+    setStartingCountEditError("");
     setStartingCountDraftWhole("");
     setStartingCountDraftComponent("");
   };
@@ -4090,13 +4097,14 @@ function AppInner() {
     // get folded into one generic message that doesn't say which field is
     // the problem.
     if (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > maxStartingCountWhole) {
-      showToast("error", `จำนวนครั้งโลหิตรวมต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      setStartingCountEditError(`จำนวนครั้งโลหิตรวมต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
       return;
     }
     if (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent) {
-      showToast("error", `จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      setStartingCountEditError(`จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
       return;
     }
+    setStartingCountEditError("");
     try {
       const { createdAt: stampedCreatedAt, updatedAt: stampedAt } = computeStartingCountStamps(startingCountNum, numWhole + numComponent);
       await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: numWhole, startingCountComponent: numComponent, startingCountCreatedAt: stampedCreatedAt, startingCountUpdatedAt: stampedAt });
@@ -4107,7 +4115,7 @@ function AppInner() {
       setEditingStartingCount(false);
       showToast("success", "แก้ไขยอดสะสมยกมาแล้ว");
     } catch (e) {
-      showToast("error", "บันทึกไม่สำเร็จ ลองอีกครั้ง");
+      setStartingCountEditError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
     }
   };
 
@@ -6613,30 +6621,10 @@ function AppInner() {
                   );
                 })}
                 {displayedStartingCount > 0 && historyYearFilter === "all" && filteredHistory.length <= historyVisibleCount && (
-                  editingStartingCount ? (
-                    <div style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px" }}>
-                      <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
-                      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#7A6360", marginBottom: 5 }}><Droplet size={11} color="#9A3B33" /> โลหิตรวม</div>
-                          <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus
-                            onChange={(e) => setStartingCountDraftWhole(e.target.value)}
-                            style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#7A6360", marginBottom: 5 }}><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
-                          <input type="number" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0"
-                            onChange={(e) => setStartingCountDraftComponent(e.target.value)}
-                            style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={cancelEditStartingCount} className="btn-ghost" style={{ flex: 1, padding: "9px 0", borderRadius: 10, fontSize: 13, cursor: "pointer" }}>ยกเลิก</button>
-                        <button onClick={saveStartingCountInline} disabled={startingCountEditUnchanged} className="btn-primary" style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: startingCountEditUnchanged ? "not-allowed" : "pointer", opacity: startingCountEditUnchanged ? 0.55 : 1 }}>บันทึก</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
+                      onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
+                      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
+                      style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                         <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
@@ -6671,13 +6659,8 @@ function AppInner() {
                             </div>
                           </div>
                         )}
-                        {startingCountUpdatedAt && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#7A6360", marginTop: 4 }}>
-                            <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", startingCountUpdatedAt)}
-                          </div>
-                        )}
                       </div>
-                      <div style={{ position: "relative", flexShrink: 0 }}>
+                      <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
                         <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
                           <MoreVertical size={17} color="#9A3B33" />
                         </button>
@@ -6696,7 +6679,6 @@ function AppInner() {
                         )}
                       </div>
                     </div>
-                  )
                 )}
               </div>
 
@@ -8511,6 +8493,85 @@ function AppInner() {
           </div>
         );
       })()}
+
+      {viewStartingCount && startingCountNum > 0 && (() => {
+        // Read-only detail for the carried-over total ("เคยบริจาคมาก่อน"), mirroring the donation
+        // detail modal: badge + title on top, one row per carried-over type, and the logged-at line.
+        const svRowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
+        const svLbl = (t) => (
+          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", fontSize: 12, lineHeight: 1.6, color: "#A38D89" }}>
+            <div style={{ position: "relative" }}>
+              <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
+              <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
+            </div>
+          </div>
+        );
+        const svVal = { flex: 1, minWidth: 0, fontSize: 12, color: "#3A2C29", lineHeight: 1.6 };
+        return (
+          <div role="dialog" aria-modal="true" aria-label="รายละเอียดยอดสะสมที่เคยบริจาคมาก่อน" onClick={(e) => { if (e.target === e.currentTarget) setViewStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{startingCountNum}</div>
+                  <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {startingCountNum} ครั้ง</div>
+                  <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
+                </div>
+                <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
+              </div>
+              <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
+                {startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
+                {startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
+                {startingCountUpdatedAt && (
+                  <ModalMetaLine>
+                    {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
+                  </ModalMetaLine>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {editingStartingCount && (
+        <div role="dialog" aria-modal="true" aria-label="แก้ไขจำนวนที่เคยบริจาค" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>แก้ไขจำนวนที่เคยบริจาค</div>
+              <button onClick={cancelEditStartingCount} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
+            </div>
+            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 14px" }}>
+              <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
+                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus aria-label="จำนวนครั้งโลหิตรวม"
+                    onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
+                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
+                  <input type="number" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
+                    onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
+                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                </div>
+              </div>
+            </div>
+            {startingCountEditError && (
+              <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
+                <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{startingCountEditError}</div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button onClick={cancelEditStartingCount} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={saveStartingCountInline} disabled={startingCountEditUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: startingCountEditUnchanged ? "not-allowed" : "pointer", opacity: startingCountEditUnchanged ? 0.55 : 1 }}>บันทึก</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDeleteId && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
