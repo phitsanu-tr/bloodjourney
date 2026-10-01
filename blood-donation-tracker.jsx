@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.209";
+const APP_VERSION = "1.0.210";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -237,6 +237,12 @@ const NAME_DISALLOWED_CHARS_RE = new RegExp(`[^A-Za-z${THAI_LETTERS}\\s]`, "gu")
 // Strips digits (Arabic or Thai), symbols, punctuation, and emoji from a
 // name field as the user types, leaving only Thai/English letters and
 // spaces — used for the profile's ชื่อ/นามสกุล inputs.
+// English words typed entirely in lower case ("john smith") get a capital first
+// letter on save ("John Smith"); words that already contain a capital (McDonald,
+// DeWitt, JOHN) and Thai words are left exactly as typed.
+function capitalizeLowerWords(value) {
+  return value.split(/(\s+)/).map(w => (/^[a-z]+$/.test(w) ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join("");
+}
 function sanitizeNameInput(value) {
   return value.replace(NAME_DISALLOWED_CHARS_RE, "");
 }
@@ -3682,7 +3688,10 @@ function AppInner() {
   const commitProfileField = (key) => {
     const d = profileInline;
     if (key === "first" || key === "last") {
-      const nn = [d.first.trim(), d.last.trim()].filter(Boolean).join(" ");
+      const nf = capitalizeLowerWords(d.first.trim());
+      const nl = capitalizeLowerWords(d.last.trim());
+      if (nf !== d.first || nl !== d.last) setProfileInline(f => ({ ...f, first: capitalizeLowerWords(f.first.trim()), last: capitalizeLowerWords(f.last.trim()) }));
+      const nn = [nf, nl].filter(Boolean).join(" ");
       if (nn !== nickname) commitProfile({ nickname: nn }, key);
       return;
     }
@@ -5788,7 +5797,7 @@ function AppInner() {
                   {photo ? (
                     <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : nickname ? (
-                    <span style={{ fontSize: 22, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0]}</span>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0].toUpperCase()}</span>
                   ) : (
                     <User size={24} color="#9A3B33" />
                   )}
@@ -7527,7 +7536,7 @@ function AppInner() {
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : firstName ? (
-                      <span style={{ fontSize: 20, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0]}</span>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0].toUpperCase()}</span>
                     ) : (
                       <User size={22} color="#9A3B33" />
                     )}
