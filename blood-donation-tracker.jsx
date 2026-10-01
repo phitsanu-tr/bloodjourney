@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.192";
+const APP_VERSION = "1.0.193";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1415,6 +1415,20 @@ function backupPasswordStrength(pw) {
 // Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
 // works the same for left- and right-handed use.
 const RULER_TICK = 8;
+// Scroll area under a fixed modal header. Once scrolled, the top 18px fades out
+// so content melts into the header instead of being cut off (no divider line).
+function FadeScroll({ children, style, scrollRef }) {
+  const [scrolled, setScrolled] = useState(false);
+  const fade = "linear-gradient(transparent 0, #000 18px)";
+  return (
+    <div ref={scrollRef} className="no-scrollbar"
+      onScroll={(e) => { const v = e.currentTarget.scrollTop > 2; setScrolled(p => (p === v ? p : v)); }}
+      style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", ...(scrolled ? { WebkitMaskImage: fade, maskImage: fade } : null), ...style }}>
+      {children}
+    </div>
+  );
+}
+
 // Close "✕" for dialogs that had none (confirm dialogs, storage warning): same icon and
 // colour as the profile/settings ✕, with a roomier tap area.
 function DialogX({ onClick, disabled, style }) {
@@ -7860,14 +7874,15 @@ function AppInner() {
           <div role="dialog" aria-modal="true" aria-label="พักการเตือนชั่วคราว"
             onClick={(e) => { if (e.target === e.currentTarget) close(); }}
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
-            <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
                 <div style={{ fontSize: 15.5, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
                 <button onClick={close} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
                   <X size={19} />
                 </button>
               </div>
+              <FadeScroll style={{ padding: "0 22px 22px" }}>
               <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ระหว่างพัก หน้าหลักจะไม่ชวนให้ไปบริจาคหรือเพิ่มนัดลงปฏิทิน ประวัติเดิมยังอยู่ครบ</p>
               {paused && (
                 <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3A2C29", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
@@ -7906,6 +7921,7 @@ function AppInner() {
                   เปิดการเตือนตอนนี้
                 </button>
               )}
+              </FadeScroll>
             </div>
           </div>
         );
@@ -8052,11 +8068,12 @@ function AppInner() {
 
       {showStartingCountQuickEntry && (
         <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", overflowY: "auto", borderRadius: 18, padding: 22 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
+            <FadeScroll style={{ padding: "0 22px 22px" }}>
             <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 16px" }}>
               เปิดสวิตช์ของประเภทที่เคยบริจาค แล้วกรอกจำนวนครั้งทั้งหมด (รวมครั้งล่าสุด) และวันที่บริจาคล่าสุด
             </p>
@@ -8152,17 +8169,19 @@ function AppInner() {
               </button>
             </div>
             )}
+            </FadeScroll>
           </div>
         </div>
       )}
 
       {showSettings && (
         <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, maxHeight: "85vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
               <button onClick={() => setShowSettings(false)} aria-label="ปิด" autoFocus style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
+            <FadeScroll style={{ padding: "0 22px 22px" }}>
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>ข้อมูลของฉัน</div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 4px", marginBottom: 18 }}>
@@ -8226,21 +8245,22 @@ function AppInner() {
                 <span style={{ fontSize: 11.5, background: "#F3E7E4", color: "#9A8480", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
               </div>
             </div>
+            </FadeScroll>
           </div>
         </div>
       )}
 
       {showPrivacy && (
         <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, padding: 22, display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4, flexShrink: 0 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
               <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
-            <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 0 12px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 22px 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
             </p>
-            <div className="no-scrollbar" style={{ overflowY: "auto", paddingRight: 4 }}>
+            <FadeScroll style={{ padding: "0 22px 22px" }}>
               {PRIVACY_POLICY_SECTIONS.map((sec, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#3A2C29", margin: "0 0 5px" }}>{sec.heading}</div>
@@ -8254,7 +8274,7 @@ function AppInner() {
               <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "4px 0 0" }}>
                 ให้ความยินยอมเมื่อ: {new Date().toLocaleDateString("th-TH")}
               </p>
-            </div>
+            </FadeScroll>
           </div>
         </div>
       )}
@@ -8429,11 +8449,12 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div ref={backupDialogRef} className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, padding: 22, maxHeight: "92vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, maxHeight: "92vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
+            <FadeScroll scrollRef={backupDialogRef} style={{ padding: "0 22px 22px" }}>
 
             <div style={{ display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, marginBottom: 16 }}>
               <button
@@ -8726,17 +8747,19 @@ function AppInner() {
                 )}
               </div>
             </div>
+            </FadeScroll>
           </div>
         </div>
       )}
 
       {showShareCard && (
         <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div className="no-scrollbar" style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 20, maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "90vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "20px 20px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
               <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
+            <FadeScroll style={{ padding: "0 20px 20px" }}>
             <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 8, fontWeight: 500 }}>เลือกขนาดภาพ</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               {Object.values(CARD_SIZES).map((size) => (
@@ -8795,6 +8818,7 @@ function AppInner() {
                 บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก
               </button>
             )}
+            </FadeScroll>
           </div>
         </div>
       )}
