@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.258";
+const APP_VERSION = "1.0.259";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2913,7 +2913,7 @@ function AppInner() {
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
-    || showBackupRestore || showShareCard || showFilterSheet;
+    || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId;
   useEffect(() => {
     if (anyModalOpen) {
       scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
