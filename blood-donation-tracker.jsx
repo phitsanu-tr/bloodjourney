@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.259";
+const APP_VERSION = "1.0.260";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8067,7 +8067,7 @@ function AppInner() {
                     the neutral border via onChange since date-related errors only ever
                     exist because form.date was empty/invalid/in the future -- picking
                     any valid date resolves all three at once. */}
-                <div style={{ overflow: "hidden", borderRadius: 10, border: `1px solid ${dateFieldHasError ? "#B3261E" : "#E3C8C3"}` }}>
+                <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${dateFieldHasError ? "#B3261E" : "#E3C8C3"}` }}>
                   <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
                     onChange={(date) => setForm(f => ({ ...f, date }))}
                     height={44} fontSize={14} />
@@ -8075,7 +8075,7 @@ function AppInner() {
               </div>
               <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
+                <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                   <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาคโลหิต"
                     onChange={(time) => setForm(f => ({ ...f, time }))}
                     height={44} fontSize={14} />
@@ -8209,7 +8209,7 @@ function AppInner() {
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
-                        <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                           <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
                             height={42} fontSize={13.5} />
@@ -8217,7 +8217,7 @@ function AppInner() {
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
-                        <div style={{ overflow: "hidden", borderRadius: 10, border: "1px solid #E3C8C3" }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                           <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคโลหิตครั้งล่าสุด"
                             onChange={(time) => setTf(f => ({ ...f, time }))}
                             height={42} fontSize={13.5} />
