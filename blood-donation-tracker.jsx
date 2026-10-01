@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.265";
+const APP_VERSION = "1.0.266";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1439,6 +1439,30 @@ function backupPasswordStrength(pw) {
 const RULER_TICK = 8;
 // Scroll area under a fixed modal header. Once scrolled, the top 18px fades out
 // so content melts into the header instead of being cut off (no divider line).
+// On phones the on-screen keyboard covers the bottom of a fixed, centred dialog (the layout viewport
+// keeps its full height; only window.visualViewport shrinks). While `active`, report the visible box
+// so an input dialog can re-centre itself above the keyboard and scroll inside it when too tall.
+// iOS also floats a ↑ ↓ ✓ bar above the keyboard that visualViewport doesn't account for, hence `extra`.
+function useKeyboardSafeBox(active) {
+  const [box, setBox] = useState(null);
+  useEffect(() => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (!active || !vv) { setBox(null); return undefined; }
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const update = () => {
+      const covered = window.innerHeight - vv.height - vv.offsetTop;
+      if (covered > 80) setBox({ top: vv.offsetTop, height: Math.max(220, vv.height - (isIOS ? 56 : 0)) });
+      else setBox(null);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); setBox(null); };
+  }, [active]);
+  return box;
+}
+
 function FadeScroll({ children, style, scrollRef }) {
   const [scrolled, setScrolled] = useState(false);
   const fade = "linear-gradient(transparent 0, #000 18px)";
@@ -2915,6 +2939,9 @@ function AppInner() {
   // a finger-drag over the dialog visibly scrolls the background behind it
   // too. Lock the page in place for as long as *any* dialog is open, and
   // restore the exact scroll position it was at once the last one closes.
+  const kbBox = useKeyboardSafeBox(showForm || showStartingCountQuickEntry || editingStartingCount);
+  const kbWrap = kbBox ? { top: kbBox.top, bottom: "auto", height: kbBox.height } : null;
+  const kbInner = kbBox ? { maxHeight: kbBox.height - 16, overflowY: "auto" } : null;
   const scrollLockYRef = useRef(0);
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
@@ -8023,8 +8050,8 @@ function AppInner() {
       })()}
 
       {showForm && (
-        <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
+        <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, ...kbWrap }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px", ...kbInner }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"}</div>
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
@@ -8174,8 +8201,8 @@ function AppInner() {
       )}
 
       {showStartingCountQuickEntry && (
-        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20, ...kbWrap }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: kbBox ? kbBox.height - 40 : "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
@@ -8536,8 +8563,8 @@ function AppInner() {
       })()}
 
       {editingStartingCount && (
-        <div role="dialog" aria-modal="true" aria-label="แก้ไขจำนวนที่เคยบริจาค" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
+        <div role="dialog" aria-modal="true" aria-label="แก้ไขจำนวนที่เคยบริจาค" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, ...kbWrap }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px", ...kbInner }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>แก้ไขจำนวนที่เคยบริจาค</div>
               <button onClick={cancelEditStartingCount} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
