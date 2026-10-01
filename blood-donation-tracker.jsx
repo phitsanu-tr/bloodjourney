@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.284";
+const APP_VERSION = "1.0.285";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7725,13 +7725,13 @@ function AppInner() {
                           {isOpen && r.blood && (
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
                                 {(() => {
                                   const aboOn = ABO_ONLY.includes(bloodType);
                                   if (aboOn) lastPickedRef.current.abo = bloodType;
                                   const shownIdx = ABO_ONLY.indexOf(aboOn ? bloodType : lastPickedRef.current.abo);
                                   return shownIdx >= 0 ? (
-                                    <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / 4)`, width: "calc((100% - 6px) / 4)", borderRadius: 11, background: "#9A3B33", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 4)`, width: "calc((100% - 8px) / 4)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
                                 {ABO_ONLY.map(bt => {
@@ -7746,19 +7746,19 @@ function AppInner() {
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: 18, color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: 18, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {bt}
                                     </button>
                                   );
                                 })}
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · ระบุต่ออีกนิด" : "Rh"}</div>
-                              <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                              <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
                                 {(() => {
                                   if (bloodRh) lastPickedRef.current.rh = bloodRh;
                                   const shownIdx = BLOOD_RH.findIndex(([v]) => v === (bloodRh || lastPickedRef.current.rh));
                                   return shownIdx >= 0 ? (
-                                    <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / 3)`, width: "calc((100% - 6px) / 3)", borderRadius: 11, background: "#9A3B33", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 3)`, width: "calc((100% - 8px) / 3)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
                                 {BLOOD_RH.map(([v]) => {
@@ -7771,7 +7771,7 @@ function AppInner() {
                                         commitProfile({ bloodRh: v }, "blood");
                                         if (bloodType) closeBloodSoon(true);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
                                   );
@@ -7821,9 +7821,9 @@ function AppInner() {
                                 const canClear = r.key === "donorType" || r.key === "gender"; // tapping the chosen option again clears it
                                 const longest = Math.max(...r.options.map(o => o.label.length));
                                 return (
-                                  <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
+                                  <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
                                     {shownIdx >= 0 && (
-                                      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: `calc(3px + ${shownIdx} * (100% - 6px) / ${n})`, width: `calc((100% - 6px) / ${n})`, borderRadius: 11, background: "#9A3B33", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                      <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / ${n})`, width: `calc((100% - 8px) / ${n})`, borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                     )}
                                     {r.options.map(o => {
                                       const on = r.current === o.v;
@@ -7835,7 +7835,7 @@ function AppInner() {
                                             if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key);
                                             closeRowSoon(r.key, o.v !== r.current);
                                           }}
-                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 42, border: "none", background: "none", borderRadius: 11, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#fff" : "#7A6360", transition: "color .2s" }}>
+                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                           {o.label}
                                         </button>
                                       );
