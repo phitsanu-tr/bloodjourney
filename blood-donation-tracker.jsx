@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.218";
+const APP_VERSION = "1.0.219";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5533,6 +5533,16 @@ function AppInner() {
         .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
         @media (prefers-reduced-motion: reduce) {
           [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
+        }
+        /* Every modal backdrop: light blur + a lighter scrim (was a flat 0.45 dim), so what is
+           behind (blood group / age / weight chips, other dialogs) is not readable. */
+        [role="dialog"][aria-modal="true"] {
+          background: rgba(36, 26, 24, 0.3) !important;
+          -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+        }
+        @media (prefers-reduced-transparency: reduce) {
+          [role="dialog"][aria-modal="true"] { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
         }
         @keyframes scrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeSwap {
