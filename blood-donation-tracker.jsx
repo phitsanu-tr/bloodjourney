@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.250";
+const APP_VERSION = "1.0.251";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2428,7 +2428,8 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}><span style={{ ...HIST_ICON_BOX, alignSelf: "center" }}><Calendar size={12} color="#9A3B33" /></span>{toBuddhistDate(d.date)}</span>
           {d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", whiteSpace: "nowrap" }}>{`เวลา\u00A0${d.time}\u00A0น.`}</span>}
         </div>
-        <div style={{ marginTop: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5 }}>
+          <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={12} color="#7A6360" /> : <Droplet size={12} color="#7A6360" />}</span>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.location ? "#7A6360" : "#A38D89", marginTop: 5 }}>
