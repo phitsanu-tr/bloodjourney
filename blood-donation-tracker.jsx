@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.228";
+const APP_VERSION = "1.0.229";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2387,7 +2387,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   // explicit user feedback), rather than tinting it per donation type.
   const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
   return (
-    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
+    <div className="hist-card" role="button" tabIndex={0} aria-label="แก้ไขรายการบริจาค" onClick={onEdit} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onEdit(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
@@ -2398,16 +2398,15 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
-          <span style={HIST_ICON_BOX}><Calendar size={13} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา\u00A0${d.time}\u00A0น.` : ""}
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>
+          <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(d.date)}</span>{d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", marginLeft: 7, whiteSpace: "nowrap" }}>{d.time}{"\u00A0น."}</span>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
-          <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={13} color="#7A6360" /> : <Droplet size={13} color="#7A6360" />}</span>
+        <div style={{ marginTop: 5 }}>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
         {d.location && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: "#7A6360", marginTop: 5, wordBreak: "break-word" }}>
-            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={13} /></span> {d.location}
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={13} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location}</span>
           </div>
         )}
         {d.note && (
@@ -2416,8 +2415,9 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           </div>
         )}
       </div>
-      <div style={{ position: "relative", flexShrink: 0 }}>
-        <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
+      <ChevronRight size={15} color="#C9B3AF" aria-hidden="true" style={{ flexShrink: 0, alignSelf: "center", marginLeft: -6, marginRight: -6, pointerEvents: "none" }} />
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
+        <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
           <MoreVertical size={17} color="#9A3B33" />
         </button>
         {isMenuOpen && (
@@ -5575,6 +5575,9 @@ function AppInner() {
           -webkit-backdrop-filter: blur(3px);
           backdrop-filter: blur(3px);
         }
+        .hist-card { -webkit-tap-highlight-color: transparent; transition: background 0.12s; }
+        .hist-card:active { background: #FBF1EE !important; }
+        .hist-card:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
         @media (prefers-reduced-transparency: reduce) {
           [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
         }
