@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.255";
+const APP_VERSION = "1.0.256";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8451,7 +8451,7 @@ function AppInner() {
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
                   <div style={{ fontSize: 12, color: vd.time ? "#7A6360" : "#A38D89", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
                 </div>
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
