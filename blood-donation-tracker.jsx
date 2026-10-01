@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.188";
+const APP_VERSION = "1.0.189";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7829,7 +7829,6 @@ function AppInner() {
                 </div>
               )}
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", columnGap: 12, rowGap: 2, fontSize: 11.5, color: "#7A6360", marginTop: 10 }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}><Lock size={12} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น</span>
                 <button type="button" onClick={() => { privacyFromProfileRef.current = true; setProfileOpenChoice(null); setShowProfile(false); setShowPrivacy(true); }}
                   style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", color: "#9A3B33", textDecoration: "underline" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ความเป็นส่วนตัว
