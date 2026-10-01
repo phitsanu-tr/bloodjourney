@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.288";
+const APP_VERSION = "1.0.289";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6637,7 +6637,7 @@ function AppInner() {
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
                       style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
+                        <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 12 : 14, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                         <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
