@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.216";
+const APP_VERSION = "1.0.217";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7889,7 +7889,7 @@ function AppInner() {
         return (
           <div role="dialog" aria-modal="true" aria-label="พักการเตือนชั่วคราว"
             onClick={(e) => { if (e.target === e.currentTarget) close(); }}
-            style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
+            style={{ position: "fixed", inset: 0, ...(showSettings ? { background: "rgba(36,26,24,0.25)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" } : { background: "rgba(36,26,24,0.45)" }), display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
             <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
                 <div style={{ fontSize: 15.5, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
@@ -8298,7 +8298,7 @@ function AppInner() {
       {showClearProfile && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลโปรไฟล์"
           onClick={(e) => { if (e.target === e.currentTarget) setShowClearProfile(false); }}
-          style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
+          style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.25)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
