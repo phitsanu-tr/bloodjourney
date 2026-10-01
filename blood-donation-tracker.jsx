@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.186";
+const APP_VERSION = "1.0.187";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8269,7 +8269,7 @@ function AppInner() {
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
               <DialogX onClick={() => setShowClearProfile(false)} />
             </div>
-            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลที่คุณกรอกไว้จะถูกลบ และกู้คืนไม่ได้</p>
+            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลโปรไฟล์ที่คุณกรอกจะถูกลบ และกู้คืนไม่ได้</p>
             {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html, white cards from profile-clear-confirm-boxes.html) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
               {[
