@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.263";
+const APP_VERSION = "1.0.264";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2670,6 +2670,9 @@ function AppInner() {
   // handleAddButtonClick) — once either a donation or a starting count
   // exists, "+" just opens the normal form directly.
   const [showOnboardingChoice, setShowOnboardingChoice] = useState(false);
+  // True when the add form was opened from the first-use choice ("นี่คือการบริจาคโลหิตครั้งใด?"), so the
+  // form's ยกเลิก button steps back to that choice instead of dropping the user on the home screen.
+  const [formFromChoice, setFormFromChoice] = useState(false);
   // Combined "เคยบริจาคแล้ว" entry: one modal capturing both the running
   // total count (which includes the most recent donation being logged here)
   // and that most-recent donation's own date/time/location/note, in a single
@@ -3797,6 +3800,7 @@ function AppInner() {
   };
 
   const openAddForm = () => {
+    setFormFromChoice(false);
     setEditingId(null);
     setFormError("");
     // type starts empty on purpose: the user must pick whole blood vs plasma/platelets
@@ -3807,6 +3811,7 @@ function AppInner() {
   };
 
   const openEditForm = (record) => {
+    setFormFromChoice(false);
     setEditingId(record.id);
     setFormError("");
     const snapshot = { date: record.date, time: record.time || "", location: record.location || "", note: record.note || "", type: record.type || DEFAULT_DONATION_TYPE };
@@ -3842,6 +3847,15 @@ function AppInner() {
   const chooseFirstDonation = () => {
     setShowOnboardingChoice(false);
     openAddForm();
+    setFormFromChoice(true);
+  };
+
+  // ยกเลิก on the form: step back to wherever the user came from.
+  const cancelForm = () => {
+    const back = formFromChoice;
+    closeForm();
+    setFormFromChoice(false);
+    if (back) setShowOnboardingChoice(true);
   };
 
   const chooseHasStartingCount = () => {
@@ -3854,6 +3868,13 @@ function AppInner() {
     setQuickEntryFormWhole({ date: "", time: "", location: "", note: "" });
     setQuickEntryFormComponent({ date: "", time: "", location: "", note: "" });
     setShowStartingCountQuickEntry(true);
+  };
+
+  // The quick-entry form is only reachable from the first-use choice, so its ยกเลิก
+  // button goes back there (the ✕ button closes it outright).
+  const backFromStartingCountQuickEntry = () => {
+    cancelStartingCountQuickEntry();
+    setShowOnboardingChoice(true);
   };
 
   const cancelStartingCountQuickEntry = () => {
@@ -8137,7 +8158,7 @@ function AppInner() {
               </div>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={closeForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={cancelForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
                 {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึก")}
               </button>
@@ -8267,7 +8288,7 @@ function AppInner() {
             )}
             {(quickTypeOnWhole || quickTypeOnComponent) && (
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={cancelStartingCountQuickEntry} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={backFromStartingCountQuickEntry} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={submitStartingCountQuickEntry} disabled={saving} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
                 {saving ? "กำลังบันทึก..." : "บันทึก"}
               </button>
