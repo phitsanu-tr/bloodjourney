@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.225";
+const APP_VERSION = "1.0.226";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2379,8 +2379,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   // explicit user feedback), rather than tinting it per donation type.
   const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
   return (
-    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px" }}>
-    <div style={{ display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
+    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
@@ -2408,6 +2407,11 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
             <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={13} /></span> {d.note}
           </div>
         )}
+        {d.loggedAt && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 11, color: "#7A6360", marginTop: 5, lineHeight: 1.5 }}>
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><Clock size={11} /></span> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
+          </div>
+        )}
       </div>
       <div style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
@@ -2430,12 +2434,6 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           </>
         )}
       </div>
-    </div>
-    {d.loggedAt && (
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 9, borderTop: "1px solid #F3E7E4", fontSize: 11.5, color: "#7A6360", lineHeight: 1.5 }}>
-        <Clock size={12} style={{ flexShrink: 0 }} /> <span>{joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}</span>
-      </div>
-    )}
     </div>
   );
 });
