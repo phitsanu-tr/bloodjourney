@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.286";
+const APP_VERSION = "1.0.287";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6635,8 +6635,8 @@ function AppInner() {
                     <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
-                      style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
-                      <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                         <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                       </div>
@@ -6649,30 +6649,29 @@ function AppInner() {
                             combined "เคยบริจาคมาแล้ว 1000 ครั้ง" heading next to a card that's
                             now only about one type (reported directly by the user). */}
                         {historyTypeFilter === "all" && startingCountWholeNum > 0 && startingCountComponentNum > 0 ? (
-                          <div style={{ fontSize: 13.5, color: "#7A6360" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                              <Trophy size={14} color="#9A3B33" style={{ flexShrink: 0 }} /> เคยบริจาคมาแล้ว {startingCountNum} ครั้ง
+                          <div>
+                            {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px rows 5px apart. */}
+                            <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
+                              <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span> เคยบริจาคมาแล้ว {startingCountNum} ครั้ง
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4, fontSize: 11.5 }}>
-                              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Droplet size={11} color="#9A3B33" /> โลหิตรวม {startingCountWholeNum} ครั้ง</span>
-                              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด {startingCountComponentNum} ครั้ง</span>
-                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplet size={12} color="#9A3B33" /></span> โลหิตรวม {startingCountWholeNum} ครั้ง</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span> พลาสมา/เกล็ดเลือด {startingCountComponentNum} ครั้ง</div>
                           </div>
                         ) : (
-                          <div style={{ fontSize: 13.5, color: "#7A6360" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                              <Trophy size={14} color="#9A3B33" style={{ flexShrink: 0 }} /> เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
+                              <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span> เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 11.5 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}>
                               {(historyTypeFilter === "component" || (historyTypeFilter === "all" && startingCountComponentNum > 0))
-                                ? <><Droplets size={11} color="#9A3B33" /> พลาสมา/เกล็ดเลือด {displayedStartingCount} ครั้ง</>
-                                : <><Droplet size={11} color="#9A3B33" /> โลหิตรวม {displayedStartingCount} ครั้ง</>}
+                                ? <><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span> พลาสมา/เกล็ดเลือด {displayedStartingCount} ครั้ง</>
+                                : <><span style={HIST_ICON_BOX}><Droplet size={12} color="#9A3B33" /></span> โลหิตรวม {displayedStartingCount} ครั้ง</>}
                             </div>
                           </div>
                         )}
                       </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-                        <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
+                        <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
                           <MoreVertical size={17} color="#9A3B33" />
                         </button>
                         {openActionMenuId === "startingCount" && (
