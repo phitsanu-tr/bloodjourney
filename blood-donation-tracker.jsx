@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.182";
+const APP_VERSION = "1.0.183";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8250,13 +8250,13 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 6 }}>ล้างข้อมูลโปรไฟล์?</div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ล้างออกจากเครื่องและกู้คืนไม่ได้</p>
-            {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html) */}
+            {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html, white cards from profile-clear-confirm-boxes.html) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
               {[
-                { key: "gone", title: "จะถูกล้าง", mark: "✕", color: "#B3261E", bg: "#FBEAE7", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
-                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", bg: "#E8F4EC", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] },
+                { key: "gone", title: "จะถูกล้าง", mark: "✕", color: "#B3261E", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] },
               ].map(col => (
-                <div key={col.key} style={{ background: col.bg, borderRadius: 12, padding: "10px 12px" }}>
+                <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px" }}>
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: col.color, marginBottom: 6 }}>{col.title}</div>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13, lineHeight: 1.55, color: "#3A2C29" }}>
                     {col.items.map(t => (
