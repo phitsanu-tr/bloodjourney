@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.260";
+const APP_VERSION = "1.0.261";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -255,6 +255,7 @@ const MIN_BACKUP_REMINDER_GAP = 1;
 const MAX_BACKUP_REMINDER_GAP = 50;
 const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
 const DEFAULT_DONATION_TYPE = "whole";
+const TYPE_REQUIRED_MESSAGE = "กรุณาเลือกประเภทการบริจาค";
 export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
@@ -2692,7 +2693,7 @@ function AppInner() {
   // still defaults to today inside the calendar dialog itself (see
   // DateCalendarDialog's `initial`), it's just not assumed/shown until the
   // user actually opens and confirms it.
-  const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
+  const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
   // field when it's the reason validation failed ("กรุณาเลือกวันที่บริจาค"/
   // "วันที่ไม่ถูกต้อง"/"เลือกวันที่ในอนาคตไม่ได้") -- previously the error
@@ -3798,7 +3799,9 @@ function AppInner() {
   const openAddForm = () => {
     setEditingId(null);
     setFormError("");
-    setForm({ date: "", time: "", location: "", note: "", type: DEFAULT_DONATION_TYPE });
+    // type starts empty on purpose: the user must pick whole blood vs plasma/platelets
+    // themselves (submitDonation requires it) rather than silently inheriting a default.
+    setForm({ date: "", time: "", location: "", note: "", type: "" });
     setEditSnapshot(null);
     setShowForm(true);
   };
@@ -3986,6 +3989,10 @@ function AppInner() {
     if (selected.setHours(0,0,0,0) > startOfToday().getTime()) {
       setFormError("เลือกวันที่ในอนาคตไม่ได้");
       formDateFieldRef.current?.focus();
+      return;
+    }
+    if (form.type !== "whole" && form.type !== "component") {
+      setFormError(TYPE_REQUIRED_MESSAGE);
       return;
     }
     if (sameDateConflict) {
@@ -5436,7 +5443,8 @@ function AppInner() {
     if (!form.date) return null;
     const target = new Date(form.date);
     if (Number.isNaN(target.getTime())) return null;
-    const formType = form.type || DEFAULT_DONATION_TYPE;
+    if (!form.type) return null;
+    const formType = form.type;
     const relevantCycleDays = formType === "component" ? effectiveComponentCycleDays : effectiveCycleDays;
     let closest = null;
     donations.forEach(d => {
@@ -8089,15 +8097,15 @@ function AppInner() {
             )}
             <div style={{ marginTop: 14, marginBottom: 14 }}>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ display: "flex", gap: 8 }}>
                 {["whole", "component"].map((t) => (
-                  <button key={t} type="button" onClick={() => setForm(f => ({ ...f, type: t }))}
+                  <button key={t} type="button" role="radio" aria-checked={form.type === t} onClick={() => { setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
                     style={{
                       flex: 1, textAlign: "center", padding: "10px 6px", borderRadius: 10, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
-                      border: (form.type || DEFAULT_DONATION_TYPE) === t ? "1.5px solid transparent" : "1.5px solid #E3C8C3",
-                      background: (form.type || DEFAULT_DONATION_TYPE) === t ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF",
-                      color: (form.type || DEFAULT_DONATION_TYPE) === t ? "#FFF7F5" : "#7A6360",
-                      fontWeight: (form.type || DEFAULT_DONATION_TYPE) === t ? 600 : 400,
+                      border: form.type === t ? "1.5px solid transparent" : `1.5px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}`,
+                      background: form.type === t ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF",
+                      color: form.type === t ? "#FFF7F5" : "#7A6360",
+                      fontWeight: form.type === t ? 600 : 400,
                     }}>
                     {DONATION_TYPE_LABELS[t]}
                   </button>
