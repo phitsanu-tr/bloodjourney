@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.237";
+const APP_VERSION = "1.0.238";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8403,17 +8403,17 @@ function AppInner() {
         const vTint = DONATION_TYPE_TINT[vd.type === "component" ? "component" : "whole"];
         const vn = donationOrderMap[vd.id];
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
-        const lblS = { width: 46, flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
+        const lblS = { width: 50, flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
         const valS = { flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 46, height: 60, position: "relative", flexShrink: 0 }}>
-                  <svg width="39" height="60" viewBox="6 2 34 52" fill="none" style={{ position: "absolute", left: 0, top: 0 }}>
+                <div style={{ width: 50, height: 60, position: "relative", flexShrink: 0 }}>
+                  <svg width="50" height="60" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
                     <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
                   </svg>
-                  <div style={{ position: "absolute", left: 0, width: 39, top: 7, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ position: "absolute", inset: 0, top: 7, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ fontSize: String(vn).length >= 3 ? 12 : 16, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{vn}</div>
                     <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
                   </div>
