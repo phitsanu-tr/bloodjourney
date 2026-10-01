@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.205";
+const APP_VERSION = "1.0.206";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5796,7 +5796,7 @@ function AppInner() {
                 <div style={{ minWidth: 0 }}>
                   {nickname ? (
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4, overflowWrap: "anywhere" }}>
-                      สวัสดี, คุณ{/^[A-Za-z]/.test(nickname.trim()) ? " " : ""}{nickname}
+                      {nickname}
                     </div>
                   ) : totalCount === 0 ? (
                     // Only asks "have you donated today?" for someone with genuinely
