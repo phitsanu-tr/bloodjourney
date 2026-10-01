@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.184";
+const APP_VERSION = "1.0.185";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1415,6 +1415,18 @@ function backupPasswordStrength(pw) {
 // Used for height (1 cm ticks) and weight (0.1 kg ticks). Horizontal so it
 // works the same for left- and right-handed use.
 const RULER_TICK = 8;
+// Close "✕" for dialogs that had none (confirm dialogs, storage warning): same icon and
+// colour as the profile/settings ✕, with a roomier tap area.
+function DialogX({ onClick, disabled, style }) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} aria-label="ปิด"
+      style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: disabled ? "not-allowed" : "pointer", color: "#3A2C29", display: "flex", flexShrink: 0, opacity: disabled ? 0.4 : 1, ...style }}>
+      <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
+      <X size={19} />
+    </button>
+  );
+}
+
 function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEvery, value, unit, unitBefore, caption, onChange, onSettle, label, ariaUnit }) {
   const ref = useRef(null);
   const count = Math.round((max - min) / step) + 1;
@@ -7340,7 +7352,8 @@ function AppInner() {
         // warning at least once rather than risking they never scroll past
         // a banner they didn't notice.
         <div role="dialog" aria-modal="true" aria-label="บันทึกข้อมูลถาวรไม่ได้ตอนนี้" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 80, padding: 20 }}>
-          <div style={{ background: "#FFFFFF", borderRadius: 16, padding: "20px 18px", maxWidth: 300, textAlign: "center" }}>
+          <div style={{ position: "relative", background: "#FFFFFF", borderRadius: 16, padding: "20px 18px", maxWidth: 300, textAlign: "center" }}>
+            <DialogX onClick={() => setShowStorageDegradedModal(false)} style={{ position: "absolute", top: 14, right: 14 }} />
             <div style={{ fontSize: 28, marginBottom: 8 }} aria-hidden="true">⚠️</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>บันทึกข้อมูลถาวรไม่ได้ตอนนี้</div>
             <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, marginBottom: 14 }}>
@@ -8252,7 +8265,10 @@ function AppInner() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowClearProfile(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
-            <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 6 }}>ล้างข้อมูลโปรไฟล์?</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ล้างข้อมูลโปรไฟล์?</div>
+              <DialogX onClick={() => setShowClearProfile(false)} />
+            </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ล้างออกจากเครื่องและกู้คืนไม่ได้</p>
             {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html, white cards from profile-clear-confirm-boxes.html) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
@@ -8284,7 +8300,10 @@ function AppInner() {
       {showReset && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลทั้งหมด" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
-            <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 8 }}>ลบข้อมูลทั้งหมด?</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลทั้งหมด?</div>
+              <DialogX disabled={saving} onClick={() => { setShowReset(false); setShowSettings(true); }} />
+            </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               ประวัติการบริจาคทั้งหมด {donations.length} รายการ{startingCountNum > 0 ? ` และยอดสะสมยกมา ${startingCountNum} ครั้ง` : ""} จะถูกลบอย่างถาวรและกู้คืนไม่ได้
             </p>
@@ -8301,11 +8320,14 @@ function AppInner() {
       {confirmDeleteId && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
-            <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 8 }}>
-              {(() => {
-                const target = donations.find(d => d.id === confirmDeleteId);
-                return target ? `ลบรายการบริจาคโลหิตวันที่ ${toBuddhistDate(target.date)} ?` : "ลบรายการนี้ ?";
-              })()}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>
+                {(() => {
+                  const target = donations.find(d => d.id === confirmDeleteId);
+                  return target ? `ลบรายการบริจาคโลหิตวันที่ ${toBuddhistDate(target.date)} ?` : "ลบรายการนี้ ?";
+                })()}
+              </div>
+              <DialogX onClick={() => setConfirmDeleteId(null)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               รายการนี้จะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้
@@ -8323,7 +8345,10 @@ function AppInner() {
       {confirmDeleteStartingCount && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบยอดสะสมยกมา" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
-            <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 8 }}>ลบยอดสะสมยกมา?</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบยอดสะสมยกมา?</div>
+              <DialogX onClick={() => setConfirmDeleteStartingCount(false)} />
+            </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               จำนวนครั้งที่เคยบริจาคมาก่อนจะถูกล้างเป็น 0 (เหมือนยังไม่เคยกรอกมาก่อน) — กรอกใหม่ได้ทุกเมื่อ ไม่กระทบรายการบริจาคที่บันทึกในแอปโดยตรง
             </p>
@@ -8340,7 +8365,10 @@ function AppInner() {
       {pendingImport && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22 }}>
-            <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 10 }}>ยืนยันการนำเข้าข้อมูล</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
+              <DialogX onClick={cancelImport} />
+            </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>ข้อมูลนี้มีทั้งหมด {pendingImport.totalInFile} รายการ</p>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>จะเพิ่มรายการใหม่ <b>{pendingImport.incoming.length}</b> รายการ</p>
             {pendingImport.duplicateCount > 0 && (
@@ -8380,7 +8408,8 @@ function AppInner() {
         <div role="alertdialog" aria-modal="true" aria-label="ส่งออกแบบไม่เข้ารหัส" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 24 }}>
           <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 18px 16px", boxShadow: "0 8px 30px rgba(58,44,41,0.25)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15.5, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>
-              <AlertTriangle size={19} color="#B3261E" aria-hidden="true" /> ส่งออกแบบไม่เข้ารหัส?
+              <AlertTriangle size={19} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>ส่งออกแบบไม่เข้ารหัส?</span>
+              <DialogX onClick={() => { setShowPlainWarn(false); setPlainWarnAck(false); }} />
             </div>
             <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "#5C4A46", margin: "0 0 12px" }}>ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด เช่น หมู่เลือด เลขผู้บริจาค ประวัติบริจาค ถ้าส่งผ่านแชทหรือเก็บในไดรฟ์ ควรเข้ารหัสไว้</p>
             <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.5, color: "#3A2C29", marginBottom: 14, cursor: "pointer" }}>
