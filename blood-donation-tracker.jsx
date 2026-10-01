@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.215";
+const APP_VERSION = "1.0.216";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7843,22 +7843,25 @@ function AppInner() {
 {(nickname || photo || birthYear !== "" || gender || height !== "" || donorId || bloodRh || weight !== "" || bloodType || donorType) && (
                 <div style={{ textAlign: "center", marginTop: 6 }}>
                   <button onClick={() => { setProfileOpenChoice(null); setShowClearProfile(true); }}
-                    style={{ position: "relative", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#B3261E", padding: "10px 14px" }}>
+                    style={{ display: "block", width: "100%", background: "#FFFFFF", border: "1px solid #E3B3AE", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, color: "#B3261E", padding: "11px 14px", lineHeight: 1.35 }}>
                     ลบข้อมูลโปรไฟล์
                   </button>
-                  <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
-                    ต้องการลบประวัติการบริจาคด้วย{" "}
+                  <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.7, marginTop: 8, textWrap: "balance" }}>
+                    หากต้องการลบข้อมูลทั้งหมด รวมถึงประวัติการบริจาคโลหิต
+                    <br />
+                    ไปที่{" "}
                     <button onClick={() => { setProfileOpenChoice(null); setShowProfile(false); setShowSettings(true); }}
-                      style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 11, color: "#9A3B33", textDecoration: "underline" }}>
-                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ไปที่ ตั้งค่า → ลบข้อมูลทั้งหมด
+                      style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, lineHeight: 1.7, color: "#9A3B33", textDecoration: "underline" }}>
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-10px -8px" }} />ตั้งค่า → ลบข้อมูลทั้งหมด
                     </button>
                   </div>
+                  <div aria-hidden="true" style={{ width: 40, height: 1, background: "#EEDEDA", margin: "16px auto 0" }} />
                 </div>
               )}
-<div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", columnGap: 12, rowGap: 2, fontSize: 11.5, color: "#7A6360", marginTop: 10 }}>
+<div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", columnGap: 12, rowGap: 2, fontSize: 11.5, color: "#7A6360", marginTop: 6, padding: "10px 0" }}>
                 <button type="button" onClick={() => { privacyFromProfileRef.current = true; setProfileOpenChoice(null); setShowProfile(false); setShowPrivacy(true); }}
                   style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", color: "#9A3B33", textDecoration: "underline" }}>
-                  <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ความเป็นส่วนตัว
+                  <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />อ่านนโยบายความเป็นส่วนตัว
                 </button>
               </div>
               </div>
