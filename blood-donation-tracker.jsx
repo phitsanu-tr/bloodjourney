@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.281";
+const APP_VERSION = "1.0.282";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8107,8 +8107,8 @@ function AppInner() {
                 {["whole", "component"].map((t) => (
                   <button key={t} type="button" role="radio" aria-checked={form.type === t} onClick={() => { setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
                     style={{
-                      flex: 1, textAlign: "center", padding: "10px 6px", borderRadius: 10, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
-                      border: form.type === t ? "1.5px solid transparent" : `1.5px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}`,
+                      flex: 1, textAlign: "center", padding: "10.5px 6px", borderRadius: 10, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
+                      border: form.type === t ? "1px solid transparent" : `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}`,
                       background: form.type === t ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF",
                       color: form.type === t ? "#FFF7F5" : "#7A6360",
                       fontWeight: form.type === t ? 600 : 400,
