@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.282";
+const APP_VERSION = "1.0.283";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5577,6 +5577,9 @@ function AppInner() {
         .btn-primary:active { background: #7E2F28; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-ghost { background: transparent; color: #9A3B33; border: 1px solid #E3C8C3; }
+        /* One line weight everywhere: a focused field keeps its 1px edge and only turns brand red, instead of
+           the browser's thick blue focus ring (iOS/Chrome) that looked heavier than every other line. */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus, textarea:focus, select:focus { outline: 1px solid #9A3B33; outline-offset: -1px; }
         .btn-ghost:disabled { opacity: 0.6; cursor: not-allowed; }
         button {
           -webkit-appearance: none;
@@ -5969,7 +5972,7 @@ function AppInner() {
                 // the other banners below, since the risk here is real data
                 // loss rather than just a reminder. Stays up for the rest of
                 // the session until storage actually starts working again.
-                <div style={{ background: "#FDEDED", border: "1px solid #F0C4C0", borderRadius: 14, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
+                <div style={{ background: "#FDEDED", border: "1px solid #F0C4BE", borderRadius: 14, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
                   <AlertTriangle size={16} color="#B3261E" style={{ marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 700, color: "#B3261E" }}>ข้อมูลจะไม่ถูกบันทึกถาวรตอนนี้</div>
@@ -7114,7 +7117,7 @@ function AppInner() {
                       <div key={a.id} style={{
                         position: "relative",
                         background: unlocked ? "#FBF6F5" : isNext ? "#FDF0EE" : "#F3EAE8",
-                        border: unlocked ? "1px solid #F3E7E4" : isNext ? "1.5px solid #9A3B33" : "1px solid #EEDEDA",
+                        border: unlocked ? "1px solid #F3E7E4" : isNext ? "1px solid #9A3B33" : "1px solid #EEDEDA",
                         borderRadius: 14, padding: 14, opacity: unlocked ? 1 : isNext ? 0.9 : 0.6,
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
@@ -7157,7 +7160,7 @@ function AppInner() {
                       <div key={a.id} style={{
                         position: "relative",
                         background: unlocked ? "#FBF6F5" : isNext ? "#FDF0EE" : "#F3EAE8",
-                        border: unlocked ? "1px solid #F3E7E4" : isNext ? "1.5px solid #9A3B33" : "1px solid #EEDEDA",
+                        border: unlocked ? "1px solid #F3E7E4" : isNext ? "1px solid #9A3B33" : "1px solid #EEDEDA",
                         borderRadius: 14, padding: 14, opacity: unlocked ? 1 : isNext ? 0.9 : 0.6,
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
@@ -7206,7 +7209,7 @@ function AppInner() {
                 {ELIGIBILITY_CRITERIA.map((t, i) => {
                   const Icon = t.icon;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < ELIGIBILITY_CRITERIA.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < ELIGIBILITY_CRITERIA.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                       <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
                     </div>
@@ -7222,7 +7225,7 @@ function AppInner() {
                 {PRE_DONATION_TIPS.map((t, i) => {
                   const Icon = t.icon;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < PRE_DONATION_TIPS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < PRE_DONATION_TIPS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                       <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
                     </div>
@@ -7238,7 +7241,7 @@ function AppInner() {
                 {POST_DONATION_TIPS.map((t, i) => {
                   const Icon = t.icon;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < POST_DONATION_TIPS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < POST_DONATION_TIPS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                       <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
                     </div>
@@ -7254,7 +7257,7 @@ function AppInner() {
                 {DONATION_MYTHS.map((t, i) => {
                   const Icon = t.icon;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_MYTHS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_MYTHS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                       <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
                     </div>
@@ -7270,7 +7273,7 @@ function AppInner() {
                 {DONATION_BENEFITS.map((t, i) => {
                   const Icon = t.icon;
                   return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_BENEFITS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_BENEFITS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                       <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
                     </div>
@@ -7307,9 +7310,9 @@ function AppInner() {
               </div>
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 10 }}>
                 <EligibilityCheckRow label="อายุ" status={ageCheck.status} detail={ageCheck.detail} />
-                <div style={{ borderTop: "1px solid #F3EAE8" }} />
+                <div style={{ borderTop: "1px solid #F3E7E4" }} />
                 <EligibilityCheckRow label="น้ำหนัก" status={weightCheck.status} detail={weightCheck.detail} />
-                <div style={{ borderTop: "1px solid #F3EAE8" }} />
+                <div style={{ borderTop: "1px solid #F3E7E4" }} />
                 <EligibilityCheckRow label="ระยะห่างจากการบริจาคครั้งก่อน" status={intervalCheck.status} detail={intervalCheck.detail} />
               </div>
               {(ageCheck.status === "unknown" || weightCheck.status === "unknown") && (
@@ -7324,7 +7327,7 @@ function AppInner() {
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เกณฑ์อื่น ๆ ที่ต้องประเมินเอง</div>
               </div>
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: "1px solid #F3EAE8" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: "1px solid #F3E7E4" }}>
                   <AlertTriangle size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
                   <div style={{ fontSize: 13, color: "#3A2C29", lineHeight: 1.6 }}>ไม่มีไข้หรืออาการป่วยในช่วง 14 วันที่ผ่านมา</div>
                 </div>
@@ -7351,7 +7354,7 @@ function AppInner() {
                 {APP_FAQ_ITEMS.map((item, i) => {
                   const isOpen = openFaqIndex === i;
                   return (
-                    <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3EAE8" : "none" }}>
+                    <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
                       <button
                         onClick={() => setOpenFaqIndex(isOpen ? null : i)}
                         aria-expanded={isOpen}
@@ -7626,11 +7629,11 @@ function AppInner() {
                         <button onClick={() => { setShowPhotoMenu(false); photoCameraInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
                           <Camera size={15} color="#9A3B33" /> ถ่ายรูปใหม่
                         </button>
-                        <button onClick={() => { setShowPhotoMenu(false); photoGalleryInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
+                        <button onClick={() => { setShowPhotoMenu(false); photoGalleryInputRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit", textAlign: "left" }}>
                           <ImageIcon size={15} color="#9A3B33" /> เลือกจากคลังภาพ
                         </button>
                         {photo && (
-                          <button onClick={removePhoto} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3EAE8", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit", textAlign: "left" }}>
+                          <button onClick={removePhoto} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 44, padding: "0 14px", background: "none", border: "none", borderTop: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit", textAlign: "left" }}>
                             <Trash2 size={15} color="#B3261E" /> ลบรูปโปรไฟล์
                           </button>
                         )}
