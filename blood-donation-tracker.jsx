@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.291";
+const APP_VERSION = "1.0.292";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5585,6 +5585,12 @@ function AppInner() {
         .btn-primary:active { background: #7E2F28; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-ghost { background: transparent; color: #9A3B33; border: 1px solid #E3C8C3; }
+        /* Tappable things behave like app controls, not web text: no blue selection on a long-press or
+           double-tap (iOS/Android), no iOS copy/look-up callout, no Android tap flash. Text fields and
+           reading content (knowledge, privacy, backup text) stay selectable. */
+        button, [role="button"], [role="radio"], [role="switch"], [role="tab"], [role="checkbox"], .hist-card {
+          -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+        }
         /* One line weight everywhere: a focused field keeps its 1px edge and only turns brand red, instead of
            the browser's thick blue focus ring (iOS/Chrome) that looked heavier than every other line. */
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus, textarea:focus, select:focus { outline: 1px solid #9A3B33; outline-offset: -1px; }
