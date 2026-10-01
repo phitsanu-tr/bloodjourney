@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.283";
+const APP_VERSION = "1.0.284";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8086,7 +8086,12 @@ function AppInner() {
                     any valid date resolves all three at once. */}
                 <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${dateFieldHasError ? "#B3261E" : "#E3C8C3"}` }}>
                   <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
-                    onChange={(date) => setForm(f => ({ ...f, date }))}
+                    onChange={(date) => {
+                      setForm(f => ({ ...f, date }));
+                      // Picking a date resolves every date-related message (empty / invalid / future / same-day
+                      // conflict) -- clear it right away so the red edge and alert don't linger after the fix.
+                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาค" || e === "วันที่ไม่ถูกต้อง" || e === "ระบุวันที่ในอนาคตไม่ได้" || e === sameDateConflictMessage) ? "" : e));
+                    }}
                     height={44} fontSize={14} />
                 </div>
               </div>
