@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.285";
+const APP_VERSION = "1.0.286";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2682,6 +2682,9 @@ function AppInner() {
   // derived as (entered total - 1) so the two records never double-count.
   const [showStartingCountQuickEntry, setShowStartingCountQuickEntry] = useState(false);
   const [quickStartingCountError, setQuickStartingCountError] = useState("");
+  // Which field the current quick-entry error is about ("whole-count", "component-date", ...), so that
+  // field gets the red edge like the main donation form does. Only shown while the error text is set.
+  const [quickErrorField, setQuickErrorField] = useState("");
   const [quickTypeOnWhole, setQuickTypeOnWhole] = useState(false);
   const [quickTypeOnComponent, setQuickTypeOnComponent] = useState(false);
   const [quickStartingCountWholeDraft, setQuickStartingCountWholeDraft] = useState("");
@@ -3893,9 +3896,9 @@ function AppInner() {
     // Validate one card fully (count, then date) before moving to the next,
     // so the first error a donor sees always belongs to the card at the top
     // of the form rather than jumping between cards.
-    for (const [on, totalRaw, countRef, f, dateRef, typeMax] of [
-      [quickTypeOnWhole, wholeTotalRaw, quickCountInputRefWhole, quickEntryFormWhole, quickDateInputRefWhole, maxStartingCountWhole],
-      [quickTypeOnComponent, componentTotalRaw, quickCountInputRefComponent, quickEntryFormComponent, quickDateInputRefComponent, maxStartingCountComponent],
+    for (const [key, on, totalRaw, countRef, f, dateRef, typeMax] of [
+      ["whole", quickTypeOnWhole, wholeTotalRaw, quickCountInputRefWhole, quickEntryFormWhole, quickDateInputRefWhole, maxStartingCountWhole],
+      ["component", quickTypeOnComponent, componentTotalRaw, quickCountInputRefComponent, quickEntryFormComponent, quickDateInputRefComponent, maxStartingCountComponent],
     ]) {
       if (!on) continue;
       // The entered total INCLUDES the most-recent donation being logged in
@@ -3908,22 +3911,26 @@ function AppInner() {
       // realistically possible rather than just "too big".
       if (Number.isNaN(totalRaw) || !Number.isInteger(totalRaw) || totalRaw < 1 || totalRaw > typeMax) {
         setQuickStartingCountError(`จำนวนครั้งที่เคยบริจาคควรอยู่ระหว่าง 1-${typeMax} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+        setQuickErrorField(`${key}-count`);
         countRef.current?.focus();
         return;
       }
       if (!f.date) {
         setQuickStartingCountError("กรุณาระบุวันที่บริจาคโลหิต (ครั้งล่าสุด)");
+        setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
       }
       const d = new Date(f.date);
       if (Number.isNaN(d.getTime())) {
         setQuickStartingCountError("วันที่ล่าสุดไม่ถูกต้อง");
+        setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
       }
       if (d.setHours(0,0,0,0) > startOfToday().getTime()) {
         setQuickStartingCountError("ระบุวันที่ในอนาคตไม่ได้");
+        setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
       }
@@ -3937,6 +3944,7 @@ function AppInner() {
     if (quickTypeOnWhole && quickTypeOnComponent && quickEntryFormWhole.date && quickEntryFormComponent.date
       && daysBetween(new Date(quickEntryFormWhole.date), new Date(quickEntryFormComponent.date)) === 0) {
       setQuickStartingCountError(sameDateConflictMessage);
+      setQuickErrorField("component-date");
       quickDateInputRefComponent.current?.focus();
       return;
     }
@@ -8236,11 +8244,11 @@ function AppInner() {
                         by the user as unwanted. Let them tap the field themselves. */}
                     <input ref={countRef} type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={max} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
-                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
                           <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
                             height={42} fontSize={13.5} />
