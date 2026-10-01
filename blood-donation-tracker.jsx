@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.204";
+const APP_VERSION = "1.0.205";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5814,20 +5814,27 @@ function AppInner() {
                     </div>
                   )}
                   {(bloodType || age !== "" || weight !== "") ? (
-                    /* Summary as one text line (design B of home-greeting-designs.html): blood group · age · weight + show/hide eye */
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 3, fontSize: 11.5, color: "#7A6360", lineHeight: 1.4 }}>
-                      {[
-                        bloodType ? { key: "blood", text: bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType, strong: true } : null,
-                        age !== "" ? { key: "age", text: `${age} ปี` } : null,
-                        weight !== "" ? { key: "weight", text: `${weight} กก.` } : null,
-                      ].filter(Boolean).map((it, i) => (
-                        <React.Fragment key={it.key}>
-                          {i > 0 && <span aria-hidden="true" style={{ width: 3, height: 3, borderRadius: "50%", background: "#C9B5B0", flexShrink: 0 }} />}
-                          <span style={{ fontWeight: it.strong ? 600 : 400, color: it.strong ? "#9A3B33" : "#7A6360", filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{it.text}</span>
-                        </React.Fragment>
-                      ))}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                      {bloodType && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                          <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Droplet size={9} /></span>
+                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
+                        </span>
+                      )}
+                      {age !== "" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                          <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Cake size={9} /></span>
+                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{age} ปี</span>
+                        </span>
+                      )}
+                      {weight !== "" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                          <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Weight size={9} /></span>
+                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{weight} กก.</span>
+                        </span>
+                      )}
                       <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: "-14px -11px", borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: -11, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
                         {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
                     </div>
