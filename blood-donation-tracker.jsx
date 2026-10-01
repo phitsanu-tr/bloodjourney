@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.278";
+const APP_VERSION = "1.0.279";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4088,6 +4088,14 @@ function AppInner() {
     }
     if (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent) {
       setStartingCountEditError(`จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      return;
+    }
+    if (numWhole + numComponent === 0) {
+      // Clearing both totals is really "delete the carried-over count" -- route it through the same
+      // confirmation as the ⋮ menu's ลบ instead of silently wiping it on a plain save.
+      setEditingStartingCount(false);
+      setStartingCountEditError("");
+      requestDeleteStartingCount();
       return;
     }
     setStartingCountEditError("");
@@ -8482,7 +8490,7 @@ function AppInner() {
         );
       })()}
 
-      {viewStartingCount && startingCountNum > 0 && (() => {
+      {viewStartingCount && displayedStartingCount > 0 && (() => {
         // Read-only detail for the carried-over total ("เคยบริจาคมาก่อน"), mirroring the donation
         // detail modal: badge + title on top, one row per carried-over type, and the logged-at line.
         const svRowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
@@ -8500,18 +8508,18 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{startingCountNum}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                   <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {startingCountNum} ครั้ง</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง</div>
                   <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
                 </div>
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                {startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
-                {startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
+                {historyTypeFilter !== "component" && startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
+                {historyTypeFilter !== "whole" && startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
                 {startingCountUpdatedAt && (
                   <ModalMetaLine>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
