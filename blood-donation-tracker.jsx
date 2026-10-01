@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.270";
+const APP_VERSION = "1.0.271";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2958,27 +2958,38 @@ function AppInner() {
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
     || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId
     || viewStartingCount || editingStartingCount;
+  const scrollRestoreTimersRef = useRef([]);
   useEffect(() => {
     if (anyModalOpen) {
-      scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
+      // A reopen right after a close must cancel the previous close's pending scroll restores,
+      // otherwise they fire against the new lock (iOS then leaves the page dead to scroll/taps).
+      scrollRestoreTimersRef.current.forEach((t) => { try { cancelAnimationFrame(t); clearTimeout(t); } catch (e) { /* ignore */ } });
+      scrollRestoreTimersRef.current = [];
       const body = document.body;
+      // Never read scrollY while the body is already fixed (it would be 0 and the page would jump).
+      if (body.style.position !== "fixed") scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
       body.style.position = "fixed";
       body.style.top = `-${scrollLockYRef.current}px`;
       body.style.left = "0";
       body.style.right = "0";
       body.style.width = "100%";
       return () => {
+        blurActiveInput();
         body.style.position = "";
         body.style.top = "";
         body.style.left = "";
         body.style.right = "";
         body.style.width = "";
         const y = scrollLockYRef.current;
-        window.scrollTo(0, y);
+        const restore = () => { if (document.body.style.position !== "fixed") window.scrollTo(0, y); };
+        restore();
         // iOS can leave the visual viewport offset after the keyboard closes; re-assert the position
         // once layout has settled so the page is scrollable/tappable again.
-        requestAnimationFrame(() => window.scrollTo(0, y));
-        setTimeout(() => { if (document.body.style.position !== "fixed") window.scrollTo(0, y); }, 150);
+        scrollRestoreTimersRef.current = [
+          requestAnimationFrame(restore),
+          setTimeout(restore, 150),
+          setTimeout(restore, 400),
+        ];
       };
     }
   }, [anyModalOpen]);
