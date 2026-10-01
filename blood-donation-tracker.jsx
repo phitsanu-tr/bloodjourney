@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.221";
+const APP_VERSION = "1.0.222";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3194,6 +3194,21 @@ function AppInner() {
             clone.setAttribute("aria-hidden", "true");
             clone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
             clone.classList.add("dlg-exit-clone");
+            // The clone is appended to <body>, outside the app root that carries the
+            // font / colour / alignment -- without these it fell back to the browser's
+            // default (serif) font for the 0.2s it is visible.
+            clone.style.fontFamily = "'Mitr', 'Inter', sans-serif";
+            clone.style.color = "#241A18";
+            clone.style.textAlign = "left";
+            // The app's <style> block is not mounted while the splash shows (e.g. right after
+            // "ลบข้อมูลทั้งหมด"), so give the clone the scrim look inline as well.
+            let noBlur = false;
+            try { noBlur = window.matchMedia("(prefers-reduced-transparency: reduce)").matches; } catch (e) {}
+            if (!noBlur) {
+              clone.style.background = "rgba(36, 26, 24, 0.3)";
+              clone.style.webkitBackdropFilter = "blur(3px)";
+              clone.style.backdropFilter = "blur(3px)";
+            }
             document.body.appendChild(clone);
             setTimeout(() => clone.remove(), 200);
           }
@@ -5541,13 +5556,13 @@ function AppInner() {
         }
         /* Every modal backdrop: light blur + a lighter scrim (was a flat 0.45 dim), so what is
            behind (blood group / age / weight chips, other dialogs) is not readable. */
-        [role="dialog"][aria-modal="true"]:not([data-own-motion]) {
+        [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone {
           background: rgba(36, 26, 24, 0.3) !important;
           -webkit-backdrop-filter: blur(3px);
           backdrop-filter: blur(3px);
         }
         @media (prefers-reduced-transparency: reduce) {
-          [role="dialog"][aria-modal="true"]:not([data-own-motion]), .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+          [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
         }
         @keyframes scrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeSwap {
