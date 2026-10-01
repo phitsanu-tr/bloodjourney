@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.292";
+const APP_VERSION = "1.0.293";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5585,12 +5585,15 @@ function AppInner() {
         .btn-primary:active { background: #7E2F28; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-ghost { background: transparent; color: #9A3B33; border: 1px solid #E3C8C3; }
-        /* Tappable things behave like app controls, not web text: no blue selection on a long-press or
-           double-tap (iOS/Android), no iOS copy/look-up callout, no Android tap flash. Text fields and
-           reading content (knowledge, privacy, backup text) stay selectable. */
-        button, [role="button"], [role="radio"], [role="switch"], [role="tab"], [role="checkbox"], .hist-card {
-          -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-        }
+        /* App-like text: nothing is selectable by a long-press / double-tap (no blue selection, no iOS
+           copy/look-up callout, no Android tap flash) EXCEPT text fields and the reading content people may
+           want to copy (.selectable: knowledge tab + FAQ, privacy policy, generated backup password).
+           Controls stay unselectable even inside .selectable. Inputs are re-enabled explicitly because some
+           iOS Safari versions otherwise inherit "none" and refuse typing/pasting. */
+        html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+        input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+        .selectable { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+        .selectable :is(button, [role="button"], [role="radio"], [role="switch"], [role="tab"], [role="checkbox"]) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
         /* One line weight everywhere: a focused field keeps its 1px edge and only turns brand red, instead of
            the browser's thick blue focus ring (iOS/Chrome) that looked heavier than every other line. */
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus, textarea:focus, select:focus { outline: 1px solid #9A3B33; outline-offset: -1px; }
@@ -5912,7 +5915,7 @@ function AppInner() {
         </div>
       )}
       {phase === "app" && (
-        <div ref={ptrShellRef} className="app-shell" style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
+        <div ref={ptrShellRef} className={tab === "knowledge" ? "app-shell selectable" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
@@ -8382,7 +8385,7 @@ function AppInner() {
 
       {showPrivacy && (
         <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" onClick={(e) => { if (e.target === e.currentTarget) { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
               <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
@@ -8795,7 +8798,7 @@ function AppInner() {
                   <>
                     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 11.5, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านที่แอปสร้างให้</div>
-                      <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
                           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
