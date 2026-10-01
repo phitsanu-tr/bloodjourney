@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.262";
+const APP_VERSION = "1.0.263";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8021,11 +8021,14 @@ function AppInner() {
 
       {showForm && (
         <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 20px 28px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"}</div>
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
+            {/* White card around the fields (same look as the boxes in the profile / "เคยบริจาคมาแล้ว"
+                forms); the action buttons sit below it, outside the card. */}
+            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 4px" }}>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
               <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
@@ -8126,10 +8129,19 @@ function AppInner() {
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
               <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{form.note.length}/{MAX_NOTE_LEN}</div>
             </div>
-            {formError && <div style={{ color: "#B3261E", fontSize: 12.5, marginBottom: 10 }} role="alert">{formError}</div>}
-            <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 14.5, fontWeight: 600, cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
-              {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึก")}
-            </button>
+            </div>
+            {formError && (
+              <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
+                <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{formError}</div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button onClick={closeForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
+                {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึก")}
+              </button>
+            </div>
           </div>
         </div>
       )}
