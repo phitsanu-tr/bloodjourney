@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.277";
+const APP_VERSION = "1.0.278";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8214,7 +8214,7 @@ function AppInner() {
                         is toggled on, and auto-focusing it would pop the keyboard open
                         immediately without the user tapping anything -- reported directly
                         by the user as unwanted. Let them tap the field themselves. */}
-                    <input ref={countRef} type="number" min="1" max={max} step="1" value={draft} placeholder="0"
+                    <input ref={countRef} type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={max} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
@@ -8305,21 +8305,21 @@ function AppInner() {
                 <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} />
               </button>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — โลหิตรวม (วัน)</label>
-              <input type="number" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={cycleDays}
+              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={cycleDays}
                 onChange={(e) => setCycleDays(e.target.value === "" ? "" : Number(e.target.value))}
                 onBlur={(e) => updateCycleDays(e.target.value === "" ? DEFAULT_CYCLE_DAYS : e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
               <div style={{ fontSize: 11, color: "#B39B96", marginBottom: 14 }}>ค่าเริ่มต้น {DEFAULT_CYCLE_DAYS} วัน</div>
 
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — พลาสมา/เกล็ดเลือด (วัน)</label>
-              <input type="number" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={componentCycleDays}
+              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={componentCycleDays}
                 onChange={(e) => setComponentCycleDays(e.target.value === "" ? "" : Number(e.target.value))}
                 onBlur={(e) => updateComponentCycleDays(e.target.value === "" ? DEFAULT_COMPONENT_CYCLE_DAYS : e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
               <div style={{ fontSize: 11, color: "#B39B96", marginBottom: 14 }}>ค่าเริ่มต้น {DEFAULT_COMPONENT_CYCLE_DAYS} วัน — ใช้กับผู้ที่บริจาคพลาสมาหรือเกล็ดเลือด ซึ่งเว้นระยะสั้นกว่าโลหิตรวม</div>
 
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เตือนสำรองข้อมูลทุก (รายการ)</label>
-              <input type="number" min={MIN_BACKUP_REMINDER_GAP} max={MAX_BACKUP_REMINDER_GAP} step="1" value={backupReminderGap}
+              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_BACKUP_REMINDER_GAP} max={MAX_BACKUP_REMINDER_GAP} step="1" value={backupReminderGap}
                 onChange={(e) => setBackupReminderGap(e.target.value === "" ? "" : Number(e.target.value))}
                 onBlur={(e) => updateBackupReminderGap(e.target.value === "" ? DEFAULT_BACKUP_REMINDER_GAP : e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
@@ -8535,13 +8535,13 @@ function AppInner() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
-                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
+                  <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
-                  <input type="number" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
+                  <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
                     onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>
