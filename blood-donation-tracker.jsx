@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.181";
+const APP_VERSION = "1.0.182";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8249,13 +8249,26 @@ function AppInner() {
           style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 6 }}>ล้างข้อมูลโปรไฟล์?</div>
-            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 10px" }}>จะล้างข้อมูลเหล่านี้ออกจากเครื่อง และกู้คืนไม่ได้</p>
-            <ul style={{ listStyle: "none", margin: "0 0 10px", padding: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 10px", fontSize: 12.5, color: "#3A2C29" }}>
-              {["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"].map(t => (
-                <li key={t}><span aria-hidden="true" style={{ color: "#B3261E", fontSize: 11 }}>✕ </span>{t}</li>
+            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ล้างออกจากเครื่องและกู้คืนไม่ได้</p>
+            {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html) */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+              {[
+                { key: "gone", title: "จะถูกล้าง", mark: "✕", color: "#B3261E", bg: "#FBEAE7", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", bg: "#E8F4EC", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] },
+              ].map(col => (
+                <div key={col.key} style={{ background: col.bg, borderRadius: 12, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: col.color, marginBottom: 6 }}>{col.title}</div>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13, lineHeight: 1.55, color: "#3A2C29" }}>
+                    {col.items.map(t => (
+                      <li key={t} style={{ display: "flex", gap: 6, padding: "1px 0" }}>
+                        <span aria-hidden="true" style={{ color: col.color, fontSize: 11, lineHeight: "20px", flexShrink: 0 }}>{col.mark}</span>
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-            <div style={{ background: "#E8F4EC", color: "#2E7D4F", borderRadius: 10, padding: "8px 10px", fontSize: 12.5, lineHeight: 1.45, marginBottom: 16 }}>✓ ประวัติการบริจาคและสถิติทั้งหมดยังอยู่ครบ</div>
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowClearProfile(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>ล้างข้อมูล</button>
