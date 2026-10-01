@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.212";
+const APP_VERSION = "1.0.213";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5829,6 +5829,20 @@ function AppInner() {
                   )}
                   </div>
                   </div>
+                  {donorId && (
+                    <div style={{ marginTop: 3, fontSize: 11.5, color: "#7A6360", lineHeight: 1.4 }}>
+                      เลขผู้บริจาค{" "}
+                      <button type="button" disabled={pillsHidden} aria-label={pillsHidden ? "เลขผู้บริจาค (ซ่อนอยู่)" : "คัดลอกเลขผู้บริจาค"}
+                        onClick={async () => {
+                          try { await navigator.clipboard.writeText(donorId); showToast("success", "คัดลอกเลขผู้บริจาคแล้ว"); }
+                          catch (e) { showToast("error", "คัดลอกไม่ได้ในแอปนี้"); }
+                        }}
+                        style={{ position: "relative", border: "none", background: "none", padding: 0, font: "inherit", color: "#3A2C29", fontWeight: 500, fontVariantNumeric: "tabular-nums", letterSpacing: "0.02em", cursor: pillsHidden ? "default" : "pointer", filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-10px -6px" }} />
+                        {donorId}
+                      </button>
+                    </div>
+                  )}
                   {(bloodType || age !== "" || weight !== "") ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {bloodType && (
