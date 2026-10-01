@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.230";
+const APP_VERSION = "1.0.231";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2421,7 +2421,6 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           </div>
         )}
       </div>
-      <ChevronRight size={15} color="#C9B3AF" aria-hidden="true" style={{ flexShrink: 0, alignSelf: "center", marginLeft: -6, marginRight: -6, pointerEvents: "none" }} />
       <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
           <MoreVertical size={17} color="#9A3B33" />
