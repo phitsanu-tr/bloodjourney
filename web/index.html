@@ -37,6 +37,11 @@
       body { margin: 0; }
       html, body { scrollbar-width: none; -ms-overflow-style: none; }
       html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+      /* App-like text from the very first frame (splash included): no long-press selection / callout /
+         tap flash. Text fields re-enabled explicitly (some iOS Safari versions inherit "none" and then
+         refuse typing/pasting). The app re-opens reading content via .selectable once it renders. */
+      html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+      input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
     </style>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
