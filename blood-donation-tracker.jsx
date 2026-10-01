@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.219";
+const APP_VERSION = "1.0.220";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2564,6 +2564,7 @@ function AppInner() {
   const showRemindPauseRef = useRef(false);
   showRemindPauseRef.current = showRemindPause;
   const showClearProfileRef = useRef(false);
+  const showResetRef = useRef(false);
   const [donations, setDonations] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -2574,6 +2575,7 @@ function AppInner() {
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
   showClearProfileRef.current = showClearProfile;
+  showResetRef.current = showReset;
   const profileBoxRef = useRef(null);
   const lastPickedRef = useRef({}); // last chosen option per profile row, so the highlight can fade out in place
   const profileScrollRef = useRef(null);
@@ -3227,6 +3229,8 @@ function AppInner() {
       if (showRemindPauseRef.current) { setShowRemindPause(false); return; }
       // The clear-profile confirm also sits on top of the profile: Escape closes only it.
       if (showClearProfileRef.current) { setShowClearProfile(false); return; }
+      // The delete-all confirm sits on top of Settings: Escape closes only it.
+      if (showResetRef.current) { setShowReset(false); return; }
       setShowProfile(false);
       setProfileOpenChoice(null);
       setShowForm(false);
@@ -4106,6 +4110,7 @@ function AppInner() {
       setDismissedReminders({});
       setBlurInfoPills(true);
       setShowReset(false);
+      setShowSettings(false);
       // resetAll wipes everything back to a fresh start, but never touched
       // `tab` -- so if the user happened to be on, say, the knowledge tab
       // when they deleted their data, re-consenting dropped them right
@@ -8217,7 +8222,7 @@ function AppInner() {
               <button onClick={() => openBackupRestore("export")} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Download size={16} color="#9A3B33" /> สำรอง/กู้คืนข้อมูล
               </button>
-              <button onClick={() => { setShowSettings(false); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit" }}>
+              <button onClick={() => setShowReset(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit" }}>
                 <Trash2 size={16} color="#B3261E" /> ลบข้อมูลทั้งหมด
               </button>
             </div>
@@ -8347,13 +8352,13 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลทั้งหมด?</div>
-              <DialogX disabled={saving} onClick={() => { setShowReset(false); setShowSettings(true); }} />
+              <DialogX disabled={saving} onClick={() => setShowReset(false)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               ประวัติการบริจาคทั้งหมด {donations.length} รายการ{startingCountNum > 0 ? ` และยอดสะสมยกมา ${startingCountNum} ครั้ง` : ""} จะถูกลบอย่างถาวรและกู้คืนไม่ได้
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => { setShowReset(false); setShowSettings(true); }} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={() => setShowReset(false)} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={resetAll} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
                 {saving ? "กำลังลบ..." : "ลบข้อมูล"}
               </button>
