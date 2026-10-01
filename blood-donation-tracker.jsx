@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.187";
+const APP_VERSION = "1.0.188";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7820,10 +7820,10 @@ function AppInner() {
                     ลบข้อมูลโปรไฟล์
                   </button>
                   <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
-                    ต้องการลบทั้งหมดรวมประวัติ →{" "}
+                    ต้องการลบประวัติการบริจาคด้วย{" "}
                     <button onClick={() => { setProfileOpenChoice(null); setShowProfile(false); setShowSettings(true); }}
                       style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 11, color: "#9A3B33", textDecoration: "underline" }}>
-                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ไปที่ตั้งค่า
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -6px" }} />ไปที่ ตั้งค่า → ลบข้อมูลทั้งหมด
                     </button>
                   </div>
                 </div>
