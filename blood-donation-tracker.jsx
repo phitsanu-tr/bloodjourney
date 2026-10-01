@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.213";
+const APP_VERSION = "1.0.214";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2697,9 +2697,9 @@ function AppInner() {
   // days edited), and on its own the next day even if the due date is
   // unchanged.
   const [dismissedReminders, setDismissedReminders] = useState({});
-  // Blood group / age / weight chips on Home: shown by default; the profile switch
-  // "ซ่อนข้อมูลบนหน้าแรก" blurs them persistently.
-  const [blurInfoPills, setBlurInfoPills] = useState(false);
+  // Blood group / age / weight / donor ID on Home: blurred by default; the profile switch
+  // "ซ่อนข้อมูลบนหน้าแรก" turns the blur off (persisted).
+  const [blurInfoPills, setBlurInfoPills] = useState(true);
   const pillsHidden = blurInfoPills;
   // True once storage.isDegraded() has ever returned true this session —
   // meaning a write fell all the way through to the in-memory fallback and
@@ -4104,7 +4104,7 @@ function AppInner() {
       setDismissedEligibilityAge(null);
       setDismissedEligibilityWeight(null);
       setDismissedReminders({});
-      setBlurInfoPills(false);
+      setBlurInfoPills(true);
       setShowReset(false);
       // resetAll wipes everything back to a fresh start, but never touched
       // `tab` -- so if the user happened to be on, say, the knowledge tab
