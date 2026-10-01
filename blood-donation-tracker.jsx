@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.223";
+const APP_VERSION = "1.0.224";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -274,7 +274,9 @@ function toBuddhistDateTime(d) {
   if (Number.isNaN(date.getTime())) return "";
   const hh = String(date.getHours()).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
-  return `${toBuddhistDate(date)} เวลา ${hh}:${mm} น.`;
+  // Non-breaking spaces inside the time part, so a narrow line wraps BEFORE "เวลา" instead of
+  // leaving a lone "น." (or the clock) on its own line.
+  return `${toBuddhistDate(date)} เวลา\u00A0${hh}:${mm}\u00A0น.`;
 }
 function daysBetween(a, b) {
   return Math.round((b.setHours(0,0,0,0) - a.setHours(0,0,0,0)) / 86400000);
@@ -2389,7 +2391,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
-          <span style={HIST_ICON_BOX}><Calendar size={14} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา ${d.time} น.` : ""}
+          <span style={HIST_ICON_BOX}><Calendar size={14} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา\u00A0${d.time}\u00A0น.` : ""}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
           <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={13} color="#7A6360" /> : <Droplet size={13} color="#7A6360" />}</span>
