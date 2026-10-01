@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.195";
+const APP_VERSION = "1.0.196";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8262,7 +8262,7 @@ function AppInner() {
             </p>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
               {PRIVACY_POLICY_SECTIONS.map((sec, i) => (
-                <div key={i} style={{ marginBottom: 14 }}>
+                <div key={i} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#3A2C29", margin: "0 0 5px" }}>{sec.heading}</div>
                   {sec.body.map((p, j) => (
                     <p key={j} style={{ fontSize: 12.5, color: "#5C4A46", lineHeight: 1.7, margin: j === 0 ? 0 : "6px 0 0" }}>
@@ -8271,7 +8271,7 @@ function AppInner() {
                   ))}
                 </div>
               ))}
-              <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "4px 0 0" }}>
+              <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "4px 2px 0" }}>
                 ให้ความยินยอมเมื่อ: {new Date().toLocaleDateString("th-TH")}
               </p>
             </FadeScroll>
