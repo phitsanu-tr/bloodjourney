@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.200";
+const APP_VERSION = "1.0.201";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7574,17 +7574,21 @@ function AppInner() {
                   <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29", lineHeight: 1.35, overflow: "hidden", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{[firstName, lastName].filter(Boolean).join(" ") || "ยังไม่ได้ใส่ชื่อ"}</div>
                   {photoBusy ? (
                     <div style={{ marginTop: 2, fontSize: 12, color: "#7A6360" }}>กำลังประมวลผลรูป...</div>
-                  ) : (bloodType && bloodType !== "ไม่ทราบ") || age !== "" ? (
-                    /* Summary chips: blood group + age only (design D of profile-header-designs.html) */
+                  ) : (bloodType && bloodType !== "ไม่ทราบ") || age !== "" || (weight !== "" && weight != null) ? (
+                    /* Summary chips under the name: blood group, age, weight — white icon disc + bold value */
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
-                      {bloodType && bloodType !== "ไม่ทราบ" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", height: 22, fontSize: 11.5, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", fontWeight: 600, borderRadius: 999, padding: "0 10px" }}>
-                          {bloodType}{bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}
+                      {[
+                        bloodType && bloodType !== "ไม่ทราบ" ? { key: "blood", Icon: Droplet, text: `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}` } : null,
+                        age !== "" ? { key: "age", Icon: Cake, text: `${age} ปี` } : null,
+                        weight !== "" && weight != null ? { key: "weight", Icon: Weight, text: `${weight} กก.` } : null,
+                      ].filter(Boolean).map(c => (
+                        <span key={c.key} style={{ display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 12px 0 4px", borderRadius: 999, background: "#F3EAE8", color: "#9A3B33", fontSize: 13, fontWeight: 700, lineHeight: 1, whiteSpace: "nowrap" }}>
+                          <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <c.Icon size={13} color="#9A3B33" />
+                          </span>
+                          {c.text}
                         </span>
-                      )}
-                      {age !== "" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", height: 22, fontSize: 11.5, lineHeight: 1, background: "#F3EAE8", color: "#6B3A34", borderRadius: 999, padding: "0 10px" }}>อายุ {age} ปี</span>
-                      )}
+                      ))}
                     </div>
                   ) : null}
                 </div>
