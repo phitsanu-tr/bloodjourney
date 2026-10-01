@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.297";
+const APP_VERSION = "1.0.298";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2614,6 +2614,7 @@ function AppInner() {
   const [editingId, setEditingId] = useState(null);
   const [editSnapshot, setEditSnapshot] = useState(null);
   const [formError, setFormError] = useState("");
+  const lastTypeIdxRef = useRef(0); // where the type pill fades out from after being cleared
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showReset, setShowReset] = useState(false);
@@ -8150,15 +8151,20 @@ function AppInner() {
               <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ position: "relative", display: "flex", background: "#FFFFFF", borderRadius: 12, padding: 4, border: `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}` }}>
                 {(() => {
                   const idx = ["whole", "component"].indexOf(form.type);
+                  if (idx >= 0) lastTypeIdxRef.current = idx;
                   return (
-                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${Math.max(idx, 0)} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#F3E7E4", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${idx >= 0 ? idx : lastTypeIdxRef.current} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#F3E7E4", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                   );
                 })()}
                 <SegDividers n={2} sel={["whole", "component"].indexOf(form.type)} />
                 {["whole", "component"].map((t) => {
                   const on = form.type === t;
                   return (
-                    <button key={t} type="button" role="radio" aria-checked={on} onClick={() => { setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
+                    <button key={t} type="button" role="radio" aria-checked={on} onClick={() => {
+                        // Tapping the chosen type again takes it back off (nothing selected), like the profile pickers.
+                        if (on) { setForm(f => ({ ...f, type: "" })); return; }
+                        setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e));
+                      }}
                       style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, whiteSpace: "nowrap", fontWeight: on ? 600 : 500, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                       {DONATION_TYPE_LABELS[t]}
                     </button>
