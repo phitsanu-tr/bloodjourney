@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.180";
+const APP_VERSION = "1.0.181";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7387,14 +7387,14 @@ function AppInner() {
         };
         const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
-        // Summary: "O Rh⁺" — one colour, sign as a superscript; Rh unknown / not chosen shows the group only.
+        // Summary: "O Rh+" — one colour, sign on the same baseline as "Rh"; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
         const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่โลหิต")
           : <span style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
               {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
               {rhSign && (
                 <span aria-label={bloodRh === "+" ? "Rh บวก" : "Rh ลบ"}>
-                  Rh<sup aria-hidden="true" style={{ fontSize: "0.85em", lineHeight: 0, position: "relative", top: "-0.2em", marginLeft: 1 }}>{rhSign}</sup>
+                  <span aria-hidden="true">Rh{rhSign}</span>
                 </span>
               )}
             </span>;
