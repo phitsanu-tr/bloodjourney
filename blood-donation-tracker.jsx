@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.298";
+const APP_VERSION = "1.0.299";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2407,14 +2407,14 @@ function ModalMetaLine({ children }) {
     </div>
   );
 }
-// Faint dividers between the options of a segmented picker (white outlined track + pale-pink sliding pill). A divider
-// that touches the chosen option fades out, since the tinted pill already separates it (iOS style); with
-// nothing chosen every divider shows, so the empty control still reads as N separate choices.
+// Faint dividers between the options of a segmented picker (white outlined track + pale-pink sliding pill).
+// Shown only while nothing is chosen, so the empty control still reads as N separate choices; once an option
+// is picked they all fade out (a leftover lone divider read as a grouping, e.g. "A B AB | O").
 function SegDividers({ n, sel }) {
   return Array.from({ length: n - 1 }, (_, i) => {
     const k = i + 1; // divider between option k-1 and option k
     return (
-      <span key={k} aria-hidden="true" style={{ position: "absolute", top: 10, bottom: 10, left: `calc(4px + ${k} * (100% - 8px) / ${n})`, width: 1, marginLeft: -0.5, background: "#E6D3CF", opacity: sel === k - 1 || sel === k ? 0 : 1, transition: "opacity .18s", pointerEvents: "none" }} />
+      <span key={k} aria-hidden="true" style={{ position: "absolute", top: 10, bottom: 10, left: `calc(4px + ${k} * (100% - 8px) / ${n})`, width: 1, marginLeft: -0.5, background: "#E6D3CF", opacity: sel >= 0 ? 0 : 1, transition: "opacity .18s", pointerEvents: "none" }} />
     );
   });
 }
