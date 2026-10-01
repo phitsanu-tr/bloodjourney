@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.295";
+const APP_VERSION = "1.0.296";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2407,6 +2407,18 @@ function ModalMetaLine({ children }) {
     </div>
   );
 }
+// Faint dividers between the options of a segmented picker (pale track + white sliding pill). A divider
+// that touches the chosen option fades out, since the white pill already separates it (iOS style); with
+// nothing chosen every divider shows, so the empty control still reads as N separate choices.
+function SegDividers({ n, sel }) {
+  return Array.from({ length: n - 1 }, (_, i) => {
+    const k = i + 1; // divider between option k-1 and option k
+    return (
+      <span key={k} aria-hidden="true" style={{ position: "absolute", top: 10, bottom: 10, left: `calc(4px + ${k} * (100% - 8px) / ${n})`, width: 1, marginLeft: -0.5, background: "#DCC7C2", opacity: sel === k - 1 || sel === k ? 0 : 1, transition: "opacity .18s", pointerEvents: "none" }} />
+    );
+  });
+}
+
 const HIST_ICON_BOX = { width: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onView, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
@@ -7752,6 +7764,7 @@ function AppInner() {
                                     <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 4)`, width: "calc((100% - 8px) / 4)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
+                                <SegDividers n={4} sel={ABO_ONLY.indexOf(bloodType)} />
                                 {ABO_ONLY.map(bt => {
                                   const on = bloodType === bt;
                                   return (
@@ -7779,6 +7792,7 @@ function AppInner() {
                                     <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 3)`, width: "calc((100% - 8px) / 3)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
+                                <SegDividers n={3} sel={BLOOD_RH.findIndex(([v]) => v === bloodRh)} />
                                 {BLOOD_RH.map(([v]) => {
                                   const on = bloodRh === v;
                                   return (
@@ -7843,6 +7857,7 @@ function AppInner() {
                                     {shownIdx >= 0 && (
                                       <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / ${n})`, width: `calc((100% - 8px) / ${n})`, borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                     )}
+                                    <SegDividers n={n} sel={idx} />
                                     {r.options.map(o => {
                                       const on = r.current === o.v;
                                       return (
@@ -8139,6 +8154,7 @@ function AppInner() {
                     <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${Math.max(idx, 0)} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                   );
                 })()}
+                <SegDividers n={2} sel={["whole", "component"].indexOf(form.type)} />
                 {["whole", "component"].map((t) => {
                   const on = form.type === t;
                   return (
