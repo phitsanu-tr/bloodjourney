@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check, ChevronLeft } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.199";
+const APP_VERSION = "1.0.200";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3588,30 +3588,6 @@ function AppInner() {
     }
   };
 
-  // Phone/browser back button closes the profile page (it is a full page now):
-  // opening pushes one history entry; a popstate while it is open closes it;
-  // closing by any other route (X, Esc, privacy link, clear) pops that entry.
-  const profileHistoryRef = useRef(false);
-  const showProfileRef = useRef(false);
-  showProfileRef.current = showProfile;
-  useEffect(() => {
-    const onPop = () => {
-      if (!profileHistoryRef.current) return;
-      profileHistoryRef.current = false; // the entry is already gone
-      if (showClearProfileRef.current) { setShowClearProfile(false); }
-      setShowPhotoMenu(false);
-      setProfileOpenChoice(null);
-      setShowProfile(false);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-  useEffect(() => {
-    if (!showProfile && profileHistoryRef.current) {
-      profileHistoryRef.current = false;
-      try { if (window.history.state && window.history.state.bjProfile) window.history.back(); } catch (e) {}
-    }
-  }, [showProfile]);
   const openProfile = () => {
     const parts = nickname.trim().split(/\s+/).filter(Boolean);
     setProfileInline({
@@ -3627,7 +3603,6 @@ function AppInner() {
     setShowPhotoMenu(false);
     profileOpenerRef.current = document.activeElement;
     profileEditSessionRef.current += 1;
-    try { window.history.pushState({ bjProfile: 1 }, ""); profileHistoryRef.current = true; } catch (e) { profileHistoryRef.current = false; }
     setShowProfile(true);
   };
 
@@ -7548,21 +7523,19 @@ function AppInner() {
               row opens the one-field sheet below. The box itself has no text
               inputs, so the keyboard can never cover it. (A full-screen page
               version, v1.0.104, didn't match the app's other dialogs.) */}
-          {/* Full-page layout (design B of profile-fullpage-designs.html): a fixed layer
-              over the app with its own top bar (back arrow + title). Kept as a
-              dialog layer so focus trap, scroll lock, Esc and the phone's back
-              button (history entry, see openProfile) all work the same way. */}
           <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน"
-            style={{ position: "fixed", inset: 0, background: "#FBF6F5", display: "flex", flexDirection: "column", zIndex: 50, paddingTop: "env(safe-area-inset-top, 0px)" }}>
-            <div ref={profileBoxRef} tabIndex={-1} style={{ width: "100%", maxWidth: 520, margin: "0 auto", flex: 1, minHeight: 0, display: "flex", flexDirection: "column", outline: "none" }}>
-              <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 4, height: 52, padding: "0 8px" }}>
-                <button onClick={closeProfile} aria-label="กลับ" style={{ position: "relative", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", borderRadius: "50%", padding: 0 }}>
-                  <ChevronLeft size={26} />
+            onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
+            style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
+              <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px" }}>
+                <div style={{ fontSize: 15.5, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
+                <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
+                  <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
+                  <X size={19} />
                 </button>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
               </div>
               <div ref={profileScrollRef} className="no-scrollbar" onScroll={(e) => { const sc = e.currentTarget.scrollTop > 2; setProfileScrolled(v => (v === sc ? v : sc)); }}
-                style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 20px calc(28px + env(safe-area-inset-bottom, 0px))", ...(profileScrolled ? { WebkitMaskImage: "linear-gradient(transparent 0, #000 18px)", maskImage: "linear-gradient(transparent 0, #000 18px)" } : null) }}>
+                style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px", ...(profileScrolled ? { WebkitMaskImage: "linear-gradient(transparent 0, #000 18px)", maskImage: "linear-gradient(transparent 0, #000 18px)" } : null) }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label={photo ? "เปลี่ยนรูปโปรไฟล์" : "เพิ่มรูปโปรไฟล์"}
@@ -8292,7 +8265,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; try { window.history.pushState({ bjProfile: 1 }, ""); profileHistoryRef.current = true; } catch (e) {} setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 22px 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
