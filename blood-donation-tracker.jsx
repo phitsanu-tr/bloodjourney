@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.185";
+const APP_VERSION = "1.0.186";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4038,10 +4038,10 @@ function AppInner() {
       setProfileInline({ first: "", last: "", birthYear: "", weight: "", height: "", donorId: "" });
       setProfileInlineError({}); setProfileOpenChoice(null); setPickerPreview(null); setProfileSavedKey(null);
       setShowClearProfile(false);
-      showToast("success", "ล้างข้อมูลโปรไฟล์แล้ว");
+      showToast("success", "ลบข้อมูลโปรไฟล์แล้ว");
     } catch (e) {
       setShowClearProfile(false);
-      showToast("error", "ล้างข้อมูลไม่สำเร็จ ลองอีกครั้ง");
+      showToast("error", "ลบข้อมูลไม่สำเร็จ ลองอีกครั้ง");
     }
   };
   const resetAll = async () => {
@@ -7817,7 +7817,7 @@ function AppInner() {
                 <div style={{ textAlign: "center", marginTop: 6 }}>
                   <button onClick={() => { setProfileOpenChoice(null); setShowClearProfile(true); }}
                     style={{ position: "relative", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#B3261E", padding: "10px 14px" }}>
-                    ล้างข้อมูลโปรไฟล์
+                    ลบข้อมูลโปรไฟล์
                   </button>
                   <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
                     ต้องการลบทั้งหมดรวมประวัติ →{" "}
@@ -8261,19 +8261,19 @@ function AppInner() {
       )}
 
       {showClearProfile && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการล้างข้อมูลโปรไฟล์"
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลโปรไฟล์"
           onClick={(e) => { if (e.target === e.currentTarget) setShowClearProfile(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ล้างข้อมูลโปรไฟล์?</div>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
               <DialogX onClick={() => setShowClearProfile(false)} />
             </div>
-            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ล้างออกจากเครื่องและกู้คืนไม่ได้</p>
+            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลที่คุณกรอกไว้จะถูกลบ และกู้คืนไม่ได้</p>
             {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html, white cards from profile-clear-confirm-boxes.html) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
               {[
-                { key: "gone", title: "จะถูกล้าง", mark: "✕", color: "#B3261E", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "gone", title: "จะถูกลบ", mark: "✕", color: "#B3261E", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
                 { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] },
               ].map(col => (
                 <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px" }}>
@@ -8291,7 +8291,7 @@ function AppInner() {
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowClearProfile(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>ล้างข้อมูล</button>
+              <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>ลบข้อมูล</button>
             </div>
           </div>
         </div>
