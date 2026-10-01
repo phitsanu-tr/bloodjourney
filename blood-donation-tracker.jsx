@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.244";
+const APP_VERSION = "1.0.245";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8455,7 +8455,7 @@ function AppInner() {
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
+                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ display: "inline-block", fontSize: 12, lineHeight: "17px", verticalAlign: "top", background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
                 <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
                 <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
                 {vd.loggedAt && (
