@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.296";
+const APP_VERSION = "1.0.297";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2407,14 +2407,14 @@ function ModalMetaLine({ children }) {
     </div>
   );
 }
-// Faint dividers between the options of a segmented picker (pale track + white sliding pill). A divider
-// that touches the chosen option fades out, since the white pill already separates it (iOS style); with
+// Faint dividers between the options of a segmented picker (white outlined track + pale-pink sliding pill). A divider
+// that touches the chosen option fades out, since the tinted pill already separates it (iOS style); with
 // nothing chosen every divider shows, so the empty control still reads as N separate choices.
 function SegDividers({ n, sel }) {
   return Array.from({ length: n - 1 }, (_, i) => {
     const k = i + 1; // divider between option k-1 and option k
     return (
-      <span key={k} aria-hidden="true" style={{ position: "absolute", top: 10, bottom: 10, left: `calc(4px + ${k} * (100% - 8px) / ${n})`, width: 1, marginLeft: -0.5, background: "#DCC7C2", opacity: sel === k - 1 || sel === k ? 0 : 1, transition: "opacity .18s", pointerEvents: "none" }} />
+      <span key={k} aria-hidden="true" style={{ position: "absolute", top: 10, bottom: 10, left: `calc(4px + ${k} * (100% - 8px) / ${n})`, width: 1, marginLeft: -0.5, background: "#E6D3CF", opacity: sel === k - 1 || sel === k ? 0 : 1, transition: "opacity .18s", pointerEvents: "none" }} />
     );
   });
 }
@@ -7755,13 +7755,13 @@ function AppInner() {
                           {isOpen && r.blood && (
                             <div style={{ padding: "8px 0 6px 46px" }}>
                               <div id="prof-blood-abo" style={{ fontSize: 11, color: "#7A6360", margin: "2px 0 6px" }}>หมู่</div>
-                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
+                              <div role="radiogroup" aria-labelledby="prof-blood-abo" style={{ position: "relative", display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 }}>
                                 {(() => {
                                   const aboOn = ABO_ONLY.includes(bloodType);
                                   if (aboOn) lastPickedRef.current.abo = bloodType;
                                   const shownIdx = ABO_ONLY.indexOf(aboOn ? bloodType : lastPickedRef.current.abo);
                                   return shownIdx >= 0 ? (
-                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 4)`, width: "calc((100% - 8px) / 4)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 4)`, width: "calc((100% - 8px) / 4)", borderRadius: 9, background: "#F3E7E4", opacity: aboOn ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
                                 <SegDividers n={4} sel={ABO_ONLY.indexOf(bloodType)} />
@@ -7784,12 +7784,12 @@ function AppInner() {
                                 })}
                               </div>
                               <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · ระบุต่ออีกนิด" : "Rh"}</div>
-                              <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
+                              <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 }}>
                                 {(() => {
                                   if (bloodRh) lastPickedRef.current.rh = bloodRh;
                                   const shownIdx = BLOOD_RH.findIndex(([v]) => v === (bloodRh || lastPickedRef.current.rh));
                                   return shownIdx >= 0 ? (
-                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 3)`, width: "calc((100% - 8px) / 3)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / 3)`, width: "calc((100% - 8px) / 3)", borderRadius: 9, background: "#F3E7E4", opacity: bloodRh ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                   ) : null;
                                 })()}
                                 <SegDividers n={3} sel={BLOOD_RH.findIndex(([v]) => v === bloodRh)} />
@@ -7853,9 +7853,9 @@ function AppInner() {
                                 const canClear = r.key === "donorType" || r.key === "gender"; // tapping the chosen option again clears it
                                 const longest = Math.max(...r.options.map(o => o.label.length));
                                 return (
-                                  <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4 }}>
+                                  <div role="radiogroup" aria-label={r.label} style={{ position: "relative", display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 }}>
                                     {shownIdx >= 0 && (
-                                      <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / ${n})`, width: `calc((100% - 8px) / ${n})`, borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                                      <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${shownIdx} * (100% - 8px) / ${n})`, width: `calc((100% - 8px) / ${n})`, borderRadius: 9, background: "#F3E7E4", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                                     )}
                                     <SegDividers n={n} sel={idx} />
                                     {r.options.map(o => {
@@ -8144,14 +8144,14 @@ function AppInner() {
             )}
             <div style={{ marginTop: 14, marginBottom: 14 }}>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
-              {/* Same segmented control as the profile pickers / backup tabs: pale track, white lifted pill on
+              {/* Same segmented control as the profile pickers / backup tabs: white outlined track, pale-pink pill on
                   the chosen type (slides between the two). Nothing is chosen by default; a missing type turns the
                   track's edge red. */}
-              <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, border: `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "transparent"}` }}>
+              <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ position: "relative", display: "flex", background: "#FFFFFF", borderRadius: 12, padding: 4, border: `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}` }}>
                 {(() => {
                   const idx = ["whole", "component"].indexOf(form.type);
                   return (
-                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${Math.max(idx, 0)} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${Math.max(idx, 0)} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#F3E7E4", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                   );
                 })()}
                 <SegDividers n={2} sel={["whole", "component"].indexOf(form.type)} />
@@ -8752,16 +8752,16 @@ function AppInner() {
             </div>
             <FadeScroll scrollRef={backupDialogRef} style={{ padding: "0 22px 22px" }}>
 
-            <div style={{ display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, marginBottom: 16 }}>
+            <div style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4, marginBottom: 16 }}>
               <button
                 type="button"
                 onClick={() => switchBackupRestoreTab("export")}
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
-                  background: backupRestoreTab === "export" ? "#FFFFFF" : "transparent",
+                  background: backupRestoreTab === "export" ? "#F3E7E4" : "transparent",
                   color: backupRestoreTab === "export" ? "#8A2F28" : "#7A6360",
                   fontSize: 13.5, fontWeight: backupRestoreTab === "export" ? 600 : 500,
-                  boxShadow: backupRestoreTab === "export" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
+                  boxShadow: "none",
                 }}>
                 สำรองข้อมูล
               </button>
@@ -8770,10 +8770,10 @@ function AppInner() {
                 onClick={() => switchBackupRestoreTab("import")}
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
-                  background: backupRestoreTab === "import" ? "#FFFFFF" : "transparent",
+                  background: backupRestoreTab === "import" ? "#F3E7E4" : "transparent",
                   color: backupRestoreTab === "import" ? "#8A2F28" : "#7A6360",
                   fontSize: 13.5, fontWeight: backupRestoreTab === "import" ? 600 : 500,
-                  boxShadow: backupRestoreTab === "import" ? "0 1px 2px rgba(58,44,41,0.12)" : "none",
+                  boxShadow: "none",
                 }}>
                 กู้คืนข้อมูล
               </button>
