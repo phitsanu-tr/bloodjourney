@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.235";
+const APP_VERSION = "1.0.236";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8403,7 +8403,7 @@ function AppInner() {
         const vTint = DONATION_TYPE_TINT[vd.type === "component" ? "component" : "whole"];
         const vn = donationOrderMap[vd.id];
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
-        const lblS = { width: 62, flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
+        const lblS = { width: 50, flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
         const valS = { flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
