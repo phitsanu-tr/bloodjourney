@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.261";
+const APP_VERSION = "1.0.262";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -255,7 +255,7 @@ const MIN_BACKUP_REMINDER_GAP = 1;
 const MAX_BACKUP_REMINDER_GAP = 50;
 const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
 const DEFAULT_DONATION_TYPE = "whole";
-const TYPE_REQUIRED_MESSAGE = "กรุณาเลือกประเภทการบริจาค";
+const TYPE_REQUIRED_MESSAGE = "กรุณาระบุประเภทการบริจาค";
 export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
@@ -813,12 +813,12 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+    <div role="dialog" aria-modal="true" aria-label={`ระบุ${ariaLabelPrefix}`}
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
         <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>ระบุ{ariaLabelPrefix}</div>
           <button type="button" onClick={fillNow}
             style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
             ตอนนี้
@@ -886,7 +886,7 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
         aria-label={`${ariaLabelPrefix}${value ? `: ${value}` : ": ยังไม่ระบุ"}`}
         style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: value ? fontSize : fontSize - 1, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
         {!value && <Clock size={14} color="#B39B96" />}
-        {value ? `${value} น.` : "เลือกเวลา"}
+        {value ? `${value} น.` : "ระบุเวลา"}
       </button>
       {open && (
         <TimeBottomSheet key={sheetKey} value={value} ariaLabelPrefix={ariaLabelPrefix}
@@ -1105,12 +1105,12 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={`เลือก${ariaLabelPrefix}`}
+    <div role="dialog" aria-modal="true" aria-label={`ระบุ${ariaLabelPrefix}`}
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
         <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>เลือก{ariaLabelPrefix}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>ระบุ{ariaLabelPrefix}</div>
           <button type="button" onClick={fillToday}
             style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
             วันนี้
@@ -1554,7 +1554,7 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
         aria-label={`${ariaLabelPrefix}${value ? `: ${toBuddhistDate(value)}` : ""}`}
         style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: value ? fontSize : fontSize - 1, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#B39B96", textAlign: "center" }}>
         {!value && <Calendar size={14} color="#B39B96" />}
-        {value ? toBuddhistDate(value) : "เลือกวันที่"}
+        {value ? toBuddhistDate(value) : "ระบุวันที่"}
       </button>
       {open && (
         <DateCalendarDialog key={dialogKey} value={value} maxDate={maxDate} ariaLabelPrefix={ariaLabelPrefix}
@@ -2695,8 +2695,8 @@ function AppInner() {
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
-  // field when it's the reason validation failed ("กรุณาเลือกวันที่บริจาค"/
-  // "วันที่ไม่ถูกต้อง"/"เลือกวันที่ในอนาคตไม่ได้") -- previously the error
+  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาค"/
+  // "วันที่ไม่ถูกต้อง"/"ระบุวันที่ในอนาคตไม่ได้") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
   // the actual empty/invalid field, so on a longer form it was easy to miss
   // which field the error was even about (reported directly by the user).
@@ -3912,7 +3912,7 @@ function AppInner() {
         return;
       }
       if (d.setHours(0,0,0,0) > startOfToday().getTime()) {
-        setQuickStartingCountError("เลือกวันที่ในอนาคตไม่ได้");
+        setQuickStartingCountError("ระบุวันที่ในอนาคตไม่ได้");
         dateRef.current?.focus();
         return;
       }
@@ -3976,7 +3976,7 @@ function AppInner() {
 
   const submitDonation = async () => {
     if (!form.date) {
-      setFormError("กรุณาเลือกวันที่บริจาค");
+      setFormError("กรุณาระบุวันที่บริจาค");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -3987,7 +3987,7 @@ function AppInner() {
       return;
     }
     if (selected.setHours(0,0,0,0) > startOfToday().getTime()) {
-      setFormError("เลือกวันที่ในอนาคตไม่ได้");
+      setFormError("ระบุวันที่ในอนาคตไม่ได้");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -5418,15 +5418,15 @@ function AppInner() {
     });
   }, [form.date, donations, editingId]);
 
-  const sameDateConflictMessage = "วันที่นี้มีรายการบริจาคโลหิตอยู่แล้ว กรุณาเลือกวันที่อื่น หรือกลับไปแก้ไขรายการเดิม";
+  const sameDateConflictMessage = "วันที่นี้มีรายการบริจาคโลหิตอยู่แล้ว กรุณาระบุวันที่อื่น หรือกลับไปแก้ไขรายการเดิม";
 
   // Whether the currently-shown formError is one of submitDonation's three
   // date-specific validation messages (empty / invalid / future date) --
   // drives the date field's red-border highlight below, so the field itself
   // stays neutral for errors that have nothing to do with it.
-  const dateFieldHasError = formError === "กรุณาเลือกวันที่บริจาค"
+  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาค"
     || formError === "วันที่ไม่ถูกต้อง"
-    || formError === "เลือกวันที่ในอนาคตไม่ได้";
+    || formError === "ระบุวันที่ในอนาคตไม่ได้";
 
   // Only relevant while editing an existing record — disables the save
   // button when nothing has actually changed from what was opened.
