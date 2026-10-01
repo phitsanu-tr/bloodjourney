@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.197";
+const APP_VERSION = "1.0.198";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7539,7 +7539,7 @@ function AppInner() {
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy} aria-label={photo ? "เปลี่ยนรูปโปรไฟล์" : "เพิ่มรูปโปรไฟล์"}
-                    style={{ width: 52, height: 52, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
+                    style={{ width: 56, height: 56, borderRadius: "50%", border: "none", padding: 0, cursor: photoBusy ? "not-allowed" : "pointer", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", opacity: photoBusy ? 0.6 : 1 }}>
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : firstName ? (
@@ -7572,11 +7572,21 @@ function AppInner() {
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{firstName || "ยังไม่ได้ใส่ชื่อ"}</div>
-                  <button onClick={() => setShowPhotoMenu(v => !v)} disabled={photoBusy}
-                    style={{ position: "relative", marginTop: 2, padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
-                    <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
-                    {photoBusy ? "กำลังประมวลผลรูป..." : photo ? "เปลี่ยนรูป" : "เพิ่มรูป"}
-                  </button>
+                  {photoBusy ? (
+                    <div style={{ marginTop: 2, fontSize: 12, color: "#7A6360" }}>กำลังประมวลผลรูป...</div>
+                  ) : (bloodType && bloodType !== "ไม่ทราบ") || age !== "" ? (
+                    /* Summary chips: blood group + age only (design D of profile-header-designs.html) */
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                      {bloodType && bloodType !== "ไม่ทราบ" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", height: 22, fontSize: 11.5, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", fontWeight: 600, borderRadius: 999, padding: "0 10px" }}>
+                          {bloodType}{bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}
+                        </span>
+                      )}
+                      {age !== "" && (
+                        <span style={{ display: "inline-flex", alignItems: "center", height: 22, fontSize: 11.5, lineHeight: 1, background: "#F3EAE8", color: "#6B3A34", borderRadius: 999, padding: "0 10px" }}>อายุ {age} ปี</span>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
