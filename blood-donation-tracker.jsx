@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.269";
+const APP_VERSION = "1.0.270";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5691,6 +5691,8 @@ function AppInner() {
         .hist-card { -webkit-tap-highlight-color: transparent; transition: background 0.12s; }
         /* pressed tint only when the card itself is pressed, not while the ⋮ button / its menu is */
         .hist-card:active:not(:has(.hist-more:active)) { background: #FBF1EE !important; }
+        /* the carried-over card already sits on a tinted fill, so the white-card press tint is invisible there -- go darker instead */
+        .hist-card.hist-card-carry:active:not(:has(.hist-more:active)) { background: #EBDAD5 !important; border-color: #D9B9B2 !important; }
         .hist-card:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
         @media (prefers-reduced-transparency: reduce) {
           [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
@@ -6678,7 +6680,7 @@ function AppInner() {
                   );
                 })}
                 {displayedStartingCount > 0 && historyYearFilter === "all" && filteredHistory.length <= historyVisibleCount && (
-                    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
+                    <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
                       style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
