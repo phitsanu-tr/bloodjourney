@@ -57,8 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.211";
-const INFO_PILLS_REVEAL_MS = 10000;
+const APP_VERSION = "1.0.212";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2698,13 +2697,10 @@ function AppInner() {
   // days edited), and on its own the next day even if the due date is
   // unchanged.
   const [dismissedReminders, setDismissedReminders] = useState({});
-  // Blood group / age / weight chips on Home: blurred by default (tap to reveal for
-  // INFO_PILLS_REVEAL_MS). blurInfoPills = the persisted preference (profile switch);
-  // infoRevealed = transient, never persisted.
-  const [blurInfoPills, setBlurInfoPills] = useState(true);
-  const [infoRevealed, setInfoRevealed] = useState(false);
-  const infoRevealTimerRef = useRef(null);
-  const pillsHidden = blurInfoPills && !infoRevealed;
+  // Blood group / age / weight chips on Home: shown by default; the profile switch
+  // "ซ่อนข้อมูลบนหน้าแรก" blurs them persistently.
+  const [blurInfoPills, setBlurInfoPills] = useState(false);
+  const pillsHidden = blurInfoPills;
   // True once storage.isDegraded() has ever returned true this session —
   // meaning a write fell all the way through to the in-memory fallback and
   // is NOT actually persisted. Drives a one-time warning modal (see
@@ -4108,8 +4104,7 @@ function AppInner() {
       setDismissedEligibilityAge(null);
       setDismissedEligibilityWeight(null);
       setDismissedReminders({});
-      setBlurInfoPills(true);
-      setInfoRevealed(false);
+      setBlurInfoPills(false);
       setShowReset(false);
       // resetAll wipes everything back to a fresh start, but never touched
       // `tab` -- so if the user happened to be on, say, the knowledge tab
@@ -4600,21 +4595,8 @@ function AppInner() {
   const toggleBlurInfoPills = () => {
     const next = !blurInfoPills;
     setBlurInfoPills(next);
-    setInfoRevealed(false);
-    clearTimeout(infoRevealTimerRef.current);
     persistUiMeta({ blurInfoPills: next });
   };
-  const revealInfoPills = () => {
-    setInfoRevealed(true);
-    clearTimeout(infoRevealTimerRef.current);
-    infoRevealTimerRef.current = setTimeout(() => setInfoRevealed(false), INFO_PILLS_REVEAL_MS);
-  };
-  useEffect(() => {
-    // Re-blur when the app goes to the background (LINE switched away, screen locked)
-    const onVis = () => { if (document.hidden) { clearTimeout(infoRevealTimerRef.current); setInfoRevealed(false); } };
-    document.addEventListener("visibilitychange", onVis);
-    return () => { document.removeEventListener("visibilitychange", onVis); clearTimeout(infoRevealTimerRef.current); };
-  }, []);
 
   const triggerImport = () => {
     setError("");
@@ -5848,13 +5830,7 @@ function AppInner() {
                   </div>
                   </div>
                   {(bloodType || age !== "" || weight !== "") ? (
-                    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                      {pillsHidden && (
-                        <button type="button" onClick={revealInfoPills} aria-label="แตะเพื่อดูหมู่โลหิต อายุ และน้ำหนัก"
-                          style={{ position: "absolute", inset: "-8px -4px", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 600, color: "#9A3B33" }}>
-                          <span style={{ background: "rgba(255,255,255,0.88)", borderRadius: 20, padding: "3px 10px" }}>แตะเพื่อดู</span>
-                        </button>
-                      )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {bloodType && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Droplet size={9} /></span>
@@ -7856,10 +7832,10 @@ function AppInner() {
               ))}
 <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", margin: "10px 0" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29" }}>เบลอข้อมูลบนหน้าแรก</div>
-                  <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, marginTop: 2 }}>เบลอหมู่โลหิต อายุ น้ำหนัก แตะที่หน้าแรกเพื่อดูชั่วคราว</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29" }}>ซ่อนข้อมูลบนหน้าแรก</div>
+                  <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, marginTop: 2 }}>เบลอหมู่โลหิต อายุ น้ำหนัก เมื่อเปิดแอปในที่สาธารณะ</div>
                 </div>
-                <button type="button" role="switch" aria-checked={blurInfoPills} aria-label="เบลอข้อมูลบนหน้าแรก" onClick={toggleBlurInfoPills}
+                <button type="button" role="switch" aria-checked={blurInfoPills} aria-label="ซ่อนข้อมูลบนหน้าแรก" onClick={toggleBlurInfoPills}
                   style={{ width: 38, height: 21, borderRadius: 20, border: "none", cursor: "pointer", position: "relative", background: blurInfoPills ? "#9A3B33" : "#E3C8C3", flexShrink: 0, padding: 0 }}>
                   <span style={{ width: 15, height: 15, borderRadius: "50%", background: "#FFFFFF", position: "absolute", top: 3, left: blurInfoPills ? 20 : 3, transition: "left 0.15s" }} />
                 </button>
