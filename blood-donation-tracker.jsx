@@ -57,7 +57,8 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.210";
+const APP_VERSION = "1.0.211";
+const INFO_PILLS_REVEAL_MS = 10000;
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2697,7 +2698,13 @@ function AppInner() {
   // days edited), and on its own the next day even if the due date is
   // unchanged.
   const [dismissedReminders, setDismissedReminders] = useState({});
-  const [showInfoPills, setShowInfoPills] = useState(true);
+  // Blood group / age / weight chips on Home: blurred by default (tap to reveal for
+  // INFO_PILLS_REVEAL_MS). blurInfoPills = the persisted preference (profile switch);
+  // infoRevealed = transient, never persisted.
+  const [blurInfoPills, setBlurInfoPills] = useState(true);
+  const [infoRevealed, setInfoRevealed] = useState(false);
+  const infoRevealTimerRef = useRef(null);
+  const pillsHidden = blurInfoPills && !infoRevealed;
   // True once storage.isDegraded() has ever returned true this session —
   // meaning a write fell all the way through to the in-memory fallback and
   // is NOT actually persisted. Drives a one-time warning modal (see
@@ -3112,7 +3119,7 @@ function AppInner() {
           setDismissedEligibilityAge(typeof u.dismissedEligibilityAge === "number" ? u.dismissedEligibilityAge : null);
           setDismissedEligibilityWeight(typeof u.dismissedEligibilityWeight === "number" ? u.dismissedEligibilityWeight : null);
           setDismissedCareFor(typeof u.dismissedCareFor === "string" ? u.dismissedCareFor : null);
-          if (typeof u.showInfoPills === "boolean") setShowInfoPills(u.showInfoPills);
+          if (typeof u.blurInfoPills === "boolean") setBlurInfoPills(u.blurInfoPills);
           if (u.dismissedReminders && typeof u.dismissedReminders === "object") {
             setDismissedReminders(u.dismissedReminders);
           } else if (typeof u.dismissedReminderKey === "string" && typeof u.dismissedReminderDate === "string") {
@@ -3406,7 +3413,7 @@ function AppInner() {
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
       seenAchievements, backupSnoozeCount, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap,
-      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, showInfoPills,
+      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills,
       ...uiMetaRef.current, ...patch,
     };
     uiMetaWriteQueueRef.current = uiMetaWriteQueueRef.current
@@ -4101,7 +4108,8 @@ function AppInner() {
       setDismissedEligibilityAge(null);
       setDismissedEligibilityWeight(null);
       setDismissedReminders({});
-      setShowInfoPills(true);
+      setBlurInfoPills(true);
+      setInfoRevealed(false);
       setShowReset(false);
       // resetAll wipes everything back to a fresh start, but never touched
       // `tab` -- so if the user happened to be on, say, the knowledge tab
@@ -4589,11 +4597,24 @@ function AppInner() {
   // Persist the blood type/age/weight blur toggle so it survives a reload —
   // otherwise a donor who hides it in public would find it visible again
   // the moment the app restarts, defeating the point of hiding it.
-  const toggleInfoPillsVisibility = () => {
-    const next = !showInfoPills;
-    setShowInfoPills(next);
-    persistUiMeta({ showInfoPills: next });
+  const toggleBlurInfoPills = () => {
+    const next = !blurInfoPills;
+    setBlurInfoPills(next);
+    setInfoRevealed(false);
+    clearTimeout(infoRevealTimerRef.current);
+    persistUiMeta({ blurInfoPills: next });
   };
+  const revealInfoPills = () => {
+    setInfoRevealed(true);
+    clearTimeout(infoRevealTimerRef.current);
+    infoRevealTimerRef.current = setTimeout(() => setInfoRevealed(false), INFO_PILLS_REVEAL_MS);
+  };
+  useEffect(() => {
+    // Re-blur when the app goes to the background (LINE switched away, screen locked)
+    const onVis = () => { if (document.hidden) { clearTimeout(infoRevealTimerRef.current); setInfoRevealed(false); } };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { document.removeEventListener("visibilitychange", onVis); clearTimeout(infoRevealTimerRef.current); };
+  }, []);
 
   const triggerImport = () => {
     setError("");
@@ -5825,32 +5846,31 @@ function AppInner() {
                     </div>
                   )}
                   </div>
-                  {/* show/hide eye sits at the right edge of the name row (aligned with the card below) */}
-                  {(bloodType || age !== "" || weight !== "") && (
-                    <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: -10, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
-                        {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
-                      </button>
-                  )}
                   </div>
                   {(bloodType || age !== "" || weight !== "") ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                      {pillsHidden && (
+                        <button type="button" onClick={revealInfoPills} aria-label="แตะเพื่อดูหมู่โลหิต อายุ และน้ำหนัก"
+                          style={{ position: "absolute", inset: "-8px -4px", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 600, color: "#9A3B33" }}>
+                          <span style={{ background: "rgba(255,255,255,0.88)", borderRadius: 20, padding: "3px 10px" }}>แตะเพื่อดู</span>
+                        </button>
+                      )}
                       {bloodType && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Droplet size={9} /></span>
-                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
+                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
                         </span>
                       )}
                       {age !== "" && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Cake size={9} /></span>
-                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{age} ปี</span>
+                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{age} ปี</span>
                         </span>
                       )}
                       {weight !== "" && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Weight size={9} /></span>
-                          <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{weight} กก.</span>
+                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{weight} กก.</span>
                         </span>
                       )}
                     </div>
@@ -7834,6 +7854,16 @@ function AppInner() {
                   </div>
                 </div>
               ))}
+<div style={{ display: "flex", alignItems: "center", gap: 12, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", margin: "10px 0" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29" }}>เบลอข้อมูลบนหน้าแรก</div>
+                  <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, marginTop: 2 }}>เบลอหมู่โลหิต อายุ น้ำหนัก แตะที่หน้าแรกเพื่อดูชั่วคราว</div>
+                </div>
+                <button type="button" role="switch" aria-checked={blurInfoPills} aria-label="เบลอข้อมูลบนหน้าแรก" onClick={toggleBlurInfoPills}
+                  style={{ width: 38, height: 21, borderRadius: 20, border: "none", cursor: "pointer", position: "relative", background: blurInfoPills ? "#9A3B33" : "#E3C8C3", flexShrink: 0, padding: 0 }}>
+                  <span style={{ width: 15, height: 15, borderRadius: "50%", background: "#FFFFFF", position: "absolute", top: 3, left: blurInfoPills ? 20 : 3, transition: "left 0.15s" }} />
+                </button>
+              </div>
 {(nickname || photo || birthYear !== "" || gender || height !== "" || donorId || bloodRh || weight !== "" || bloodType || donorType) && (
                 <div style={{ textAlign: "center", marginTop: 6 }}>
                   <button onClick={() => { setProfileOpenChoice(null); setShowClearProfile(true); }}
