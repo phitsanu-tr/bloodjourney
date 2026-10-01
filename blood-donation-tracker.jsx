@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.240";
+const APP_VERSION = "1.0.241";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8437,12 +8437,18 @@ function AppInner() {
                 <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
                 <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
                 <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
+                {vd.loggedAt && (
+                  <div style={{ ...rowS, borderBottom: "none" }}>
+                    <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", paddingTop: 3, fontSize: 10, color: "#A38D89", lineHeight: 1.3 }}>
+                      <div style={{ position: "relative" }}>
+                        <span aria-hidden="true" style={{ visibility: "hidden", fontSize: 11.5 }}>ประเภท</span>
+                        <span style={{ position: "absolute", left: 0, top: 1, width: 50 }}>{(vd.createdAt && vd.createdAt !== vd.loggedAt) ? <>แก้ไข<br />ล่าสุดเมื่อ</> : "บันทึกเมื่อ"}</span>
+                      </div>
+                    </div>
+                    <div style={{ ...valS, fontSize: 12, color: "#8E7773" }}>{toBuddhistDateTimeFull(vd.loggedAt)}</div>
+                  </div>
+                )}
               </div>
-              {vd.loggedAt && (
-                <div style={{ marginTop: 10, background: "#FCF8F7", borderRadius: 10, padding: "8px 12px", fontSize: 11, color: "#8E7773", lineHeight: 1.6 }}>
-                  {(vd.createdAt && vd.createdAt !== vd.loggedAt) ? "แก้ไขล่าสุด" : "บันทึกเมื่อ"} · {toBuddhistDateTimeFull(vd.loggedAt)}
-                </div>
-              )}
             </div>
           </div>
         );
