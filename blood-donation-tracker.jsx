@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.206";
+const APP_VERSION = "1.0.207";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5784,13 +5784,13 @@ function AppInner() {
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
                 {/* Display-only avatar: photo is changed from the profile, not from here */}
-                <div role="img" aria-label="รูปโปรไฟล์" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div role="img" aria-label="รูปโปรไฟล์" style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {photo ? (
                     <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : nickname ? (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0]}</span>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0]}</span>
                   ) : (
-                    <User size={18} color="#9A3B33" />
+                    <User size={24} color="#9A3B33" />
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
