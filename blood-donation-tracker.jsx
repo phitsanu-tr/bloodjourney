@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.280";
+const APP_VERSION = "1.0.281";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8282,7 +8282,7 @@ function AppInner() {
       )}
 
       {showSettings && (
-        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
@@ -8358,7 +8358,7 @@ function AppInner() {
       )}
 
       {showPrivacy && (
-        <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" onClick={(e) => { if (e.target === e.currentTarget) { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
@@ -8424,7 +8424,7 @@ function AppInner() {
       )}
 
       {showReset && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลทั้งหมด" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลทั้งหมด" onClick={(e) => { if (e.target === e.currentTarget) { if (!saving) setShowReset(false); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลทั้งหมด?</div>
@@ -8585,7 +8585,7 @@ function AppInner() {
       )}
 
       {confirmDeleteId && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>
@@ -8610,7 +8610,7 @@ function AppInner() {
       )}
 
       {confirmDeleteStartingCount && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบยอดสะสมยกมา" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบยอดสะสมยกมา" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบยอดสะสมยกมา?</div>
@@ -8630,7 +8630,7 @@ function AppInner() {
       )}
 
       {pendingImport && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
@@ -9001,7 +9001,7 @@ function AppInner() {
       )}
 
       {showShareCard && (
-        <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} onClick={(e) => { if (e.target === e.currentTarget) closeShareCard(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "90vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "20px 20px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
