@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.275";
+const APP_VERSION = "1.0.276";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2616,10 +2616,9 @@ function AppInner() {
   useEffect(() => {
     if (!showProfile) return undefined;
     const prevOverflow = document.body.style.overflow;
-    const opener = document.activeElement;
     document.body.style.overflow = "hidden";
     setProfileScrolled(false);
-    const t = setTimeout(() => profileBoxRef.current?.focus?.({ preventScroll: true }), 30);
+    // No focus move on open (on phones it pops the keyboard / jumps the page); Tab is still trapped below.
     const onKey = (e) => {
       if (e.key !== "Tab") return;
       const box = profileBoxRef.current;
@@ -2636,8 +2635,7 @@ function AppInner() {
     };
     document.addEventListener("keydown", onKey);
     return () => {
-      clearTimeout(t); document.body.style.overflow = prevOverflow; document.removeEventListener("keydown", onKey);
-      if (opener && opener !== document.body && document.contains(opener)) { try { opener.focus({ preventScroll: true }); } catch (e) {} }
+      document.body.style.overflow = prevOverflow; document.removeEventListener("keydown", onKey);
     };
   }, [showProfile]);
   // Opening a row near the bottom: scroll the box so the whole panel is visible.
@@ -2895,18 +2893,6 @@ function AppInner() {
   const exportTextareaRef = useRef(null);
   const yearChartScrollRef = useRef(null);
 
-  // Auto-select the backup text as soon as the export preview opens, so even
-  // if both copy methods below fail the user can just hit Ctrl/Cmd+C right
-  // away without hunting for the textarea themselves.
-  useEffect(() => {
-    if (showExportPreview && exportTextareaRef.current) {
-      const el = exportTextareaRef.current;
-      const t = setTimeout(() => {
-        try { el.focus(); el.select(); } catch (e) {}
-      }, 50);
-      return () => clearTimeout(t);
-    }
-  }, [showExportPreview]);
 
   // Any full-screen dialog (settings, backup/restore, confirm prompts, the
   // share-card modal, etc.) is rendered as its own position:fixed overlay,
@@ -8288,7 +8274,7 @@ function AppInner() {
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
-              <button onClick={() => setShowSettings(false)} aria-label="ปิด" autoFocus style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <button onClick={() => setShowSettings(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
             </div>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
 
@@ -8549,7 +8535,7 @@ function AppInner() {
               <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
-                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus aria-label="จำนวนครั้งโลหิตรวม"
+                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>
@@ -8794,7 +8780,7 @@ function AppInner() {
                   <div style={{ marginBottom: 12 }}>
                     <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่คัดลอกหรือจดไว้อีกครั้ง</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2E7D4F" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
-                      <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx} autoFocus
+                      <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportConfirmPw(e.target.value)}
                         autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="เช่น word-word-word-word-word"
                         style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
