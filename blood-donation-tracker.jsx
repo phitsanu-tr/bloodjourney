@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.214";
+const APP_VERSION = "1.0.215";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5829,20 +5829,6 @@ function AppInner() {
                   )}
                   </div>
                   </div>
-                  {donorId && (
-                    <div style={{ marginTop: 3, fontSize: 11.5, color: "#7A6360", lineHeight: 1.4 }}>
-                      เลขผู้บริจาค{" "}
-                      <button type="button" disabled={pillsHidden} aria-label={pillsHidden ? "เลขผู้บริจาค (ซ่อนอยู่)" : "คัดลอกเลขผู้บริจาค"}
-                        onClick={async () => {
-                          try { await navigator.clipboard.writeText(donorId); showToast("success", "คัดลอกเลขผู้บริจาคแล้ว"); }
-                          catch (e) { showToast("error", "คัดลอกไม่ได้ในแอปนี้"); }
-                        }}
-                        style={{ position: "relative", border: "none", background: "none", padding: 0, font: "inherit", color: "#3A2C29", fontWeight: 500, fontVariantNumeric: "tabular-nums", letterSpacing: "0.02em", cursor: pillsHidden ? "default" : "pointer", filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>
-                        <span aria-hidden="true" style={{ position: "absolute", inset: "-10px -6px" }} />
-                        {donorId}
-                      </button>
-                    </div>
-                  )}
                   {(bloodType || age !== "" || weight !== "") ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {bloodType && (
@@ -7546,7 +7532,7 @@ function AppInner() {
                     {photo ? (
                       <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : firstName ? (
-                      <span style={{ fontSize: 20, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0].toUpperCase()}</span>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: "#9A3B33" }}>{[...firstName][0].toUpperCase()}</span>
                     ) : (
                       <User size={22} color="#9A3B33" />
                     )}
@@ -7574,20 +7560,20 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29", lineHeight: 1.35, overflow: "hidden", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{[firstName, lastName].filter(Boolean).join(" ") || "ยังไม่ได้ใส่ชื่อ"}</div>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: "#3A2C29", lineHeight: 1.3, overflow: "hidden", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{[firstName, lastName].filter(Boolean).join(" ") || "ยังไม่ได้ใส่ชื่อ"}</div>
                   {photoBusy ? (
                     <div style={{ marginTop: 2, fontSize: 12, color: "#7A6360" }}>กำลังประมวลผลรูป...</div>
                   ) : (bloodType && bloodType !== "ไม่ทราบ") || age !== "" || (weight !== "" && weight != null) ? (
                     /* Summary chips under the name: blood group, age, weight — white icon disc + bold value */
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 5 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
                       {[
                         bloodType && bloodType !== "ไม่ทราบ" ? { key: "blood", Icon: Droplet, text: `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}` } : null,
                         age !== "" ? { key: "age", Icon: Cake, text: `${age} ปี` } : null,
                         weight !== "" && weight != null ? { key: "weight", Icon: Weight, text: `${weight} กก.` } : null,
                       ].filter(Boolean).map(c => (
-                        <span key={c.key} style={{ display: "inline-flex", alignItems: "center", gap: 5, height: 24, padding: "0 9px 0 3px", borderRadius: 999, background: "#F3EAE8", color: "#9A3B33", fontSize: 11.5, fontWeight: 700, lineHeight: 1, whiteSpace: "nowrap" }}>
-                          <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <c.Icon size={11} color="#9A3B33" />
+                        <span key={c.key} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px 3px 3px", borderRadius: 20, background: "#F3EAE8", color: "#9A3B33", fontSize: 11, fontWeight: 600, lineHeight: 1, whiteSpace: "nowrap" }}>
+                          <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <c.Icon size={9} color="#9A3B33" />
                           </span>
                           {c.text}
                         </span>
