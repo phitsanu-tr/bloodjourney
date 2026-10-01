@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.226";
+const APP_VERSION = "1.0.227";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2391,7 +2391,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
-          <span style={HIST_ICON_BOX}><Calendar size={14} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา\u00A0${d.time}\u00A0น.` : ""}
+          <span style={HIST_ICON_BOX}><Calendar size={13} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา\u00A0${d.time}\u00A0น.` : ""}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
           <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={13} color="#7A6360" /> : <Droplet size={13} color="#7A6360" />}</span>
@@ -2409,7 +2409,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         )}
         {d.loggedAt && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 11, color: "#7A6360", marginTop: 5, lineHeight: 1.5 }}>
-            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><Clock size={11} /></span> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
+            <span style={{ ...HIST_ICON_BOX, marginTop: 1 }}><Clock size={13} /></span> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
           </div>
         )}
       </div>
