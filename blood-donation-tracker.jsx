@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.268";
+const APP_VERSION = "1.0.269";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1461,6 +1461,16 @@ function useKeyboardSafeBox(active) {
     return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); setBox(null); };
   }, [active]);
   return box;
+}
+
+// iOS Safari doesn't blur a focused input when a button is tapped, so closing a dialog that still holds
+// focus removes the focused element from under the keyboard and can leave the page stuck (taps and
+// scrolling dead). Every close/save path of the input dialogs blurs first.
+function blurActiveInput() {
+  try {
+    const el = document.activeElement;
+    if (el && el !== document.body && typeof el.blur === "function") el.blur();
+  } catch (e) { /* ignore */ }
 }
 
 function FadeScroll({ children, style, scrollRef }) {
@@ -2963,7 +2973,12 @@ function AppInner() {
         body.style.left = "";
         body.style.right = "";
         body.style.width = "";
-        window.scrollTo(0, scrollLockYRef.current);
+        const y = scrollLockYRef.current;
+        window.scrollTo(0, y);
+        // iOS can leave the visual viewport offset after the keyboard closes; re-assert the position
+        // once layout has settled so the page is scrollable/tappable again.
+        requestAnimationFrame(() => window.scrollTo(0, y));
+        setTimeout(() => { if (document.body.style.position !== "fixed") window.scrollTo(0, y); }, 150);
       };
     }
   }, [anyModalOpen]);
@@ -3320,6 +3335,7 @@ function AppInner() {
       setShowReset(false);
       setConfirmDeleteId(null);
       setViewDonationId(null);
+      blurActiveInput();
       setEditingStartingCount(false);
       setViewStartingCount(false);
       setConfirmDeleteStartingCount(false);
@@ -3852,6 +3868,7 @@ function AppInner() {
   };
 
   const closeForm = () => {
+    blurActiveInput();
     setShowForm(false);
     setEditingId(null);
     setFormError("");
@@ -3909,6 +3926,7 @@ function AppInner() {
   };
 
   const cancelStartingCountQuickEntry = () => {
+    blurActiveInput();
     setShowStartingCountQuickEntry(false);
     setQuickStartingCountError("");
     setQuickTypeOnWhole(false);
@@ -3920,6 +3938,7 @@ function AppInner() {
   };
 
   const submitStartingCountQuickEntry = async () => {
+    blurActiveInput();
     // Each donation type has its own on/off switch — only the type(s) the
     // donor turns on get a count field and a required last-donation record.
     // A donor who only ever donated whole blood turns on just that switch;
@@ -4027,6 +4046,7 @@ function AppInner() {
   };
 
   const submitDonation = async () => {
+    blurActiveInput();
     if (!form.date) {
       setFormError("กรุณาระบุวันที่บริจาค");
       formDateFieldRef.current?.focus();
@@ -4109,6 +4129,7 @@ function AppInner() {
   };
 
   const cancelEditStartingCount = () => {
+    blurActiveInput();
     setEditingStartingCount(false);
     setStartingCountEditError("");
     setStartingCountDraftWhole("");
@@ -4116,6 +4137,7 @@ function AppInner() {
   };
 
   const saveStartingCountInline = async () => {
+    blurActiveInput();
     const numWhole = startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0;
     const numComponent = startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0;
     // Each type validated against its own realistic, donor-age-scoped
@@ -8582,7 +8604,7 @@ function AppInner() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
-                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus aria-label="จำนวนครั้งโลหิตรวม"
+                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>
