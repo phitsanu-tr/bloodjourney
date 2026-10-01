@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.196";
+const APP_VERSION = "1.0.197";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7416,11 +7416,11 @@ function AppInner() {
           if (Number.isNaN(n)) return { text: `น้ำหนัก ${MIN_WEIGHT} กก. ขึ้นไป`, color: "#7A6360" };
           return n >= MIN_WEIGHT ? { text: "อยู่ในเกณฑ์", color: "#2E7D4F" } : { text: "อยู่นอกเกณฑ์", color: "#9C5515" };
         };
-        const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "เลือกปีเกิด", weight: "เลือกน้ำหนัก", height: "เลือกส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาค" };
+        const placeholders = { first: "ระบุชื่อ", last: "ระบุนามสกุล", birthYear: "ระบุปีเกิด", weight: "ระบุน้ำหนัก", height: "ระบุส่วนสูง", donorId: "ระบุเลข 10 หลักบนบัตรผู้บริจาค" };
         const genderLabel = (GENDERS.find(g => g[0] === gender) || [])[1];
         // Summary: "O Rh+" — one colour, sign on the same baseline as "Rh"; Rh unknown / not chosen shows the group only.
         const rhSign = bloodRh === "+" ? "+" : bloodRh === "-" ? "−" : "";
-        const bloodValue = !bloodType && !bloodRh ? ph("เลือกหมู่โลหิต")
+        const bloodValue = !bloodType && !bloodRh ? ph("ระบุหมู่โลหิต")
           : <span style={{ display: "inline-flex", alignItems: "baseline", gap: 6 }}>
               {bloodType ? (bloodType === "ไม่ทราบ" ? "ไม่ระบุหมู่" : bloodType) : ph("หมู่?")}
               {rhSign && (
@@ -7433,7 +7433,7 @@ function AppInner() {
           { title: "ข้อมูลส่วนตัว", rows: [
             { key: "first", Icon: User, label: "ชื่อ", kind: "text" },
             { key: "last", Icon: Users, label: "นามสกุล", kind: "text" },
-            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("เลือกเพศ"),
+            { key: "gender", Icon: PersonStanding, label: "เพศ", kind: "choice", value: genderLabel || ph("ระบุเพศ"),
               options: GENDERS.map(([v, label]) => ({ v, label })), current: gender },
             // Birth year, height and weight: horizontal rulers
             // (profile-number-picker-designs.html, design 4). Each saves
@@ -7445,7 +7445,7 @@ function AppInner() {
           { title: "สำหรับการบริจาค", rows: [
             { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาคโลหิต", kind: "id" },
             { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
-            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("เลือกประเภทผู้บริจาค"),
+            { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("ระบุประเภทผู้บริจาค"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
           ] },
         ];
@@ -7667,7 +7667,7 @@ function AppInner() {
                                   );
                                 })}
                               </div>
-                              <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · เลือกต่ออีกนิด" : "Rh"}</div>
+                              <div id="prof-blood-rh" style={{ fontSize: 11, color: bloodType && !bloodRh ? "#9A3B33" : "#7A6360", fontWeight: bloodType && !bloodRh ? 700 : 400, margin: "10px 0 6px" }}>{bloodType && !bloodRh ? "Rh · ระบุต่ออีกนิด" : "Rh"}</div>
                               <div id="prof-blood-rh-group" role="radiogroup" aria-labelledby="prof-blood-rh" style={{ position: "relative", display: "flex", background: "#FDF6F4", border: "1px solid #F3E7E4", borderRadius: 14, padding: 3 }}>
                                 {(() => {
                                   if (bloodRh) lastPickedRef.current.rh = bloodRh;
