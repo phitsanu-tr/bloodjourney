@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.279";
+const APP_VERSION = "1.0.280";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4075,18 +4075,22 @@ function AppInner() {
   };
 
   const saveStartingCountInline = async () => {
-    const numWhole = startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0;
-    const numComponent = startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0;
+    // The edit dialog follows the history type filter: a type hidden by the filter isn't shown, so it
+    // keeps its stored value untouched (and isn't validated -- the user can't see or fix it here).
+    const editWhole = historyTypeFilter !== "component";
+    const editComponent = historyTypeFilter !== "whole";
+    const numWhole = !editWhole ? startingCountWholeNum : (startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0);
+    const numComponent = !editComponent ? startingCountComponentNum : (startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0);
     // Each type validated against its own realistic, donor-age-scoped
     // ceiling (see maxStartingCountWhole/Component above) and reported by
     // name, so a number that's fine for one type but not the other doesn't
     // get folded into one generic message that doesn't say which field is
     // the problem.
-    if (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > maxStartingCountWhole) {
+    if (editWhole && (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > maxStartingCountWhole)) {
       setStartingCountEditError(`จำนวนครั้งโลหิตรวมต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
       return;
     }
-    if (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent) {
+    if (editComponent && (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent)) {
       setStartingCountEditError(`จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
       return;
     }
@@ -4987,8 +4991,8 @@ function AppInner() {
   const startingCountComponentNum = Number(startingCountComponent) || 0;
   const startingCountNum = startingCountWholeNum + startingCountComponentNum;
   const startingCountEditUnchanged = editingStartingCount
-    && (Number(startingCountDraftWhole) || 0) === startingCountWholeNum
-    && (Number(startingCountDraftComponent) || 0) === startingCountComponentNum;
+    && (historyTypeFilter === "component" || (Number(startingCountDraftWhole) || 0) === startingCountWholeNum)
+    && (historyTypeFilter === "whole" || (Number(startingCountDraftComponent) || 0) === startingCountComponentNum);
   // "ยอดสะสมยกมา" (startingCount) is now just a running total the user enters
   // once, up front — it explicitly excludes their most recent donation, which
   // gets logged as a real, normal, fully editable/deletable record via the
@@ -8541,19 +8545,30 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 14px" }}>
               <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                {historyTypeFilter !== "component" && <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                </div>}
+                {historyTypeFilter !== "whole" && <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
                     onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
-                </div>
+                </div>}
               </div>
+              {historyTypeFilter !== "all" && (() => {
+                const shown = historyTypeFilter === "whole" ? "โลหิตรวม" : "พลาสมา/เกล็ดเลือด";
+                const other = historyTypeFilter === "whole" ? "พลาสมา/เกล็ดเลือด" : "โลหิตรวม";
+                const otherN = historyTypeFilter === "whole" ? startingCountComponentNum : startingCountWholeNum;
+                return (
+                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 11.5, color: "#7A6360", lineHeight: 1.55, marginTop: 12 }}>
+                    <SlidersHorizontal size={12} style={{ flexShrink: 0, marginTop: 3 }} />
+                    <span>แสดงเฉพาะ{shown}ตามตัวกรอง{otherN > 0 ? ` · ${other} ${otherN} ครั้งไม่เปลี่ยน` : ""}</span>
+                  </div>
+                );
+              })()}
             </div>
             {startingCountEditError && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
