@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.220";
+const APP_VERSION = "1.0.221";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5541,13 +5541,13 @@ function AppInner() {
         }
         /* Every modal backdrop: light blur + a lighter scrim (was a flat 0.45 dim), so what is
            behind (blood group / age / weight chips, other dialogs) is not readable. */
-        [role="dialog"][aria-modal="true"] {
+        [role="dialog"][aria-modal="true"]:not([data-own-motion]) {
           background: rgba(36, 26, 24, 0.3) !important;
           -webkit-backdrop-filter: blur(3px);
           backdrop-filter: blur(3px);
         }
         @media (prefers-reduced-transparency: reduce) {
-          [role="dialog"][aria-modal="true"] { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+          [role="dialog"][aria-modal="true"]:not([data-own-motion]), .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
         }
         @keyframes scrimOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeSwap {
@@ -6411,7 +6411,7 @@ function AppInner() {
                 const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
                 return (
                   <>
-                    <div onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", zIndex: 70,
+                    <div className="filter-scrim" onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.3)", WebkitBackdropFilter: "blur(3px)", backdropFilter: "blur(3px)", zIndex: 70,
                       animation: filterSheetClosing ? "scrimOut 0.26s ease 0.04s forwards" : "fadeSwap 0.2s ease", pointerEvents: filterSheetClosing ? "none" : "auto" }} />
                     <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ" data-own-motion=""
                       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
