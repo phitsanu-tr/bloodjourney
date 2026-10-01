@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.273";
+const APP_VERSION = "1.0.274";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1439,40 +1439,6 @@ function backupPasswordStrength(pw) {
 const RULER_TICK = 8;
 // Scroll area under a fixed modal header. Once scrolled, the top 18px fades out
 // so content melts into the header instead of being cut off (no divider line).
-// On phones the on-screen keyboard covers the bottom of a fixed, centred dialog (the layout viewport
-// keeps its full height; only window.visualViewport shrinks). While `active`, report the visible box
-// so an input dialog can re-centre itself above the keyboard and scroll inside it when too tall.
-// iOS also floats a ↑ ↓ ✓ bar above the keyboard that visualViewport doesn't account for, hence `extra`.
-function useKeyboardSafeBox(active) {
-  const [box, setBox] = useState(null);
-  useEffect(() => {
-    const vv = typeof window !== "undefined" ? window.visualViewport : null;
-    if (!active || !vv) { setBox(null); return undefined; }
-    const ua = navigator.userAgent || "";
-    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const update = () => {
-      const covered = window.innerHeight - vv.height - vv.offsetTop;
-      if (covered > 80) setBox({ top: vv.offsetTop, height: Math.max(220, vv.height - (isIOS ? 56 : 0)) });
-      else setBox(null);
-    };
-    update();
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
-    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); setBox(null); };
-  }, [active]);
-  return box;
-}
-
-// iOS Safari doesn't blur a focused input when a button is tapped, so closing a dialog that still holds
-// focus removes the focused element from under the keyboard and can leave the page stuck (taps and
-// scrolling dead). Every close/save path of the input dialogs blurs first.
-function blurActiveInput() {
-  try {
-    const el = document.activeElement;
-    if (el && el !== document.body && typeof el.blur === "function") el.blur();
-  } catch (e) { /* ignore */ }
-}
-
 function FadeScroll({ children, style, scrollRef }) {
   const [scrolled, setScrolled] = useState(false);
   const fade = "linear-gradient(transparent 0, #000 18px)";
@@ -2949,47 +2915,28 @@ function AppInner() {
   // a finger-drag over the dialog visibly scrolls the background behind it
   // too. Lock the page in place for as long as *any* dialog is open, and
   // restore the exact scroll position it was at once the last one closes.
-  const kbBox = useKeyboardSafeBox(showForm || showStartingCountQuickEntry || editingStartingCount);
-  const kbWrap = kbBox ? { top: kbBox.top, bottom: "auto", height: kbBox.height } : null;
-  const kbInner = kbBox ? { maxHeight: kbBox.height - 16, overflowY: "auto" } : null;
   const scrollLockYRef = useRef(0);
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
     || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
     || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId
     || viewStartingCount || editingStartingCount;
-  const scrollRestoreTimersRef = useRef([]);
   useEffect(() => {
     if (anyModalOpen) {
-      // A reopen right after a close must cancel the previous close's pending scroll restores,
-      // otherwise they fire against the new lock (iOS then leaves the page dead to scroll/taps).
-      scrollRestoreTimersRef.current.forEach((t) => { try { cancelAnimationFrame(t); clearTimeout(t); } catch (e) { /* ignore */ } });
-      scrollRestoreTimersRef.current = [];
+      scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
       const body = document.body;
-      // Never read scrollY while the body is already fixed (it would be 0 and the page would jump).
-      if (body.style.position !== "fixed") scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
       body.style.position = "fixed";
       body.style.top = `-${scrollLockYRef.current}px`;
       body.style.left = "0";
       body.style.right = "0";
       body.style.width = "100%";
       return () => {
-        blurActiveInput();
         body.style.position = "";
         body.style.top = "";
         body.style.left = "";
         body.style.right = "";
         body.style.width = "";
-        const y = scrollLockYRef.current;
-        const restore = () => { if (document.body.style.position !== "fixed") window.scrollTo(0, y); };
-        restore();
-        // iOS can leave the visual viewport offset after the keyboard closes; re-assert the position
-        // once layout has settled so the page is scrollable/tappable again.
-        scrollRestoreTimersRef.current = [
-          requestAnimationFrame(restore),
-          setTimeout(restore, 150),
-          setTimeout(restore, 400),
-        ];
+        window.scrollTo(0, scrollLockYRef.current);
       };
     }
   }, [anyModalOpen]);
@@ -3346,7 +3293,6 @@ function AppInner() {
       setShowReset(false);
       setConfirmDeleteId(null);
       setViewDonationId(null);
-      blurActiveInput();
       setEditingStartingCount(false);
       setViewStartingCount(false);
       setConfirmDeleteStartingCount(false);
@@ -3879,7 +3825,6 @@ function AppInner() {
   };
 
   const closeForm = () => {
-    blurActiveInput();
     setShowForm(false);
     setEditingId(null);
     setFormError("");
@@ -3937,7 +3882,6 @@ function AppInner() {
   };
 
   const cancelStartingCountQuickEntry = () => {
-    blurActiveInput();
     setShowStartingCountQuickEntry(false);
     setQuickStartingCountError("");
     setQuickTypeOnWhole(false);
@@ -3949,7 +3893,6 @@ function AppInner() {
   };
 
   const submitStartingCountQuickEntry = async () => {
-    blurActiveInput();
     // Each donation type has its own on/off switch — only the type(s) the
     // donor turns on get a count field and a required last-donation record.
     // A donor who only ever donated whole blood turns on just that switch;
@@ -4057,7 +4000,6 @@ function AppInner() {
   };
 
   const submitDonation = async () => {
-    blurActiveInput();
     if (!form.date) {
       setFormError("กรุณาระบุวันที่บริจาค");
       formDateFieldRef.current?.focus();
@@ -4140,7 +4082,6 @@ function AppInner() {
   };
 
   const cancelEditStartingCount = () => {
-    blurActiveInput();
     setEditingStartingCount(false);
     setStartingCountEditError("");
     setStartingCountDraftWhole("");
@@ -4148,7 +4089,6 @@ function AppInner() {
   };
 
   const saveStartingCountInline = async () => {
-    blurActiveInput();
     const numWhole = startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0;
     const numComponent = startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0;
     // Each type validated against its own realistic, donor-age-scoped
@@ -4162,14 +4102,6 @@ function AppInner() {
     }
     if (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent) {
       setStartingCountEditError(`จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
-      return;
-    }
-    if (numWhole + numComponent === 0) {
-      // Clearing both totals is really "delete the carried-over count" -- route it through the same
-      // confirmation as the ⋮ menu's ลบ instead of silently wiping it on a plain save.
-      setEditingStartingCount(false);
-      setStartingCountEditError("");
-      requestDeleteStartingCount();
       return;
     }
     setStartingCountEditError("");
@@ -5702,8 +5634,6 @@ function AppInner() {
         .hist-card { -webkit-tap-highlight-color: transparent; transition: background 0.12s; }
         /* pressed tint only when the card itself is pressed, not while the ⋮ button / its menu is */
         .hist-card:active:not(:has(.hist-more:active)) { background: #FBF1EE !important; }
-        /* the carried-over card already sits on a tinted fill, so the white-card press tint is invisible there -- go darker instead */
-        .hist-card.hist-card-carry:active:not(:has(.hist-more:active)) { background: #EBDAD5 !important; border-color: #D9B9B2 !important; }
         .hist-card:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
         @media (prefers-reduced-transparency: reduce) {
           [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
@@ -6691,7 +6621,7 @@ function AppInner() {
                   );
                 })}
                 {displayedStartingCount > 0 && historyYearFilter === "all" && filteredHistory.length <= historyVisibleCount && (
-                    <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
+                    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
                       style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 15px", display: "flex", gap: 12, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
@@ -8093,8 +8023,8 @@ function AppInner() {
       })()}
 
       {showForm && (
-        <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, ...kbWrap }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px", ...kbInner }}>
+        <div role="dialog" aria-modal="true" aria-label={editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{editingId ? "แก้ไขข้อมูลการบริจาคโลหิต" : "ระบุข้อมูลการบริจาคโลหิต"}</div>
               <button onClick={closeForm} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
@@ -8244,8 +8174,8 @@ function AppInner() {
       )}
 
       {showStartingCountQuickEntry && (
-        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20, ...kbWrap }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: kbBox ? kbBox.height - 40 : "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
@@ -8564,7 +8494,7 @@ function AppInner() {
         );
       })()}
 
-      {viewStartingCount && displayedStartingCount > 0 && (() => {
+      {viewStartingCount && startingCountNum > 0 && (() => {
         // Read-only detail for the carried-over total ("เคยบริจาคมาก่อน"), mirroring the donation
         // detail modal: badge + title on top, one row per carried-over type, and the logged-at line.
         const svRowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
@@ -8582,18 +8512,18 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{startingCountNum}</div>
                   <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {startingCountNum} ครั้ง</div>
                   <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
                 </div>
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                {historyTypeFilter !== "component" && startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
-                {historyTypeFilter !== "whole" && startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
+                {startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
+                {startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
                 {startingCountUpdatedAt && (
                   <ModalMetaLine>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
@@ -8606,18 +8536,18 @@ function AppInner() {
       })()}
 
       {editingStartingCount && (
-        <div role="dialog" aria-modal="true" aria-label="แก้ไขจำนวนที่เคยบริจาค" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, ...kbWrap }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px", ...kbInner }}>
+        <div role="dialog" aria-modal="true" aria-label="แก้ไขจำนวนที่เคยบริจาค" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 12px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 8px 14px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>แก้ไขจำนวนที่เคยบริจาค</div>
               <button onClick={cancelEditStartingCount} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 14px" }}>
               <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
-                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
+                  <input type="number" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" autoFocus aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>
