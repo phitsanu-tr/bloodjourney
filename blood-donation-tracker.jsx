@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.234";
+const APP_VERSION = "1.0.235";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8426,8 +8426,8 @@ function AppInner() {
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
                 <div style={rowS}><div style={lblS}>ประเภท</div><div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
-                {vd.location && <div style={rowS}><div style={lblS}>สถานที่</div><div style={valS}>{vd.location}</div></div>}
-                {vd.note && <div style={rowS}><div style={lblS}>โน้ต</div><div style={valS}>{vd.note}</div></div>}
+                <div style={rowS}><div style={lblS}>สถานที่</div><div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
+                <div style={rowS}><div style={lblS}>โน้ต</div><div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
               </div>
               {vd.loggedAt && (
                 <div style={{ marginTop: 10, background: "#FCF8F7", borderRadius: 10, padding: "8px 12px", fontSize: 11, color: "#8E7773", lineHeight: 1.6 }}>
