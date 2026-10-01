@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.222";
+const APP_VERSION = "1.0.223";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2368,6 +2368,9 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // actually changed do. isMenuOpen is passed as a plain boolean (not the
 // whole openActionMenuId string) precisely so that opening the menu on ONE
 // row doesn't also cause every other row's memo comparison to fail.
+// Fixed 14px icon column for the meta lines of a history row, so every line's text starts at the
+// same x (icons of 13-14px are centred in it) instead of drifting with each icon's own width.
+const HIST_ICON_BOX = { width: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
   // deliberately kept a single consistent color regardless of type (per
@@ -2386,25 +2389,25 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>
-          <Calendar size={14} color="#9A3B33" /> {toBuddhistDate(d.date)}{d.time ? ` เวลา ${d.time} น.` : ""}
+          <span style={HIST_ICON_BOX}><Calendar size={14} color="#9A3B33" /></span> {toBuddhistDate(d.date)}{d.time ? ` เวลา ${d.time} น.` : ""}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
-          {d.type === "component" ? <Droplets size={13} color="#7A6360" style={{ flexShrink: 0 }} /> : <Droplet size={13} color="#7A6360" style={{ flexShrink: 0 }} />}
+          <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={13} color="#7A6360" /> : <Droplet size={13} color="#7A6360" />}</span>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
         {d.location && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: "#7A6360", marginTop: 5, wordBreak: "break-word" }}>
-            <MapPin size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {d.location}
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={13} /></span> {d.location}
           </div>
         )}
         {d.note && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: "#7A6360", marginTop: 4, wordBreak: "break-word" }}>
-            <StickyNote size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {d.note}
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={13} /></span> {d.note}
           </div>
         )}
         {d.loggedAt && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>
-            <Clock size={10.5} style={{ flexShrink: 0 }} /> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12.5, color: "#7A6360", marginTop: 5 }}>
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><Clock size={13} /></span> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
           </div>
         )}
       </div>
