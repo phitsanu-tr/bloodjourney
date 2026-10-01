@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.246";
+const APP_VERSION = "1.0.247";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2387,7 +2387,7 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // same x (icons of 13-14px are centred in it) instead of drifting with each icon's own width.
 // One-line "saved / last edited" note under the detail modal's table. The row labels above are one
 // block centred in a 50px column (as wide as the word "ประเภท"), so this line starts at that block's
-// left edge: we measure a hidden "ประเภท" in the same font size and indent by (50 - width) / 2.
+// left edge: we measure a hidden "ประเภท" at the label font size (12px) and indent by (50 - width) / 2.
 function ModalMetaLine({ children }) {
   const ghostRef = useRef(null);
   const [pad, setPad] = useState(5.5);
@@ -2401,7 +2401,7 @@ function ModalMetaLine({ children }) {
   }, []);
   return (
     <div style={{ position: "relative", padding: `10px 0 2px ${pad}px`, fontSize: 11.5, color: "#B5A29E", lineHeight: 1.6 }}>
-      <span ref={ghostRef} aria-hidden="true" style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap" }}>ประเภท</span>
+      <span ref={ghostRef} aria-hidden="true" style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap", fontSize: 12 }}>ประเภท</span>
       {children}
     </div>
   );
@@ -8427,7 +8427,7 @@ function AppInner() {
         // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
         // sizes it), and every label starts at that block's left edge so all three share one left edge.
         const lbl = (t) => (
-          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", paddingTop: 3, fontSize: 11.5, color: "#A38D89" }}>
+          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", paddingTop: 3, fontSize: 12, color: "#A38D89" }}>
             <div style={{ position: "relative" }}>
               <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
               <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
