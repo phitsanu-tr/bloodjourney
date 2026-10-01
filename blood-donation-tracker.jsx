@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.229";
+const APP_VERSION = "1.0.230";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -277,6 +277,11 @@ function toBuddhistDateTimeFull(d) {
   return `${date.getDate()} ${THAI_MONTHS_FULL[date.getMonth()]} ${date.getFullYear() + 543} เวลา\u00A0${hh}:${mm}\u00A0น.`;
 }
 
+function toBuddhistDateFull(d) {
+  const date = parseLocalDate(d);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getDate()} ${THAI_MONTHS_FULL[date.getMonth()]} ${date.getFullYear() + 543}`;
+}
 function toBuddhistDateTime(d) {
   const date = parseLocalDate(d);
   if (Number.isNaN(date.getTime())) return "";
@@ -2381,13 +2386,13 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // Fixed 14px icon column for the meta lines of a history row, so every line's text starts at the
 // same x (icons of 13-14px are centred in it) instead of drifting with each icon's own width.
 const HIST_ICON_BOX = { width: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
-const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onEdit, onShare, onDelete }) {
+const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onView, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
   // deliberately kept a single consistent color regardless of type (per
   // explicit user feedback), rather than tinting it per donation type.
   const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
   return (
-    <div className="hist-card" role="button" tabIndex={0} aria-label="แก้ไขรายการบริจาค" onClick={onEdit} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onEdit(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
+    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดรายการบริจาค" onClick={onView} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
@@ -2398,8 +2403,9 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>
-          <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(d.date)}</span>{d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", marginLeft: 7, whiteSpace: "nowrap" }}>{d.time}{"\u00A0น."}</span>}
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", flexWrap: "wrap", alignItems: "baseline", columnGap: 7 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}><span style={{ ...HIST_ICON_BOX, alignSelf: "center" }}><Calendar size={13} color="#9A3B33" /></span>{toBuddhistDate(d.date)}</span>
+          {d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", whiteSpace: "nowrap" }}>{`เวลา\u00A0${d.time}\u00A0น.`}</span>}
         </div>
         <div style={{ marginTop: 5 }}>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 11, background: tint.bg, color: tint.text, padding: "3px 9px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
@@ -2423,7 +2429,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 210 }}>
+            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
               <button onClick={onEdit} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
@@ -2433,13 +2439,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
               <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
-              {d.loggedAt && (
-                <div style={{ borderTop: "1px solid #F3E7E4", background: "#FCF8F7", padding: "9px 14px 10px", cursor: "default" }}>
-                  <div style={{ fontSize: 10.5, color: "#A38D89", lineHeight: 1.3 }}>{(d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุด" : "บันทึกเมื่อ"}</div>
-                  <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.5, marginTop: 1 }}>{toBuddhistDateTimeFull(d.loggedAt)}</div>
-                </div>
-              )}
-            </div>
+                          </div>
           </>
         )}
       </div>
@@ -2632,6 +2632,7 @@ function AppInner() {
     return () => clearTimeout(t);
   }, [showProfile, profileOpenChoice]);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [viewDonationId, setViewDonationId] = useState(null);
   // Which history card's overflow (⋮) action menu is currently open — replaces
   // the previous always-visible edit/delete icon pair to reduce visual
   // clutter, especially now that cards can grow taller with longer notes.
@@ -3267,6 +3268,7 @@ function AppInner() {
       setShowPrivacy(false);
       setShowReset(false);
       setConfirmDeleteId(null);
+      setViewDonationId(null);
       setEditingStartingCount(false);
       setConfirmDeleteStartingCount(false);
       setShowOnboardingChoice(false);
@@ -6555,6 +6557,7 @@ function AppInner() {
                     orderNumber={donationOrderMap[d.id]}
                     isMenuOpen={openActionMenuId === d.id}
                     onToggleMenu={() => setOpenActionMenuId(openActionMenuId === d.id ? null : d.id)}
+                    onView={() => { setOpenActionMenuId(null); setViewDonationId(d.id); }}
                     onEdit={() => { setOpenActionMenuId(null); openEditForm(d); }}
                     onShare={() => { setOpenActionMenuId(null); openRecordShareCard(d); }}
                     onDelete={() => { setOpenActionMenuId(null); requestDeleteDonation(d.id); }}
@@ -8398,6 +8401,48 @@ function AppInner() {
           </div>
         </div>
       )}
+
+      {viewDonationId && (() => {
+        const vd = donations.find(x => x.id === viewDonationId);
+        if (!vd) return null;
+        const vTint = DONATION_TYPE_TINT[vd.type === "component" ? "component" : "whole"];
+        const vn = donationOrderMap[vd.id];
+        const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
+        const lblS = { width: 62, flexShrink: 0, fontSize: 11.5, color: "#A38D89", paddingTop: 3 };
+        const valS = { flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
+        return (
+          <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 50, height: 60, position: "relative", flexShrink: 0 }}>
+                  <svg width="50" height="60" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
+                    <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, top: 7, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ fontSize: String(vn).length >= 3 ? 12 : 16, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{vn}</div>
+                    <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.45 }}>{toBuddhistDateFull(vd.date)}</div>
+                  {vd.time && <div style={{ fontSize: 12.5, color: "#7A6360", marginTop: 1 }}>{`เวลา\u00A0${vd.time}\u00A0น.`}</div>}
+                </div>
+                <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
+              </div>
+              <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
+                <div style={rowS}><div style={lblS}>ประเภท</div><div style={valS}><span style={{ display: "inline-block", fontSize: 12, background: vTint.bg, color: vTint.text, padding: "2px 10px", borderRadius: 20, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
+                {vd.location && <div style={rowS}><div style={lblS}>สถานที่</div><div style={valS}>{vd.location}</div></div>}
+                {vd.note && <div style={rowS}><div style={lblS}>โน้ต</div><div style={valS}>{vd.note}</div></div>}
+              </div>
+              {vd.loggedAt && (
+                <div style={{ marginTop: 10, background: "#FCF8F7", borderRadius: 10, padding: "8px 12px", fontSize: 11, color: "#8E7773", lineHeight: 1.6 }}>
+                  {(vd.createdAt && vd.createdAt !== vd.loggedAt) ? "แก้ไขล่าสุด" : "บันทึกเมื่อ"} · {toBuddhistDateTimeFull(vd.loggedAt)}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {confirmDeleteId && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
