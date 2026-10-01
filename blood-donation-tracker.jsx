@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.227";
+const APP_VERSION = "1.0.228";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -269,6 +269,14 @@ export function toBuddhistDate(d) {
   const date = parseLocalDate(d);
   return `${date.getDate()} ${THAI_MONTHS[date.getMonth()]} ${date.getFullYear() + 543}`;
 }
+function toBuddhistDateTimeFull(d) {
+  const date = parseLocalDate(d);
+  if (Number.isNaN(date.getTime())) return "";
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${date.getDate()} ${THAI_MONTHS_FULL[date.getMonth()]} ${date.getFullYear() + 543} เวลา\u00A0${hh}:${mm}\u00A0น.`;
+}
+
 function toBuddhistDateTime(d) {
   const date = parseLocalDate(d);
   if (Number.isNaN(date.getTime())) return "";
@@ -2407,11 +2415,6 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
             <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={13} /></span> {d.note}
           </div>
         )}
-        {d.loggedAt && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 11, color: "#7A6360", marginTop: 5, lineHeight: 1.5 }}>
-            <span style={{ ...HIST_ICON_BOX, marginTop: 1 }}><Clock size={13} /></span> {joinLoggedLabel((d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ", d.loggedAt)}
-          </div>
-        )}
       </div>
       <div style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 11, margin: -7 }}>
@@ -2420,7 +2423,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 210 }}>
               <button onClick={onEdit} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
@@ -2430,6 +2433,12 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
               <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
+              {d.loggedAt && (
+                <div style={{ borderTop: "1px solid #F3E7E4", background: "#FCF8F7", padding: "9px 14px 10px", cursor: "default" }}>
+                  <div style={{ fontSize: 10.5, color: "#A38D89", lineHeight: 1.3 }}>{(d.createdAt && d.createdAt !== d.loggedAt) ? "แก้ไขล่าสุด" : "บันทึกเมื่อ"}</div>
+                  <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.5, marginTop: 1 }}>{toBuddhistDateTimeFull(d.loggedAt)}</div>
+                </div>
+              )}
             </div>
           </>
         )}
