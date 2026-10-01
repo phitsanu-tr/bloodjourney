@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.287";
+const APP_VERSION = "1.0.288";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2436,7 +2436,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.location ? "#7A6360" : "#A38D89", marginTop: 5 }}>
           <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location || "—"}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.note ? "#7A6360" : "#A38D89", marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.note ? "#7A6360" : "#A38D89", marginTop: 5 }}>
           <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.note || "—"}</span>
         </div>
       </div>
