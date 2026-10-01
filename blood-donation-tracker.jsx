@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.294";
+const APP_VERSION = "1.0.295";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8129,19 +8129,25 @@ function AppInner() {
             )}
             <div style={{ marginTop: 14, marginBottom: 14 }}>
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
-              <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ display: "flex", gap: 8 }}>
-                {["whole", "component"].map((t) => (
-                  <button key={t} type="button" role="radio" aria-checked={form.type === t} onClick={() => { setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
-                    style={{
-                      flex: 1, textAlign: "center", padding: "10.5px 6px", borderRadius: 10, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
-                      border: form.type === t ? "1px solid transparent" : `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}`,
-                      background: form.type === t ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF",
-                      color: form.type === t ? "#FFF7F5" : "#7A6360",
-                      fontWeight: form.type === t ? 600 : 400,
-                    }}>
-                    {DONATION_TYPE_LABELS[t]}
-                  </button>
-                ))}
+              {/* Same segmented control as the profile pickers / backup tabs: pale track, white lifted pill on
+                  the chosen type (slides between the two). Nothing is chosen by default; a missing type turns the
+                  track's edge red. */}
+              <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ position: "relative", display: "flex", background: "#F3E7E4", borderRadius: 12, padding: 4, border: `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "transparent"}` }}>
+                {(() => {
+                  const idx = ["whole", "component"].indexOf(form.type);
+                  return (
+                    <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${Math.max(idx, 0)} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(58,44,41,0.12)", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
+                  );
+                })()}
+                {["whole", "component"].map((t) => {
+                  const on = form.type === t;
+                  return (
+                    <button key={t} type="button" role="radio" aria-checked={on} onClick={() => { setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
+                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, whiteSpace: "nowrap", fontWeight: on ? 600 : 500, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
+                      {DONATION_TYPE_LABELS[t]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>
