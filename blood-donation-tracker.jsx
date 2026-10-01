@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.207";
+const APP_VERSION = "1.0.208";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5793,7 +5793,9 @@ function AppInner() {
                     <User size={24} color="#9A3B33" />
                   )}
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ minWidth: 0 }}>
                   {nickname ? (
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4, overflowWrap: "anywhere" }}>
                       {nickname}
@@ -5813,6 +5815,15 @@ function AppInner() {
                       สวัสดี
                     </div>
                   )}
+                  </div>
+                  {/* show/hide eye sits at the right edge of the name row (aligned with the card below) */}
+                  {(bloodType || age !== "" || weight !== "") && (
+                    <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: -10, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+                        {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
+                      </button>
+                  )}
+                  </div>
                   {(bloodType || age !== "" || weight !== "") ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {bloodType && (
@@ -5833,10 +5844,6 @@ function AppInner() {
                           <span style={{ filter: showInfoPills ? "none" : "blur(4px)", userSelect: showInfoPills ? "auto" : "none", transition: "filter 0.15s" }}>{weight} กก.</span>
                         </span>
                       )}
-                      <button onClick={toggleInfoPillsVisibility} aria-label={showInfoPills ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, margin: -11, borderRadius: "50%", border: "none", background: "none", color: "#7A6360", cursor: "pointer", padding: 0, flexShrink: 0 }}>
-                        {showInfoPills ? <Eye size={14} /> : <EyeOff size={14} />}
-                      </button>
                     </div>
                   ) : (
                     <div style={{ marginTop: 8 }}>
