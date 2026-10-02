@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.313";
+const APP_VERSION = "1.0.314";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -843,7 +843,13 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 8 }}>
+          {value && (
+            <button type="button" onClick={() => onConfirm("")}
+              style={{ padding: "0 14px", height: 26, borderRadius: 999, border: "1px solid #E3C8C3", background: "none", color: "#7A6360", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
+              ไม่ระบุเวลา
+            </button>
+          )}
           <button type="button" onClick={fillNow}
             style={{ padding: "0 14px", height: 26, borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
             ตอนนี้
@@ -859,18 +865,6 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ยืนยัน
           </button>
         </div>
-        {/* Used to be a bare underlined text link sitting below the button
-            row with its own margin -- direct user feedback was that it read
-            as floating, disconnected from ยกเลิก/ยืนยัน above it. Styling it
-            as a real (ghost) button, stacked with the same 10px gap used
-            between the two buttons above, makes it read as a third option
-            in the same group instead of an afterthought underneath. */}
-        {value && (
-          <button type="button" onClick={() => onConfirm("")}
-            style={{ display: "block", width: "100%", marginTop: 10, padding: "9px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
-            ไม่ระบุเวลา
-          </button>
-        )}
       </div>
     </div>
   );
