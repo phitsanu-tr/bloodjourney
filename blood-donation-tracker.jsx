@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.335";
+const APP_VERSION = "1.0.336";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -256,7 +256,7 @@ const MAX_BACKUP_REMINDER_GAP = 50;
 const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
 const DEFAULT_DONATION_TYPE = "whole";
 const TYPE_REQUIRED_MESSAGE = "ระบุประเภทการบริจาค";
-const IMPORT_UNSUPPORTED_MESSAGE = "รูปแบบไม่รองรับ อาจมาจากแอปเวอร์ชันอื่นหรือไฟล์เสียหาย";
+const IMPORT_UNSUPPORTED_MESSAGE = "รูปแบบไม่รองรับ หรือไฟล์เสียหาย";
 export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
