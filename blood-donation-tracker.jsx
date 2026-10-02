@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.314";
+const APP_VERSION = "1.0.315";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2718,7 +2718,7 @@ function AppInner() {
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
-  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาค"/
+  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาคโลหิต"/
   // "วันที่ไม่ถูกต้อง"/"ระบุวันที่ในอนาคตไม่ได้") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
   // the actual empty/invalid field, so on a longer form it was easy to miss
@@ -4012,7 +4012,7 @@ function AppInner() {
 
   const submitDonation = async () => {
     if (!form.date) {
-      setFormError("กรุณาระบุวันที่บริจาค");
+      setFormError("กรุณาระบุวันที่บริจาคโลหิต");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -5476,7 +5476,7 @@ function AppInner() {
   // date-specific validation messages (empty / invalid / future date) --
   // drives the date field's red-border highlight below, so the field itself
   // stays neutral for errors that have nothing to do with it.
-  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาค"
+  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาคโลหิต"
     || formError === "วันที่ไม่ถูกต้อง"
     || formError === "ระบุวันที่ในอนาคตไม่ได้";
 
@@ -8138,7 +8138,7 @@ function AppInner() {
                       setForm(f => ({ ...f, date }));
                       // Picking a date resolves every date-related message (empty / invalid / future / same-day
                       // conflict) -- clear it right away so the red edge and alert don't linger after the fix.
-                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาค" || e === "วันที่ไม่ถูกต้อง" || e === "ระบุวันที่ในอนาคตไม่ได้" || e === sameDateConflictMessage) ? "" : e));
+                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาคโลหิต" || e === "วันที่ไม่ถูกต้อง" || e === "ระบุวันที่ในอนาคตไม่ได้" || e === sameDateConflictMessage) ? "" : e));
                     }}
                     height={44} fontSize={14} />
                 </div>
