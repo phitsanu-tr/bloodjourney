@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.321";
+const APP_VERSION = "1.0.322";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2729,7 +2729,7 @@ function AppInner() {
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
-  // field when it's the reason validation failed ("ระบุวันที่บริจาคโลหิต") -- previously the error
+  // field when it's the reason validation failed ("ระบุวันที่บริจาค") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
   // the actual empty/invalid field, so on a longer form it was easy to miss
   // which field the error was even about (reported directly by the user).
@@ -4025,7 +4025,7 @@ function AppInner() {
     // produce the latter two (no typing, future days disabled), so this is only a safety net.
     const selected = form.date ? new Date(form.date) : null;
     if (!selected || Number.isNaN(selected.getTime()) || selected.setHours(0,0,0,0) > startOfToday().getTime()) {
-      setFormError("ระบุวันที่บริจาคโลหิต");
+      setFormError("ระบุวันที่บริจาค");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -5478,7 +5478,7 @@ function AppInner() {
   // validation message --
   // drives the date field's red-border highlight below, so the field itself
   // stays neutral for errors that have nothing to do with it.
-  const dateFieldHasError = formError === "ระบุวันที่บริจาคโลหิต";
+  const dateFieldHasError = formError === "ระบุวันที่บริจาค";
 
   // Only relevant while editing an existing record — disables the save
   // button when nothing has actually changed from what was opened.
@@ -8085,7 +8085,7 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 4px" }}>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
               <div style={{ minWidth: 0 }}>
-                <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
+                <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาค</label>
                 {/* lang="en-US" pins iOS Safari's native date-picker display to the
                     Gregorian calendar. Without it, a device set to Thailand region
                     renders a broken hybrid like "18 Sep BE 2569" (English month +
@@ -8133,12 +8133,12 @@ function AppInner() {
                     exist because form.date was empty/invalid/in the future -- picking
                     any valid date resolves all three at once. */}
                 <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${(dateFieldHasError || sameDateConflict) ? "#B3261E" : "#E3C8C3"}` }}>
-                  <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
+                  <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาค"
                     onChange={(date) => {
                       setForm(f => ({ ...f, date }));
                       // Picking a date resolves every date-related message (empty / same-day
                       // conflict) -- clear it right away so the red edge and alert don't linger after the fix.
-                      setFormError(e => ((e === "ระบุวันที่บริจาคโลหิต" || e === sameDateConflictMessage) ? "" : e));
+                      setFormError(e => ((e === "ระบุวันที่บริจาค" || e === sameDateConflictMessage) ? "" : e));
                     }}
                     height={44} fontSize={14} />
                 </div>
@@ -8146,7 +8146,7 @@ function AppInner() {
               <div style={{ minWidth: 0 }}>
                 <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                 <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
-                  <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาคโลหิต"
+                  <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาค"
                     onChange={(time) => setForm(f => ({ ...f, time }))}
                     height={44} fontSize={14} />
                 </div>
@@ -8304,7 +8304,7 @@ function AppInner() {
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาค (ครั้งล่าสุด)</label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
-                          <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
+                          <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
                             height={42} fontSize={14} />
                         </div>
@@ -8312,7 +8312,7 @@ function AppInner() {
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
-                          <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคโลหิตครั้งล่าสุด"
+                          <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคครั้งล่าสุด"
                             onChange={(time) => setTf(f => ({ ...f, time }))}
                             height={42} fontSize={14} />
                         </div>
