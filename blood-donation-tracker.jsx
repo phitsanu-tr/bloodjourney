@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.317";
+const APP_VERSION = "1.0.318";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5481,7 +5481,7 @@ function AppInner() {
     });
   }, [form.date, donations, editingId]);
 
-  const sameDateConflictMessage = "วันที่นี้มีรายการบริจาคโลหิตอยู่แล้ว กรุณาระบุวันที่อื่น หรือกลับไปแก้ไขรายการเดิม";
+  const sameDateConflictMessage = "วันที่นี้มีรายการบันทึกแล้ว กรุณาระบุวันที่อื่น";
 
   // Whether the currently-shown formError is one of submitDonation's three
   // date-specific validation messages (empty / invalid / future date) --
