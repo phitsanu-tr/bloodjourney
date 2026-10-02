@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.330";
+const APP_VERSION = "1.0.331";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3916,11 +3916,8 @@ function AppInner() {
     // A donor who only ever donated whole blood turns on just that switch;
     // a donor who's done both turns on both, each with its own total and
     // last-donation date/time/location/note.
-    if (!quickTypeOnWhole && !quickTypeOnComponent) {
-      setQuickStartingCountError("เลือกอย่างน้อย 1 ประเภทที่เคยบริจาค");
-      setQuickErrorField("");
-      return;
-    }
+    // (The save button is only rendered while at least one switch is on, so this is just a guard.)
+    if (!quickTypeOnWhole && !quickTypeOnComponent) return;
     const wholeTotalRaw = quickTypeOnWhole ? (quickStartingCountWholeDraft === "" ? NaN : Number(quickStartingCountWholeDraft)) : 0;
     const componentTotalRaw = quickTypeOnComponent ? (quickStartingCountComponentDraft === "" ? NaN : Number(quickStartingCountComponentDraft)) : 0;
     // Validate one card fully (count, then date) before moving to the next,
