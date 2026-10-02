@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.324";
+const APP_VERSION = "1.0.325";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3916,6 +3916,7 @@ function AppInner() {
     // last-donation date/time/location/note.
     if (!quickTypeOnWhole && !quickTypeOnComponent) {
       setQuickStartingCountError("เลือกอย่างน้อย 1 ประเภทที่เคยบริจาค");
+      setQuickErrorField("");
       return;
     }
     const wholeTotalRaw = quickTypeOnWhole ? (quickStartingCountWholeDraft === "" ? NaN : Number(quickStartingCountWholeDraft)) : 0;
@@ -8289,8 +8290,9 @@ function AppInner() {
                         by the user as unwanted. Let them tap the field themselves. */}
                     <input ref={countRef} type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={max} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
-                    <div className="date-time-row" style={{ marginBottom: 10 }}>
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: quickStartingCountError && quickErrorField === `${key}-count` ? 0 : 10 }} />
+                    {quickStartingCountError && quickErrorField === `${key}-count` && <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>}
+                    <div className="date-time-row" style={{ marginBottom: quickStartingCountError && quickErrorField === `${key}-date` ? 0 : 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาค (ครั้งล่าสุด)</label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
@@ -8308,6 +8310,7 @@ function AppInner() {
                         </div>
                       </div>
                     </div>
+                    {quickStartingCountError && quickErrorField === `${key}-date` && <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>}
                     <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                     <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
@@ -8323,7 +8326,7 @@ function AppInner() {
               </div>
             ))}
 
-            {quickStartingCountError && (
+            {quickStartingCountError && !/^(whole|component)-(count|date)$/.test(quickErrorField) && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
                 <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{quickStartingCountError}</div>
