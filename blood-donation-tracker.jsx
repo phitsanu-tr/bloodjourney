@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.332";
+const APP_VERSION = "1.0.333";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3078,7 +3078,6 @@ function AppInner() {
     const timeoutId = setTimeout(() => {
       if (settled || soft) return;
       settled = true;
-      setError("ใช้เวลาโหลดนานผิดปกติ ลองใหม่อีกครั้ง");
       setPhase("error");
     }, 8000);
     try {
@@ -3428,7 +3427,7 @@ function AppInner() {
         setPhase("app");
       }
     } catch (e) {
-      setError("บันทึกความยินยอมไม่สำเร็จ ลองอีกครั้ง");
+      setError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
     } finally {
       setSaving(false);
     }
@@ -4198,7 +4197,7 @@ function AppInner() {
       // making a wipe indistinguishable from opening the app fresh.
       await load();
     } catch (e) {
-      setError("ลบข้อมูลไม่สำเร็จ ลองอีกครั้ง");
+      setError("ลบไม่สำเร็จ ลองอีกครั้ง");
     } finally {
       setSaving(false);
     }
@@ -5762,10 +5761,10 @@ function AppInner() {
           <AlertTriangle size={28} color="#B3261E" />
           <div style={{ fontSize: 15.5, fontWeight: 700, margin: "14px 0 8px" }}>โหลดข้อมูลไม่สำเร็จ</div>
           <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 22px" }}>
-            {error || "ไม่ต้องกังวล ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้เหมือนเดิม ลองโหลดใหม่อีกครั้ง"}
+            ข้อมูลของคุณยังปลอดภัยอยู่ในเครื่องนี้
           </p>
           <button onClick={load} className="btn-primary" style={{ padding: "12px 26px", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-            ลองใหม่อีกครั้ง
+            ลองใหม่
           </button>
         </div>
       )}
@@ -5817,7 +5816,12 @@ function AppInner() {
             </span>
           </label>
 
-          {error && <div style={{ color: "#B3261E", fontSize: 13, marginBottom: 12 }} role="alert">{error}</div>}
+          {error && (
+            <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
+              <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{error}</div>
+            </div>
+          )}
 
           <button disabled={!checkedConsent || saving} onClick={giveConsent} className="btn-primary"
             style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 15, fontWeight: 600,
@@ -7385,7 +7389,6 @@ function AppInner() {
             </>
           )}
 
-          {error && <div style={{ color: "#B3261E", fontSize: 12.5, marginTop: 10 }} role="alert">{error}</div>}
         </div>
       )}
 
@@ -7445,13 +7448,16 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="บันทึกข้อมูลถาวรไม่ได้ตอนนี้" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 80, padding: 20 }}>
           <div style={{ position: "relative", background: "#FFFFFF", borderRadius: 16, padding: "20px 18px", maxWidth: 300, textAlign: "center" }}>
             <DialogX onClick={() => setShowStorageDegradedModal(false)} style={{ position: "absolute", top: 14, right: 14 }} />
-            <div style={{ fontSize: 28, marginBottom: 8 }} aria-hidden="true">⚠️</div>
+            <div aria-hidden="true" style={{ width: 48, height: 48, borderRadius: "50%", background: "#FBEAE8", margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center" }}><AlertTriangle size={24} color="#B3261E" /></div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>บันทึกข้อมูลถาวรไม่ได้ตอนนี้</div>
             <div style={{ fontSize: 13, color: "#7A6360", lineHeight: 1.6, marginBottom: 14 }}>
               อุปกรณ์นี้บล็อกการบันทึกข้อมูล (เช่น โหมดส่วนตัวของเบราว์เซอร์ หรือพื้นที่เก็บข้อมูลเต็ม) ข้อมูลที่บันทึกในเซสชันนี้จะหายไปเมื่อปิดแอป แนะนำให้ส่งออกไฟล์สำรองก่อนปิด
             </div>
             <button onClick={() => setShowStorageDegradedModal(false)} className="btn-primary" style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
               เข้าใจแล้ว
+            </button>
+            <button onClick={() => { setShowStorageDegradedModal(false); openBackupRestore("export"); }} style={{ background: "none", border: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", marginTop: 10, padding: "4px 8px" }}>
+              ส่งออกไฟล์สำรอง
             </button>
           </div>
         </div>
@@ -8332,7 +8338,7 @@ function AppInner() {
               <button onClick={() => openBackupRestore("export")} disabled={importing} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 13.5, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Download size={16} color="#9A3B33" /> สำรอง/กู้คืนข้อมูล
               </button>
-              <button onClick={() => setShowReset(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit" }}>
+              <button onClick={() => { setError(""); setShowReset(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", cursor: "pointer", fontSize: 13.5, color: "#B3261E", fontFamily: "inherit" }}>
                 <Trash2 size={16} color="#B3261E" /> ลบข้อมูลทั้งหมด
               </button>
             </div>
@@ -8468,6 +8474,7 @@ function AppInner() {
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               ประวัติการบริจาคทั้งหมด {donations.length} รายการ{startingCountNum > 0 ? ` และยอดสะสมยกมา ${startingCountNum} ครั้ง` : ""} จะถูกลบอย่างถาวรและกู้คืนไม่ได้
             </p>
+            {error && <div style={{ margin: "-6px 0 14px" }}><FieldError>{error}</FieldError></div>}
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowReset(false)} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={resetAll} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
