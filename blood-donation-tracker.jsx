@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.336";
+const APP_VERSION = "1.0.337";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4885,7 +4885,7 @@ function AppInner() {
       // (see confirmImport) or the hub is closed/reset for a fresh entry.
       await processImportedText(text);
     } catch (err) {
-      setPasteImportError('นำเข้าไม่ได้ ใช้ข้อความจากปุ่ม "คัดลอกข้อความ" ของแอปนี้');
+      setPasteImportError('ข้อความที่วางไม่ถูกต้อง ลองคัดลอกใหม่จากแอปนี้');
     } finally {
       setImporting(false);
     }
@@ -8812,7 +8812,7 @@ function AppInner() {
                 {!exportProtect && (
                   <div role="note" style={{ display: "flex", gap: 10, background: "#FFF3DC", border: "1px solid #F2D9A4", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#6B4A00", marginBottom: 12 }}>
                     <AlertTriangle size={17} color="#B7791F" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้ไม่ได้เข้ารหัส</b><br />ใครเปิดไฟล์ก็เห็นข้อมูลทั้งหมด</div>
+                    <div><b style={{ color: "#3A2C29" }}>ไฟล์ไม่ได้เข้ารหัส</b><br />ข้อมูลเปิดอ่านได้ทันที เก็บให้ปลอดภัย อย่าส่งต่อ</div>
                   </div>
                 )}
 
