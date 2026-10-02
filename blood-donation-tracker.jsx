@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.320";
+const APP_VERSION = "1.0.321";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -255,7 +255,7 @@ const MIN_BACKUP_REMINDER_GAP = 1;
 const MAX_BACKUP_REMINDER_GAP = 50;
 const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
 const DEFAULT_DONATION_TYPE = "whole";
-const TYPE_REQUIRED_MESSAGE = "กรุณาระบุประเภทการบริจาค";
+const TYPE_REQUIRED_MESSAGE = "ระบุประเภทการบริจาค";
 export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
@@ -2729,7 +2729,7 @@ function AppInner() {
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
-  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาคโลหิต") -- previously the error
+  // field when it's the reason validation failed ("ระบุวันที่บริจาคโลหิต") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
   // the actual empty/invalid field, so on a longer form it was easy to miss
   // which field the error was even about (reported directly by the user).
@@ -3915,7 +3915,7 @@ function AppInner() {
     // a donor who's done both turns on both, each with its own total and
     // last-donation date/time/location/note.
     if (!quickTypeOnWhole && !quickTypeOnComponent) {
-      setQuickStartingCountError("กรุณาเลือกอย่างน้อย 1 ประเภทที่เคยบริจาคโลหิต");
+      setQuickStartingCountError("เลือกอย่างน้อย 1 ประเภทที่เคยบริจาคโลหิต");
       return;
     }
     const wholeTotalRaw = quickTypeOnWhole ? (quickStartingCountWholeDraft === "" ? NaN : Number(quickStartingCountWholeDraft)) : 0;
@@ -3943,7 +3943,7 @@ function AppInner() {
         return;
       }
       if (!f.date) {
-        setQuickStartingCountError("กรุณาระบุวันที่บริจาค (ครั้งล่าสุด)");
+        setQuickStartingCountError("ระบุวันที่บริจาค (ครั้งล่าสุด)");
         setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
@@ -4025,7 +4025,7 @@ function AppInner() {
     // produce the latter two (no typing, future days disabled), so this is only a safety net.
     const selected = form.date ? new Date(form.date) : null;
     if (!selected || Number.isNaN(selected.getTime()) || selected.setHours(0,0,0,0) > startOfToday().getTime()) {
-      setFormError("กรุณาระบุวันที่บริจาคโลหิต");
+      setFormError("ระบุวันที่บริจาคโลหิต");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -5472,13 +5472,13 @@ function AppInner() {
     });
   }, [form.date, donations, editingId]);
 
-  const sameDateConflictMessage = "วันที่นี้มีรายการบันทึกแล้ว กรุณาระบุวันที่อื่น";
+  const sameDateConflictMessage = "วันที่นี้มีรายการบันทึกแล้ว เลือกวันอื่น";
 
   // Whether the currently-shown formError is the date-specific
   // validation message --
   // drives the date field's red-border highlight below, so the field itself
   // stays neutral for errors that have nothing to do with it.
-  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาคโลหิต";
+  const dateFieldHasError = formError === "ระบุวันที่บริจาคโลหิต";
 
   // Only relevant while editing an existing record — disables the save
   // button when nothing has actually changed from what was opened.
@@ -8138,7 +8138,7 @@ function AppInner() {
                       setForm(f => ({ ...f, date }));
                       // Picking a date resolves every date-related message (empty / same-day
                       // conflict) -- clear it right away so the red edge and alert don't linger after the fix.
-                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาคโลหิต" || e === sameDateConflictMessage) ? "" : e));
+                      setFormError(e => ((e === "ระบุวันที่บริจาคโลหิต" || e === sameDateConflictMessage) ? "" : e));
                     }}
                     height={44} fontSize={14} />
                 </div>
