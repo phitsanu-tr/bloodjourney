@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.337";
+const APP_VERSION = "1.0.338";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2677,6 +2677,8 @@ function AppInner() {
     return () => clearTimeout(t);
   }, [showProfile, profileOpenChoice]);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [formSaveError, setFormSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [viewDonationId, setViewDonationId] = useState(null);
   // Which history card's overflow (⋮) action menu is currently open — replaces
   // the previous always-visible edit/delete icon pair to reduce visual
@@ -3446,13 +3448,17 @@ function AppInner() {
   // reload. Chaining ensures only one write is ever in flight at a time, in
   // call order, so this can't happen.
   const donationsWriteQueueRef = useRef(Promise.resolve());
-  const saveDonations = (next) => {
+  // strict: the caller shows its own in-page error, so a failed write rolls the
+  // optimistic state back and rejects instead of raising the toast.
+  const saveDonations = (next, { strict = false } = {}) => {
+    const prev = donations;
     setDonations(next);
-    donationsWriteQueueRef.current = donationsWriteQueueRef.current
+    const write = donationsWriteQueueRef.current
       .then(() => storage.set("donations", JSON.stringify(next)))
-      .then(checkStorageHealth)
-      .catch(() => showToast("error", "บันทึกไม่สำเร็จ ลองอีกครั้ง"));
-    return donationsWriteQueueRef.current;
+      .then(checkStorageHealth);
+    donationsWriteQueueRef.current = write.catch(() => {});
+    if (strict) return write.catch((e) => { setDonations(prev); throw e; });
+    return write.catch(() => showToast("error", "บันทึกไม่สำเร็จ ลองอีกครั้ง"));
   };
 
   // Given the previous and next starting-count values, decides the
@@ -3817,6 +3823,7 @@ function AppInner() {
     setShowForm(false);
     setEditingId(null);
     setFormError("");
+    setFormSaveError("");
     setEditSnapshot(null);
   };
 
@@ -4001,6 +4008,7 @@ function AppInner() {
       return;
     }
     setFormError("");
+    setFormSaveError("");
     setSaving(true);
     try {
       const cleanedLocation = form.location.trim().slice(0, MAX_LOCATION_LEN);
@@ -4025,22 +4033,32 @@ function AppInner() {
         next = [...donations, record];
       }
       next = [...next].sort((a, b) => new Date(b.date) - new Date(a.date));
-      await saveDonations(next);
+      await saveDonations(next, { strict: true });
       showToast("success", editingId ? "แก้ไขรายการแล้ว" : "บันทึกรายการแล้ว");
       closeForm();
+    } catch (e) {
+      setFormSaveError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
     } finally {
       setSaving(false);
     }
   };
 
-  const requestDeleteDonation = (id) => setConfirmDeleteId(id);
+  const requestDeleteDonation = (id) => { setDeleteError(""); setConfirmDeleteId(id); };
 
   const confirmDeleteDonation = async () => {
     const id = confirmDeleteId;
     if (!id) return;
-    setConfirmDeleteId(null);
-    await saveDonations(donations.filter(d => d.id !== id));
-    showToast("success", "ลบรายการแล้ว");
+    setDeleteError("");
+    setSaving(true);
+    try {
+      await saveDonations(donations.filter(d => d.id !== id), { strict: true });
+      setConfirmDeleteId(null);
+      showToast("success", "ลบรายการแล้ว");
+    } catch (e) {
+      setDeleteError("ลบไม่สำเร็จ ลองอีกครั้ง");
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Inline edit/delete for the starting-count summary card in the history
@@ -8176,7 +8194,8 @@ function AppInner() {
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{formError}</div>
               </div>
             )}
-            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+            {formSaveError && <div style={{ marginTop: 4 }}><FieldError>{formSaveError}</FieldError></div>}
+            <div style={{ display: "flex", gap: 10, marginTop: formSaveError ? 10 : 14 }}>
               <button onClick={cancelForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
                 {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึก")}
@@ -8642,9 +8661,10 @@ function AppInner() {
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               รายการนี้จะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้
             </p>
+            {deleteError && <div style={{ margin: "-10px 0 14px" }}><FieldError>{deleteError}</FieldError></div>}
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setConfirmDeleteId(null)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={confirmDeleteDonation} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={confirmDeleteDonation} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 ลบรายการ
               </button>
             </div>
