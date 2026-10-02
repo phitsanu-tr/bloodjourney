@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.306";
+const APP_VERSION = "1.0.307";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3929,7 +3929,7 @@ function AppInner() {
         return;
       }
       if (!f.date) {
-        setQuickStartingCountError("กรุณาระบุวันที่บริจาคโลหิต (ครั้งล่าสุด)");
+        setQuickStartingCountError("กรุณาระบุวันที่บริจาค (ครั้งล่าสุด)");
         setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
@@ -8293,7 +8293,7 @@ function AppInner() {
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
                       <div style={{ minWidth: 0 }}>
-                        <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
+                        <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาค (ครั้งล่าสุด)</label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
                           <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
