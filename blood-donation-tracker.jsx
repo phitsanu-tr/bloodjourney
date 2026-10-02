@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.300";
+const APP_VERSION = "1.0.301";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7778,7 +7778,7 @@ function AppInner() {
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: 18, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: 18, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {bt}
                                     </button>
                                   );
@@ -7804,7 +7804,7 @@ function AppInner() {
                                         commitProfile({ bloodRh: v }, "blood");
                                         if (bloodType) closeBloodSoon(true);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
                                   );
@@ -7869,7 +7869,7 @@ function AppInner() {
                                             if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key);
                                             closeRowSoon(r.key, o.v !== r.current);
                                           }}
-                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 500, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
+                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                           {o.label}
                                         </button>
                                       );
@@ -8165,7 +8165,7 @@ function AppInner() {
                         if (on) { setForm(f => ({ ...f, type: "" })); return; }
                         setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e));
                       }}
-                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, whiteSpace: "nowrap", fontWeight: on ? 600 : 500, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
+                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, whiteSpace: "nowrap", fontWeight: on ? 600 : 400, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                       {DONATION_TYPE_LABELS[t]}
                     </button>
                   );
@@ -8766,7 +8766,7 @@ function AppInner() {
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "export" ? "#F3E7E4" : "transparent",
                   color: backupRestoreTab === "export" ? "#8A2F28" : "#7A6360",
-                  fontSize: 13.5, fontWeight: backupRestoreTab === "export" ? 600 : 500,
+                  fontSize: 13.5, fontWeight: backupRestoreTab === "export" ? 600 : 400,
                   boxShadow: "none",
                 }}>
                 สำรองข้อมูล
@@ -8778,7 +8778,7 @@ function AppInner() {
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "import" ? "#F3E7E4" : "transparent",
                   color: backupRestoreTab === "import" ? "#8A2F28" : "#7A6360",
-                  fontSize: 13.5, fontWeight: backupRestoreTab === "import" ? 600 : 500,
+                  fontSize: 13.5, fontWeight: backupRestoreTab === "import" ? 600 : 400,
                   boxShadow: "none",
                 }}>
                 กู้คืนข้อมูล
