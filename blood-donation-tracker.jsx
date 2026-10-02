@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.315";
+const APP_VERSION = "1.0.316";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1457,6 +1457,17 @@ function FadeScroll({ children, style, scrollRef }) {
 
 // Close "✕" for dialogs that had none (confirm dialogs, storage warning): same icon and
 // colour as the profile/settings ✕, with a roomier tap area.
+// Field-level error: sits right under the field it is about (icon + red 12px text, no box). The bottom box in the
+// donation form is kept only for errors that are not about one field (e.g. a failed save).
+function FieldError({ children }) {
+  return (
+    <div role="alert" style={{ display: "flex", gap: 6, alignItems: "flex-start", margin: "8px 0 0", fontSize: 12, lineHeight: 1.5, color: "#B3261E" }}>
+      <AlertTriangle size={13} color="#B3261E" style={{ flexShrink: 0, marginTop: 3 }} />
+      <span>{children}</span>
+    </div>
+  );
+}
+
 function DialogX({ onClick, disabled, style }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled} aria-label="ปิด"
@@ -8153,7 +8164,9 @@ function AppInner() {
               </div>
             </div>
             {sameDateConflict ? (
-              <div style={{ fontSize: 11.5, color: "#B3261E", lineHeight: 1.6, margin: "8px 0 0" }} role="alert">{sameDateConflictMessage}</div>
+              <FieldError>{sameDateConflictMessage}</FieldError>
+            ) : dateFieldHasError ? (
+              <FieldError>{formError}</FieldError>
             ) : closeGapWarning && (
               <div style={{ fontSize: 11.5, color: "#9C5515", lineHeight: 1.6, margin: "8px 0 0" }}>{closeGapWarning}</div>
             )}
@@ -8185,6 +8198,7 @@ function AppInner() {
                   );
                 })}
               </div>
+              {formError === TYPE_REQUIRED_MESSAGE && <FieldError>{formError}</FieldError>}
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
@@ -8201,7 +8215,7 @@ function AppInner() {
               <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{form.note.length}/{MAX_NOTE_LEN}</div>
             </div>
             </div>
-            {formError && (
+            {formError && !dateFieldHasError && formError !== TYPE_REQUIRED_MESSAGE && formError !== sameDateConflictMessage && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
                 <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{formError}</div>
