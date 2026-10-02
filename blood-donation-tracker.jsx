@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.325";
+const APP_VERSION = "1.0.326";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3448,7 +3448,7 @@ function AppInner() {
     donationsWriteQueueRef.current = donationsWriteQueueRef.current
       .then(() => storage.set("donations", JSON.stringify(next)))
       .then(checkStorageHealth)
-      .catch(() => {}); // storage.set never throws (it falls back to memory + the "storage degraded" dialog)
+      .catch(() => showToast("error", "บันทึกข้อมูลไม่สำเร็จ ลองอีกครั้ง"));
     return donationsWriteQueueRef.current;
   };
 
@@ -3760,7 +3760,7 @@ function AppInner() {
       clearTimeout(profileSavedTimerRef.current);
       profileSavedTimerRef.current = setTimeout(() => setProfileSavedKey(null), 1400);
     } catch (e) {
-      // Storage failures never reach here (see storage.set); they surface via the "บันทึกข้อมูลถาวรไม่ได้ตอนนี้" dialog.
+      setProfileInlineError(er => ({ ...er, [key]: "บันทึกไม่สำเร็จ ลองอีกครั้ง" }));
     }
   };
 
@@ -4005,7 +4005,8 @@ function AppInner() {
       setShowStartingCountQuickEntry(false);
       showToast("success", "บันทึกข้อมูลการบริจาคแล้ว");
     } catch (e) {
-      // Storage failures never reach here (see storage.set); they surface via the "บันทึกข้อมูลถาวรไม่ได้ตอนนี้" dialog.
+      setQuickStartingCountError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
+      setQuickErrorField("");
     } finally {
       setSaving(false);
     }
@@ -4131,7 +4132,7 @@ function AppInner() {
       setEditingStartingCount(false);
       showToast("success", "แก้ไขยอดสะสมยกมาแล้ว");
     } catch (e) {
-      // Storage failures never reach here (see storage.set); they surface via the "บันทึกข้อมูลถาวรไม่ได้ตอนนี้" dialog.
+      setStartingCountEditError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
     }
   };
 
