@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.338";
+const APP_VERSION = "1.0.339";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2678,6 +2678,11 @@ function AppInner() {
   }, [showProfile, profileOpenChoice]);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [formSaveError, setFormSaveError] = useState("");
+  const [importConfirmError, setImportConfirmError] = useState("");
+  const [importSaving, setImportSaving] = useState(false);
+  const [startCountDeleteError, setStartCountDeleteError] = useState("");
+  const [clearProfileError, setClearProfileError] = useState("");
+  const [photoError, setPhotoError] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [viewDonationId, setViewDonationId] = useState(null);
   // Which history card's overflow (⋮) action menu is currently open — replaces
@@ -3512,7 +3517,9 @@ function AppInner() {
   // Routing every profile write through this one queued function closes
   // that gap the same way it was closed for uiMeta and donations.
   const profileWriteQueueRef = useRef(Promise.resolve());
-  const persistProfile = (payload) => {
+  // strict: the caller shows its own in-page error, so the returned promise rejects
+  // when the write fails (the queue itself is never left rejected).
+  const persistProfile = (payload, { strict = false } = {}) => {
     // Every caller passes the current donorType from state, which is only
     // ever non-empty once the donor picked it (see the load() migration), so
     // the flag can be derived here instead of threading it through each call.
@@ -3523,10 +3530,10 @@ function AppInner() {
     // to reset the state to "general", so the next save marked it as picked.
     const { donorTypeSet: _oldFlag, ...clean } = { ...profileExtrasRef.current, ...rest };
     const withFlag = { ...clean, donorTypePicked: payload.donorType === "general" || payload.donorType === "monk" };
-    profileWriteQueueRef.current = profileWriteQueueRef.current
-      .then(() => storage.set("profile", JSON.stringify(withFlag)))
-      .catch(() => {});
-    return profileWriteQueueRef.current;
+    const write = profileWriteQueueRef.current
+      .then(() => storage.set("profile", JSON.stringify(withFlag)));
+    profileWriteQueueRef.current = write.catch(() => {});
+    return strict ? write : profileWriteQueueRef.current;
   };
 
   const updateCycleDays = (raw) => {
@@ -3625,7 +3632,7 @@ function AppInner() {
       startingCountWhole: Number(startingCountWhole) || 0,
       startingCountComponent: Number(startingCountComponent) || 0,
       startingCountCreatedAt, startingCountUpdatedAt,
-    });
+    }, { strict: true });
     setPhoto(nextPhoto);
   };
 
@@ -3643,8 +3650,9 @@ function AppInner() {
     const editingInModal = false;
     const editSession = profileEditSessionRef.current;
     setShowPhotoMenu(false);
+    setPhotoError("");
     if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || "")) {
-      showToast("error", "ไฟล์รูปแบบ HEIC/HEIF เบราว์เซอร์นี้เปิดไม่ได้ — ลองเปลี่ยนกล้องมือถือให้ถ่ายเป็น JPEG หรือเลือกรูปชนิด JPEG/PNG แทน");
+      setPhotoError("เบราว์เซอร์นี้เปิดไฟล์ HEIC ไม่ได้ ลองเลือก JPG หรือ PNG");
       return;
     }
     setPhotoBusy(true);
@@ -3663,7 +3671,7 @@ function AppInner() {
       }
     } catch (err) {
       console.error("[BloodJourney] photo upload failed:", file && file.type, err);
-      showToast("error", "อัปโหลดรูปไม่สำเร็จ — ไฟล์นี้อาจเป็นชนิดที่เบราว์เซอร์นี้เปิดไม่ได้ (เช่น HEIC) ลองเลือกรูปอื่นหรือถ่ายใหม่");
+      setPhotoError("อัปโหลดรูปไม่สำเร็จ ลองเลือกไฟล์ JPG หรือ PNG");
     } finally {
       setPhotoBusy(false);
     }
@@ -3671,12 +3679,13 @@ function AppInner() {
 
   const removePhoto = async () => {
     setShowPhotoMenu(false);
+    setPhotoError("");
     setPhotoBusy(true);
     try {
       await persistPhoto("");
       showToast("success", "ลบรูปโปรไฟล์แล้ว");
     } catch (err) {
-      showToast("error", "ลบรูปไม่สำเร็จ ลองอีกครั้ง");
+      setPhotoError("ลบรูปไม่สำเร็จ ลองอีกครั้ง");
     } finally {
       setPhotoBusy(false);
     }
@@ -3709,6 +3718,7 @@ function AppInner() {
   // the modal closed.
   const closeProfile = () => {
     setShowPhotoMenu(false);
+    setPhotoError("");
     setProfileOpenChoice(null);
     setShowProfile(false);
     profileOpenerRef.current?.focus?.();
@@ -3973,8 +3983,15 @@ function AppInner() {
       }
       const nextDonations = [...donations, ...newRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: priorWhole, startingCountComponent: priorComponent, startingCountCreatedAt: stampedAt, startingCountUpdatedAt: stampedAt });
-      await saveDonations(nextDonations);
+      const prevDonations = donations;
+      await saveDonations(nextDonations, { strict: true });
+      try {
+        await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: priorWhole, startingCountComponent: priorComponent, startingCountCreatedAt: stampedAt, startingCountUpdatedAt: stampedAt }, { strict: true });
+      } catch (e) {
+        // Keep the two stores consistent: undo the donations write, then report.
+        saveDonations(prevDonations).catch(() => {});
+        throw e;
+      }
 
       setStartingCountWhole(priorWhole ? String(priorWhole) : "");
       setStartingCountComponent(priorComponent ? String(priorComponent) : "");
@@ -4125,25 +4142,31 @@ function AppInner() {
     }
   };
 
-  const requestDeleteStartingCount = () => setConfirmDeleteStartingCount(true);
+  const requestDeleteStartingCount = () => { setStartCountDeleteError(""); setConfirmDeleteStartingCount(true); };
 
   const confirmDeleteStartingCountNow = async () => {
-    setConfirmDeleteStartingCount(false);
+    setStartCountDeleteError("");
+    setSaving(true);
     try {
-      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: 0, startingCountComponent: 0, startingCountCreatedAt: "", startingCountUpdatedAt: "" });
+      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: 0, startingCountComponent: 0, startingCountCreatedAt: "", startingCountUpdatedAt: "" }, { strict: true });
       setStartingCountWhole("");
       setStartingCountComponent("");
       setStartingCountCreatedAt("");
       setStartingCountUpdatedAt("");
+      setConfirmDeleteStartingCount(false);
       showToast("success", "ลบยอดสะสมยกมาแล้ว");
     } catch (e) {
-      showToast("error", "ลบไม่สำเร็จ ลองอีกครั้ง");
+      setStartCountDeleteError("ลบไม่สำเร็จ ลองอีกครั้ง");
+    } finally {
+      setSaving(false);
     }
   };
 
   // Clears only the profile fields (name, photo, birth year, sex, height, weight, blood group, Rh, donor type, donor id).
   // Donations and the carried-over starting counts stay.
   const clearProfileData = async () => {
+    setClearProfileError("");
+    setSaving(true);
     try {
       await persistProfile({
         nickname: "", photo: "", weight: "", bloodType: "", donorType: "",
@@ -4152,16 +4175,18 @@ function AppInner() {
         startingCountWhole: Number(startingCountWhole) || 0,
         startingCountComponent: Number(startingCountComponent) || 0,
         startingCountCreatedAt, startingCountUpdatedAt,
-      });
+      }, { strict: true });
       setNickname(""); setPhoto(""); setWeight(""); setBloodType(""); setDonorType("");
       setBirthYear(""); setBirthYearApprox(false); setGender(""); setHeight(""); setDonorId(""); setBloodRh("");
       setProfileInline({ first: "", last: "", birthYear: "", weight: "", height: "", donorId: "" });
       setProfileInlineError({}); setProfileOpenChoice(null); setPickerPreview(null); setProfileSavedKey(null);
+      setPhotoError("");
       setShowClearProfile(false);
       showToast("success", "ลบข้อมูลโปรไฟล์แล้ว");
     } catch (e) {
-      setShowClearProfile(false);
-      showToast("error", "ลบข้อมูลไม่สำเร็จ ลองอีกครั้ง");
+      setClearProfileError("ลบไม่สำเร็จ ลองอีกครั้ง");
+    } finally {
+      setSaving(false);
     }
   };
   const resetAll = async () => {
@@ -4935,6 +4960,7 @@ function AppInner() {
   };
 
   const cancelImport = () => {
+    setImportConfirmError("");
     setPendingImport(null);
     // The confirm dialog only ever appears after processImportedText closed
     // the backup/restore hub (see there) — on cancel, reopen it on the same
@@ -4946,7 +4972,16 @@ function AppInner() {
   const confirmImport = async () => {
     if (!pendingImport) return;
     const merged = [...donations, ...pendingImport.incoming].sort((a, b) => new Date(b.date) - new Date(a.date));
-    await saveDonations(merged);
+    setImportConfirmError("");
+    setImportSaving(true);
+    const prevDonations = donations;
+    try {
+      await saveDonations(merged, { strict: true });
+    } catch (e) {
+      setImportConfirmError("นำเข้าไม่สำเร็จ ลองอีกครั้ง");
+      setImportSaving(false);
+      return;
+    }
     const fill = pendingImport.profileFieldsToFill || {};
     if (Object.keys(fill).length > 0) {
       const nextProfile = {
@@ -4962,6 +4997,14 @@ function AppInner() {
         startingCountCreatedAt,
         startingCountUpdatedAt,
       };
+      try {
+        await persistProfile(nextProfile, { strict: true });
+      } catch (e) {
+        saveDonations(prevDonations).catch(() => {});
+        setImportConfirmError("นำเข้าไม่สำเร็จ ลองอีกครั้ง");
+        setImportSaving(false);
+        return;
+      }
       if ("nickname" in fill) setNickname(fill.nickname);
       if ("birthYear" in fill) { setBirthYear(fill.birthYear); setBirthYearApprox(!!fill.birthYearApprox); }
       if ("gender" in fill) setGender(fill.gender);
@@ -4972,13 +5015,13 @@ function AppInner() {
       if ("weight" in fill) setWeight(fill.weight);
       if ("bloodType" in fill) setBloodType(fill.bloodType);
       if ("donorType" in fill) setDonorType(fill.donorType);
-      persistProfile(nextProfile);
     }
     showToast("success", `นำเข้าสำเร็จ — เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ`);
     setShowBackupRestore(false);
     setShowExportPreview(false);
     setPasteImportText("");
     setPendingImport(null);
+    setImportSaving(false);
   };
 
   const needsBackupReminder = donations.length > 0
@@ -7693,6 +7736,7 @@ function AppInner() {
                   ) : null}
                 </div>
               </div>
+              {photoError && <div style={{ margin: "-10px 0 16px" }}><FieldError>{photoError}</FieldError></div>}
 
               {/* Two boxes with red group titles (design 2 of profile-boxes-6.html,
                   grouping ก of profile-donorform-designs.html, plus gender and
@@ -7956,7 +8000,7 @@ function AppInner() {
               </div>
 {(nickname || photo || birthYear !== "" || gender || height !== "" || donorId || bloodRh || weight !== "" || bloodType || donorType) && (
                 <div style={{ textAlign: "center", marginTop: 6 }}>
-                  <button onClick={() => { setProfileOpenChoice(null); setShowClearProfile(true); }}
+                  <button onClick={() => { setProfileOpenChoice(null); setClearProfileError(""); setShowClearProfile(true); }}
                     style={{ display: "block", width: "100%", background: "#FFFFFF", border: "1px solid #E3B3AE", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#B3261E", padding: "11px 14px", lineHeight: 1.35 }}>
                     ลบข้อมูลโปรไฟล์
                   </button>
@@ -8321,10 +8365,7 @@ function AppInner() {
             ))}
 
             {quickStartingCountError && !/^(whole|component)-(count|date)$/.test(quickErrorField) && (
-              <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
-                <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{quickStartingCountError}</div>
-              </div>
+              <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>
             )}
             {(quickTypeOnWhole || quickTypeOnComponent) && (
             <div style={{ display: "flex", gap: 10 }}>
@@ -8474,9 +8515,10 @@ function AppInner() {
                 </div>
               ))}
             </div>
+            {clearProfileError && <div style={{ margin: "-8px 0 12px" }}><FieldError>{clearProfileError}</FieldError></div>}
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowClearProfile(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>ลบข้อมูล</button>
+              <button onClick={clearProfileData} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>ลบข้อมูล</button>
             </div>
           </div>
         </div>
@@ -8682,9 +8724,10 @@ function AppInner() {
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               จำนวนครั้งที่เคยบริจาคมาก่อนจะถูกล้างเป็น 0 (เหมือนยังไม่เคยกรอกมาก่อน) — กรอกใหม่ได้ทุกเมื่อ ไม่กระทบรายการบริจาคที่บันทึกในแอปโดยตรง
             </p>
+            {startCountDeleteError && <div style={{ margin: "-10px 0 14px" }}><FieldError>{startCountDeleteError}</FieldError></div>}
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setConfirmDeleteStartingCount(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={confirmDeleteStartingCountNow} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={confirmDeleteStartingCountNow} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 ลบยอดสะสม
               </button>
             </div>
@@ -8725,14 +8768,15 @@ function AppInner() {
                 <br /><span style={{ fontSize: 11.5, color: "#B39B96" }}>(ช่องที่คุณกรอกไว้แล้วจะไม่ถูกเขียนทับ)</span>
               </p>
             )}
+            {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              <button onClick={cancelImport} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button
                 onClick={confirmImport}
-                disabled={pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0}
+                disabled={importSaving || (pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0)}
                 className="btn-primary"
                 style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                นำเข้า
+                {importSaving ? "กำลังนำเข้า..." : "นำเข้า"}
               </button>
             </div>
           </div>
