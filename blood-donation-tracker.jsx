@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.305";
+const APP_VERSION = "1.0.306";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1458,7 +1458,7 @@ function DialogX({ onClick, disabled, style }) {
     <button type="button" onClick={onClick} disabled={disabled} aria-label="ปิด"
       style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: disabled ? "not-allowed" : "pointer", color: "#3A2C29", display: "flex", flexShrink: 0, opacity: disabled ? 0.4 : 1, ...style }}>
       <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
-      <X size={19} />
+      <X size={20} />
     </button>
   );
 }
@@ -5716,6 +5716,11 @@ function AppInner() {
         }
         .date-time-row > * {
           flex: 1;
+          /* a label that wraps to two lines on a narrow phone ("…(ครั้งล่าสุด)") must not push its box below
+             the neighbour's: keep both fields bottom-aligned */
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
         }
         /* Both the date and time fields used to be native <input type="date"/
            "time">, with their value text centered via ::-webkit-datetime-edit*
@@ -6545,7 +6550,7 @@ function AppInner() {
                         animation: filterSheetClosing ? "sheetDown 0.16s cubic-bezier(0.5, 0, 0.9, 0.6) forwards" : "sheetUp 0.22s ease" }}>
                         <div style={{ width: 38, height: 4, borderRadius: 2, background: "#E3C8C3", margin: "0 auto 12px" }} />
                         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>ตัวกรอง</div>
                           <div aria-live="polite" style={{ fontSize: 12, marginLeft: 8, color: shownCount === 0 ? "#B3261E" : "#7A6360", fontWeight: shownCount === 0 ? 600 : 400 }}>
                             {shownCount === 0 ? "ไม่มีรายการ" : `${shownCount} ครั้ง`}
                           </div>
@@ -6559,7 +6564,7 @@ function AppInner() {
                           )}
                           <button onClick={closeFilterSheet} aria-label="ปิด"
                             style={{ marginLeft: "auto", width: 44, height: 44, margin: draftActive ? "-11px -11px -11px 0" : "-11px -11px -11px auto", border: "none", background: "none", color: "#3A2C29", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <X size={19} />
+                            <X size={20} />
                           </button>
                         </div>
                         {hasBothDonationTypes && (
@@ -7474,11 +7479,11 @@ function AppInner() {
           <div style={{ position: "relative", background: "#FFFFFF", borderRadius: 16, padding: "20px 18px", maxWidth: 300, textAlign: "center" }}>
             <DialogX onClick={() => setShowStorageDegradedModal(false)} style={{ position: "absolute", top: 14, right: 14 }} />
             <div style={{ fontSize: 28, marginBottom: 8 }} aria-hidden="true">⚠️</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>บันทึกข้อมูลถาวรไม่ได้ตอนนี้</div>
-            <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, marginBottom: 14 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>บันทึกข้อมูลถาวรไม่ได้ตอนนี้</div>
+            <div style={{ fontSize: 13, color: "#7A6360", lineHeight: 1.6, marginBottom: 14 }}>
               อุปกรณ์นี้บล็อกการบันทึกข้อมูล (เช่น โหมดส่วนตัวของเบราว์เซอร์ หรือพื้นที่เก็บข้อมูลเต็ม) ข้อมูลที่บันทึกในเซสชันนี้จะหายไปเมื่อปิดแอป แนะนำให้ส่งออกไฟล์สำรองก่อนปิด
             </div>
-            <button onClick={() => setShowStorageDegradedModal(false)} className="btn-primary" style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={() => setShowStorageDegradedModal(false)} className="btn-primary" style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
               เข้าใจแล้ว
             </button>
           </div>
@@ -7633,10 +7638,10 @@ function AppInner() {
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
               <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px" }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
                 <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
-                  <X size={19} />
+                  <X size={20} />
                 </button>
               </div>
               <div ref={profileScrollRef} className="no-scrollbar" onScroll={(e) => { const sc = e.currentTarget.scrollTop > 2; setProfileScrolled(v => (v === sc ? v : sc)); }}
@@ -8011,10 +8016,10 @@ function AppInner() {
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
             <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
                 <button onClick={close} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
-                  <X size={19} />
+                  <X size={20} />
                 </button>
               </div>
               <FadeScroll style={{ padding: "0 22px 22px" }}>
@@ -8074,7 +8079,7 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 4px" }}>
             <div className="date-time-row" style={{ marginBottom: 6 }}>
               <div style={{ minWidth: 0 }}>
-                <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
+                <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>วันที่บริจาคโลหิต</label>
                 {/* lang="en-US" pins iOS Safari's native date-picker display to the
                     Gregorian calendar. Without it, a device set to Thailand region
                     renders a broken hybrid like "18 Sep BE 2569" (English month +
@@ -8133,7 +8138,7 @@ function AppInner() {
                 </div>
               </div>
               <div style={{ minWidth: 0 }}>
-                <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                 <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                   <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาคโลหิต"
                     onChange={(time) => setForm(f => ({ ...f, time }))}
@@ -8147,7 +8152,7 @@ function AppInner() {
               <div style={{ fontSize: 11.5, color: "#9C5515", lineHeight: 1.6, margin: "8px 0 0" }}>{closeGapWarning}</div>
             )}
             <div style={{ marginTop: 14, marginBottom: 14 }}>
-              <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
+              <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>ประเภทการบริจาค</label>
               {/* Same segmented control as the profile pickers / backup tabs: white outlined track, pale-pink pill on
                   the chosen type (slides between the two). Nothing is chosen by default; a missing type turns the
                   track's edge red. */}
@@ -8176,14 +8181,14 @@ function AppInner() {
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+              <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
               <input type="text" value={form.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                 onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{form.location.length}/{MAX_LOCATION_LEN}</div>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+              <label style={{ fontSize: 13, color: "#7A6360", display: "block", marginBottom: 6 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
               <textarea value={form.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                 onChange={(e) => setForm(f => ({ ...f, note: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
@@ -8197,8 +8202,8 @@ function AppInner() {
               </div>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={cancelForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
+              <button onClick={cancelForm} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={submitDonation} disabled={saving || sameDateConflict || editFormUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (saving || sameDateConflict || editFormUnchanged) ? "not-allowed" : "pointer", opacity: (sameDateConflict || editFormUnchanged) ? 0.55 : 1 }}>
                 {saving ? "กำลังบันทึก..." : (editingId ? "บันทึกการแก้ไข" : "บันทึก")}
               </button>
             </div>
@@ -8210,10 +8215,10 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="เริ่มบันทึกการบริจาคเลือด" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>นี่คือการบริจาคโลหิตครั้งใด?</div>
-              <button onClick={() => setShowOnboardingChoice(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>นี่คือการบริจาคโลหิตครั้งใด?</div>
+              <button onClick={() => setShowOnboardingChoice(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
-            <p style={{ fontSize: 12.5, color: "#7A6360", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontSize: 13, color: "#7A6360", lineHeight: 1.6, margin: "0 0 16px" }}>
               เพื่อความถูกต้องในการนับจำนวนครั้ง
             </p>
             <button onClick={chooseFirstDonation}
@@ -8234,11 +8239,11 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
-              <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
+              <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
-            <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontSize: 13, color: "#7A6360", lineHeight: 1.6, margin: "0 0 16px" }}>
               เปิดสวิตช์ของประเภทที่เคยบริจาค แล้วกรอกจำนวนครั้งทั้งหมด (รวมครั้งล่าสุด) และวันที่บริจาคล่าสุด
             </p>
 
@@ -8278,7 +8283,7 @@ function AppInner() {
                 </div>
                 {on && (
                   <div style={{ border: "1px solid #EEDEDA", borderTop: "none", borderRadius: "0 0 12px 12px", padding: "12px 14px 14px", background: "#FFFFFF" }}>
-                    <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>จำนวนครั้งที่เคยบริจาคโลหิตทั้งหมด</label>
+                    <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>จำนวนครั้งที่เคยบริจาคโลหิตทั้งหมด</label>
                     {/* No autoFocus here: this input mounts the instant the switch above
                         is toggled on, and auto-focusing it would pop the keyboard open
                         immediately without the user tapping anything -- reported directly
@@ -8288,31 +8293,31 @@ function AppInner() {
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: 10 }} />
                     <div className="date-time-row" style={{ marginBottom: 10 }}>
                       <div style={{ minWidth: 0 }}>
-                        <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
+                        <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาคโลหิต (ครั้งล่าสุด)</label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
                           <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิตครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
-                            height={42} fontSize={13.5} />
+                            height={42} fontSize={14} />
                         </div>
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                        <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                           <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคโลหิตครั้งล่าสุด"
                             onChange={(time) => setTf(f => ({ ...f, time }))}
-                            height={42} fontSize={13.5} />
+                            height={42} fontSize={14} />
                         </div>
                       </div>
                     </div>
-                    <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                    <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                     <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit" }} />
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
                     <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4, marginBottom: 10 }}>{tf.location.length}/{MAX_LOCATION_LEN}</div>
-                    <label style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginBottom: 5 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                    <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                     <textarea value={tf.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                       onChange={(e) => setTf(f => ({ ...f, note: e.target.value }))}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 13.5, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
                     <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{tf.note.length}/{MAX_NOTE_LEN}</div>
                   </div>
                 )}
@@ -8327,8 +8332,8 @@ function AppInner() {
             )}
             {(quickTypeOnWhole || quickTypeOnComponent) && (
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={backFromStartingCountQuickEntry} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={submitStartingCountQuickEntry} disabled={saving} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={backFromStartingCountQuickEntry} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={submitStartingCountQuickEntry} disabled={saving} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 {saving ? "กำลังบันทึก..." : "บันทึก"}
               </button>
             </div>
@@ -8342,8 +8347,8 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ตั้งค่า</div>
-              <button onClick={() => setShowSettings(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ตั้งค่า</div>
+              <button onClick={() => setShowSettings(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
 
@@ -8418,8 +8423,8 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" onClick={(e) => { if (e.target === e.currentTarget) { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
+              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 22px 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
@@ -8449,7 +8454,7 @@ function AppInner() {
           style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
               <DialogX onClick={() => setShowClearProfile(false)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลโปรไฟล์ของคุณจะถูกลบ และกู้คืนไม่ได้</p>
@@ -8474,8 +8479,8 @@ function AppInner() {
               ))}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowClearProfile(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>ลบข้อมูล</button>
+              <button onClick={() => setShowClearProfile(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={clearProfileData} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>ลบข้อมูล</button>
             </div>
           </div>
         </div>
@@ -8485,15 +8490,15 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบข้อมูลทั้งหมด" onClick={(e) => { if (e.target === e.currentTarget) { if (!saving) setShowReset(false); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลทั้งหมด?</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ลบข้อมูลทั้งหมด?</div>
               <DialogX disabled={saving} onClick={() => setShowReset(false)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               ประวัติการบริจาคทั้งหมด {donations.length} รายการ{startingCountNum > 0 ? ` และยอดสะสมยกมา ${startingCountNum} ครั้ง` : ""} จะถูกลบอย่างถาวรและกู้คืนไม่ได้
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowReset(false)} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={resetAll} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setShowReset(false)} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={resetAll} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 {saving ? "กำลังลบ..." : "ลบข้อมูล"}
               </button>
             </div>
@@ -8532,7 +8537,7 @@ function AppInner() {
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
                   <div style={{ fontSize: 13, color: vd.time ? "#7A6360" : "#A38D89", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
                 </div>
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
@@ -8574,7 +8579,7 @@ function AppInner() {
                   <div style={{ fontSize: 11, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>เคยบริจาคมาแล้ว {displayedStartingCount} ครั้ง</div>
                   <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
                 </div>
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
@@ -8601,16 +8606,16 @@ function AppInner() {
               <button onClick={cancelEditStartingCount} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 14px" }}>
-              <label style={{ fontSize: 12, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
+              <label style={{ fontSize: 13, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {historyTypeFilter !== "component" && <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                 </div>}
                 {historyTypeFilter !== "whole" && <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
                     onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
                     style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
@@ -8635,8 +8640,8 @@ function AppInner() {
               </div>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={cancelEditStartingCount} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={saveStartingCountInline} disabled={startingCountEditUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: startingCountEditUnchanged ? "not-allowed" : "pointer", opacity: startingCountEditUnchanged ? 0.55 : 1 }}>บันทึก</button>
+              <button onClick={cancelEditStartingCount} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={saveStartingCountInline} disabled={startingCountEditUnchanged} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: startingCountEditUnchanged ? "not-allowed" : "pointer", opacity: startingCountEditUnchanged ? 0.55 : 1 }}>บันทึก</button>
             </div>
           </div>
         </div>
@@ -8646,7 +8651,7 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบรายการ" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>
                 {(() => {
                   const target = donations.find(d => d.id === confirmDeleteId);
                   return target ? `ลบรายการบริจาคโลหิตวันที่ ${toBuddhistDate(target.date)} ?` : "ลบรายการนี้ ?";
@@ -8658,8 +8663,8 @@ function AppInner() {
               รายการนี้จะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirmDeleteId(null)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={confirmDeleteDonation} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setConfirmDeleteId(null)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={confirmDeleteDonation} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 ลบรายการ
               </button>
             </div>
@@ -8671,15 +8676,15 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการลบยอดสะสมยกมา" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบยอดสะสมยกมา?</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ลบยอดสะสมยกมา?</div>
               <DialogX onClick={() => setConfirmDeleteStartingCount(false)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 18px" }}>
               จำนวนครั้งที่เคยบริจาคมาก่อนจะถูกล้างเป็น 0 (เหมือนยังไม่เคยกรอกมาก่อน) — กรอกใหม่ได้ทุกเมื่อ ไม่กระทบรายการบริจาคที่บันทึกในแอปโดยตรง
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirmDeleteStartingCount(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
-              <button onClick={confirmDeleteStartingCountNow} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => setConfirmDeleteStartingCount(false)} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={confirmDeleteStartingCountNow} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#B3261E", color: "#FFF7F5", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 ลบยอดสะสม
               </button>
             </div>
@@ -8691,7 +8696,7 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
               <DialogX onClick={cancelImport} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 6px" }}>ข้อมูลนี้มีทั้งหมด {pendingImport.totalInFile} รายการ</p>
@@ -8716,12 +8721,12 @@ function AppInner() {
               </p>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              <button onClick={cancelImport} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 13.5, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={cancelImport} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button
                 onClick={confirmImport}
                 disabled={pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0}
                 className="btn-primary"
-                style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+                style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 นำเข้า
               </button>
             </div>
@@ -8732,7 +8737,7 @@ function AppInner() {
       {showBackupRestore && showPlainWarn && (
         <div role="alertdialog" aria-modal="true" aria-label="ส่งออกแบบไม่เข้ารหัส" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 24 }}>
           <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 380, borderRadius: 18, padding: "20px 18px 16px", boxShadow: "0 8px 30px rgba(58,44,41,0.25)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15.5, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 8 }}>
               <AlertTriangle size={19} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>ส่งออกแบบไม่เข้ารหัส?</span>
               <DialogX onClick={() => { setShowPlainWarn(false); setPlainWarnAck(false); }} />
             </div>
@@ -8742,7 +8747,7 @@ function AppInner() {
               <span>เข้าใจแล้ว และจะเก็บไฟล์ไว้เอง</span>
             </label>
             <button type="button" onClick={() => { setShowPlainWarn(false); setPlainWarnAck(false); }} className="btn-primary"
-              style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
+              style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
               กลับไปใช้รหัสผ่าน
             </button>
             <button type="button" onClick={goPlainExport} disabled={!plainWarnAck}
@@ -8757,8 +8762,8 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, maxHeight: "92vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
-              <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
+              <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll scrollRef={backupDialogRef} style={{ padding: "0 22px 22px" }}>
 
@@ -8847,7 +8852,7 @@ function AppInner() {
                       <div><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b><br />แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</div>
                     </div>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} className="btn-primary"
-                      style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginBottom: 6 }}>
+                      style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 6 }}>
                       ต่อไป: ยืนยันรหัส
                     </button>
                     <button type="button" tabIndex={exportTabIdx} onClick={useOwnExportPassword}
@@ -8930,7 +8935,7 @@ function AppInner() {
                       aria-label={exportProtect ? "ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก" : "ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"}
                       style={{ width: "100%", height: exportProtect ? 76 : 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                     />
-                    <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
+                    <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
                       <Download size={17} /> {exportProtect && exportEncrypting ? "กำลังเข้ารหัส…" : exportProtect ? "ดาวน์โหลดไฟล์" : "ดาวน์โหลดไฟล์ (ไม่เข้ารหัส)"}
                     </button>
                     <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
@@ -8996,7 +9001,7 @@ function AppInner() {
                       </div>
                     )}
                     <button onClick={unlockImport} disabled={!importLockPw || importLockBusy} tabIndex={importTabIdx} className="btn-primary"
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: (!importLockPw || importLockBusy) ? "not-allowed" : "pointer", opacity: (!importLockPw || importLockBusy) ? 0.5 : 1, margin: "14px 0 10px" }}>
+                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: (!importLockPw || importLockBusy) ? "not-allowed" : "pointer", opacity: (!importLockPw || importLockBusy) ? 0.5 : 1, margin: "14px 0 10px" }}>
                       <Unlock size={17} /> {importLockBusy ? "กำลังปลดล็อก…" : "ปลดล็อกและนำเข้า"}
                     </button>
                     <p style={{ fontSize: 11.5, color: "#7A6360", textAlign: "center", lineHeight: 1.6, margin: "0 0 8px" }}>
@@ -9009,7 +9014,7 @@ function AppInner() {
                   </>
                 ) : (
                 <>
-                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14.5, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
+                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
                 <p style={{ flexShrink: 0, fontSize: 12.5, color: "#7A6360", lineHeight: 1.7, margin: "0 0 10px" }}>
@@ -9062,8 +9067,8 @@ function AppInner() {
         <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} onClick={(e) => { if (e.target === e.currentTarget) closeShareCard(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "90vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "20px 20px 10px" }}>
-              <div style={{ fontSize: 15.5, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
-              <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={19} /></button>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
+              <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll style={{ padding: "0 20px 20px" }}>
             <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 8, fontWeight: 500 }}>เลือกขนาดภาพ</div>
@@ -9119,7 +9124,7 @@ function AppInner() {
               <button onClick={openShareCardInExternalBrowser} disabled={!shareCardDataUrl} className="btn-ghost" style={{
                 marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                 padding: "11px 0", borderRadius: 12,
-                fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontSize: 14, fontWeight: 600, cursor: "pointer",
               }}>
                 บันทึกไม่ได้ในนี้? เปิดในเบราว์เซอร์ภายนอก
               </button>
