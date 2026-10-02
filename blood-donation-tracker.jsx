@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.327";
+const APP_VERSION = "1.0.328";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3908,6 +3908,7 @@ function AppInner() {
     setQuickEntryFormComponent({ date: "", time: "", location: "", note: "" });
   };
 
+  const quickSameDateLive = !!(quickTypeOnWhole && quickTypeOnComponent && quickEntryFormWhole.date && quickEntryFormComponent.date && daysBetween(new Date(quickEntryFormWhole.date), new Date(quickEntryFormComponent.date)) === 0);
   const submitStartingCountQuickEntry = async () => {
     // Each donation type has its own on/off switch — only the type(s) the
     // donor turns on get a count field and a required last-donation record.
@@ -8293,10 +8294,10 @@ function AppInner() {
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: quickStartingCountError && quickErrorField === `${key}-count` ? 0 : 10 }} />
                     {quickStartingCountError && quickErrorField === `${key}-count` && <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>}
-                    <div className="date-time-row" style={{ marginBottom: quickStartingCountError && quickErrorField === `${key}-date` ? 0 : 10 }}>
+                    <div className="date-time-row" style={{ marginBottom: (quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? 0 : 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาค (ครั้งล่าสุด)</label>
-                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-date` ? "#B3261E" : "#E3C8C3"}` }}>
+                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${(quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? "#B3261E" : "#E3C8C3"}` }}>
                           <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
                             height={42} fontSize={14} />
@@ -8311,7 +8312,7 @@ function AppInner() {
                         </div>
                       </div>
                     </div>
-                    {quickStartingCountError && quickErrorField === `${key}-date` && <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>}
+                    {(quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) && <div style={{ marginBottom: 10 }}><FieldError>{quickSameDateLive ? "วันที่ของโลหิตรวมกับพลาสมาซ้ำกัน เลือกวันอื่น" : quickStartingCountError}</FieldError></div>}
                     <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                     <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
