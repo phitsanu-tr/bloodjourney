@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.302";
+const APP_VERSION = "1.0.303";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8453,19 +8453,20 @@ function AppInner() {
               <DialogX onClick={() => setShowClearProfile(false)} />
             </div>
             <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลโปรไฟล์ที่คุณกรอกจะถูกลบ และกู้คืนไม่ได้</p>
-            {/* Two columns: what goes / what stays (design 2 of profile-clear-confirm-designs.html, white cards from profile-clear-confirm-boxes.html) */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+            {/* Two stacked white boxes (design D3 of clear-profile-d.html): what goes, then what stays; each list in
+                two columns (one on very narrow phones, so no item wraps) with its mark in a soft tinted circle. */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {[
-                { key: "gone", title: "จะถูกลบ", mark: "✕", color: "#B3261E", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
-                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] },
+                { key: "gone", title: "จะถูกลบ", mark: "✕", color: "#B3261E", tint: "#FBEAE8", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", tint: "#EAF4EE", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] }
               ].map(col => (
-                <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px" }}>
+                <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px 11px" }}>
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: col.color, marginBottom: 6 }}>{col.title}</div>
-                  <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13, lineHeight: 1.55, color: "#3A2C29" }}>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))", columnGap: 10, rowGap: 3, fontSize: 13, lineHeight: 1.55, color: "#3A2C29" }}>
                     {col.items.map(t => (
-                      <li key={t} style={{ display: "flex", gap: 6, padding: "1px 0" }}>
-                        <span aria-hidden="true" style={{ color: col.color, fontSize: 11, lineHeight: "20px", flexShrink: 0 }}>{col.mark}</span>
-                        <span>{t}</span>
+                      <li key={t} style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                        <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: col.tint || "#FBEAE8", color: col.color, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{col.mark}</span>
+                        <span style={{ minWidth: 0 }}>{t}</span>
                       </li>
                     ))}
                   </ul>
