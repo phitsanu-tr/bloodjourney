@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.307";
+const APP_VERSION = "1.0.308";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7711,7 +7711,7 @@ function AppInner() {
                   .prow-edit:focus-within); choices expand under the item. */}
               {groups.map(g => (
                 <div key={g.title} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9A3B33", margin: "0 0 6px 2px" }}>{g.title}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#9A3B33", margin: "0 0 6px 2px" }}>{g.title}</div>
                   <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px" }}>
                 {g.rows.map((r, ri, all) => {
                   // The tint while editing sits 4px inside the row on every side:
@@ -7724,7 +7724,7 @@ function AppInner() {
                       <r.Icon size={17} color="#9A3B33" />
                     </span>
                   );
-                  const labelEl = <span style={{ display: "block", fontSize: 11.5, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
+                  const labelEl = <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>{r.label}{r.unit ? ` (${r.unit})` : ""}</span>;
                   const hint = criteriaHint(r.key);
                   // Year / weight: the full criteria text lives in the picker panel (chip, top right).
                   // The collapsed row only flags a problem, in a short form; ✓ and "criteria" hints stay out of the first screen.
@@ -7967,7 +7967,7 @@ function AppInner() {
 {(nickname || photo || birthYear !== "" || gender || height !== "" || donorId || bloodRh || weight !== "" || bloodType || donorType) && (
                 <div style={{ textAlign: "center", marginTop: 6 }}>
                   <button onClick={() => { setProfileOpenChoice(null); setShowClearProfile(true); }}
-                    style={{ display: "block", width: "100%", background: "#FFFFFF", border: "1px solid #E3B3AE", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, color: "#B3261E", padding: "11px 14px", lineHeight: 1.35 }}>
+                    style={{ display: "block", width: "100%", background: "#FFFFFF", border: "1px solid #E3B3AE", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#B3261E", padding: "11px 14px", lineHeight: 1.35 }}>
                     ลบข้อมูลโปรไฟล์
                   </button>
                   <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.7, marginTop: 8, textWrap: "balance" }}>
