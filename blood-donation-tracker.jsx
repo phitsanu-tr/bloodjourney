@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.311";
+const APP_VERSION = "1.0.312";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5601,6 +5601,8 @@ function AppInner() {
         /* One "still empty" tone across forms (3.1:1 on white): placeholders match the empty date/time
            fields and the unchosen options of the segmented pickers. Profile rows keep their own rule below. */
         input::placeholder, textarea::placeholder { color: #A38D89; opacity: 1; }
+        /* Typed text uses the app's body brown (same as chosen date/time), not the browser's pure black. */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea { color: #3A2C29; }
         /* App-like text: nothing is selectable by a long-press / double-tap (no blue selection, no iOS
            copy/look-up callout, no Android tap flash) EXCEPT text fields and the reading content people may
            want to copy (.selectable: knowledge tab + FAQ, privacy policy, generated backup password).
