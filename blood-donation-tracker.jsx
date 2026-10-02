@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.329";
+const APP_VERSION = "1.0.330";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2684,6 +2684,7 @@ function AppInner() {
   const [editingStartingCount, setEditingStartingCount] = useState(false);
   const [viewStartingCount, setViewStartingCount] = useState(false);
   const [startingCountEditError, setStartingCountEditError] = useState("");
+  const [startingCountEditField, setStartingCountEditField] = useState(""); // "whole" | "component" | "" (non-field error)
   const [startingCountDraftWhole, setStartingCountDraftWhole] = useState("");
   const [startingCountDraftComponent, setStartingCountDraftComponent] = useState("");
   const [confirmDeleteStartingCount, setConfirmDeleteStartingCount] = useState(false);
@@ -4107,11 +4108,11 @@ function AppInner() {
     // get folded into one generic message that doesn't say which field is
     // the problem.
     if (editWhole && (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > maxStartingCountWhole)) {
-      setStartingCountEditError(`จำนวนครั้งโลหิตรวมต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      setStartingCountEditError(`ระบุ 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาค)`); setStartingCountEditField("whole");
       return;
     }
     if (editComponent && (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent)) {
-      setStartingCountEditError(`จำนวนครั้งพลาสมา/เกล็ดเลือดต้องเป็นจำนวนเต็มระหว่าง 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+      setStartingCountEditError(`ระบุ 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาค)`); setStartingCountEditField("component");
       return;
     }
     if (numWhole + numComponent === 0) {
@@ -4133,7 +4134,7 @@ function AppInner() {
       setEditingStartingCount(false);
       showToast("success", "แก้ไขยอดสะสมยกมาแล้ว");
     } catch (e) {
-      setStartingCountEditError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
+      setStartingCountEditError("บันทึกไม่สำเร็จ ลองอีกครั้ง"); setStartingCountEditField("");
     }
   };
 
@@ -8616,13 +8617,15 @@ function AppInner() {
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
                     onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${startingCountEditError && startingCountEditField === "whole" ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                  {startingCountEditError && startingCountEditField === "whole" && <FieldError>{startingCountEditError}</FieldError>}
                 </div>}
                 {historyTypeFilter !== "whole" && <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
                   <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
                     onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${startingCountEditError && startingCountEditField === "component" ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                  {startingCountEditError && startingCountEditField === "component" && <FieldError>{startingCountEditError}</FieldError>}
                 </div>}
               </div>
               {historyTypeFilter !== "all" && (() => {
@@ -8637,7 +8640,7 @@ function AppInner() {
                 );
               })()}
             </div>
-            {startingCountEditError && (
+            {startingCountEditError && !startingCountEditField && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
                 <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{startingCountEditError}</div>
