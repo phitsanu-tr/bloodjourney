@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.331";
+const APP_VERSION = "1.0.332";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3761,7 +3761,7 @@ function AppInner() {
       clearTimeout(profileSavedTimerRef.current);
       profileSavedTimerRef.current = setTimeout(() => setProfileSavedKey(null), 1400);
     } catch (e) {
-      setProfileInlineError(er => ({ ...er, [key]: "บันทึกไม่สำเร็จ ลองอีกครั้ง" }));
+      // storage.set never throws (it degrades to memory + shows the storage-problem dialog), so this is only a guard.
     }
   };
 
@@ -3782,42 +3782,12 @@ function AppInner() {
     if (key === "donorId") {
       const v = raw.replace(/\s+/g, " ").slice(0, 20);
       if (v === donorId) { revert(); return; }
-      if (v !== "" && !/^\d{10}$/.test(v)) { fail("เลขประจำตัวผู้บริจาคต้องเป็นตัวเลข 10 หลัก"); return; }
+      if (v !== "" && !/^\d{10}$/.test(v)) { fail("ระบุ 10 หลัก"); return; }
       setProfileInline(f => ({ ...f, donorId: v }));
       commitProfile({ donorId: v }, key);
       return;
     }
-    let val = "";
-    if (raw !== "") {
-      let n = Number(raw);
-      if (key === "birthYear") {
-        const nowBE = thaiYearNow();
-        // Typed a ค.ศ. year (e.g. 1992) — convert instead of rejecting.
-        if (Number.isInteger(n) && n >= 1900 && n <= nowBE - 543) n += 543;
-        if (Number.isNaN(n) || !Number.isInteger(n) || n < nowBE - 120 || n > nowBE) {
-          fail(`ใส่ปีเกิดเป็น พ.ศ. 4 หลัก เช่น ${nowBE - 30}`);
-          return;
-        }
-      }
-      if (key === "weight" && (Number.isNaN(n) || n < 0 || n > 300)) {
-        fail("น้ำหนักต้องเป็นตัวเลขระหว่าง 0-300 กก.");
-        return;
-      }
-      if (key === "height" && (Number.isNaN(n) || n < MIN_HEIGHT || n > MAX_HEIGHT)) {
-        fail(`ส่วนสูงต้องเป็นตัวเลขระหว่าง ${MIN_HEIGHT}-${MAX_HEIGHT} ซม.`);
-        return;
-      }
-      val = key === "birthYear" ? n : Math.round(n * 10) / 10;
-    }
-    const approxPatch = key === "birthYear" ? { birthYearApprox: false } : {};
-    if (val === current || (val === "" && (current === "" || current == null))) {
-      revert();
-      // Re-entering the same estimated year still confirms it.
-      if (key === "birthYear" && birthYearApprox && val !== "") commitProfile(approxPatch, key);
-      return;
-    }
-    setProfileInline(f => ({ ...f, [key]: val === "" ? "" : String(val) }));
-    commitProfile({ [key]: val, ...approxPatch }, key);
+    // birthYear / weight / height are scroll pickers (committed elsewhere); only name fields and donorId are typed.
   };
 
   const openAddForm = () => {
@@ -7942,7 +7912,7 @@ function AppInner() {
                         </label>
                       )}
                       {profileInlineError[r.key] && (
-                        <div role="alert" style={{ fontSize: 11.5, color: "#B3261E", padding: "0 0 8px 46px" }}>{profileInlineError[r.key]}</div>
+                        <div style={{ padding: "0 14px 8px 46px" }}><FieldError>{profileInlineError[r.key]}</FieldError></div>
                       )}
                     </div>
                   );
