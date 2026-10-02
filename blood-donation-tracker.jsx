@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.318";
+const APP_VERSION = "1.0.319";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1462,7 +1462,7 @@ function FadeScroll({ children, style, scrollRef }) {
 function FieldError({ children }) {
   return (
     <div role="alert" style={{ display: "flex", gap: 6, alignItems: "flex-start", margin: "8px 0 0", fontSize: 12, lineHeight: 1.5, color: "#B3261E" }}>
-      <AlertTriangle size={13} color="#B3261E" style={{ flexShrink: 0, marginTop: 3 }} />
+      <AlertCircle size={13} color="#B3261E" style={{ flexShrink: 0, marginTop: 3 }} />
       <span>{children}</span>
     </div>
   );
@@ -8217,7 +8217,7 @@ function AppInner() {
             </div>
             {formError && !dateFieldHasError && formError !== TYPE_REQUIRED_MESSAGE && formError !== sameDateConflictMessage && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
-                <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+                <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{formError}</div>
               </div>
             )}
@@ -8346,7 +8346,7 @@ function AppInner() {
 
             {quickStartingCountError && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", marginBottom: 10 }}>
-                <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+                <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{quickStartingCountError}</div>
               </div>
             )}
@@ -8655,7 +8655,7 @@ function AppInner() {
             </div>
             {startingCountEditError && (
               <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", margin: "12px 0 0" }}>
-                <AlertTriangle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
+                <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{startingCountEditError}</div>
               </div>
             )}
