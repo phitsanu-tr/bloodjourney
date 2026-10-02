@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.303";
+const APP_VERSION = "1.0.304";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8452,7 +8452,7 @@ function AppInner() {
               <div style={{ fontSize: 15.5, fontWeight: 700 }}>ลบข้อมูลโปรไฟล์?</div>
               <DialogX onClick={() => setShowClearProfile(false)} />
             </div>
-            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลโปรไฟล์ที่คุณกรอกจะถูกลบ และกู้คืนไม่ได้</p>
+            <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 12px" }}>ข้อมูลโปรไฟล์ของคุณจะถูกลบ และกู้คืนไม่ได้</p>
             {/* Two stacked white boxes (design D3 of clear-profile-d.html): what goes, then what stays; each list in
                 two columns (one on very narrow phones, so no item wraps) with its mark in a soft tinted circle. */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
