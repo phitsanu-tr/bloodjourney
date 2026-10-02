@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.312";
+const APP_VERSION = "1.0.313";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -817,12 +817,9 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>ระบุ{ariaLabelPrefix}</div>
-          <button type="button" onClick={fillNow}
-            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
-            ตอนนี้
-          </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>ระบุ{ariaLabelPrefix}</div>
+          <DialogX onClick={onClose} />
         </div>
         {/* No ชั่วโมง/นาที column labels above the wheel: tried tightening the
             gap with a negative margin + clip, but real momentum scrolling
@@ -846,7 +843,13 @@ function TimeBottomSheet({ value, onConfirm, onClose, ariaLabelPrefix }) {
             ariaLabel={`${ariaLabelPrefix} นาที`} onSettle={setSelM} />
           <div style={{ position: "absolute", top: WHEEL_ITEM_HEIGHT, left: 0, right: 0, height: WHEEL_ITEM_HEIGHT, borderTop: "1px solid #E3C8C3", borderBottom: "1px solid #E3C8C3", pointerEvents: "none" }} aria-hidden="true" />
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+          <button type="button" onClick={fillNow}
+            style={{ padding: "0 14px", height: 26, borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
+            ตอนนี้
+          </button>
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <button type="button" onClick={onClose}
             style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid #E3C8C3", background: "#FFFFFF", color: "#5C4A46", fontSize: 13, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer" }}>
             ยกเลิก
@@ -1090,6 +1093,8 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
   const backToDecades = () => setYearMode("decade");
   const backToYear = () => setYearMode("year");
 
+  const todayPillStyle = { padding: 0, height: 26, borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" };
+  const todayBtn = (extra) => (<button type="button" onClick={fillToday} style={{ ...todayPillStyle, ...extra }}>วันนี้</button>);
   const fillToday = () => {
     // Respects the max-date constraint (normally "today" itself, but a
     // caller could in principle pass an earlier max) rather than always
@@ -1109,12 +1114,9 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#3A2C29", textAlign: "center" }}>ระบุ{ariaLabelPrefix}</div>
-          <button type="button" onClick={fillToday}
-            style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", padding: "4px 10px", borderRadius: 999, border: "1px solid #9A3B33", background: "none", color: "#9A3B33", fontSize: 11, fontWeight: 600, fontFamily: "'Mitr', 'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
-            วันนี้
-          </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>ระบุ{ariaLabelPrefix}</div>
+          <DialogX onClick={onClose} />
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button type="button" onClick={goPrev} aria-label="เดือนก่อนหน้า" disabled={pickingYear}
@@ -1169,6 +1171,8 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               );
             })}
           </div>
+          {/* Outside the scrolling list so it is always visible, not buried at the end of it. */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>{todayBtn({ padding: "0 14px" })}</div>
           </>
         ) : yearMode === "year" ? (
           <>
@@ -1196,6 +1200,8 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                   {y + 543}
                 </button>
               ))}
+              {(() => { const n = years.filter((y) => Math.floor((y + 543) / 10) * 10 === selectedDecadeStart).length; const blanks = (4 - ((n + 1) % 4)) % 4;
+                return (<>{Array.from({ length: blanks }, (_, b) => <div key={`yb${b}`} aria-hidden="true" />)}<div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>{todayBtn({ width: "100%" })}</div></>); })()}
             </div>
           </>
         ) : yearMode === "month" ? (
@@ -1229,6 +1235,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 );
               })}
             </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>{todayBtn({ padding: "0 14px" })}</div>
           </>
         ) : (
           // The weekday header (จ. อ. พ. ...) never changes between months,
@@ -1271,6 +1278,9 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 // Trailing padding is filled with the next month's leading
                 // days instead, muted and non-interactive -- purely to keep
                 // the grid visually filled, not a real navigation shortcut.
+                if (overflow && i === cells.length - 1) {
+                  return <div key="today-cell" style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center" }}>{todayBtn({ width: "100%" })}</div>;
+                }
                 if (overflow) {
                   return (
                     <div key={`n${i}`} aria-hidden="true"
