@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.319";
+const APP_VERSION = "1.0.320";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2729,8 +2729,7 @@ function AppInner() {
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
   // Lets submitDonation below put the user's attention directly on the date
-  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาคโลหิต"/
-  // "วันที่ไม่ถูกต้อง"/"ระบุวันที่ในอนาคตไม่ได้") -- previously the error
+  // field when it's the reason validation failed ("กรุณาระบุวันที่บริจาคโลหิต") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
   // the actual empty/invalid field, so on a longer form it was easy to miss
   // which field the error was even about (reported directly by the user).
@@ -4022,19 +4021,11 @@ function AppInner() {
   };
 
   const submitDonation = async () => {
-    if (!form.date) {
+    // One message for every unusable date (empty, unparsable, or after today). The calendar picker cannot
+    // produce the latter two (no typing, future days disabled), so this is only a safety net.
+    const selected = form.date ? new Date(form.date) : null;
+    if (!selected || Number.isNaN(selected.getTime()) || selected.setHours(0,0,0,0) > startOfToday().getTime()) {
       setFormError("กรุณาระบุวันที่บริจาคโลหิต");
-      formDateFieldRef.current?.focus();
-      return;
-    }
-    const selected = new Date(form.date);
-    if (Number.isNaN(selected.getTime())) {
-      setFormError("วันที่ไม่ถูกต้อง");
-      formDateFieldRef.current?.focus();
-      return;
-    }
-    if (selected.setHours(0,0,0,0) > startOfToday().getTime()) {
-      setFormError("ระบุวันที่ในอนาคตไม่ได้");
       formDateFieldRef.current?.focus();
       return;
     }
@@ -5483,13 +5474,11 @@ function AppInner() {
 
   const sameDateConflictMessage = "วันที่นี้มีรายการบันทึกแล้ว กรุณาระบุวันที่อื่น";
 
-  // Whether the currently-shown formError is one of submitDonation's three
-  // date-specific validation messages (empty / invalid / future date) --
+  // Whether the currently-shown formError is the date-specific
+  // validation message --
   // drives the date field's red-border highlight below, so the field itself
   // stays neutral for errors that have nothing to do with it.
-  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาคโลหิต"
-    || formError === "วันที่ไม่ถูกต้อง"
-    || formError === "ระบุวันที่ในอนาคตไม่ได้";
+  const dateFieldHasError = formError === "กรุณาระบุวันที่บริจาคโลหิต";
 
   // Only relevant while editing an existing record — disables the save
   // button when nothing has actually changed from what was opened.
@@ -8147,9 +8136,9 @@ function AppInner() {
                   <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
                     onChange={(date) => {
                       setForm(f => ({ ...f, date }));
-                      // Picking a date resolves every date-related message (empty / invalid / future / same-day
+                      // Picking a date resolves every date-related message (empty / same-day
                       // conflict) -- clear it right away so the red edge and alert don't linger after the fix.
-                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาคโลหิต" || e === "วันที่ไม่ถูกต้อง" || e === "ระบุวันที่ในอนาคตไม่ได้" || e === sameDateConflictMessage) ? "" : e));
+                      setFormError(e => ((e === "กรุณาระบุวันที่บริจาคโลหิต" || e === sameDateConflictMessage) ? "" : e));
                     }}
                     height={44} fontSize={14} />
                 </div>
