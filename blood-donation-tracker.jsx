@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.339";
+const APP_VERSION = "1.0.340";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1460,6 +1460,22 @@ function FadeScroll({ children, style, scrollRef }) {
 // colour as the profile/settings ✕, with a roomier tap area.
 // Field-level error: sits right under the field it is about (icon + red 12px text, no box). The bottom box in the
 // donation form is kept only for errors that are not about one field (e.g. a failed save).
+// Amber note for a browser/page limitation (not a failure): what to do instead.
+function FieldNote({ children }) {
+  return (
+    <div role="note" style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "#FFF3DC", border: "1px solid #F2D9A4", borderRadius: 12, padding: "9px 12px", margin: "8px 0 0", fontSize: 12, lineHeight: 1.55, color: "#6B4A00" }}>
+      <AlertTriangle size={13} color="#B7791F" aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+// Renders exportMsg / importMsg ({ kind: "err" | "note", text, at }) when it belongs to the given slot.
+function BackupMsg({ msg, at }) {
+  if (!msg || msg.at !== at) return null;
+  return msg.kind === "note" ? <FieldNote>{msg.text}</FieldNote> : <FieldError>{msg.text}</FieldError>;
+}
+
 function FieldError({ children }) {
   return (
     <div role="alert" style={{ display: "flex", gap: 6, alignItems: "flex-start", margin: "8px 0 0", fontSize: 12, lineHeight: 1.5, color: "#B3261E" }}>
@@ -2683,6 +2699,8 @@ function AppInner() {
   const [startCountDeleteError, setStartCountDeleteError] = useState("");
   const [clearProfileError, setClearProfileError] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [exportMsg, setExportMsg] = useState(null);
+  const [importMsg, setImportMsg] = useState(null);
   const [deleteError, setDeleteError] = useState("");
   const [viewDonationId, setViewDonationId] = useState(null);
   // Which history card's overflow (⋮) action menu is currently open — replaces
@@ -4280,6 +4298,7 @@ function AppInner() {
       return undefined;
     }
     const run = ++exportEncryptRunRef.current;
+    setExportMsg(null);
     setExportEncrypting(true);
     const timer = setTimeout(async () => {
       try {
@@ -4288,7 +4307,7 @@ function AppInner() {
       } catch (e) {
         if (run === exportEncryptRunRef.current) {
           setExportEncrypted(null);
-          showToast("error", "เข้ารหัสไม่สำเร็จ ลองอีกครั้ง หรือกดสุ่มรหัสใหม่");
+          setExportMsg({ kind: "err", at: "pre", text: "เข้ารหัสไม่สำเร็จ ลองอีกครั้ง หรือสุ่มรหัสใหม่" });
         }
       } finally {
         if (run === exportEncryptRunRef.current) setExportEncrypting(false);
@@ -4299,6 +4318,7 @@ function AppInner() {
   }, [exportProtect, exportKey]);
 
   const resetBackupProtection = () => {
+    setExportMsg(null);
     setExportProtect(true);
     setExportStep(1);
     setExportConfirmPw("");
@@ -4344,22 +4364,24 @@ function AppInner() {
   };
   const backToEncryptedExport = () => generateExportPassword();
   const copyGeneratedPassword = async () => {
+    setExportMsg(null);
     try {
       await navigator.clipboard.writeText(exportGenPw);
       showToast("success", "คัดลอกรหัสผ่านแล้ว — เก็บไว้ในที่ปลอดภัย เช่นตัวจัดการรหัสผ่านของมือถือ");
     } catch (e) {
-      showToast("error", "คัดลอกไม่ได้ในแอปนี้ — จดหรือแคปหน้าจอรหัสนี้เก็บไว้แทน");
+      setExportMsg({ kind: "note", at: "pw", text: "คัดลอกไม่ได้ จดหรือแคปหน้าจอรหัสนี้ไว้" });
     }
   };
 
   const exportData = async () => {
+    setExportMsg(null);
     try {
       const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
       setShowExportPreview(true);
     } catch (e) {
-      showToast("error", "เตรียมข้อมูลส่งออกไม่สำเร็จ ลองอีกครั้ง");
+      setExportMsg({ kind: "err", at: "pre", text: "เตรียมไฟล์ไม่สำเร็จ ลองอีกครั้ง" });
     }
   };
 
@@ -4375,6 +4397,7 @@ function AppInner() {
   // last-resort fallback for a plain desktop/mobile browser outside LINE.
   const downloadExportFile = async () => {
     if (!exportReady) return;
+    setExportMsg(null);
     const filename = `donation-backup-${todayLocalStr()}.json`;
     if (isNativeApp) {
       try {
@@ -4383,7 +4406,7 @@ function AppInner() {
         showToast("success", "เปิดเมนูบันทึก/แชร์ไฟล์แล้ว");
         markBackedUp();
       } catch (e) {
-        showToast("error", "บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด \"คัดลอกข้อความ\" แทน");
+        setExportMsg({ kind: "err", at: "mid", text: 'บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด "คัดลอกข้อความ"' });
       }
       return;
     }
@@ -4430,12 +4453,13 @@ function AppInner() {
         markBackedUp();
       }
     } catch (e) {
-      showToast("error", "ดาวน์โหลดไฟล์อัตโนมัติไม่ได้ในหน้านี้ — คัดลอกข้อความด้านล่างไปเก็บเองแทนได้เลย");
+      setExportMsg({ kind: "note", at: "mid", text: 'ดาวน์โหลดไม่ได้ในหน้านี้ ใช้ "คัดลอกข้อความ" แทน' });
     }
   };
 
   const copyExportText = async () => {
     if (!exportReady) return;
+    setExportMsg(null);
     // Method 1: the modern Clipboard API. Sandboxed iframes (like an
     // artifact preview) often block this with a permissions-policy error,
     // so we never let it stop us from trying the older fallback below.
@@ -4470,7 +4494,7 @@ function AppInner() {
       const el = exportTextareaRef.current;
       if (el) { el.focus(); el.select(); }
     } catch (e) {}
-    showToast("error", "คัดลอกอัตโนมัติไม่ได้ในหน้าพรีวิวนี้ — ข้อความถูกเลือกไว้ให้แล้ว กด Ctrl/Cmd+C เพื่อคัดลอกเองได้เลย");
+    setExportMsg({ kind: "note", at: "post", text: "คัดลอกอัตโนมัติไม่ได้ เลือกข้อความไว้แล้ว กด Ctrl/Cmd+C เอง" });
   };
 
   const openShareCard = () => {
@@ -4733,7 +4757,7 @@ function AppInner() {
     // decrypted text through this same function.
     if (readEncryptedBackup(text)) {
       if (!canEncryptBackup()) {
-        showToast("error", "เบราว์เซอร์นี้ถอดรหัสไฟล์ไม่ได้ — ลองเปิดแอปด้วยเบราว์เซอร์อื่น");
+        setImportMsg({ kind: "note", at: meta && meta.name ? "file" : "paste", text: "เบราว์เซอร์นี้ถอดรหัสไม่ได้ ลองเปิดด้วยเบราว์เซอร์อื่น" });
         return;
       }
       setImportLock({ text, name: (meta && meta.name) || "" });
@@ -4843,6 +4867,7 @@ function AppInner() {
   // the user to paste into the box manually, which still works exactly as
   // before and is unaffected by this.
   const pasteFromClipboard = async () => {
+    setImportMsg(null);
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.readText) {
         const text = await navigator.clipboard.readText();
@@ -4852,19 +4877,20 @@ function AppInner() {
         }
       }
     } catch (e) {}
-    showToast("error", "วางจากคลิปบอร์ดอัตโนมัติไม่ได้ในเบราว์เซอร์นี้ — กดค้างในช่องด้านล่างแล้วเลือก \"วาง\" แทนได้เลย");
+    setImportMsg({ kind: "note", at: "paste", text: 'วางอัตโนมัติไม่ได้ กดค้างในช่องแล้วเลือก "วาง"' });
   };
 
   const handleImportFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    setImportMsg(null);
     setImporting(true);
     try {
       const text = await file.text();
       await processImportedText(text, { name: file.name });
     } catch (err) {
-      showToast("error", "นำเข้าไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็นไฟล์สำรองที่ส่งออกจากแอปนี้");
+      setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
     } finally {
       setImporting(false);
     }
@@ -4883,6 +4909,7 @@ function AppInner() {
   const privacyFromProfileRef = useRef(false); // privacy opened from the profile footer → closing returns there, not to settings
   const openBackupRestore = (tab, { fromHome = false } = {}) => {
     backupOpenedFromHomeRef.current = fromHome;
+    setImportMsg(null);
     setShowSettings(false);
     setError("");
     resetBackupProtection();
@@ -4896,6 +4923,7 @@ function AppInner() {
   };
 
   const switchBackupRestoreTab = (tab) => {
+    setImportMsg(null);
     setBackupRestoreTab(tab);
     if (backupDialogRef.current) backupDialogRef.current.scrollTop = 0;
     // Switching tabs should never throw away what the user already typed —
@@ -4953,7 +4981,7 @@ function AppInner() {
       setImportLockPw("");
       await processImportedText(plain);
     } catch (e) {
-      showToast("error", "นำเข้าไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็นไฟล์สำรองที่ส่งออกจากแอปนี้");
+      setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
     } finally {
       setImportLockBusy(false);
     }
@@ -8896,6 +8924,7 @@ function AppInner() {
                         </button>
                       </div>
                     </div>
+                    <div style={{ margin: "-4px 0 12px" }}><BackupMsg msg={exportMsg} at="pw" /></div>
                     <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
                       <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b><br />แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</div>
@@ -8982,12 +9011,15 @@ function AppInner() {
                       aria-label={exportProtect ? "ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก" : "ข้อมูลสำรองแบบ JSON สำหรับคัดลอก — เลือกไว้ให้อัตโนมัติแล้ว กด Ctrl/Cmd+C เพื่อคัดลอกได้เลย"}
                       style={{ width: "100%", height: exportProtect ? 76 : 100, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                     />
+                    <BackupMsg msg={exportMsg} at="pre" />
                     <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
                       <Download size={17} /> {exportProtect && exportEncrypting ? "กำลังเข้ารหัส…" : exportProtect ? "ดาวน์โหลดไฟล์" : "ดาวน์โหลดไฟล์ (ไม่เข้ารหัส)"}
                     </button>
+                    <BackupMsg msg={exportMsg} at="mid" />
                     <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
                       <StickyNote size={16} /> คัดลอกข้อความ
                     </button>
+                    <BackupMsg msg={exportMsg} at="post" />
                   </>
                 )}
 
@@ -9067,6 +9099,7 @@ function AppInner() {
                 <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
                   <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
                 </button>
+                {importMsg && importMsg.at === "file" && <div style={{ flexShrink: 0, margin: "-2px 0 8px" }}><BackupMsg msg={importMsg} at="file" /></div>}
                 <p style={{ flexShrink: 0, fontSize: 12.5, color: "#7A6360", lineHeight: 1.7, margin: "0 0 10px" }}>
                   หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
                 </p>
@@ -9077,13 +9110,14 @@ function AppInner() {
                     below the "นำเข้าจากข้อความ" button. */}
                 <textarea
                   value={pasteImportText}
-                  onChange={(e) => { setPasteImportText(e.target.value); if (pasteImportError) setPasteImportError(""); }}
+                  onChange={(e) => { setPasteImportText(e.target.value); if (pasteImportError) setPasteImportError(""); setImportMsg(null); }}
                   tabIndex={backupRestoreTab === "import" ? 0 : -1}
                   placeholder='{"nickname": "...", "donations": [...] }'
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
                   style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", marginBottom: 4, resize: "vertical", boxSizing: "border-box" }}
                 />
                 {pasteImportError && <div style={{ flexShrink: 0, margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
+                {importMsg && importMsg.at === "paste" && <div style={{ flexShrink: 0, margin: "0 0 8px" }}><BackupMsg msg={importMsg} at="paste" /></div>}
                 <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <button
                     type="button"
@@ -9095,7 +9129,7 @@ function AppInner() {
                   {pasteImportText.length > 0 && (
                     <button
                       type="button"
-                      onClick={() => { setPasteImportText(""); setPasteImportError(""); }}
+                      onClick={() => { setPasteImportText(""); setPasteImportError(""); setImportMsg(null); }}
                       tabIndex={backupRestoreTab === "import" ? 0 : -1}
                       style={{ background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                       ล้างข้อความ
