@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.304";
+const APP_VERSION = "1.0.305";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8457,8 +8457,8 @@ function AppInner() {
                 two columns (one on very narrow phones, so no item wraps) with its mark in a soft tinted circle. */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {[
-                { key: "gone", title: "จะถูกลบ", mark: "✕", color: "#B3261E", tint: "#FBEAE8", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
-                { key: "stay", title: "ยังอยู่ครบ", mark: "✓", color: "#2E7D4F", tint: "#EAF4EE", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] }
+                { key: "gone", title: "ลบออก", mark: "✕", color: "#B3261E", tint: "#FBEAE8", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "stay", title: "เก็บไว้", mark: "✓", color: "#2E7D4F", tint: "#EAF4EE", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] }
               ].map(col => (
                 <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px 11px" }}>
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: col.color, marginBottom: 6 }}>{col.title}</div>
