@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.322";
+const APP_VERSION = "1.0.323";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3915,7 +3915,7 @@ function AppInner() {
     // a donor who's done both turns on both, each with its own total and
     // last-donation date/time/location/note.
     if (!quickTypeOnWhole && !quickTypeOnComponent) {
-      setQuickStartingCountError("เลือกอย่างน้อย 1 ประเภทที่เคยบริจาคโลหิต");
+      setQuickStartingCountError("เลือกอย่างน้อย 1 ประเภทที่เคยบริจาค");
       return;
     }
     const wholeTotalRaw = quickTypeOnWhole ? (quickStartingCountWholeDraft === "" ? NaN : Number(quickStartingCountWholeDraft)) : 0;
@@ -3942,21 +3942,11 @@ function AppInner() {
         countRef.current?.focus();
         return;
       }
-      if (!f.date) {
+      // One message for every unusable date (empty, unparsable, after today). The calendar picker can only
+      // produce the first, so the other two are just a safety net.
+      const d = f.date ? new Date(f.date) : null;
+      if (!d || Number.isNaN(d.getTime()) || d.setHours(0,0,0,0) > startOfToday().getTime()) {
         setQuickStartingCountError("ระบุวันที่บริจาค (ครั้งล่าสุด)");
-        setQuickErrorField(`${key}-date`);
-        dateRef.current?.focus();
-        return;
-      }
-      const d = new Date(f.date);
-      if (Number.isNaN(d.getTime())) {
-        setQuickStartingCountError("วันที่ล่าสุดไม่ถูกต้อง");
-        setQuickErrorField(`${key}-date`);
-        dateRef.current?.focus();
-        return;
-      }
-      if (d.setHours(0,0,0,0) > startOfToday().getTime()) {
-        setQuickStartingCountError("ระบุวันที่ในอนาคตไม่ได้");
         setQuickErrorField(`${key}-date`);
         dateRef.current?.focus();
         return;
@@ -3970,7 +3960,7 @@ function AppInner() {
     // add/edit form already hard-blocks everywhere else in the app.
     if (quickTypeOnWhole && quickTypeOnComponent && quickEntryFormWhole.date && quickEntryFormComponent.date
       && daysBetween(new Date(quickEntryFormWhole.date), new Date(quickEntryFormComponent.date)) === 0) {
-      setQuickStartingCountError(sameDateConflictMessage);
+      setQuickStartingCountError("วันที่ของโลหิตรวมกับพลาสมาซ้ำกัน เลือกวันอื่น");
       setQuickErrorField("component-date");
       quickDateInputRefComponent.current?.focus();
       return;
