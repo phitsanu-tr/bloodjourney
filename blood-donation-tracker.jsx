@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.328";
+const APP_VERSION = "1.0.329";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3939,7 +3939,7 @@ function AppInner() {
       // this message tells the donor the number they typed isn't
       // realistically possible rather than just "too big".
       if (Number.isNaN(totalRaw) || !Number.isInteger(totalRaw) || totalRaw < 1 || totalRaw > typeMax) {
-        setQuickStartingCountError(`จำนวนครั้งที่เคยบริจาคควรอยู่ระหว่าง 1-${typeMax} ครั้ง (ตามช่วงอายุและรอบบริจาคที่เป็นไปได้จริง)`);
+        setQuickStartingCountError(`ระบุ 1-${typeMax} ครั้ง (ตามช่วงอายุและรอบบริจาค)`);
         setQuickErrorField(`${key}-count`);
         countRef.current?.focus();
         return;
@@ -7552,7 +7552,7 @@ function AppInner() {
             { key: "height", Icon: Ruler, label: "ส่วนสูง", kind: "picker", unit: "ซม." },
           ] },
           { title: "สำหรับการบริจาค", rows: [
-            { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาคโลหิต", kind: "id" },
+            { key: "donorId", Icon: CreditCard, label: "เลขประจำตัวผู้บริจาค", kind: "id" },
             { key: "blood", Icon: Droplet, label: "หมู่โลหิต", kind: "choice", value: bloodValue, blood: true },
             { key: "donorType", Icon: Award, label: "ประเภทผู้บริจาค", kind: "choice", value: donorLabel || ph("ระบุประเภทผู้บริจาค"),
               options: DONOR_TYPES.map(dt => ({ v: dt.key, label: dt.label })), current: donorType },
@@ -8285,7 +8285,7 @@ function AppInner() {
                 </div>
                 {on && (
                   <div style={{ border: "1px solid #EEDEDA", borderTop: "none", borderRadius: "0 0 12px 12px", padding: "12px 14px 14px", background: "#FFFFFF" }}>
-                    <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>จำนวนครั้งที่เคยบริจาคโลหิตทั้งหมด</label>
+                    <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>จำนวนครั้งที่เคยบริจาคทั้งหมด</label>
                     {/* No autoFocus here: this input mounts the instant the switch above
                         is toggled on, and auto-focusing it would pop the keyboard open
                         immediately without the user tapping anything -- reported directly
