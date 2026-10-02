@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.333";
+const APP_VERSION = "1.0.334";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5816,12 +5816,7 @@ function AppInner() {
             </span>
           </label>
 
-          {error && (
-            <div role="alert" style={{ display: "flex", gap: 8, background: "#FBEAE8", border: "1px solid #F0C4BE", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
-              <AlertCircle size={14} color="#B3261E" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div style={{ fontSize: 12, color: "#B3261E", lineHeight: 1.55 }}>{error}</div>
-            </div>
-          )}
+          {error && <div style={{ margin: "-10px 0 12px" }}><FieldError>{error}</FieldError></div>}
 
           <button disabled={!checkedConsent || saving} onClick={giveConsent} className="btn-primary"
             style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", fontSize: 15, fontWeight: 600,
