@@ -8,9 +8,11 @@ export default defineConfig({
   timeout: 60_000,
   retries: 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:4173",
+    screenshot: "only-on-failure",
+    trace: "retain-on-failure",
     hasTouch: true,
     isMobile: true,
     viewport: { width: 390, height: 780 },
