@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.316";
+const APP_VERSION = "1.0.317";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8143,7 +8143,7 @@ function AppInner() {
                     the neutral border via onChange since date-related errors only ever
                     exist because form.date was empty/invalid/in the future -- picking
                     any valid date resolves all three at once. */}
-                <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${dateFieldHasError ? "#B3261E" : "#E3C8C3"}` }}>
+                <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${(dateFieldHasError || sameDateConflict) ? "#B3261E" : "#E3C8C3"}` }}>
                   <DateField ref={formDateFieldRef} value={form.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคโลหิต"
                     onChange={(date) => {
                       setForm(f => ({ ...f, date }));
