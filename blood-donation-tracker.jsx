@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.344";
+const APP_VERSION = "1.0.345";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6404,21 +6404,21 @@ function AppInner() {
                   </button>
                 );
                 const slide = (kind, idx) => {
-                  const isWarn = kind === "backup" || kind === "age" || kind === "weight";
+                  const isWarn = kind === "age" || kind === "weight";
                   return (
                     <div key={kind} aria-label={multi ? `เรื่องที่ ${idx + 1} จาก ${queue.length}` : undefined} role={multi ? "group" : undefined} style={{
-                      flex: "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
+                      flex: multi ? "0 0 90%" : "0 0 100%", scrollSnapAlign: "start", boxSizing: "border-box",
                       background: isWarn ? "#FDF0E6" : "#FFFFFF", border: `1px solid ${isWarn ? "#F0D9BE" : "#EEDEDA"}`, borderRadius: 12,
                       padding: "10px 12px", display: "flex", alignItems: "center", gap: 6, minHeight: 50,
                     }}>
                       {kind === "backup" && (
                         <>
-                          <AlertTriangle size={15} color="#9C5515" style={{ flexShrink: 0 }} />
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>ยังไม่ได้สำรองข้อมูล</span>
-                          <button onClick={() => openBackupRestore("export", { fromHome: true })}
-                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 9, border: "none", background: "#9A3B33", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                          <ShieldCheck size={15} color="#9A3B33" style={{ flexShrink: 0 }} />
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#5C4A46" }}>{Math.max(1, donations.length - lastExportCount)} รายการยังไม่ได้สำรอง</span>
+                          <button aria-label="สำรองข้อมูล" onClick={() => openBackupRestore("export", { fromHome: true })}
+                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
-                            <Download size={13} /> สำรองเลย
+                            <Download size={13} /> สำรอง
                           </button>
                           {closeBtn(snoozeBackupReminder)}
                         </>
@@ -6739,7 +6739,7 @@ function AppInner() {
                   <React.Fragment key={d.id}>
                   {newYear && (
                     <div role="heading" aria-level={3} aria-label={`ปี ${y} · ${historyYearCounts[y]} ครั้ง`} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, margin: i === 0 ? "2px 2px 0" : "12px 2px 0" }}>
-                      <span style={{ fontSize: 24, fontWeight: 600, color: "#B0807A", letterSpacing: 0.5, lineHeight: 1 }}>{y}</span>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: "#8A5F59", letterSpacing: 0.5, lineHeight: 1 }}>{y}</span>
                       <span style={{ color: "#7A6360", fontSize: 12 }}>{historyYearCounts[y]} ครั้ง</span>
                     </div>
                   )}
@@ -7532,7 +7532,8 @@ function AppInner() {
               <span style={{ fontSize: 11, fontWeight: 600 }}>แดชบอร์ด</span>
             </button>
             <button onClick={() => setTab("missions")} aria-label={hasNewAchievement ? "ภารกิจ (มีความสำเร็จใหม่)" : "ภารกิจ"} aria-current={tab === "missions" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "missions" ? "#9A3B33" : "#7A6360" }}>
-              <div style={{ position: "relative" }}>
+              {/* display:flex -- as a block div it left ~3px of inline-svg baseline gap under the icon, pushing this label lower than the other three */}
+              <div style={{ position: "relative", display: "flex" }}>
                 <Trophy size={19} />
                 {hasNewAchievement && (
                   <span aria-hidden="true" style={{ position: "absolute", top: -2, right: -3, width: 8, height: 8, borderRadius: "50%", background: "#B3261E", border: "1.5px solid #FFFFFF" }} />

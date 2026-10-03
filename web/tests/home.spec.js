@@ -61,3 +61,33 @@ test("home: waiting countdown has no clock icon; text still shows days left", as
   await expect(page.locator("svg.lucide-clock")).toHaveCount(0);
   assertNoErrors(page);
 });
+
+test("nav: all four bottom-tab labels sit on the same line", async ({ page }) => {
+  await startFresh(page);
+  const tops = await page.evaluate(() =>
+    ["หน้าหลัก", "แดชบอร์ด", "ภารกิจ", "ให้ความรู้"].map((n) => {
+      const b = [...document.querySelectorAll("button[aria-label]")].find((x) => x.getAttribute("aria-label").startsWith(n));
+      return Math.round(b.querySelector("span:last-child").getBoundingClientRect().top * 10) / 10;
+    }));
+  expect(new Set(tops).size, `label tops ${tops}`).toBe(1);
+  assertNoErrors(page);
+});
+
+test("home reminders: backup card shows the count; several reminders peek the next slide", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(90)), rec("b", daysAgo(60)), rec("c", daysAgo(10))] });
+  await expect(page.getByText("3 รายการยังไม่ได้สำรอง")).toBeVisible();
+  await expect(page.getByRole("button", { name: "สำรองข้อมูล" })).toBeVisible();
+  const slides = page.locator('[role="group"][aria-label^="เรื่องที่"]');
+  const n = await slides.count();
+  expect(n).toBeGreaterThan(1);
+  const [a, b] = [await slides.nth(0).boundingBox(), await slides.nth(1).boundingBox()];
+  expect(b.x, "second slide edge should be visible").toBeLessThan(page.viewportSize().width);
+  expect(a.width).toBeLessThan(page.viewportSize().width - 32);
+  for (const w of [390, 320]) {
+    await page.setViewportSize({ width: w, height: 780 });
+    await page.waitForTimeout(300);
+    expect(await noOverflow(page), `overflow at ${w}`).toBe(true);
+  }
+  assertNoErrors(page);
+});
