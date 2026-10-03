@@ -114,3 +114,22 @@ test("backup: all four types survive an export and import (old 'component' reads
   expect(types).toEqual(["platelet", "plasma", "plasma", "rbc", "whole"].sort());
   assertNoErrors(page);
 });
+
+// Real Mitr is wider than the fallback font; with it loaded the type tabs must still fit on one line from 360px up.
+import fs from "fs";
+for (const width of [414, 390, 360]) {
+  test(`home: type tabs fit on one line with Mitr loaded at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await startFresh(page);
+    await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma"), rec("c", daysAgo(10), "platelet"), rec("d", daysAgo(20), "rbc")] });
+    await page.addStyleTag({ content: fs.readFileSync(new URL("./mitr-font.css", import.meta.url), "utf8") });
+    await page.evaluate(() => document.fonts.ready);
+    const tabs = page.getByRole("tab");
+    for (let i = 0; i < 4; i++) {
+      await tabs.nth(i).tap(); await page.waitForTimeout(450);
+      const [sw, cw] = await page.evaluate(() => { const t = document.querySelector("[role=tablist]"); return [t.scrollWidth, t.clientWidth]; });
+      expect(sw, `tab ${i} row overflows`).toBeLessThanOrEqual(cw);
+    }
+    assertNoErrors(page);
+  });
+}

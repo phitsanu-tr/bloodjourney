@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.349";
+const APP_VERSION = "1.0.350";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6155,11 +6155,14 @@ function AppInner() {
                         cards below) instead of always reading maroon regardless of
                         which type is active -- so this tab strip carries the same
                         color signal as the rest of the tab. */}
-                    {recordedTypes.map((t) => (
-                      <button key={t} role="tab" aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
+                    {recordedTypes.map((t) => {
+                      // From 3 types up, only the selected one shows its name and count; the others shrink to an icon so the row always fits on one line.
+                      const compact = recordedTypes.length > 2 && activeCountdownType !== t;
+                      return (
+                      <button key={t} role="tab" aria-label={`${DONATION_TYPE_LABELS[t]} ${totalBy[t]} ครั้ง`} title={DONATION_TYPE_LABELS[t]} aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
                         style={{
                           position: "relative", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, whiteSpace: "nowrap",
-                          padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
+                          padding: compact ? "6px 0" : "6px 12px", width: compact ? 40 : undefined, justifyContent: "center", height: 30, borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
                           background: activeCountdownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           fontWeight: activeCountdownType === t ? 600 : 400,
@@ -6167,15 +6170,16 @@ function AppInner() {
                         }}>
                         {/* Invisible 44px-tall tap area; pill keeps its 30px look. */}
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
-                        <TypeIcon type={t} size={12} /> {DONATION_TYPE_LABELS[t]}
-                        <span style={{
+ <TypeIcon type={t} size={12} />{compact ? null : <> {DONATION_TYPE_LABELS[t]}</>}
+                        {!compact && <span style={{
                           fontSize: 11, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
                           background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           transition: "background 0.35s ease, color 0.35s ease",
-                        }}>{totalBy[t]}</span>
+                        }}>{totalBy[t]}</span>}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : totalCount > 0 ? (
                   // Only one donation type exists here, so this pill's own count
