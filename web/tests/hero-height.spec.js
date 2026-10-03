@@ -17,6 +17,7 @@ const STATES = {
   "paused (waiting)": { donations: [rec("a", daysAgo(30))], profile: { remindPauseUntil: "indefinite" } },
   "paused (eligible)": { donations: [rec("a", daysAgo(120))], profile: { remindPauseUntil: "indefinite" } },
 };
+const FOUR = { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma"), rec("c", daysAgo(10), "platelet"), rec("d", daysAgo(20), "rbc")], profile: {} };
 const BOTH = { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "component")], profile: {} };
 
 const heroH = async (page) => Math.round((await page.getByTestId("hero-card").boundingBox()).height * 10) / 10;
@@ -37,17 +38,22 @@ for (const width of (process.env.W || "390,320").split(",").map(Number)) {
     const tabs = page.locator("[data-testid=hero-card] button").filter({ hasText: /โลหิตรวม|พลาสมา/ });
     await tabs.nth(0).tap(); await page.waitForTimeout(600); hs["both: whole tab"] = await heroH(page); st["both: whole tab"] = await statusH(page);
     await tabs.nth(1).tap(); await page.waitForTimeout(600); hs["both: component tab"] = await heroH(page); st["both: component tab"] = await statusH(page);
+    await seed(page, FOUR);
+    await page.waitForTimeout(500);
+    hs["four types"] = await heroH(page); st["four types"] = await statusH(page);
     console.log(`WIDTH ${width} STATUS`, JSON.stringify(st), "TOP", JSON.stringify(Object.fromEntries(Object.keys(hs).map(k=>[k, Math.round((hs[k]-st[k])*10)/10]))));
     // Single-type states must all match. The two tab states must match each
     // other (and, from 390px up, the single-type states too -- at narrower
     // widths the two-type tab row wraps, which is unrelated to the status area).
     // At 320px the brand-new user's welcome heading wraps one extra line.
-    const single = Object.entries(hs).filter(([k]) => !k.startsWith("both") && !(width < 360 && k === "new user")).map(([, v]) => v);
+    const single = Object.entries(hs).filter(([k]) => !k.startsWith("both") && k !== "four types" && !(width < 360 && k === "new user")).map(([, v]) => v);
     const both = [hs["both: whole tab"], hs["both: component tab"]];
     const spread = (a) => Math.max(...a) - Math.min(...a);
     expect(spread(single), "single-type states " + JSON.stringify(hs)).toBeLessThan(1);
     expect(spread(both), "tab states " + JSON.stringify(hs)).toBeLessThan(1);
     if (width >= 390) expect(spread([...single, ...both]), "single vs tabs " + JSON.stringify(hs)).toBeLessThan(1);
+    // Four recorded types: the tab row scrolls sideways instead of wrapping, so the card keeps its height.
+    expect(Math.abs(hs["four types"] - single[0]), "four types " + JSON.stringify(hs)).toBeLessThan(1);
     assertNoErrors(page);
   });
 }

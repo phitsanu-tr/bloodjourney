@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.348";
+const APP_VERSION = "1.0.349";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -83,7 +83,7 @@ const PRIVACY_POLICY_SECTIONS = [
     body: [
       "ข้อมูลโปรไฟล์ (ไม่บังคับทุกช่อง): ชื่อ-นามสกุลที่แสดง, ปีเกิด (แอปคำนวณอายุให้), เพศ, ส่วนสูง, น้ำหนัก, หมู่โลหิตและ Rh, เลขประจำตัวผู้บริจาคโลหิต, ประเภทผู้บริจาค, จำนวนครั้งที่เคยบริจาคมาก่อนใช้แอป (ยอดสะสมยกมา)",
       "การพักการเตือน: แอปเก็บเพียงวันที่ที่จะกลับมาเตือน ไม่ถามและไม่เก็บเหตุผลที่พัก (เช่น การตั้งครรภ์หรือให้นมบุตร)",
-      "ข้อมูลรายการบริจาค: วันที่, เวลา, ประเภทการบริจาค (โลหิตรวม/พลาสมา-เกล็ดเลือด), สถานที่บริจาค, บันทึกช่วยจำที่คุณพิมพ์เอง — ทั้งหมดนี้กรอกโดยคุณเองทีละรายการ",
+      "ข้อมูลรายการบริจาค: วันที่, เวลา, ประเภทการบริจาค (โลหิตรวม/พลาสมา/เกล็ดเลือด/เม็ดเลือดแดง), สถานที่บริจาค, บันทึกช่วยจำที่คุณพิมพ์เอง — ทั้งหมดนี้กรอกโดยคุณเองทีละรายการ",
       "ข้อมูลการตั้งค่า: รอบระยะเวลาที่สามารถบริจาคซ้ำได้ (ค่าเริ่มต้น 90 วัน), สถานะการให้ความยินยอม และวันที่ให้ความยินยอม",
       "ข้อมูลจาก LINE (เฉพาะเมื่อเปิดผ่าน LINE): แอปขอสิทธิ์ LIFF เพียงขอบเขต openid เท่านั้น ซึ่งใช้ยืนยันบริบทการเปิดแอปผ่าน LINE ในทางเทคนิค แอปไม่ได้ดึงชื่อ รูปโปรไฟล์ หรือ LINE User ID ของคุณไปเก็บหรือใช้งานแต่อย่างใด",
       "แอปไม่เก็บและไม่ขอเลขบัตรประชาชน เบอร์โทรศัพท์ อีเมล หรือที่อยู่ ส่วนเลขประจำตัวผู้บริจาคโลหิตเก็บเฉพาะเมื่อคุณกรอกเอง เพื่อให้เปิดดูหรือคัดลอกได้สะดวกตอนกรอกใบสมัครบริจาค และจะไม่แสดงบนการ์ดแชร์",
@@ -171,7 +171,6 @@ const PRIVACY_POLICY_SECTIONS = [
     ],
   },
 ];
-const DEFAULT_CYCLE_DAYS = 90;
 const MIN_CYCLE_DAYS = 7;
 const MAX_CYCLE_DAYS = 365;
 const MIN_AGE = 17;
@@ -188,6 +187,8 @@ const MIN_WEIGHT = 45; // matches ELIGIBILITY_CRITERIA text and the locked crite
 //     ("สามารถบริจาคได้ทุก 14 วัน" -- thaibloodcentre.redcross.or.th).
 const WHOLE_BLOOD_INTERVAL_DAYS = 90;
 const COMPONENT_INTERVAL_DAYS = 14;
+// Official minimum gap per type, only used to size the carried-over-count ceiling.
+const TYPE_INTERVAL_DAYS = { whole: WHOLE_BLOOD_INTERVAL_DAYS, plasma: COMPONENT_INTERVAL_DAYS, platelet: 30, rbc: 120 };
 // Multiplier applied on top of the exact theoretical max (see
 // maxStartingCountWhole/Component below) so the cap isn't a razor's edge
 // against a perfectly-timed donor -- accounts for things like an early
@@ -253,18 +254,49 @@ const MAX_NOTE_LEN = 120;
 const DEFAULT_BACKUP_REMINDER_GAP = 3;
 const MIN_BACKUP_REMINDER_GAP = 1;
 const MAX_BACKUP_REMINDER_GAP = 50;
-const DEFAULT_COMPONENT_CYCLE_DAYS = 14;
+// Four donation types (Thai Red Cross National Blood Centre): whole blood plus
+// three apheresis ("เฉพาะส่วน") kinds. Each has its own re-donation interval --
+// plasma every 14 days, platelets monthly, red cells every 4 months (the last
+// two converted to 30 / 120 days) -- used as the DEFAULT reminder cycle, which
+// the donor can still change in settings.
+export const DONATION_TYPES = ["whole", "plasma", "platelet", "rbc"];
+export const DEFAULT_CYCLE_BY_TYPE = { whole: 90, plasma: 14, platelet: 30, rbc: 120 };
+// Old saves/backups only knew "whole" and "component" (plasma/platelet lumped
+// together on a 14-day rule). "component" is read as plasma -- the 14-day rule
+// was always plasma's -- and anything unknown falls back to whole.
+export const normalizeDonationType = (t) => (DONATION_TYPES.includes(t) ? t : t === "component" ? "plasma" : "whole");
+const TYPE_STARTING_KEY = { whole: "startingCountWhole", plasma: "startingCountPlasma", platelet: "startingCountPlatelet", rbc: "startingCountRbc" };
+const emptyByType = (v) => Object.fromEntries(DONATION_TYPES.map((t) => [t, typeof v === "function" ? v(t) : v]));
+// Reads the per-type carried-over counts out of a saved profile. The pre-4-type
+// "startingCountComponent" field was plasma/platelet combined; it becomes plasma.
+const startingCountsFromProfile = (p) => {
+  const n = (v) => (typeof v === "number" && v > 0 ? String(v) : "");
+  return {
+    whole: n(typeof p.startingCountWhole === "number" ? p.startingCountWhole : p.startingCount),
+    plasma: n(typeof p.startingCountPlasma === "number" ? p.startingCountPlasma : p.startingCountComponent),
+    platelet: n(p.startingCountPlatelet),
+    rbc: n(p.startingCountRbc),
+  };
+};
+const startingCountFields = (counts) => Object.fromEntries(DONATION_TYPES.map((t) => [TYPE_STARTING_KEY[t], Number(counts[t]) || 0]));
 const DEFAULT_DONATION_TYPE = "whole";
 const TYPE_REQUIRED_MESSAGE = "ระบุประเภทการบริจาค";
 const IMPORT_UNSUPPORTED_MESSAGE = "รูปแบบไม่รองรับ หรือไฟล์เสียหาย";
-export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", component: "พลาสมา/เกล็ดเลือด" };
+export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", plasma: "พลาสมา", platelet: "เกล็ดเลือด", rbc: "เม็ดเลือดแดง" };
+// "เฉพาะส่วน" is the umbrella name for the three apheresis types.
+const COMPONENT_GROUP_LABEL = "เฉพาะส่วน";
+const COMPONENT_TYPES = ["plasma", "platelet", "rbc"];
+// Where each default reminder cycle comes from (shown under the setting).
+const TYPE_CYCLE_NOTE = { whole: "", plasma: "บริจาคได้ทุก 14 วัน", platelet: "บริจาคได้เดือนละครั้ง", rbc: "บริจาคได้ทุก 4 เดือน" };
 // Background/text tint per donation type, used only on the history list's
 // type pill so the two types can be told apart at a glance without
 // re-coloring every type pill/icon elsewhere in the app (which stays the
 // existing single red-tint scheme).
 const DONATION_TYPE_TINT = {
   whole: { bg: "#F3EAE8", text: "#9A3B33" },
-  component: { bg: "#EFE3F0", text: "#6B3E78" },
+  plasma: { bg: "#EFE3F0", text: "#6B3E78" },
+  platelet: { bg: "#FBEFD9", text: "#8A5A12" },
+  rbc: { bg: "#E1ECF3", text: "#2D5F7C" },
 };
 
 export function toBuddhistDate(d) {
@@ -657,6 +689,16 @@ function MedalIcon({ tier = 1, size = 24 }) {
       <path d="M11 23 h2.2v-2.2h1.6v2.2h2.2v1.6h-2.2v2.2h-1.6v-2.2h-2.2z" fill="#B3261E" />
     </svg>
   );
+}
+
+// One icon per donation type: lucide droplet (whole) / droplets (plasma) plus two
+// small custom marks for platelets (scattered dots) and red cells (biconcave disc).
+function TypeIcon({ type, size = 12, color, style }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color || "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", style: { flexShrink: 0, ...style }, "aria-hidden": "true" };
+  if (type === "platelet") return (<svg {...common}><circle cx="8" cy="9" r="2.6" /><circle cx="16" cy="8" r="1.8" /><circle cx="14" cy="16" r="3" /><circle cx="6.5" cy="16.5" r="1.4" /></svg>);
+  if (type === "rbc") return (<svg {...common}><circle cx="12" cy="12" r="8.5" /><ellipse cx="12" cy="12" rx="3.6" ry="2.2" /></svg>);
+  if (type === "plasma") return <Droplets size={size} color={color} style={style} />;
+  return <Droplet size={size} color={color} style={style} />;
 }
 
 function FanIcon({ size = 24 }) {
@@ -1779,7 +1821,11 @@ function base64UrlToBytes(str) {
 // Byte layout (see openShareCardInExternalBrowser for how it's built):
 //   [0]     flags — bit0 kind (0=record,1=achievement) | bits1-2 sizeIdx
 //           | bit3 type/akind (0=whole|pin, 1=component|medal)
-//           | bit4 isMonk | bits5-7 bloodType (0=A,1=B,2=AB,3=O,4=other)
+//           | bit4 isMonk (achievement) -- for a record, bit4 is the high bit of
+//             the donation type: type index = bit3 | bit4<<1 (0=whole,1=plasma,
+//             2=platelet,3=rbc). Older links never set bit4 on records, so their
+//             "component" (bit3=1) reads as plasma and "whole" as whole.
+//           | bits5-7 bloodType (0=A,1=B,2=AB,3=O,4=other)
 //   [1..3]  minutes since SHARE_LINK_EPOCH_MS, uint24 big-endian (the
 //           link's own timestamp, used for the expiry check)
 //   achievement: [4..5] totalCount uint16 | [6] tier | [7] threshold
@@ -1807,9 +1853,11 @@ function encodeSharePayload(payload) {
   const sizeIdx = payload.sizeIdx & 0b11;
   const bloodCode = BLOOD_TYPE_CODES[payload.bloodType] ?? 4;
   const isAchievement = payload.kind === "a";
-  const flagBit3 = isAchievement ? (payload.akind === "m" ? 1 : 0) : (payload.type === "c" ? 1 : 0);
+  const typeIdx = isAchievement ? 0 : Math.max(0, DONATION_TYPES.indexOf(normalizeDonationType(payload.type)));
+  const flagBit3 = isAchievement ? (payload.akind === "m" ? 1 : 0) : (typeIdx & 1);
+  const flagBit4 = isAchievement ? (payload.isMonk ? 1 : 0) : (typeIdx >> 1);
   const flags = (isAchievement ? 1 : 0) | (sizeIdx << 1) | (flagBit3 << 3)
-    | ((isAchievement && payload.isMonk ? 1 : 0) << 4) | (bloodCode << 5);
+    | (flagBit4 << 4) | (bloodCode << 5);
   out.push(flags & 0xff);
 
   const minutes = Math.max(0, Math.min(0xffffff, Math.round((Date.now() - SHARE_LINK_EPOCH_MS) / 60000)));
@@ -1859,7 +1907,7 @@ function decodeSharePayload(bytes) {
   const [nickname] = readLenStr(bytes, off);
   const dateObj = new Date(SHARE_LINK_EPOCH_MS + days * 86400000);
   const timeStr = minsOfDay === 0xffff ? "" : `${String(Math.floor(minsOfDay / 60)).padStart(2, "0")}:${String(minsOfDay % 60).padStart(2, "0")}`;
-  return { kind, sizeIdx, order, dateObj, timeStr, type: flagBit3 ? "c" : "w", location, bloodType, nickname, ts };
+  return { kind, sizeIdx, order, dateObj, timeStr, type: DONATION_TYPES[flagBit3 | ((flags >> 4) & 1) << 1], location, bloodType, nickname, ts };
 }
 
 // Packs `payload` (see openShareCardInExternalBrowser for its shape) into
@@ -2456,7 +2504,8 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   // Used for the type pill only -- the order-number droplet badge below is
   // deliberately kept a single consistent color regardless of type (per
   // explicit user feedback), rather than tinting it per donation type.
-  const tint = DONATION_TYPE_TINT[d.type === "component" ? "component" : "whole"];
+  const dType = normalizeDonationType(d.type);
+  const tint = DONATION_TYPE_TINT[dType];
   return (
     <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดรายการบริจาค" onClick={onView} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
@@ -2474,8 +2523,8 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           {d.time && <span style={{ fontSize: 12, fontWeight: 400, color: "#8E7773", whiteSpace: "nowrap" }}>{`เวลา\u00A0${d.time}\u00A0น.`}</span>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5 }}>
-          <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={12} color="#7A6360" /> : <Droplet size={12} color="#7A6360" />}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12, color: tint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
+          <span style={HIST_ICON_BOX}><TypeIcon type={dType} size={12} color="#7A6360" /></span>
+          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12, color: tint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[dType]}</span>
         </div>
         {/* Location / note rows only when filled in -- empty ones used to print a lone "—" and made every card ~40px taller. */}
         {d.location && (
@@ -2596,12 +2645,8 @@ function AppInner() {
     if (age === "" || Number.isNaN(parsedAge)) return MAX_AGE - MIN_AGE;
     return Math.max(1, Math.min(parsedAge, MAX_AGE) - MIN_AGE);
   }, [age]);
-  const maxStartingCountWhole = useMemo(
-    () => Math.max(10, Math.round(donorEligibleYears * (365.25 / WHOLE_BLOOD_INTERVAL_DAYS) * STARTING_COUNT_CAP_MARGIN)),
-    [donorEligibleYears]
-  );
-  const maxStartingCountComponent = useMemo(
-    () => Math.max(10, Math.round(donorEligibleYears * (365.25 / COMPONENT_INTERVAL_DAYS) * STARTING_COUNT_CAP_MARGIN)),
+  const maxStartingCountByType = useMemo(
+    () => Object.fromEntries(DONATION_TYPES.map((t) => [t, Math.max(10, Math.round(donorEligibleYears * (365.25 / TYPE_INTERVAL_DAYS[t]) * STARTING_COUNT_CAP_MARGIN))])),
     [donorEligibleYears]
   );
   const [weight, setWeight] = useState("");
@@ -2617,8 +2662,8 @@ function AppInner() {
   // single combined `startingCount` number; those are migrated on load by
   // attributing the whole legacy total to "whole" (โลหิตรวม), since the
   // donation-type concept didn't exist when they were saved — see load().
-  const [startingCountWhole, setStartingCountWhole] = useState("");
-  const [startingCountComponent, setStartingCountComponent] = useState("");
+  // One string per donation type: { whole, plasma, platelet, rbc }.
+  const [startingCounts, setStartingCounts] = useState(() => emptyByType(""));
   const [startingCountUpdatedAt, setStartingCountUpdatedAt] = useState("");
   // When the starting count was first set (distinct from startingCountUpdatedAt,
   // which moves every time it's edited) — lets the UI say "แก้ไขล่าสุดเมื่อ"
@@ -2651,6 +2696,8 @@ function AppInner() {
   const [editingId, setEditingId] = useState(null);
   const [editSnapshot, setEditSnapshot] = useState(null);
   const [formError, setFormError] = useState("");
+  // Step 1 of the two-step type picker: which group (โลหิตรวม | เฉพาะส่วน) is open while no type is chosen yet.
+  const [formGroupChoice, setFormGroupChoice] = useState("");
   const lastTypeIdxRef = useRef(0); // where the type pill fades out from after being cleared
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -2715,9 +2762,8 @@ function AppInner() {
   const [editingStartingCount, setEditingStartingCount] = useState(false);
   const [viewStartingCount, setViewStartingCount] = useState(false);
   const [startingCountEditError, setStartingCountEditError] = useState("");
-  const [startingCountEditField, setStartingCountEditField] = useState(""); // "whole" | "component" | "" (non-field error)
-  const [startingCountDraftWhole, setStartingCountDraftWhole] = useState("");
-  const [startingCountDraftComponent, setStartingCountDraftComponent] = useState("");
+  const [startingCountEditField, setStartingCountEditField] = useState(""); // a donation type key | "" (non-field error)
+  const [startingCountDraft, setStartingCountDraft] = useState(() => emptyByType(""));
   const [confirmDeleteStartingCount, setConfirmDeleteStartingCount] = useState(false);
   const [checkedConsent, setCheckedConsent] = useState(false);
   // true when an older consent version is on file (returning user asked to
@@ -2745,21 +2791,20 @@ function AppInner() {
   // Which field the current quick-entry error is about ("whole-count", "component-date", ...), so that
   // field gets the red edge like the main donation form does. Only shown while the error text is set.
   const [quickErrorField, setQuickErrorField] = useState("");
-  const [quickTypeOnWhole, setQuickTypeOnWhole] = useState(false);
-  const [quickTypeOnComponent, setQuickTypeOnComponent] = useState(false);
-  const [quickStartingCountWholeDraft, setQuickStartingCountWholeDraft] = useState("");
-  const [quickStartingCountComponentDraft, setQuickStartingCountComponentDraft] = useState("");
-  const [quickEntryFormWhole, setQuickEntryFormWhole] = useState({ date: "", time: "", location: "", note: "" });
-  const [quickEntryFormComponent, setQuickEntryFormComponent] = useState({ date: "", time: "", location: "", note: "" });
-  const quickCountInputRefWhole = useRef(null);
-  const quickCountInputRefComponent = useRef(null);
-  const quickDateInputRefWhole = useRef(null);
-  const quickDateInputRefComponent = useRef(null);
+  // Quick-entry state, one slot per donation type (see DONATION_TYPES).
+  const [quickTypeOn, setQuickTypeOn] = useState(() => emptyByType(false));
+  const [quickCountDraft, setQuickCountDraft] = useState(() => emptyByType(""));
+  const [quickEntryForm, setQuickEntryForm] = useState(() => emptyByType(() => ({ date: "", time: "", location: "", note: "" })));
+  const quickCountInputRefs = useRef({});
+  const quickDateInputRefs = useRef({});
   // date starts blank (not pre-filled with today) -- opening the date field
   // still defaults to today inside the calendar dialog itself (see
   // DateCalendarDialog's `initial`), it's just not assumed/shown until the
   // user actually opens and confirms it.
   const [form, setForm] = useState({ date: "", time: "", location: "", note: "", type: "" });
+  // Selected group in the record form's type picker; a chosen type decides it, otherwise the donor's tap does.
+  const formGroup = form.type ? (form.type === "whole" ? "whole" : "component") : formGroupChoice;
+  useEffect(() => { if (!showForm) setFormGroupChoice(""); }, [showForm]);
   // Lets submitDonation below put the user's attention directly on the date
   // field when it's the reason validation failed ("ระบุวันที่บริจาค") -- previously the error
   // text appeared above the บันทึก button but nothing pointed back up at
@@ -2770,8 +2815,8 @@ function AppInner() {
   const [error, setError] = useState("");
   const [lastExportCount, setLastExportCount] = useState(0);
   const [backupSnoozeCount, setBackupSnoozeCount] = useState(null);
-  const [cycleDays, setCycleDays] = useState(DEFAULT_CYCLE_DAYS);
-  const [componentCycleDays, setComponentCycleDays] = useState(DEFAULT_COMPONENT_CYCLE_DAYS);
+  // Reminder cycle (days) per donation type; strings while typing.
+  const [cycleByType, setCycleByType] = useState(() => ({ ...DEFAULT_CYCLE_BY_TYPE }));
   const [backupReminderGap, setBackupReminderGap] = useState(DEFAULT_BACKUP_REMINDER_GAP);
   // The number inputs below bind directly to the raw state above so the
   // user can freely type/clear digits, only clamped to range on blur — but
@@ -2780,10 +2825,11 @@ function AppInner() {
   // check, and anything else derived from these settings should never see
   // that transient value, so they read the "effective" (always in-range)
   // versions below instead.
-  const effectiveCycleDays = cycleDays !== "" && Number.isFinite(Number(cycleDays))
-    ? Math.min(MAX_CYCLE_DAYS, Math.max(MIN_CYCLE_DAYS, Math.round(Number(cycleDays)))) : DEFAULT_CYCLE_DAYS;
-  const effectiveComponentCycleDays = componentCycleDays !== "" && Number.isFinite(Number(componentCycleDays))
-    ? Math.min(MAX_CYCLE_DAYS, Math.max(MIN_CYCLE_DAYS, Math.round(Number(componentCycleDays)))) : DEFAULT_COMPONENT_CYCLE_DAYS;
+  const effectiveCycleByType = Object.fromEntries(DONATION_TYPES.map((t) => {
+    const v = cycleByType[t];
+    return [t, v !== "" && Number.isFinite(Number(v))
+      ? Math.min(MAX_CYCLE_DAYS, Math.max(MIN_CYCLE_DAYS, Math.round(Number(v)))) : DEFAULT_CYCLE_BY_TYPE[t]];
+  }));
   const effectiveBackupReminderGap = backupReminderGap !== "" && Number.isFinite(Number(backupReminderGap))
     ? Math.min(MAX_BACKUP_REMINDER_GAP, Math.max(MIN_BACKUP_REMINDER_GAP, Math.round(Number(backupReminderGap)))) : DEFAULT_BACKUP_REMINDER_GAP;
   const [dismissedEligibilityAge, setDismissedEligibilityAge] = useState(null);
@@ -3186,17 +3232,15 @@ function AppInner() {
           setDonorType(p.donorType === "monk" ? "monk" : (p.donorType === "general" && p.donorTypePicked) ? "general" : "");
           // Migrate legacy single-number profiles (saved before donation
           // type existed) by attributing the whole prior total to "whole".
-          const legacyStartingCount = typeof p.startingCount === "number" ? p.startingCount : 0;
-          const wholeStartingCount = typeof p.startingCountWhole === "number" ? p.startingCountWhole : legacyStartingCount;
-          const componentStartingCount = typeof p.startingCountComponent === "number" ? p.startingCountComponent : 0;
-          setStartingCountWhole(wholeStartingCount ? String(wholeStartingCount) : "");
-          setStartingCountComponent(componentStartingCount ? String(componentStartingCount) : "");
+          // (startingCountsFromProfile also reads the pre-4-type
+          // "startingCountComponent" total as plasma.)
+          setStartingCounts(startingCountsFromProfile(p));
           setStartingCountUpdatedAt(p.startingCountUpdatedAt || "");
           setStartingCountCreatedAt(p.startingCountCreatedAt || p.startingCountUpdatedAt || "");
         } catch {}
       }
       if (donationsRes && donationsRes.value) {
-        try { setDonations(JSON.parse(donationsRes.value)); } catch { setDonations([]); }
+        try { setDonations(JSON.parse(donationsRes.value).map((d) => ({ ...d, type: normalizeDonationType(d.type) }))); } catch { setDonations([]); }
       }
       if (backupRes && backupRes.value) {
         try { setLastExportCount(JSON.parse(backupRes.value).lastExportCount || 0); } catch {}
@@ -3206,8 +3250,13 @@ function AppInner() {
           const u = JSON.parse(uiRes.value);
           setSeenAchievements(Array.isArray(u.seenAchievements) ? u.seenAchievements : []);
           setBackupSnoozeCount(typeof u.backupSnoozeCount === "number" ? u.backupSnoozeCount : null);
-          setCycleDays(typeof u.cycleDays === "number" && u.cycleDays >= MIN_CYCLE_DAYS && u.cycleDays <= MAX_CYCLE_DAYS ? u.cycleDays : DEFAULT_CYCLE_DAYS);
-          setComponentCycleDays(typeof u.componentCycleDays === "number" && u.componentCycleDays >= MIN_CYCLE_DAYS && u.componentCycleDays <= MAX_CYCLE_DAYS ? u.componentCycleDays : DEFAULT_COMPONENT_CYCLE_DAYS);
+          {
+            // New saves keep cycleByType; older ones only had cycleDays (whole) and componentCycleDays (read as plasma).
+            const ok = (v) => typeof v === "number" && v >= MIN_CYCLE_DAYS && v <= MAX_CYCLE_DAYS;
+            const saved = u.cycleByType && typeof u.cycleByType === "object" ? u.cycleByType : {};
+            const legacy = { whole: u.cycleDays, plasma: u.componentCycleDays };
+            setCycleByType(Object.fromEntries(DONATION_TYPES.map((t) => [t, ok(saved[t]) ? saved[t] : ok(legacy[t]) ? legacy[t] : DEFAULT_CYCLE_BY_TYPE[t]])));
+          }
           setBackupReminderGap(typeof u.backupReminderGap === "number" && u.backupReminderGap >= MIN_BACKUP_REMINDER_GAP && u.backupReminderGap <= MAX_BACKUP_REMINDER_GAP ? u.backupReminderGap : DEFAULT_BACKUP_REMINDER_GAP);
           setDismissedEligibilityAge(typeof u.dismissedEligibilityAge === "number" ? u.dismissedEligibilityAge : null);
           setDismissedEligibilityWeight(typeof u.dismissedEligibilityWeight === "number" ? u.dismissedEligibilityWeight : null);
@@ -3528,7 +3577,7 @@ function AppInner() {
   const uiMetaWriteQueueRef = useRef(Promise.resolve());
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
-      seenAchievements, backupSnoozeCount, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap,
+      seenAchievements, backupSnoozeCount, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap,
       dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills,
       ...uiMetaRef.current, ...patch,
     };
@@ -3566,21 +3615,12 @@ function AppInner() {
     return strict ? write : profileWriteQueueRef.current;
   };
 
-  const updateCycleDays = (raw) => {
+  const updateCycleByType = (type, raw) => {
     const n = Math.round(Number(raw));
-    if (!Number.isFinite(n)) { setCycleDays(effectiveCycleDays); return; }
+    if (!Number.isFinite(n)) { setCycleByType((prev) => ({ ...prev, [type]: effectiveCycleByType[type] })); return; }
     const clamped = Math.min(MAX_CYCLE_DAYS, Math.max(MIN_CYCLE_DAYS, n));
-    setCycleDays(clamped);
-    persistUiMeta({ cycleDays: clamped });
-    if (clamped !== n) showToast("success", `ปรับค่าให้อยู่ในช่วงที่กำหนดแล้ว (${MIN_CYCLE_DAYS}-${MAX_CYCLE_DAYS} วัน)`);
-  };
-
-  const updateComponentCycleDays = (raw) => {
-    const n = Math.round(Number(raw));
-    if (!Number.isFinite(n)) { setComponentCycleDays(effectiveComponentCycleDays); return; }
-    const clamped = Math.min(MAX_CYCLE_DAYS, Math.max(MIN_CYCLE_DAYS, n));
-    setComponentCycleDays(clamped);
-    persistUiMeta({ componentCycleDays: clamped });
+    setCycleByType((prev) => ({ ...prev, [type]: clamped }));
+    persistUiMeta({ cycleByType: { ...effectiveCycleByType, [type]: clamped } });
     if (clamped !== n) showToast("success", `ปรับค่าให้อยู่ในช่วงที่กำหนดแล้ว (${MIN_CYCLE_DAYS}-${MAX_CYCLE_DAYS} วัน)`);
   };
 
@@ -3659,8 +3699,7 @@ function AppInner() {
   const persistPhoto = async (nextPhoto) => {
     await persistProfile({
       nickname, photo: nextPhoto, age, weight, bloodType, donorType,
-      startingCountWhole: Number(startingCountWhole) || 0,
-      startingCountComponent: Number(startingCountComponent) || 0,
+      ...startingCountFields(startingCounts),
       startingCountCreatedAt, startingCountUpdatedAt,
     }, { strict: true });
     setPhoto(nextPhoto);
@@ -3789,8 +3828,7 @@ function AppInner() {
         bloodType: next.bloodType, donorType: next.donorType === "monk" || next.donorType === "general" ? next.donorType : "",
         birthYear: next.birthYear, birthYearApprox: next.birthYearApprox, gender: next.gender, height: next.height,
         donorId: next.donorId, bloodRh: next.bloodRh, remindPauseUntil: next.remindPauseUntil,
-        startingCountWhole: Number(startingCountWhole) || 0,
-        startingCountComponent: Number(startingCountComponent) || 0,
+        ...startingCountFields(startingCounts),
         startingCountCreatedAt, startingCountUpdatedAt,
       });
       checkStorageHealth();
@@ -3898,15 +3936,16 @@ function AppInner() {
     if (back) setShowOnboardingChoice(true);
   };
 
+  const resetQuickEntryState = () => {
+    setQuickStartingCountError("");
+    setQuickTypeOn(emptyByType(false));
+    setQuickCountDraft(emptyByType(""));
+    setQuickEntryForm(emptyByType(() => ({ date: "", time: "", location: "", note: "" })));
+  };
+
   const chooseHasStartingCount = () => {
     setShowOnboardingChoice(false);
-    setQuickStartingCountError("");
-    setQuickTypeOnWhole(false);
-    setQuickTypeOnComponent(false);
-    setQuickStartingCountWholeDraft("");
-    setQuickStartingCountComponentDraft("");
-    setQuickEntryFormWhole({ date: "", time: "", location: "", note: "" });
-    setQuickEntryFormComponent({ date: "", time: "", location: "", note: "" });
+    resetQuickEntryState();
     setShowStartingCountQuickEntry(true);
   };
 
@@ -3919,46 +3958,46 @@ function AppInner() {
 
   const cancelStartingCountQuickEntry = () => {
     setShowStartingCountQuickEntry(false);
-    setQuickStartingCountError("");
-    setQuickTypeOnWhole(false);
-    setQuickTypeOnComponent(false);
-    setQuickStartingCountWholeDraft("");
-    setQuickStartingCountComponentDraft("");
-    setQuickEntryFormWhole({ date: "", time: "", location: "", note: "" });
-    setQuickEntryFormComponent({ date: "", time: "", location: "", note: "" });
+    resetQuickEntryState();
   };
 
-  const quickSameDateLive = !!(quickTypeOnWhole && quickTypeOnComponent && quickEntryFormWhole.date && quickEntryFormComponent.date && daysBetween(new Date(quickEntryFormWhole.date), new Date(quickEntryFormComponent.date)) === 0);
+  // Two donations -- of any type -- never share a date (not medically possible
+  // in one day), so turning on two types here with the same date is a conflict.
+  const quickSameDateTypes = (() => {
+    const seen = {};
+    const dup = new Set();
+    for (const t of DONATION_TYPES) {
+      const d = quickTypeOn[t] && quickEntryForm[t].date;
+      if (!d) continue;
+      const key = String(new Date(d).setHours(0, 0, 0, 0));
+      if (seen[key]) { dup.add(t); dup.add(seen[key]); } else seen[key] = t;
+    }
+    return dup;
+  })();
+  const quickAnyTypeOn = DONATION_TYPES.some((t) => quickTypeOn[t]);
   const submitStartingCountQuickEntry = async () => {
     // Each donation type has its own on/off switch — only the type(s) the
     // donor turns on get a count field and a required last-donation record.
-    // A donor who only ever donated whole blood turns on just that switch;
-    // a donor who's done both turns on both, each with its own total and
-    // last-donation date/time/location/note.
     // (The save button is only rendered while at least one switch is on, so this is just a guard.)
-    if (!quickTypeOnWhole && !quickTypeOnComponent) return;
-    const wholeTotalRaw = quickTypeOnWhole ? (quickStartingCountWholeDraft === "" ? NaN : Number(quickStartingCountWholeDraft)) : 0;
-    const componentTotalRaw = quickTypeOnComponent ? (quickStartingCountComponentDraft === "" ? NaN : Number(quickStartingCountComponentDraft)) : 0;
+    if (!quickAnyTypeOn) return;
+    const totalRaw = (t) => (quickTypeOn[t] ? (quickCountDraft[t] === "" ? NaN : Number(quickCountDraft[t])) : 0);
     // Validate one card fully (count, then date) before moving to the next,
     // so the first error a donor sees always belongs to the card at the top
     // of the form rather than jumping between cards.
-    for (const [key, on, totalRaw, countRef, f, dateRef, typeMax] of [
-      ["whole", quickTypeOnWhole, wholeTotalRaw, quickCountInputRefWhole, quickEntryFormWhole, quickDateInputRefWhole, maxStartingCountWhole],
-      ["component", quickTypeOnComponent, componentTotalRaw, quickCountInputRefComponent, quickEntryFormComponent, quickDateInputRefComponent, maxStartingCountComponent],
-    ]) {
-      if (!on) continue;
+    for (const key of DONATION_TYPES) {
+      if (!quickTypeOn[key]) continue;
+      const raw = totalRaw(key);
+      const typeMax = maxStartingCountByType[key];
+      const f = quickEntryForm[key];
       // The entered total INCLUDES the most-recent donation being logged in
       // this same form, so the minimum valid value is 1 (not 0) — see
       // handoff doc decision log ("แบบ A"). The upper bound is type- AND
-      // donor-specific (see maxStartingCountWhole/Component above, scoped to
-      // this donor's own age): no real person in this donor's situation
-      // could exceed it given Thai Red Cross's own donation intervals, so
-      // this message tells the donor the number they typed isn't
-      // realistically possible rather than just "too big".
-      if (Number.isNaN(totalRaw) || !Number.isInteger(totalRaw) || totalRaw < 1 || totalRaw > typeMax) {
+      // donor-specific (scoped to this donor's own age): no real person in
+      // this donor's situation could exceed it given the donation intervals.
+      if (Number.isNaN(raw) || !Number.isInteger(raw) || raw < 1 || raw > typeMax) {
         setQuickStartingCountError(`ระบุ 1-${typeMax} ครั้ง (ตามช่วงอายุและรอบบริจาค)`);
         setQuickErrorField(`${key}-count`);
-        countRef.current?.focus();
+        quickCountInputRefs.current[key]?.focus();
         return;
       }
       // One message for every unusable date (empty, unparsable, after today). The calendar picker can only
@@ -3967,64 +4006,46 @@ function AppInner() {
       if (!d || Number.isNaN(d.getTime()) || d.setHours(0,0,0,0) > startOfToday().getTime()) {
         setQuickStartingCountError("ระบุวันที่บริจาค (ครั้งล่าสุด)");
         setQuickErrorField(`${key}-date`);
-        dateRef.current?.focus();
+        quickDateInputRefs.current[key]?.focus();
         return;
       }
     }
-    // Same invariant as sameDateConflict below (two donations — of any
-    // type — never share a date, since it's never medically possible in a
-    // single day): the per-card loop above only validates each date on its
-    // own, so a donor turning on both type switches here could otherwise
-    // save two brand-new records dated the same day, something the normal
-    // add/edit form already hard-blocks everywhere else in the app.
-    if (quickTypeOnWhole && quickTypeOnComponent && quickEntryFormWhole.date && quickEntryFormComponent.date
-      && daysBetween(new Date(quickEntryFormWhole.date), new Date(quickEntryFormComponent.date)) === 0) {
-      setQuickStartingCountError("วันที่ของโลหิตรวมกับพลาสมาซ้ำกัน เลือกวันอื่น");
-      setQuickErrorField("component-date");
-      quickDateInputRefComponent.current?.focus();
+    if (quickSameDateTypes.size > 0) {
+      const second = DONATION_TYPES.filter((t) => quickSameDateTypes.has(t)).pop();
+      setQuickStartingCountError("วันที่ของสองประเภทซ้ำกัน เลือกวันอื่น");
+      setQuickErrorField(`${second}-date`);
+      quickDateInputRefs.current[second]?.focus();
       return;
     }
     setQuickStartingCountError("");
     setSaving(true);
     try {
-      const createWholeRecord = quickTypeOnWhole;
-      const createComponentRecord = quickTypeOnComponent;
-      const priorWhole = createWholeRecord ? Math.max(0, wholeTotalRaw - 1) : wholeTotalRaw;
-      const priorComponent = createComponentRecord ? Math.max(0, componentTotalRaw - 1) : componentTotalRaw;
-      const stampedAt = (priorWhole + priorComponent) > 0 ? new Date().toISOString() : "";
+      const prior = Object.fromEntries(DONATION_TYPES.map((t) => [t, quickTypeOn[t] ? Math.max(0, totalRaw(t) - 1) : 0]));
+      const stampedAt = DONATION_TYPES.some((t) => prior[t] > 0) ? new Date().toISOString() : "";
       const nowIso = new Date().toISOString();
 
-      const newRecords = [];
-      if (createWholeRecord) {
-        newRecords.push({
-          id: uid(), date: quickEntryFormWhole.date, time: quickEntryFormWhole.time || "",
-          location: quickEntryFormWhole.location.trim().slice(0, MAX_LOCATION_LEN),
-          note: quickEntryFormWhole.note.trim().slice(0, MAX_NOTE_LEN),
-          type: "whole", loggedAt: nowIso, createdAt: nowIso,
-        });
-      }
-      if (createComponentRecord) {
-        newRecords.push({
-          id: uid(), date: quickEntryFormComponent.date, time: quickEntryFormComponent.time || "",
-          location: quickEntryFormComponent.location.trim().slice(0, MAX_LOCATION_LEN),
-          note: quickEntryFormComponent.note.trim().slice(0, MAX_NOTE_LEN),
-          type: "component", loggedAt: nowIso, createdAt: nowIso,
-        });
-      }
+      const newRecords = DONATION_TYPES.filter((t) => quickTypeOn[t]).map((t) => {
+        const f = quickEntryForm[t];
+        return {
+          id: uid(), date: f.date, time: f.time || "",
+          location: f.location.trim().slice(0, MAX_LOCATION_LEN),
+          note: f.note.trim().slice(0, MAX_NOTE_LEN),
+          type: t, loggedAt: nowIso, createdAt: nowIso,
+        };
+      });
       const nextDonations = [...donations, ...newRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
 
       const prevDonations = donations;
       await saveDonations(nextDonations, { strict: true });
       try {
-        await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: priorWhole, startingCountComponent: priorComponent, startingCountCreatedAt: stampedAt, startingCountUpdatedAt: stampedAt }, { strict: true });
+        await persistProfile({ nickname, photo, age, weight, bloodType, donorType, ...startingCountFields(prior), startingCountCreatedAt: stampedAt, startingCountUpdatedAt: stampedAt }, { strict: true });
       } catch (e) {
         // Keep the two stores consistent: undo the donations write, then report.
         saveDonations(prevDonations).catch(() => {});
         throw e;
       }
 
-      setStartingCountWhole(priorWhole ? String(priorWhole) : "");
-      setStartingCountComponent(priorComponent ? String(priorComponent) : "");
+      setStartingCounts(Object.fromEntries(DONATION_TYPES.map((t) => [t, prior[t] ? String(prior[t]) : ""])));
       setStartingCountCreatedAt(stampedAt);
       setStartingCountUpdatedAt(stampedAt);
       setShowStartingCountQuickEntry(false);
@@ -4046,7 +4067,7 @@ function AppInner() {
       formDateFieldRef.current?.focus();
       return;
     }
-    if (form.type !== "whole" && form.type !== "component") {
+    if (!DONATION_TYPES.includes(form.type)) {
       setFormError(TYPE_REQUIRED_MESSAGE);
       return;
     }
@@ -4115,8 +4136,7 @@ function AppInner() {
   // still carries every other current field along, to avoid the silent-wipe
   // bug class noted earlier in the handoff doc.
   const openEditStartingCount = () => {
-    setStartingCountDraftWhole(startingCountWhole || "");
-    setStartingCountDraftComponent(startingCountComponent || "");
+    setStartingCountDraft({ ...startingCounts });
     setStartingCountEditError("");
     setViewStartingCount(false);
     setEditingStartingCount(true);
@@ -4125,31 +4145,24 @@ function AppInner() {
   const cancelEditStartingCount = () => {
     setEditingStartingCount(false);
     setStartingCountEditError("");
-    setStartingCountDraftWhole("");
-    setStartingCountDraftComponent("");
+    setStartingCountDraft(emptyByType(""));
   };
 
   const saveStartingCountInline = async () => {
     // The edit dialog follows the history type filter: a type hidden by the filter isn't shown, so it
     // keeps its stored value untouched (and isn't validated -- the user can't see or fix it here).
-    const editWhole = historyTypeFilter !== "component";
-    const editComponent = historyTypeFilter !== "whole";
-    const numWhole = !editWhole ? startingCountWholeNum : (startingCountDraftWhole !== "" ? Number(startingCountDraftWhole) : 0);
-    const numComponent = !editComponent ? startingCountComponentNum : (startingCountDraftComponent !== "" ? Number(startingCountDraftComponent) : 0);
-    // Each type validated against its own realistic, donor-age-scoped
-    // ceiling (see maxStartingCountWhole/Component above) and reported by
-    // name, so a number that's fine for one type but not the other doesn't
-    // get folded into one generic message that doesn't say which field is
-    // the problem.
-    if (editWhole && (Number.isNaN(numWhole) || !Number.isInteger(numWhole) || numWhole < 0 || numWhole > maxStartingCountWhole)) {
-      setStartingCountEditError(`ระบุ 0-${maxStartingCountWhole} ครั้ง (ตามช่วงอายุและรอบบริจาค)`); setStartingCountEditField("whole");
-      return;
+    const nums = {};
+    for (const t of DONATION_TYPES) {
+      const editing = startingEditTypes.includes(t);
+      nums[t] = !editing ? startingNum[t] : (startingCountDraft[t] !== "" ? Number(startingCountDraft[t]) : 0);
+      // Each type is validated against its own realistic, donor-age-scoped ceiling and reported by name.
+      if (editing && (Number.isNaN(nums[t]) || !Number.isInteger(nums[t]) || nums[t] < 0 || nums[t] > maxStartingCountByType[t])) {
+        setStartingCountEditError(`ระบุ 0-${maxStartingCountByType[t]} ครั้ง (ตามช่วงอายุและรอบบริจาค)`); setStartingCountEditField(t);
+        return;
+      }
     }
-    if (editComponent && (Number.isNaN(numComponent) || !Number.isInteger(numComponent) || numComponent < 0 || numComponent > maxStartingCountComponent)) {
-      setStartingCountEditError(`ระบุ 0-${maxStartingCountComponent} ครั้ง (ตามช่วงอายุและรอบบริจาค)`); setStartingCountEditField("component");
-      return;
-    }
-    if (numWhole + numComponent === 0) {
+    const numTotal = DONATION_TYPES.reduce((sum, t) => sum + nums[t], 0);
+    if (numTotal === 0) {
       // Clearing both totals is really "delete the carried-over count" -- route it through the same
       // confirmation as the ⋮ menu's ลบ instead of silently wiping it on a plain save.
       setEditingStartingCount(false);
@@ -4159,10 +4172,9 @@ function AppInner() {
     }
     setStartingCountEditError("");
     try {
-      const { createdAt: stampedCreatedAt, updatedAt: stampedAt } = computeStartingCountStamps(startingCountNum, numWhole + numComponent);
-      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: numWhole, startingCountComponent: numComponent, startingCountCreatedAt: stampedCreatedAt, startingCountUpdatedAt: stampedAt });
-      setStartingCountWhole(numWhole ? String(numWhole) : "");
-      setStartingCountComponent(numComponent ? String(numComponent) : "");
+      const { createdAt: stampedCreatedAt, updatedAt: stampedAt } = computeStartingCountStamps(startingCountNum, numTotal);
+      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, ...startingCountFields(nums), startingCountCreatedAt: stampedCreatedAt, startingCountUpdatedAt: stampedAt });
+      setStartingCounts(Object.fromEntries(DONATION_TYPES.map((t) => [t, nums[t] ? String(nums[t]) : ""])));
       setStartingCountCreatedAt(stampedCreatedAt);
       setStartingCountUpdatedAt(stampedAt);
       setEditingStartingCount(false);
@@ -4178,9 +4190,8 @@ function AppInner() {
     setStartCountDeleteError("");
     setSaving(true);
     try {
-      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, startingCountWhole: 0, startingCountComponent: 0, startingCountCreatedAt: "", startingCountUpdatedAt: "" }, { strict: true });
-      setStartingCountWhole("");
-      setStartingCountComponent("");
+      await persistProfile({ nickname, photo, age, weight, bloodType, donorType, ...startingCountFields(emptyByType("")), startingCountCreatedAt: "", startingCountUpdatedAt: "" }, { strict: true });
+      setStartingCounts(emptyByType(""));
       setStartingCountCreatedAt("");
       setStartingCountUpdatedAt("");
       setConfirmDeleteStartingCount(false);
@@ -4202,8 +4213,7 @@ function AppInner() {
         nickname: "", photo: "", weight: "", bloodType: "", donorType: "",
         birthYear: "", birthYearApprox: false, gender: "", height: "", donorId: "", bloodRh: "",
         remindPauseUntil,
-        startingCountWhole: Number(startingCountWhole) || 0,
-        startingCountComponent: Number(startingCountComponent) || 0,
+        ...startingCountFields(startingCounts),
         startingCountCreatedAt, startingCountUpdatedAt,
       }, { strict: true });
       setNickname(""); setPhoto(""); setWeight(""); setBloodType(""); setDonorType("");
@@ -4240,15 +4250,13 @@ function AppInner() {
       setWeight("");
       setBloodType("");
       setDonorType("");
-      setStartingCountWhole("");
-      setStartingCountComponent("");
+      setStartingCounts(emptyByType(""));
       setStartingCountCreatedAt("");
       setStartingCountUpdatedAt("");
       setLastExportCount(0);
       setBackupSnoozeCount(null);
       setSeenAchievements([]);
-      setCycleDays(DEFAULT_CYCLE_DAYS);
-      setComponentCycleDays(DEFAULT_COMPONENT_CYCLE_DAYS);
+      setCycleByType({ ...DEFAULT_CYCLE_BY_TYPE });
       setBackupReminderGap(DEFAULT_BACKUP_REMINDER_GAP);
       setDismissedEligibilityAge(null);
       setDismissedEligibilityWeight(null);
@@ -4388,7 +4396,7 @@ function AppInner() {
   const exportData = async () => {
     setExportMsg(null);
     try {
-      const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, startingCountWhole, startingCountComponent, startingCountCreatedAt, startingCountUpdatedAt, donations, cycleDays: effectiveCycleDays, componentCycleDays: effectiveComponentCycleDays, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
+      const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, schemaVersion: 2, ...startingCountFields(startingCounts), startingCountCreatedAt, startingCountUpdatedAt, donations, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
       setShowExportPreview(true);
@@ -4543,8 +4551,8 @@ function AppInner() {
       date: d.date || "",
       dateStr: toBuddhistDate(d.date),
       timeStr: d.time || "",
-      type: d.type === "component" ? "component" : "whole",
-      typeLabel: DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"],
+      type: normalizeDonationType(d.type),
+      typeLabel: DONATION_TYPE_LABELS[normalizeDonationType(d.type)],
       location: d.location || "",
       bloodType,
       nickname,
@@ -4679,7 +4687,7 @@ function AppInner() {
           order: shareRecordData.order ?? 0,
           date: shareRecordData.date || "",
           timeStr: shareRecordData.timeStr || "",
-          type: shareRecordData.type === "component" ? "c" : "w",
+          type: normalizeDonationType(shareRecordData.type),
           location: shareRecordData.location || "",
           bloodType: shareRecordData.bloodType || "",
           nickname: shareRecordData.nickname || "",
@@ -4808,7 +4816,7 @@ function AppInner() {
             time: typeof d.time === "string" ? d.time : "",
             location: typeof d.location === "string" ? d.location.trim().slice(0, MAX_LOCATION_LEN) : "",
             note: typeof d.note === "string" ? d.note.trim().slice(0, MAX_NOTE_LEN) : "",
-            type: d.type === "component" ? "component" : DEFAULT_DONATION_TYPE,
+            type: normalizeDonationType(d.type),
             loggedAt: typeof d.loggedAt === "string" ? d.loggedAt : new Date().toISOString(),
             createdAt: typeof d.createdAt === "string" ? d.createdAt : (typeof d.loggedAt === "string" ? d.loggedAt : new Date().toISOString()),
           },
@@ -5032,8 +5040,7 @@ function AppInner() {
         weight: "weight" in fill ? fill.weight : weight,
         bloodType: "bloodType" in fill ? fill.bloodType : bloodType,
         donorType: "donorType" in fill ? fill.donorType : donorType,
-        startingCountWhole: Number(startingCountWhole) || 0,
-        startingCountComponent: Number(startingCountComponent) || 0,
+        ...startingCountFields(startingCounts),
         startingCountCreatedAt,
         startingCountUpdatedAt,
       };
@@ -5079,12 +5086,13 @@ function AppInner() {
   // on home for the day of the latest donation and the two days after.
   const careDaysSince = last ? daysBetween(parseLocalDate(last.date), new Date()) : null;
   const showCareCard = !!last && careDaysSince >= 0 && careDaysSince <= 2 && dismissedCareFor !== last.id;
-  const startingCountWholeNum = Number(startingCountWhole) || 0;
-  const startingCountComponentNum = Number(startingCountComponent) || 0;
-  const startingCountNum = startingCountWholeNum + startingCountComponentNum;
+  // Carried-over counts as numbers, per type.
+  const startingNum = Object.fromEntries(DONATION_TYPES.map((t) => [t, Number(startingCounts[t]) || 0]));
+  const startingCountNum = DONATION_TYPES.reduce((sum, t) => sum + startingNum[t], 0);
+  // Edit sheet shows one field per type, or just the filtered type when the history is filtered.
+  const startingEditTypes = historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter];
   const startingCountEditUnchanged = editingStartingCount
-    && (historyTypeFilter === "component" || (Number(startingCountDraftWhole) || 0) === startingCountWholeNum)
-    && (historyTypeFilter === "whole" || (Number(startingCountDraftComponent) || 0) === startingCountComponentNum);
+    && startingEditTypes.every((t) => (Number(startingCountDraft[t]) || 0) === startingNum[t]);
   // "ยอดสะสมยกมา" (startingCount) is now just a running total the user enters
   // once, up front — it explicitly excludes their most recent donation, which
   // gets logged as a real, normal, fully editable/deletable record via the
@@ -5101,19 +5109,21 @@ function AppInner() {
   // logged BOTH types at least once, the home card shows tabs to switch
   // which type's countdown is being viewed (countdownTab); otherwise it
   // just follows whichever type the latest record actually is.
-  const sortedWhole = sorted.filter(d => (d.type || DEFAULT_DONATION_TYPE) === "whole");
-  const sortedComponent = sorted.filter(d => d.type === "component");
-  const lastWhole = sortedWhole[0] || null;
-  const lastComponent = sortedComponent[0] || null;
-  const wholeTotalCount = startingCountWholeNum + sortedWhole.length;
-  const componentTotalCount = startingCountComponentNum + sortedComponent.length;
-  const hasBothDonationTypes = wholeTotalCount > 0 && componentTotalCount > 0;
-  const activeCountdownType = hasBothDonationTypes
-    ? (countdownTab || (last && last.type === "component" ? "component" : "whole"))
-    : (wholeTotalCount > 0 ? "whole" : componentTotalCount > 0 ? "component" : (last && last.type === "component" ? "component" : "whole"));
-  const activeLastRecord = activeCountdownType === "component" ? lastComponent : lastWhole;
-  const activeCycleDays = activeCountdownType === "component" ? effectiveComponentCycleDays : effectiveCycleDays;
-  const activeTypeTotalCount = activeCountdownType === "component" ? componentTotalCount : wholeTotalCount;
+  const sortedBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, sorted.filter((d) => normalizeDonationType(d.type) === t)]));
+  const lastBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, sortedBy[t][0] || null]));
+  const totalBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, startingNum[t] + sortedBy[t].length]));
+  // Types the donor has ever recorded (dated record or carried-over count):
+  // only these get a tab / pill / filter chip.
+  const recordedTypes = DONATION_TYPES.filter((t) => totalBy[t] > 0);
+  const recordedTypesKey = recordedTypes.join(",");
+  const hasMultipleTypes = recordedTypes.length > 1;
+  const lastType = last ? normalizeDonationType(last.type) : "whole";
+  const activeCountdownType = hasMultipleTypes
+    ? (countdownTab && recordedTypes.includes(countdownTab) ? countdownTab : (recordedTypes.includes(lastType) ? lastType : recordedTypes[0]))
+    : (recordedTypes[0] || lastType);
+  const activeLastRecord = lastBy[activeCountdownType];
+  const activeCycleDays = effectiveCycleByType[activeCountdownType];
+  const activeTypeTotalCount = totalBy[activeCountdownType];
   const effectiveLastDateStr = activeLastRecord ? activeLastRecord.date : null;
   const nextEligible = effectiveLastDateStr ? new Date(parseLocalDate(effectiveLastDateStr).getTime() + activeCycleDays * 86400000) : null;
   const daysLeft = nextEligible ? daysBetween(new Date(), new Date(nextEligible)) : 0;
@@ -5123,63 +5133,65 @@ function AppInner() {
   const reminderDismissed = !!activeTypeDismiss
     && activeTypeDismiss.dueDate === (nextEligible ? dateToLocalStr(nextEligible) : "")
     && activeTypeDismiss.dismissedOn === todayLocalStr();
-  // Per-type next-eligible countdown, used only by the dashboard-tab summary
-  // card's auto-rotating display below — kept independent of activeCountdownType
-  // (the home-tab toggle's shared state) so the dashboard card can cycle on
-  // its own timer without flipping the home-tab card along with it.
-  const wholeNextEligible = lastWhole ? new Date(parseLocalDate(lastWhole.date).getTime() + effectiveCycleDays * 86400000) : null;
-  const wholeDaysLeft = wholeNextEligible ? daysBetween(new Date(), new Date(wholeNextEligible)) : 0;
-  const wholeIsEligible = !wholeNextEligible || wholeDaysLeft <= 0;
-  const componentNextEligible = lastComponent ? new Date(parseLocalDate(lastComponent.date).getTime() + effectiveComponentCycleDays * 86400000) : null;
-  const componentDaysLeft = componentNextEligible ? daysBetween(new Date(), new Date(componentNextEligible)) : 0;
-  const componentIsEligible = !componentNextEligible || componentDaysLeft <= 0;
-  const wholeComparableDays = !lastWhole ? Infinity : (wholeIsEligible ? 0 : wholeDaysLeft);
-  const componentComparableDays = !lastComponent ? Infinity : (componentIsEligible ? 0 : componentDaysLeft);
-  const soonestDonationType = componentComparableDays < wholeComparableDays ? "component" : "whole";
-  const dashboardShownType = hasBothDonationTypes ? (dashboardRotateType || soonestDonationType) : activeCountdownType;
-  const dashboardShownRecord = dashboardShownType === "component" ? lastComponent : lastWhole;
-  const dashboardShownCycleDays = dashboardShownType === "component" ? effectiveComponentCycleDays : effectiveCycleDays;
-  const dashboardShownTotalCount = dashboardShownType === "component" ? componentTotalCount : wholeTotalCount;
+  // Days until each type can be donated again (0 = now; Infinity = never recorded),
+  // used to start the tab rotation on the soonest type. The dashboard card has
+  // its own rotating type so it never flips the home card along with it.
+  const comparableDaysBy = Object.fromEntries(DONATION_TYPES.map((t) => {
+    const l = lastBy[t];
+    if (!l) return [t, Infinity];
+    const left = daysBetween(new Date(), new Date(new Date(parseLocalDate(l.date).getTime() + effectiveCycleByType[t] * 86400000)));
+    return [t, left <= 0 ? 0 : left];
+  }));
+  const soonestDonationType = recordedTypes.reduce((best, t) => (comparableDaysBy[t] < comparableDaysBy[best] ? t : best), recordedTypes[0] || "whole");
+  const dashboardShownType = hasMultipleTypes
+    ? (dashboardRotateType && recordedTypes.includes(dashboardRotateType) ? dashboardRotateType : soonestDonationType)
+    : activeCountdownType;
+  const dashboardShownRecord = lastBy[dashboardShownType];
+  const dashboardShownCycleDays = effectiveCycleByType[dashboardShownType];
+  const dashboardShownTotalCount = totalBy[dashboardShownType];
   const dashboardShownLastDateStr = dashboardShownRecord ? dashboardShownRecord.date : null;
   const dashboardShownNextEligible = dashboardShownLastDateStr ? new Date(new Date(dashboardShownLastDateStr).getTime() + dashboardShownCycleDays * 86400000) : null;
   const dashboardShownDaysLeft = dashboardShownNextEligible ? daysBetween(new Date(), new Date(dashboardShownNextEligible)) : 0;
   const dashboardShownIsEligible = !dashboardShownNextEligible || dashboardShownDaysLeft <= 0;
-  // Auto-rotate the dashboard card's shown type every 30s while the donor has
-  // both types logged. Starts on whichever is soonest; a manual pill tap sets
-  // dashboardRotateType immediately, and the next tick continues the cycle
-  // from there. Only runs while the dashboard tab is actually the one on
-  // screen — otherwise this (and the home-tab timer below) kept forcing a
-  // full re-render of the whole app, including a full re-sort of the
-  // donation history, every 30s no matter which tab the donor was looking
-  // at. Pausing/resuming loses no state: countdownTab/dashboardRotateType
-  // pick up right where they left off next time that tab is active.
+  // Auto-rotate the dashboard card's shown type every 30s while more than one
+  // type is recorded, only while that tab is on screen. A manual pill tap sets
+  // dashboardRotateType immediately and the cycle continues from there.
+  const nextRecordedType = (cur) => recordedTypes[(Math.max(0, recordedTypes.indexOf(cur)) + 1) % recordedTypes.length];
   useEffect(() => {
-    if (!hasBothDonationTypes || tab !== "dashboard") return;
-    setDashboardRotateType(prev => prev || soonestDonationType);
+    if (!hasMultipleTypes || tab !== "dashboard") return;
+    setDashboardRotateType(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
     const id = setInterval(() => {
-      setDashboardRotateType(prev => (prev === "component" ? "whole" : "component"));
+      setDashboardRotateType(prev => nextRecordedType(prev));
     }, 30000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasBothDonationTypes, tab]);
-  // Same auto-rotation for the home-tab summary card's countdownTab, on its
-  // own independent 30s timer — this card cycles/overrides separately from
-  // the dashboard card above.
+  }, [hasMultipleTypes, recordedTypesKey, tab]);
+  // Same auto-rotation for the home-tab card's countdownTab on its own timer.
   // Once the user taps a type tab themselves, auto-rotation stops for the
-  // rest of the session -- it used to keep going (and the 30s timer wasn't
-  // reset), so a tap could be flipped back a second later.
+  // rest of the session.
   const countdownManualRef = useRef(false);
+  // Keeps the selected type's tab visible in the scrolling tab row (sideways only, never the page).
+  const heroTabsRef = useRef(null);
   useEffect(() => {
-    if (!hasBothDonationTypes || tab !== "home") return;
-    setCountdownTab(prev => prev || soonestDonationType);
+    const box = heroTabsRef.current;
+    const el = box && box.querySelector('[data-tab-active="1"]');
+    if (!box || !el) return;
+    const left = el.offsetLeft - 22;
+    const right = el.offsetLeft + el.offsetWidth + 22 - box.clientWidth;
+    if (box.scrollLeft > left) box.scrollTo({ left, behavior: "smooth" });
+    else if (box.scrollLeft < right) box.scrollTo({ left: right, behavior: "smooth" });
+  }, [activeCountdownType, hasMultipleTypes]);
+  useEffect(() => {
+    if (!hasMultipleTypes || tab !== "home") return;
+    setCountdownTab(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
     if (countdownManualRef.current) return;
     const id = setInterval(() => {
       if (countdownManualRef.current) { clearInterval(id); return; }
-      setCountdownTab(prev => (prev === "component" ? "whole" : "component"));
+      setCountdownTab(prev => nextRecordedType(prev));
     }, 30000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasBothDonationTypes, tab]);
+  }, [hasMultipleTypes, recordedTypesKey, tab]);
   const totalCount = startingCountNum + donations.length;
   // Rough, clearly-labeled estimate only (350ml/donation) — not meant to be
   // precise, just to give the cumulative count some tangible meaning.
@@ -5336,13 +5348,10 @@ function AppInner() {
     // also surface the single most recent gap alongside the average so the
     // donor can see both the long-run figure and where they stand today.
     const lastGapOf = (arr) => arr.length >= 2 ? daysBetween(new Date(arr[arr.length - 2].date), new Date(arr[arr.length - 1].date)) : null;
-    const wholeChronological = chronological.filter(d => (d.type || DEFAULT_DONATION_TYPE) === "whole");
-    const componentChronological = chronological.filter(d => d.type === "component");
-    const avgGapWhole = computeAvgGap(wholeChronological);
-    const avgGapComponent = computeAvgGap(componentChronological);
+    const chronologicalBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, chronological.filter((d) => normalizeDonationType(d.type) === t)]));
+    const avgGapBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, computeAvgGap(chronologicalBy[t])]));
     const lastGap = lastGapOf(chronological);
-    const lastGapWhole = lastGapOf(wholeChronological);
-    const lastGapComponent = lastGapOf(componentChronological);
+    const lastGapBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, lastGapOf(chronologicalBy[t])]));
 
     // On a tie, prefer the more recent year — sort ascending by year first
     // (explicitly, rather than relying on numeric-string object-key
@@ -5373,7 +5382,7 @@ function AppInner() {
     let busiestMonthIdx = null;
     monthCounts.forEach((c, i) => { if (c > 0 && c === maxMonthCount && busiestMonthIdx === null) busiestMonthIdx = i; });
 
-    return { yearData, avgGap, avgGapWhole, avgGapComponent, lastGap, lastGapWhole, lastGapComponent, busiestYear, busiestCount, estVolumeMl, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdx };
+    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, estVolumeMl, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdx };
   }, [donations, achievements, totalCount]);
 
   // Keep the "yearly count" chart scrolled to the latest years by default —
@@ -5464,7 +5473,7 @@ function AppInner() {
   const filteredHistory = useMemo(() => {
     let list = historyYearFilter === "all" ? sorted : sorted.filter(d => String(buddhistYear(d.date)) === historyYearFilter);
     if (historyTypeFilter !== "all") {
-      list = list.filter(d => (d.type || DEFAULT_DONATION_TYPE) === historyTypeFilter);
+      list = list.filter(d => normalizeDonationType(d.type) === historyTypeFilter);
     }
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -5479,9 +5488,7 @@ function AppInner() {
   // ยกมาไม่แสดงให้ด้วยอ่ะ" after filtering to one type). This tracks
   // whichever total actually applies to the currently selected filter, so
   // the card's visibility and its number both follow the active filter.
-  const displayedStartingCount = historyTypeFilter === "whole" ? startingCountWholeNum
-    : historyTypeFilter === "component" ? startingCountComponentNum
-    : startingCountNum;
+  const displayedStartingCount = historyTypeFilter === "all" ? startingCountNum : startingNum[historyTypeFilter];
 
   useEffect(() => { setHistoryVisibleCount(HISTORY_PAGE_SIZE); }, [historyYearFilter, historyTypeFilter]);
 
@@ -5489,16 +5496,16 @@ function AppInner() {
   // filter value keeps silently applying in filteredHistory above with no
   // visible control left to explain or reset it. Concretely: pick "type =
   // พลาสมา/เกล็ดเลือด", then delete every component-type record (and its
-  // starting count) — hasBothDonationTypes goes false, the type-filter chip
+  // starting count) — hasMultipleTypes goes false, the type-filter chip
   // row disappears, but historyTypeFilter was still "component" in state,
   // so every real (whole-blood) record kept getting filtered out of the
   // list with no chip on screen to show why. Same class of bug existed for
   // the year filter (its <select> also only renders conditionally) whenever
   // the selected year's last record gets deleted/edited away.
   useEffect(() => {
-    if (!hasBothDonationTypes && historyTypeFilter !== "all") setHistoryTypeFilter("all");
+    if (historyTypeFilter !== "all" && (!hasMultipleTypes || !recordedTypes.includes(historyTypeFilter))) setHistoryTypeFilter("all");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasBothDonationTypes]);
+  }, [hasMultipleTypes, recordedTypesKey]);
   useEffect(() => {
     if (historyYearFilter !== "all" && !historyYears.includes(historyYearFilter)) setHistoryYearFilter("all");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -5562,11 +5569,11 @@ function AppInner() {
     if (Number.isNaN(target.getTime())) return null;
     if (!form.type) return null;
     const formType = form.type;
-    const relevantCycleDays = formType === "component" ? effectiveComponentCycleDays : effectiveCycleDays;
+    const relevantCycleDays = effectiveCycleByType[formType] || DEFAULT_CYCLE_BY_TYPE.whole;
     let closest = null;
     donations.forEach(d => {
       if (editingId && d.id === editingId) return;
-      if ((d.type || DEFAULT_DONATION_TYPE) !== formType) return;
+      if (normalizeDonationType(d.type) !== formType) return;
       const diff = Math.abs(daysBetween(new Date(d.date), new Date(target)));
       if (closest === null || diff < closest) closest = diff;
     });
@@ -5574,7 +5581,7 @@ function AppInner() {
       return `วันที่นี้ห่างจากรายการ${DONATION_TYPE_LABELS[formType]}อื่นเพียง ${closest} วัน (เกณฑ์ทั่วไปคือ ${relevantCycleDays} วัน) - ระบบยังบันทึกข้อมูลให้ตามที่ระบุจริง แต่ควรตรวจสอบกับเจ้าหน้าที่ว่าบริจาคได้ตามรอบหรือไม่`;
     }
     return null;
-  }, [form.date, form.type, donations, editingId, effectiveCycleDays, effectiveComponentCycleDays]);
+  }, [form.date, form.type, donations, editingId, effectiveCycleByType]);
 
   if (phase === "loading") {
     return (
@@ -6141,17 +6148,17 @@ function AppInner() {
                   </div>
                 </div>
 
-                {hasBothDonationTypes ? (
-                  <div style={{ display: "flex", gap: 6, marginTop: 6, position: "relative", zIndex: 2 }}>
+                {hasMultipleTypes ? (
+                  <div ref={heroTabsRef} className="no-scrollbar" role="tablist" aria-label="ประเภทการบริจาค" style={{ display: "flex", gap: 6, position: "relative", zIndex: 2, overflowX: "auto", overflowY: "hidden", margin: "-2px -22px -8px", padding: "8px 22px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
                     {/* Selected pill's text/count now tints per donation type (matching
                         the same DONATION_TYPE_TINT used on the history filters and
                         cards below) instead of always reading maroon regardless of
                         which type is active -- so this tab strip carries the same
                         color signal as the rest of the tab. */}
-                    {["whole", "component"].map((t) => (
-                      <button key={t} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
+                    {recordedTypes.map((t) => (
+                      <button key={t} role="tab" aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
                         style={{
-                          position: "relative", display: "flex", alignItems: "center", gap: 6,
+                          position: "relative", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, whiteSpace: "nowrap",
                           padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
                           background: activeCountdownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
@@ -6160,13 +6167,13 @@ function AppInner() {
                         }}>
                         {/* Invisible 44px-tall tap area; pill keeps its 30px look. */}
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
-                        {t === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[t]}
+                        <TypeIcon type={t} size={12} /> {DONATION_TYPE_LABELS[t]}
                         <span style={{
                           fontSize: 11, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
                           background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           transition: "background 0.35s ease, color 0.35s ease",
-                        }}>{t === "component" ? componentTotalCount : wholeTotalCount}</span>
+                        }}>{totalBy[t]}</span>
                       </button>
                     ))}
                   </div>
@@ -6176,7 +6183,7 @@ function AppInner() {
                   // above -- dropped the chip and kept only the type name, which
                   // is the one thing this pill actually adds.
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
-                    {activeCountdownType === "component" ? <Droplets size={12} /> : <Droplet size={12} />} {DONATION_TYPE_LABELS[activeCountdownType]}
+                    <TypeIcon type={activeCountdownType} size={12} /> {DONATION_TYPE_LABELS[activeCountdownType]}
                   </div>
                 ) : (
                   // Brand-new user with no history yet -- previously this was an
@@ -6198,14 +6205,14 @@ function AppInner() {
                       progress caption below already say it, and the clock only duplicated
                       them. The other states keep theirs -- the icon is their meaning
                       (paused bell, info, eligible checkmark). */}
-                  {(remindPaused || totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0) || isEligible) && (
+                  {(remindPaused || totalCount === 0 || (!effectiveLastDateStr && (hasMultipleTypes || totalCount > 0) && activeTypeTotalCount > 0) || isEligible) && (
                   <span style={{ display: "flex", flexShrink: 0, marginTop: 1 }}>
                     {/* totalCount === 0 (brand-new user, no history at all) must never
                         show the checkmark -- isEligible is true by default when there's
                         no nextEligible date yet, but a checkmark next to "no history"
                         reads as a false confirmation rather than a neutral empty state. */}
                     {remindPaused ? <BellOff size={18} />
-                      : totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0)
+                      : totalCount === 0 || (!effectiveLastDateStr && (hasMultipleTypes || totalCount > 0) && activeTypeTotalCount > 0)
                       ? <Info size={18} />
                       : <CheckCircle2 size={18} />}
                   </span>
@@ -6220,8 +6227,8 @@ function AppInner() {
                         {effectiveLastDateStr && (
                           <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 6 }}>
                             {isEligible
-                              ? <>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้แล้ว</>
-                              : <>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
+                              ? <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้แล้ว</>
+                              : <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
                           </div>
                         )}
                         <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
@@ -6240,7 +6247,7 @@ function AppInner() {
                         <>
                           <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>บริจาคได้แล้ววันนี้</div>
                           <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>
-                            {hasBothDonationTypes ? `สำหรับ${DONATION_TYPE_LABELS[activeCountdownType]} · ` : ""}ครั้งล่าสุด <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(effectiveLastDateStr)}</span>
+                            {hasMultipleTypes ? `สำหรับ${DONATION_TYPE_LABELS[activeCountdownType]} · ` : ""}ครั้งล่าสุด <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(effectiveLastDateStr)}</span>
                           </div>
                           <button
                             onClick={() => {
@@ -6261,10 +6268,10 @@ function AppInner() {
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be
                               misread as the other type's. */}
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span></div>
+                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span></div>
                         </>
                       )
-                    ) : hasBothDonationTypes || totalCount > 0 ? (
+                    ) : hasMultipleTypes || totalCount > 0 ? (
                       activeTypeTotalCount > 0
                         ? (
                           <>
@@ -6312,7 +6319,7 @@ function AppInner() {
                 </div>
                 {showCycleInfo && (effectiveLastDateStr && !isEligible) && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 11.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
-                    คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
+                    คำนวณจากเกณฑ์{hasMultipleTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
                     เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค
                   </div>
                 )}
@@ -6346,9 +6353,10 @@ function AppInner() {
                 const items = [
                   { Icon: GlassWater, text: "ดื่มน้ำมากกว่าปกติ และงดยกของหนักหรือออกกำลังหนักในวันที่บริจาค" },
                 ];
-                // Iron tablets come with whole-blood donations; apheresis
-                // (พลาสมา/เกล็ดเลือด) takes back the red cells.
-                if (last.type !== "component") {
+                // Iron tablets come with donations that take red cells (whole
+                // blood, red-cell apheresis); plasma and platelet apheresis
+                // return the red cells to the donor.
+                if (last.type === "whole" || last.type === "rbc" || !last.type) {
                   items.push({ Icon: Pill, text: "กินยาธาตุเหล็กที่ได้รับตามที่เจ้าหน้าที่แนะนำ เลี่ยงกินพร้อมนม ชา กาแฟ น้ำส้มช่วยให้ดูดซึมดีขึ้น" });
                   if (gender === "female") items.push({ Icon: Info, text: "ผู้หญิงเสียธาตุเหล็กทุกเดือนจากประจำเดือน จึงควรกินยาธาตุเหล็กให้ครบ ช่วยให้ครั้งหน้าผ่านการตรวจความเข้มข้นเลือด" });
                 }
@@ -6630,7 +6638,7 @@ function AppInner() {
               {totalCount > 0 && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
-                {(hasBothDonationTypes || historyYears.length > 1) && (() => {
+                {(hasMultipleTypes || historyYears.length > 1) && (() => {
                   const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
                   const on = activeCount > 0;
                   return (
@@ -6653,12 +6661,10 @@ function AppInner() {
                 // when "ทุกปี"), so the header previews the result before
                 // "เสร็จ" applies it.
                 const draftRecords = donations.filter(d =>
-                  (draftTypeFilter === "all" || (d.type || DEFAULT_DONATION_TYPE) === draftTypeFilter)
+                  (draftTypeFilter === "all" || normalizeDonationType(d.type) === draftTypeFilter)
                   && (draftYearFilter === "all" || String(buddhistYear(d.date)) === draftYearFilter)).length;
                 const draftCarry = draftYearFilter !== "all" ? 0
-                  : draftTypeFilter === "whole" ? startingCountWholeNum
-                  : draftTypeFilter === "component" ? startingCountComponentNum
-                  : startingCountNum;
+                  : draftTypeFilter === "all" ? startingCountNum : startingNum[draftTypeFilter];
                 const shownCount = draftRecords + draftCarry;
                 const draftActive = draftTypeFilter !== "all" || draftYearFilter !== "all";
                 const chipBase = { position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, padding: "7px 14px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer" };
@@ -6691,14 +6697,13 @@ function AppInner() {
                             <X size={20} />
                           </button>
                         </div>
-                        {hasBothDonationTypes && (
+                        {hasMultipleTypes && (
                           <>
                             <div style={{ fontSize: 12, color: "#7A6360", margin: "0 0 8px" }}>ประเภท</div>
                             <div role="radiogroup" aria-label="ประเภท" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
                               {[
                                 { key: "all", label: "ทั้งหมด" },
-                                { key: "whole", label: DONATION_TYPE_LABELS.whole },
-                                { key: "component", label: DONATION_TYPE_LABELS.component },
+                                ...recordedTypes.map((t) => ({ key: t, label: DONATION_TYPE_LABELS[t] })),
                               ].map(({ key, label }) => {
                                 const tint = key === "all" ? { bg: "#F3EAE8", text: "#9A3B33" } : DONATION_TYPE_TINT[key];
                                 const selected = draftTypeFilter === key;
@@ -6706,7 +6711,7 @@ function AppInner() {
                                   <button key={key} role="radio" aria-checked={selected} onClick={() => setDraftTypeFilter(key)}
                                     style={{ ...chipBase, fontWeight: 600, border: "none", color: selected ? "#FFF7F5" : tint.text, background: selected ? tint.text : tint.bg }}>
                                     {hit}
-                                    {key === "component" ? <Droplets size={12} /> : key === "whole" ? <Droplet size={12} /> : null}
+                                    {key !== "all" ? <TypeIcon type={key} size={12} /> : null}
                                     {label}
                                   </button>
                                 );
@@ -6802,29 +6807,24 @@ function AppInner() {
                             switching to, say, "พลาสมา/เกล็ดเลือด" would keep showing the
                             combined "เคยบริจาคมาแล้ว 1000 ครั้ง" heading next to a card that's
                             now only about one type (reported directly by the user). */}
-                        {historyTypeFilter === "all" && startingCountWholeNum > 0 && startingCountComponentNum > 0 ? (
-                          <div>
-                            {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px rows 5px apart. */}
-                            <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
-                              <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{startingCountNum} ครั้ง</span></span>
+                        {(() => {
+                          // Types that carry a count under the current filter; "ทั้งหมด" with several
+                          // shows the total plus a per-type breakdown, otherwise just that one type.
+                          const carryTypes = (historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter]).filter((t) => startingNum[t] > 0);
+                          const rowS = { display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" };
+                          return (
+                            <div>
+                              {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px rows 5px apart. */}
+                              <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
+                                <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span>
+                              </div>
+                              <div style={rowS}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
+                              {carryTypes.map((t) => (
+                                <div key={t} style={rowS}><span style={HIST_ICON_BOX}><TypeIcon type={t} size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>{DONATION_TYPE_LABELS[t]} <span style={{ whiteSpace: "nowrap" }}>{startingNum[t]} ครั้ง</span></span></div>
+                              ))}
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplet size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>โลหิตรวม <span style={{ whiteSpace: "nowrap" }}>{startingCountWholeNum} ครั้ง</span></span></div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>พลาสมา/เกล็ดเลือด <span style={{ whiteSpace: "nowrap" }}>{startingCountComponentNum} ครั้ง</span></span></div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
-                              <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}>
-                              {(historyTypeFilter === "component" || (historyTypeFilter === "all" && startingCountComponentNum > 0))
-                                ? <><span style={HIST_ICON_BOX}><Droplets size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>พลาสมา/เกล็ดเลือด <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span></>
-                                : <><span style={HIST_ICON_BOX}><Droplet size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>โลหิตรวม <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span></>}
-                            </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
                         <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
@@ -6871,7 +6871,7 @@ function AppInner() {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="rgba(255,247,245,0.4)" style={{ position: "absolute", top: 0, left: 0 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
                 </div>
                 <span style={{ display: "flex", flexShrink: 0, marginTop: 1, color: "#FFF7F5", position: "relative", zIndex: 1 }}>
-                  {!dashboardShownLastDateStr && (hasBothDonationTypes || totalCount > 0) && dashboardShownTotalCount > 0
+                  {!dashboardShownLastDateStr && (hasMultipleTypes || totalCount > 0) && dashboardShownTotalCount > 0
                     ? <Info size={20} />
                     : dashboardShownIsEligible ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                 </span>
@@ -6883,7 +6883,7 @@ function AppInner() {
                         dashboardShownIsEligible
                           ? "บริจาคได้แล้ววันนี้"
                           : `บริจาคครั้งถัดไปได้ตั้งแต่ ${toBuddhistDate(dashboardShownNextEligible)} (อีก ${dashboardShownDaysLeft} วัน)`
-                      ) : hasBothDonationTypes || totalCount > 0 ? (
+                      ) : hasMultipleTypes || totalCount > 0 ? (
                         dashboardShownTotalCount > 0
                           ? "กรุณาบันทึกวันที่บริจาคล่าสุดเพื่อคำนวณวันครบกำหนดถัดไป"
                           : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[dashboardShownType]}ในระบบ`
@@ -6898,9 +6898,9 @@ function AppInner() {
                       </div>
                     )}
                   </div>
-                  {hasBothDonationTypes && (
+                  {hasMultipleTypes && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-                      {["whole", "component"].map((t) => (
+                      {recordedTypes.map((t) => (
                         <button key={t} onClick={() => setDashboardRotateType(t)} style={{
                           display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, whiteSpace: "nowrap",
                           fontFamily: "inherit", border: "none", cursor: "pointer",
@@ -6908,7 +6908,7 @@ function AppInner() {
                           background: dashboardShownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>
-                          {t === "component" ? <Droplets size={11} style={{ flexShrink: 0 }} /> : <Droplet size={11} style={{ flexShrink: 0 }} />}
+                          <TypeIcon type={t} size={11} />
                           {DONATION_TYPE_LABELS[t]}
                         </button>
                       ))}
@@ -6927,8 +6927,8 @@ function AppInner() {
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>
-                    {last.type === "component" ? <Droplets size={11} color="#9A3B33" style={{ flexShrink: 0 }} /> : <Droplet size={11} color="#9A3B33" style={{ flexShrink: 0 }} />}
-                    {DONATION_TYPE_LABELS[last.type === "component" ? "component" : "whole"]}{last.location ? ` • ${last.location}` : ""}
+                    <TypeIcon type={lastType} size={11} color="#9A3B33" />
+                    {DONATION_TYPE_LABELS[lastType]}{last.location ? ` • ${last.location}` : ""}
                   </div>
                 </div>
               )}
@@ -6944,9 +6944,10 @@ function AppInner() {
                     {totalCount} <span style={{ fontSize: 12, fontWeight: 500 }}>ครั้ง</span>
                   </div>
                   <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>ข้อมูล ณ วันที่ {toBuddhistDateTime(dashboardLoadedAt)}</div>
-                  <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 8, marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", fontSize: 11.5, color: "#5C4A46", overflow: "hidden" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}><Droplet size={12} color="#9A3B33" style={{ flexShrink: 0 }} /> โลหิตรวม <b>{wholeTotalCount}</b> ครั้ง</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" style={{ flexShrink: 0 }} /> พลาสมา/เกล็ดเลือด <b>{componentTotalCount}</b> ครั้ง</span>
+                  <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 12px", marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", fontSize: 11.5, color: "#5C4A46" }}>
+                    {(recordedTypes.length ? recordedTypes : ["whole"]).map((t) => (
+                      <span key={t} style={{ display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}><TypeIcon type={t} size={12} color="#9A3B33" /> {DONATION_TYPE_LABELS[t]} <b>{totalBy[t]}</b> ครั้ง</span>
+                    ))}
                   </div>
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
@@ -6998,16 +6999,15 @@ function AppInner() {
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#5C4A46" }}>
                         <HeartPulse size={14} color="#9A3B33" style={{ flexShrink: 0 }} />
-                        อาจช่วยเหลือผู้ป่วยได้ถึง <b>{wholeTotalCount * 3 + componentTotalCount}</b> คน
+                        อาจช่วยเหลือผู้ป่วยได้ถึง <b>{totalBy.whole * 3 + totalBy.plasma + totalBy.platelet + totalBy.rbc}</b> คน
                       </div>
-                      {hasBothDonationTypes && (
+                      {hasMultipleTypes && (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
-                            <Droplet size={10} color="#B39B96" style={{ flexShrink: 0 }} /> โลหิตรวม 1 ครั้ง ≈ 3 คน
-                          </span>
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
-                            <Droplets size={10} color="#B39B96" style={{ flexShrink: 0 }} /> พลาสมา/เกล็ดเลือด 1 ครั้ง ≈ 1 คน
-                          </span>
+                          {recordedTypes.map((t) => (
+                            <span key={t} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
+                              <TypeIcon type={t} size={10} color="#B39B96" style={{ flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]} 1 ครั้ง ≈ {t === "whole" ? 3 : 1} คน
+                            </span>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -7015,7 +7015,7 @@ function AppInner() {
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ระยะห่างเฉลี่ยต่อครั้ง</div>
-                  {hasBothDonationTypes ? (
+                  {hasMultipleTypes ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                       {/* flexWrap: "wrap" on the row + whiteSpace: "nowrap" on
                           each text chunk lets the row wrap as whole
@@ -7024,16 +7024,13 @@ function AppInner() {
                           Thai script has no spaces to guide default line
                           breaking, which is what fractured a similar row in
                           the busiest-year card next to this one. */}
-                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 11.5, color: "#5C4A46" }}>
-                        <Droplet size={11} color="#9A3B33" style={{ flexShrink: 0 }} />
-                        <span style={{ whiteSpace: "nowrap" }}>โลหิตรวม <b style={{ fontSize: 13, color: "#3A2C29" }}>{stats.avgGapWhole ?? "—"}{stats.avgGapWhole != null ? " วัน" : ""}</b></span>
-                        {stats.lastGapWhole != null ? <span style={{ fontSize: 11.5, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapWhole} วัน)</span> : null}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 11.5, color: "#5C4A46" }}>
-                        <Droplets size={11} color="#9A3B33" style={{ flexShrink: 0 }} />
-                        <span style={{ whiteSpace: "nowrap" }}>พลาสมา/เกล็ดเลือด <b style={{ fontSize: 13, color: "#3A2C29" }}>{stats.avgGapComponent ?? "—"}{stats.avgGapComponent != null ? " วัน" : ""}</b></span>
-                        {stats.lastGapComponent != null ? <span style={{ fontSize: 11.5, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapComponent} วัน)</span> : null}
-                      </div>
+                      {recordedTypes.map((t) => (
+                        <div key={t} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 11.5, color: "#5C4A46" }}>
+                          <TypeIcon type={t} size={11} color={DONATION_TYPE_TINT[t].text} style={{ flexShrink: 0 }} />
+                          <span style={{ whiteSpace: "nowrap" }}>{DONATION_TYPE_LABELS[t]} <b style={{ fontSize: 13, color: "#3A2C29" }}>{stats.avgGapBy[t] ?? "—"}{stats.avgGapBy[t] != null ? " วัน" : ""}</b></span>
+                          {stats.lastGapBy[t] != null ? <span style={{ fontSize: 11.5, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapBy[t]} วัน)</span> : null}
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <>
@@ -7153,33 +7150,41 @@ function AppInner() {
                 </div>
               )}
 
-              {(wholeTotalCount + componentTotalCount) > 0 && (
+              {totalCount > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 18 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สัดส่วนการบริจาคโลหิตแต่ละประเภท</div>
                   {(() => {
-                    const total = wholeTotalCount + componentTotalCount;
-                    const wholePct = Math.round((wholeTotalCount / total) * 100);
+                    const total = recordedTypes.reduce((sum, t) => sum + totalBy[t], 0);
+                    // Whole percentages that always add up to 100 (largest remainder).
+                    const raw = recordedTypes.map((t) => (totalBy[t] / total) * 100);
+                    const pct = raw.map(Math.floor);
+                    let left = 100 - pct.reduce((a2, b2) => a2 + b2, 0);
+                    raw.map((v, i) => [v - Math.floor(v), i]).sort((x, y) => y[0] - x[0]).forEach(([, i]) => { if (left > 0) { pct[i] += 1; left -= 1; } });
+                    let offset = 0;
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                         <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
                           <svg width="96" height="96" viewBox="0 0 36 36" style={{ transform: "rotate(-90deg)" }}>
                             <circle cx="18" cy="18" r="15.5" fill="none" stroke="#F3EAE8" strokeWidth="5" />
-                            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#9A3B33" strokeWidth="5" strokeDasharray={`${wholePct} 100`} pathLength="100" strokeLinecap="round" />
+                            {recordedTypes.map((t, i) => {
+                              const seg = (totalBy[t] / total) * 100;
+                              const el = <circle key={t} cx="18" cy="18" r="15.5" fill="none" stroke={DONATION_TYPE_TINT[t].text} strokeWidth="5" strokeDasharray={`${Math.max(0, seg - (recordedTypes.length > 1 ? 0.8 : 0))} 100`} strokeDashoffset={-offset} pathLength="100" />;
+                              offset += seg;
+                              return el;
+                            })}
                           </svg>
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>{total}</div>
                             <div style={{ fontSize: 11, color: "#7A6360" }}>ครั้ง</div>
                           </div>
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
-                            <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: "#9A3B33", flexShrink: 0 }} /> โลหิตรวม</span>
-                            <span style={{ color: "#7A6360" }}>{wholeTotalCount} ครั้ง ({wholePct}%)</span>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-                            <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: "#F3EAE8", border: "1px solid #E3C8C3", flexShrink: 0 }} /> พลาสมา/เกล็ดเลือด</span>
-                            <span style={{ color: "#7A6360" }}>{componentTotalCount} ครั้ง ({100 - wholePct}%)</span>
-                          </div>
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                          {recordedTypes.map((t, i) => (
+                            <div key={t} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, fontSize: 12 }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: DONATION_TYPE_TINT[t].text, flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]}</span>
+                              <span style={{ color: "#7A6360", whiteSpace: "nowrap" }}>{totalBy[t]} ครั้ง ({pct[i]}%)</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );
@@ -8288,27 +8293,51 @@ function AppInner() {
                   track's edge red. */}
               <div role="radiogroup" aria-label="ประเภทการบริจาค" aria-required="true" style={{ position: "relative", display: "flex", background: "#FFFFFF", borderRadius: 12, padding: 4, border: `1px solid ${formError === TYPE_REQUIRED_MESSAGE ? "#B3261E" : "#E3C8C3"}` }}>
                 {(() => {
-                  const idx = ["whole", "component"].indexOf(form.type);
+                  const idx = formGroup === "whole" ? 0 : formGroup === "component" ? 1 : -1;
                   if (idx >= 0) lastTypeIdxRef.current = idx;
                   return (
                     <span aria-hidden="true" style={{ position: "absolute", top: 4, bottom: 4, left: `calc(4px + ${idx >= 0 ? idx : lastTypeIdxRef.current} * (100% - 8px) / 2)`, width: "calc((100% - 8px) / 2)", borderRadius: 9, background: "#F3E7E4", opacity: idx >= 0 ? 1 : 0, transition: "left .22s, opacity .18s" }} />
                   );
                 })()}
-                <SegDividers n={2} sel={["whole", "component"].indexOf(form.type)} />
-                {["whole", "component"].map((t) => {
-                  const on = form.type === t;
+                <SegDividers n={2} sel={formGroup === "whole" ? 0 : formGroup === "component" ? 1 : -1} />
+                {[["whole", "โลหิตรวม"], ["component", COMPONENT_GROUP_LABEL]].map(([g, label]) => {
+                  const on = formGroup === g;
                   return (
-                    <button key={t} type="button" role="radio" aria-checked={on} onClick={() => {
-                        // Tapping the chosen type again takes it back off (nothing selected), like the profile pickers.
-                        if (on) { setForm(f => ({ ...f, type: "" })); return; }
-                        setForm(f => ({ ...f, type: t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e));
+                    <button key={g} type="button" role="radio" aria-checked={on} onClick={() => {
+                        // Tapping the chosen group again takes it back off (nothing selected), like the profile pickers.
+                        if (on) { setForm(f => ({ ...f, type: "" })); setFormGroupChoice(""); return; }
+                        if (g === "whole") { setForm(f => ({ ...f, type: "whole" })); setFormGroupChoice("whole"); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }
+                        else { setForm(f => ({ ...f, type: DONATION_TYPES.includes(f.type) && f.type !== "whole" ? f.type : "" })); setFormGroupChoice("component"); }
                       }}
                       style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, whiteSpace: "nowrap", fontWeight: on ? 600 : 400, color: on ? "#8A2F28" : "#A38D89", transition: "color .2s" }}>
-                      {DONATION_TYPE_LABELS[t]}
+                      {label}
                     </button>
                   );
                 })}
               </div>
+              {formGroup === "component" && (
+                <div role="radiogroup" aria-label="ชนิดการบริจาคเฉพาะส่วน" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 8 }}>
+                  {COMPONENT_TYPES.map((t) => {
+                    const on = form.type === t;
+                    const tint = DONATION_TYPE_TINT[t];
+                    return (
+                      <button key={t} type="button" role="radio" aria-checked={on}
+                        onClick={() => { setForm(f => ({ ...f, type: on ? "" : t })); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }}
+                        style={{ position: "relative", minWidth: 0, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "6px 4px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: on ? 600 : 400, lineHeight: 1.25, textAlign: "center",
+                          border: `1px solid ${on ? tint.text : "#E3C8C3"}`, background: on ? tint.bg : "#FFFFFF", color: on ? tint.text : "#7A6360", transition: "background .18s, border-color .18s, color .18s" }}>
+                        <TypeIcon type={t} size={13} />
+                        <span>{DONATION_TYPE_LABELS[t]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {form.type && (
+                <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.6, marginTop: 8 }}>
+                  {DONATION_TYPE_LABELS[form.type]}: เตือนให้บริจาคซ้ำทุก {effectiveCycleByType[form.type]} วัน (ปรับได้ในตั้งค่า)
+                  {form.type === "platelet" && gender === "female" ? <div style={{ color: "#9C5515", marginTop: 2 }}>สภากาชาดไทยรับบริจาคเกล็ดเลือดจากผู้บริจาคเพศชายเท่านั้น</div> : null}
+                </div>
+              )}
               {formError === TYPE_REQUIRED_MESSAGE && <FieldError>{formError}</FieldError>}
             </div>
             <div style={{ marginBottom: 14 }}>
@@ -8396,17 +8425,25 @@ function AppInner() {
               </div>
             )}
 
-            {[
-              { key: "whole", label: "โลหิตรวม", on: quickTypeOnWhole, setOn: setQuickTypeOnWhole, draft: quickStartingCountWholeDraft, setDraft: setQuickStartingCountWholeDraft, form: quickEntryFormWhole, setForm: setQuickEntryFormWhole, countRef: quickCountInputRefWhole, dateRef: quickDateInputRefWhole, max: maxStartingCountWhole },
-              { key: "component", label: "พลาสมา/เกล็ดเลือด", on: quickTypeOnComponent, setOn: setQuickTypeOnComponent, draft: quickStartingCountComponentDraft, setDraft: setQuickStartingCountComponentDraft, form: quickEntryFormComponent, setForm: setQuickEntryFormComponent, countRef: quickCountInputRefComponent, dateRef: quickDateInputRefComponent, max: maxStartingCountComponent },
-            ].map(({ key, label, on, setOn, draft, setDraft, form: tf, setForm: setTf, countRef, dateRef, max }, idx) => (
+            {DONATION_TYPES.map((key, idx) => {
+              const label = DONATION_TYPE_LABELS[key];
+              const on = quickTypeOn[key];
+              const setOn = (fn) => setQuickTypeOn((prev) => ({ ...prev, [key]: typeof fn === "function" ? fn(prev[key]) : fn }));
+              const draft = quickCountDraft[key];
+              const setDraft = (v) => setQuickCountDraft((prev) => ({ ...prev, [key]: v }));
+              const tf = quickEntryForm[key];
+              const setTf = (fn) => setQuickEntryForm((prev) => ({ ...prev, [key]: fn(prev[key]) }));
+              const max = maxStartingCountByType[key];
+              const sameDateLive = quickSameDateTypes.has(key);
+              return (
+
               <div key={key} style={{ marginTop: idx === 0 ? 0 : 8, marginBottom: 8 }}>
                 <div style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#FFFFFF",
                   border: "1px solid #EEDEDA", borderRadius: on ? "12px 12px 0 0" : 12, borderBottom: on ? "none" : "1px solid #EEDEDA",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: on ? "#3A2C29" : "#7A6360" }}>
-                    {key === "component" ? <Droplets size={14} color={on ? "#9A3B33" : "#7A6360"} /> : <Droplet size={14} color={on ? "#9A3B33" : "#7A6360"} />} {label}
+                    <TypeIcon type={key} size={14} color={on ? "#9A3B33" : "#7A6360"} /> {label}
                   </div>
                   <button type="button" role="switch" aria-checked={on} aria-label={`เคยบริจาค${label}`} onClick={() => { setOn(v => !v); setQuickStartingCountError(""); }}
                     style={{ width: 38, height: 21, borderRadius: 20, border: "none", cursor: "pointer", position: "relative", background: on ? "#9A3B33" : "#E3C8C3", flexShrink: 0, padding: 0 }}>
@@ -8420,15 +8457,15 @@ function AppInner() {
                         is toggled on, and auto-focusing it would pop the keyboard open
                         immediately without the user tapping anything -- reported directly
                         by the user as unwanted. Let them tap the field themselves. */}
-                    <input ref={countRef} type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={max} step="1" value={draft} placeholder="0"
+                    <input ref={(el) => { quickCountInputRefs.current[key] = el; }} type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={max} step="1" value={draft} placeholder="0"
                       onChange={(e) => { setDraft(e.target.value); setQuickStartingCountError(""); }}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${quickStartingCountError && quickErrorField === `${key}-count` ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", marginBottom: quickStartingCountError && quickErrorField === `${key}-count` ? 0 : 10 }} />
                     {quickStartingCountError && quickErrorField === `${key}-count` && <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>}
-                    <div className="date-time-row" style={{ marginBottom: (quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? 0 : 10 }}>
+                    <div className="date-time-row" style={{ marginBottom: (sameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? 0 : 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>วันที่บริจาค (ครั้งล่าสุด)</label>
-                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${(quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? "#B3261E" : "#E3C8C3"}` }}>
-                          <DateField ref={dateRef} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคครั้งล่าสุด"
+                        <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: `1px solid ${(sameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) ? "#B3261E" : "#E3C8C3"}` }}>
+                          <DateField ref={(el) => { quickDateInputRefs.current[key] = el; }} value={tf.date} maxDate={todayLocalStr()} ariaLabelPrefix="วันที่บริจาคครั้งล่าสุด"
                             onChange={(date) => { setTf(f => ({ ...f, date })); setQuickStartingCountError(""); }}
                             height={42} fontSize={14} />
                         </div>
@@ -8442,7 +8479,7 @@ function AppInner() {
                         </div>
                       </div>
                     </div>
-                    {(quickSameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) && <div style={{ marginBottom: 10 }}><FieldError>{quickSameDateLive ? "วันที่ของโลหิตรวมกับพลาสมาซ้ำกัน เลือกวันอื่น" : quickStartingCountError}</FieldError></div>}
+                    {(sameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) && <div style={{ marginBottom: 10 }}><FieldError>{sameDateLive ? "วันที่ซ้ำกับประเภทอื่น เลือกวันอื่น" : quickStartingCountError}</FieldError></div>}
                     <label style={{ display: "block", fontSize: 13, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
                     <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
@@ -8456,12 +8493,13 @@ function AppInner() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
 
-            {quickStartingCountError && !/^(whole|component)-(count|date)$/.test(quickErrorField) && (
+            {quickStartingCountError && !/^(whole|plasma|platelet|rbc)-(count|date)$/.test(quickErrorField) && (
               <div style={{ marginBottom: 10 }}><FieldError>{quickStartingCountError}</FieldError></div>
             )}
-            {(quickTypeOnWhole || quickTypeOnComponent) && (
+            {quickAnyTypeOn && (
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={backFromStartingCountQuickEntry} disabled={saving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button onClick={submitStartingCountQuickEntry} disabled={saving} className="btn-primary" style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
@@ -8509,19 +8547,16 @@ function AppInner() {
                 </span>
                 <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} />
               </button>
-              <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — โลหิตรวม (วัน)</label>
-              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={cycleDays}
-                onChange={(e) => setCycleDays(e.target.value === "" ? "" : Number(e.target.value))}
-                onBlur={(e) => updateCycleDays(e.target.value === "" ? DEFAULT_CYCLE_DAYS : e.target.value)}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
-              <div style={{ fontSize: 11, color: "#B39B96", marginBottom: 14 }}>ค่าเริ่มต้น {DEFAULT_CYCLE_DAYS} วัน</div>
-
-              <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — พลาสมา/เกล็ดเลือด (วัน)</label>
-              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={componentCycleDays}
-                onChange={(e) => setComponentCycleDays(e.target.value === "" ? "" : Number(e.target.value))}
-                onBlur={(e) => updateComponentCycleDays(e.target.value === "" ? DEFAULT_COMPONENT_CYCLE_DAYS : e.target.value)}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
-              <div style={{ fontSize: 11, color: "#B39B96", marginBottom: 14 }}>ค่าเริ่มต้น {DEFAULT_COMPONENT_CYCLE_DAYS} วัน — ใช้กับผู้ที่บริจาคพลาสมาหรือเกล็ดเลือด ซึ่งเว้นระยะสั้นกว่าโลหิตรวม</div>
+              {DONATION_TYPES.map((t) => (
+                <React.Fragment key={t}>
+                  <label htmlFor={`cycle-${t}`} style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>รอบเตือนบริจาคซ้ำ — {DONATION_TYPE_LABELS[t]} (วัน)</label>
+                  <input id={`cycle-${t}`} type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_CYCLE_DAYS} max={MAX_CYCLE_DAYS} step="1" value={cycleByType[t]}
+                    onChange={(e) => setCycleByType((prev) => ({ ...prev, [t]: e.target.value === "" ? "" : Number(e.target.value) }))}
+                    onBlur={(e) => updateCycleByType(t, e.target.value === "" ? DEFAULT_CYCLE_BY_TYPE[t] : e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
+                  <div style={{ fontSize: 11, color: "#B39B96", marginBottom: 14 }}>ค่าเริ่มต้น {DEFAULT_CYCLE_BY_TYPE[t]} วัน{TYPE_CYCLE_NOTE[t] ? ` — ${TYPE_CYCLE_NOTE[t]}` : ""}</div>
+                </React.Fragment>
+              ))}
 
               <label style={{ fontSize: 12.5, color: "#7A6360", display: "block", marginBottom: 6 }}>เตือนสำรองข้อมูลทุก (รายการ)</label>
               <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_BACKUP_REMINDER_GAP} max={MAX_BACKUP_REMINDER_GAP} step="1" value={backupReminderGap}
@@ -8642,7 +8677,7 @@ function AppInner() {
       {viewDonationId && (() => {
         const vd = donations.find(x => x.id === viewDonationId);
         if (!vd) return null;
-        const vTint = DONATION_TYPE_TINT[vd.type === "component" ? "component" : "whole"];
+        const vTint = DONATION_TYPE_TINT[normalizeDonationType(vd.type)];
         const vn = donationOrderMap[vd.id];
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
         // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
@@ -8676,7 +8711,7 @@ function AppInner() {
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ color: vTint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[vd.type === "component" ? "component" : "whole"]}</span></div></div>
+                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ color: vTint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[normalizeDonationType(vd.type)]}</span></div></div>
                 <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
                 <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
                 {vd.loggedAt && (
@@ -8718,8 +8753,9 @@ function AppInner() {
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                {historyTypeFilter !== "component" && startingCountWholeNum > 0 && <div style={svRowS}>{svLbl("โลหิตรวม")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountWholeNum}</span> ครั้ง</div></div>}
-                {historyTypeFilter !== "whole" && startingCountComponentNum > 0 && <div style={svRowS}>{svLbl("พลาสมา")}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingCountComponentNum}</span> ครั้ง</div></div>}
+                {(historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter]).filter((t) => startingNum[t] > 0).map((t) => (
+                  <div key={t} style={svRowS}>{svLbl(DONATION_TYPE_LABELS[t])}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingNum[t]}</span> ครั้ง</div></div>
+                ))}
                 {startingCountUpdatedAt && (
                   <ModalMetaLine>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
@@ -8741,29 +8777,23 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "16px 14px 14px" }}>
               <label style={{ fontSize: 13, color: "#7A6360", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}><Trophy size={13} /> จำนวนครั้งที่เคยบริจาคมาก่อน (ไม่รวมครั้งล่าสุด)</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {historyTypeFilter !== "component" && <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6 }}><Droplet size={12} color="#9A3B33" /> โลหิตรวม</div>
-                  <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountWhole} step="1" value={startingCountDraftWhole} placeholder="0" aria-label="จำนวนครั้งโลหิตรวม"
-                    onChange={(e) => { setStartingCountDraftWhole(e.target.value); setStartingCountEditError(""); }}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${startingCountEditError && startingCountEditField === "whole" ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
-                  {startingCountEditError && startingCountEditField === "whole" && <FieldError>{startingCountEditError}</FieldError>}
-                </div>}
-                {historyTypeFilter !== "whole" && <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><Droplets size={12} color="#9A3B33" /> พลาสมา/เกล็ดเลือด</div>
-                  <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountComponent} step="1" value={startingCountDraftComponent} placeholder="0" aria-label="จำนวนครั้งพลาสมา/เกล็ดเลือด"
-                    onChange={(e) => { setStartingCountDraftComponent(e.target.value); setStartingCountEditError(""); }}
-                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${startingCountEditError && startingCountEditField === "component" ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
-                  {startingCountEditError && startingCountEditField === "component" && <FieldError>{startingCountEditError}</FieldError>}
-                </div>}
+                {startingEditTypes.map((t) => (
+                  <div key={t} style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A6360", marginBottom: 6, whiteSpace: "nowrap" }}><TypeIcon type={t} size={12} color="#9A3B33" /> {DONATION_TYPE_LABELS[t]}</div>
+                    <input type="number" inputMode="numeric" pattern="[0-9]*" min="0" max={maxStartingCountByType[t]} step="1" value={startingCountDraft[t]} placeholder="0" aria-label={`จำนวนครั้ง${DONATION_TYPE_LABELS[t]}`}
+                      onChange={(e) => { setStartingCountDraft((prev) => ({ ...prev, [t]: e.target.value })); setStartingCountEditError(""); }}
+                      style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${startingCountEditError && startingCountEditField === t ? "#B3261E" : "#E3C8C3"}`, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
+                    {startingCountEditError && startingCountEditField === t && <FieldError>{startingCountEditError}</FieldError>}
+                  </div>
+                ))}
               </div>
               {historyTypeFilter !== "all" && (() => {
-                const shown = historyTypeFilter === "whole" ? "โลหิตรวม" : "พลาสมา/เกล็ดเลือด";
-                const other = historyTypeFilter === "whole" ? "พลาสมา/เกล็ดเลือด" : "โลหิตรวม";
-                const otherN = historyTypeFilter === "whole" ? startingCountComponentNum : startingCountWholeNum;
+                const shown = DONATION_TYPE_LABELS[historyTypeFilter];
+                const others = DONATION_TYPES.filter((t) => t !== historyTypeFilter && startingNum[t] > 0);
                 return (
                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 11.5, color: "#7A6360", lineHeight: 1.55, marginTop: 12 }}>
                     <SlidersHorizontal size={12} style={{ flexShrink: 0, marginTop: 3 }} />
-                    <span>แสดงเฉพาะ{shown}ตามตัวกรอง{otherN > 0 ? ` · ${other} ${otherN} ครั้งไม่เปลี่ยน` : ""}</span>
+                    <span>แสดงเฉพาะ{shown}ตามตัวกรอง{others.length > 0 ? ` · ${others.map((t) => `${DONATION_TYPE_LABELS[t]} ${startingNum[t]} ครั้ง`).join(", ")}ไม่เปลี่ยน` : ""}</span>
                   </div>
                 );
               })()}

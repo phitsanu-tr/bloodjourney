@@ -1,0 +1,116 @@
+import { test, expect } from "@playwright/test";
+import { startFresh, seed, rec, stored, openForm, pickToday, assertNoErrors, noOverflow } from "./helpers.js";
+
+const daysAgo = (n) => {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
+test("record form: two-step type picker saves a platelet donation", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("old", "2026-06-01")] });
+  const dialog = await openForm(page);
+  await pickToday(dialog);
+  // Step 1 only offers the two groups; the three component types appear after "เฉพาะส่วน".
+  await expect(dialog.getByRole("radio", { name: "เกล็ดเลือด" })).toHaveCount(0);
+  await dialog.getByRole("radio", { name: "เฉพาะส่วน" }).tap();
+  for (const n of ["พลาสมา", "เกล็ดเลือด", "เม็ดเลือดแดง"]) await expect(dialog.getByRole("radio", { name: n })).toBeVisible();
+  // Saving with a group but no type still asks for the type.
+  await dialog.locator("button.btn-primary").last().tap();
+  await expect(dialog.getByText("ระบุประเภทการบริจาค")).toBeVisible();
+  await dialog.getByRole("radio", { name: "เกล็ดเลือด" }).tap();
+  await dialog.locator("button.btn-primary").last().tap();
+  await expect(page.locator("[role=dialog]")).toHaveCount(0);
+  const donations = await stored(page, "donations");
+  expect(donations).toHaveLength(2);
+  expect(donations.find((d) => d.id !== "old").type).toBe("platelet");
+  assertNoErrors(page);
+});
+
+test("home: tabs show only recorded types and each counts down on its own cycle", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(10), "whole"), rec("b", daysAgo(10), "platelet"), rec("c", daysAgo(40), "rbc")] });
+  const tabs = page.getByRole("tab");
+  await expect(tabs).toHaveCount(3); // plasma was never recorded, so it has no tab
+  await expect(page.getByRole("tab", { name: /พลาสมา/ })).toHaveCount(0);
+  const hero = page.getByTestId("hero-card");
+  await page.getByRole("tab", { name: /เกล็ดเลือด/ }).tap();
+  await expect(hero.getByText(/ผ่านมาแล้ว 10 จาก 30 วัน/)).toBeVisible();   // platelet: every 30 days
+  await page.getByRole("tab", { name: /เม็ดเลือดแดง/ }).tap();
+  await expect(hero.getByText(/ผ่านมาแล้ว 40 จาก 120 วัน/)).toBeVisible();  // red cells: every 120 days
+  await page.getByRole("tab", { name: /โลหิตรวม/ }).tap();
+  await expect(hero.getByText(/ผ่านมาแล้ว 10 จาก 90 วัน/)).toBeVisible();   // whole blood: every 90 days
+  assertNoErrors(page);
+});
+
+test("legacy 'component' records are read as plasma", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(5), "component")] });
+  await expect(page.getByRole("tab")).toHaveCount(0); // single type -> no tab row
+  await expect(page.getByTestId("hero-card").getByText("พลาสมา").first()).toBeVisible();
+  await expect(page.getByTestId("hero-card").getByText(/ผ่านมาแล้ว 5 จาก 14 วัน/)).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("carried-over counts are kept per type and add to the total", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(10), "whole")], profile: { startingCountWhole: 4, startingCountPlatelet: 6, startingCountRbc: 2 } });
+  await expect(page.getByTestId("hero-card").getByText(/^13/).first()).toBeVisible(); // 1 + 4 + 6 + 2
+  await expect(page.getByRole("tab")).toHaveCount(3);
+  assertNoErrors(page);
+});
+
+test("settings: each type has its own reminder cycle and it is saved", async ({ page }) => {
+  await startFresh(page);
+  await page.getByRole("button", { name: /ตั้งค่า/ }).first().tap();
+  for (const [id, def] of [["whole", 90], ["plasma", 14], ["platelet", 30], ["rbc", 120]]) {
+    await expect(page.locator(`#cycle-${id}`)).toHaveValue(String(def));
+  }
+  await page.locator("#cycle-platelet").fill("45");
+  await page.locator("#cycle-platelet").blur();
+  await expect.poll(async () => (await stored(page, "uiMeta"))?.cycleByType?.platelet).toBe(45);
+  await page.reload();
+  await page.getByRole("button", { name: /ตั้งค่า/ }).first().tap();
+  await expect(page.locator("#cycle-platelet")).toHaveValue("45");
+  assertNoErrors(page);
+});
+
+for (const width of [390, 320]) {
+  test(`layout: four-type home, form and history have no overflow at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await startFresh(page);
+    await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma"), rec("c", daysAgo(10), "platelet"), rec("d", daysAgo(20), "rbc")] });
+    expect(await noOverflow(page)).toBe(true);
+    const dialog = await openForm(page);
+    await dialog.getByRole("radio", { name: "เฉพาะส่วน" }).tap();
+    expect(await noOverflow(page)).toBe(true);
+    assertNoErrors(page);
+  });
+}
+
+test("backup: all four types survive an export and import (old 'component' reads as plasma)", async ({ page }) => {
+  await startFresh(page);
+  const all = [rec("a", daysAgo(100), "whole"), rec("b", daysAgo(80), "plasma"), rec("c", daysAgo(60), "platelet"), rec("d", daysAgo(40), "rbc"), rec("e", daysAgo(20), "component")];
+  await seed(page, { donations: all, profile: { startingCountPlatelet: 3 } });
+  await page.getByLabel("ตั้งค่า").tap();
+  await page.getByRole("button", { name: "สำรอง/กู้คืนข้อมูล" }).tap();
+  await page.getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
+  await page.locator("[role=alertdialog] input[type=checkbox]").check();
+  await page.locator("[role=alertdialog]").getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
+  const box = page.getByLabel(/^ข้อมูลสำรองแบ/);
+  await expect(box).not.toHaveValue("");
+  const text = await box.inputValue();
+  expect(JSON.parse(text).startingCountPlatelet).toBe(3);
+  await seed(page, { donations: [] });
+  await page.getByLabel("ตั้งค่า").tap();
+  await page.getByRole("button", { name: "สำรอง/กู้คืนข้อมูล" }).tap();
+  await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  await page.getByLabel("วางข้อความ JSON สำรองที่คัดลอกไว้").fill(text);
+  await page.getByRole("button", { name: "นำเข้าจากข้อความ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true }).tap();
+  await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(5);
+  const types = (await stored(page, "donations")).map((d) => d.type).sort();
+  expect(types).toEqual(["platelet", "plasma", "plasma", "rbc", "whole"].sort());
+  assertNoErrors(page);
+});
