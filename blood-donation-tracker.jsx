@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.345";
+const APP_VERSION = "1.0.346";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6179,7 +6179,7 @@ function AppInner() {
                   // invisible placeholder just to hold the pill's box height, which
                   // left a blank-looking gap in the card. Same box size/position,
                   // now filled with a small useful fact instead of empty space.
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "rgba(255,247,245,0.16)", color: "#FFF7F5", position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 0", fontSize: 11.5, fontWeight: 500, color: "rgba(255,247,245,0.92)", position: "relative", zIndex: 1 }}>
                     <HeartPulse size={12} /> บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต
                   </div>
                 )}
@@ -6206,8 +6206,16 @@ function AppInner() {
                       <>
                         <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</div>
                         <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
+                        {/* Reminders are paused, but the donor may still want to know when they can donate. */}
+                        {effectiveLastDateStr && (
+                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 6 }}>
+                            {isEligible
+                              ? <>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้แล้ว</>
+                              : <>บริจาค{hasBothDonationTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
+                          </div>
+                        )}
                         <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
+                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                           เปิดการเตือน หรือเปลี่ยนระยะเวลา <ChevronRight size={13} />
                         </button>
                       </>
@@ -6221,15 +6229,15 @@ function AppInner() {
                         // card ever shows, and it used to be the quietest line.
                         <>
                           <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>บริจาคได้แล้ววันนี้</div>
-                          {hasBothDonationTypes && (
-                            <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>สำหรับ{DONATION_TYPE_LABELS[activeCountdownType]}</div>
-                          )}
+                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>
+                            {hasBothDonationTypes ? `สำหรับ${DONATION_TYPE_LABELS[activeCountdownType]} · ` : ""}ครั้งล่าสุด <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(effectiveLastDateStr)}</span>
+                          </div>
                           <button
                             onClick={() => {
                               setTab("knowledge");
                               setTimeout(() => document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
                             }}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             ดูวิธีเตรียมตัวก่อนบริจาค <ChevronRight size={13} />
                           </button>
                         </>
@@ -6248,7 +6256,16 @@ function AppInner() {
                       )
                     ) : hasBothDonationTypes || totalCount > 0 ? (
                       activeTypeTotalCount > 0
-                        ? <>มียอดบริจาคโลหิตสะสมแล้ว กรุณาบันทึกวันที่บริจาคล่าสุด<br />เพื่อคำนวณวันครบกำหนดถัดไป</>
+                        ? (
+                          <>
+                            <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>ยังไม่มีวันที่บริจาคล่าสุด</div>
+                            <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
+                            <button onClick={handleAddButtonClick}
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                              ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
+                            </button>
+                          </>
+                        )
                         : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[activeCountdownType]}ในระบบ`
                     ) : "พอบันทึกครั้งแรก แอปจะนับวันให้ว่าบริจาคครั้งถัดไปได้เมื่อไร"}
                   </div>
@@ -6257,7 +6274,8 @@ function AppInner() {
                       on every load; same info now sits one tap away, right next to
                       the countdown text it explains, instead of always taking up
                       space by default. */}
-                  {(effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
+                  {/* Only while there is a countdown to explain (waiting) -- nothing to explain once eligible. */}
+                  {(effectiveLastDateStr && !isEligible) && (
                     <button onClick={() => setShowCycleInfo(v => !v)} aria-label={showCycleInfo ? "ซ่อนรายละเอียดการคำนวณ" : "ดูรายละเอียดการคำนวณ"} aria-expanded={showCycleInfo}
                       style={{ flexShrink: 0, width: 44, height: 44, margin: "-13px -14px -13px 0", borderRadius: "50%", border: "none", background: "none", color: "rgba(255,247,245,0.7)", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Info size={15} />
@@ -6281,7 +6299,7 @@ function AppInner() {
                     ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน
                   </div>
                 )}
-                {showCycleInfo && (effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
+                {showCycleInfo && (effectiveLastDateStr && !isEligible) && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 11.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
                     คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
                     เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค

@@ -91,3 +91,47 @@ test("home reminders: backup card shows the count; several reminders peek the ne
   }
   assertNoErrors(page);
 });
+
+test("hero card: eligible shows last donation date, no info button, plain link", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(200))] });
+  await expect(page.getByText("บริจาคได้แล้ววันนี้")).toBeVisible();
+  await expect(page.getByText(/ครั้งล่าสุด\s+\d/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /รายละเอียดการคำนวณ/ })).toHaveCount(0);
+  const link = page.getByRole("button", { name: /ดูวิธีเตรียมตัวก่อนบริจาค/ });
+  expect(await link.evaluate((e) => getComputedStyle(e).textDecorationLine)).toBe("none");
+  assertNoErrors(page);
+});
+
+test("hero card: waiting still has the info button", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(30))] });
+  await expect(page.getByRole("button", { name: /รายละเอียดการคำนวณ/ })).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("hero card: prior count only asks for the last date and the link opens the form", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [], profile: { startingCountWhole: 5 } });
+  await expect(page.getByText("ยังไม่มีวันที่บริจาคล่าสุด")).toBeVisible();
+  await page.getByRole("button", { name: "ระบุวันที่บริจาคล่าสุด" }).tap();
+  await expect(page.locator("[role=dialog]").last()).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("hero card: paused reminders still show the next donation date", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(30))], profile: { remindPauseUntil: "indefinite" } });
+  await expect(page.getByText("พักการเตือนไว้")).toBeVisible();
+  await expect(page.getByText(/บริจาคได้อีกครั้ง .* \(อีก \d+ วัน\)/)).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("hero card: brand-new user chip is plain text (no pill background)", async ({ page }) => {
+  await startFresh(page);
+  const chip = page.getByText("บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต");
+  await expect(chip).toBeVisible();
+  const bg = await chip.evaluate((e) => getComputedStyle(e).backgroundColor);
+  expect(bg === "rgba(0, 0, 0, 0)" || bg === "transparent").toBe(true);
+  assertNoErrors(page);
+});
