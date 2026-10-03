@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.341";
+const APP_VERSION = "1.0.343";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2477,12 +2477,17 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           <span style={HIST_ICON_BOX}>{d.type === "component" ? <Droplets size={12} color="#7A6360" /> : <Droplet size={12} color="#7A6360" />}</span>
           <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12, color: tint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[d.type === "component" ? "component" : "whole"]}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.location ? "#7A6360" : "#A38D89", marginTop: 5 }}>
-          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location || "—"}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: d.note ? "#7A6360" : "#A38D89", marginTop: 5 }}>
-          <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.note || "—"}</span>
-        </div>
+        {/* Location / note rows only when filled in -- empty ones used to print a lone "—" and made every card ~40px taller. */}
+        {d.location && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "#7A6360", marginTop: 5 }}>
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><MapPin size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.location}</span>
+          </div>
+        )}
+        {d.note && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "#7A6360", marginTop: 5 }}>
+            <span style={{ ...HIST_ICON_BOX, marginTop: 2 }}><StickyNote size={12} /></span> <span style={{ minWidth: 0, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.note}</span>
+          </div>
+        )}
       </div>
       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
         <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
@@ -2795,7 +2800,14 @@ function AppInner() {
   // Blood group / age / weight / donor ID on Home: blurred by default; the profile switch
   // "ซ่อนข้อมูลบนหน้าแรก" turns the blur off (persisted).
   const [blurInfoPills, setBlurInfoPills] = useState(true);
-  const pillsHidden = blurInfoPills;
+  // Tap the hidden-info chip on Home to peek for 5 seconds; it re-hides itself.
+  const [peekPills, setPeekPills] = useState(false);
+  useEffect(() => {
+    if (!peekPills) return undefined;
+    const t = setTimeout(() => setPeekPills(false), 5000);
+    return () => clearTimeout(t);
+  }, [peekPills]);
+  const pillsHidden = blurInfoPills && !peekPills;
   // True once storage.isDegraded() has ever returned true this session —
   // meaning a write fell all the way through to the in-memory fallback and
   // is NOT actually persisted. Drives a one-time warning modal (see
@@ -6038,7 +6050,15 @@ function AppInner() {
                   )}
                   </div>
                   </div>
-                  {(bloodType || age !== "" || weight !== "") ? (
+                  {(bloodType || age !== "" || weight !== "") && pillsHidden ? (
+                    <div style={{ marginTop: 8 }}>
+                      <button type="button" onClick={() => setPeekPills(true)} aria-label="ข้อมูลส่วนตัวถูกซ่อนอยู่ แตะเพื่อดูชั่วคราว"
+                        style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "5px 11px 5px 9px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
+                        <EyeOff size={12} /> ซ่อนข้อมูลส่วนตัว · แตะเพื่อดู
+                      </button>
+                    </div>
+                  ) : (bloodType || age !== "" || weight !== "") ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {bloodType && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
@@ -6248,6 +6268,11 @@ function AppInner() {
                     aria-valuemin={0} aria-valuemax={activeCycleDays} aria-valuenow={Math.max(0, activeCycleDays - daysLeft)}
                     style={{ marginTop: 10, height: 5, borderRadius: 3, background: "rgba(255,247,245,0.2)", overflow: "hidden", position: "relative", zIndex: 1, animation: "fadeSwap 0.4s ease" }}>
                     <div style={{ height: "100%", width: `${Math.min(100, Math.max(0, ((activeCycleDays - daysLeft) / activeCycleDays) * 100))}%`, background: "#FFF7F5", borderRadius: 3, transition: "width 0.35s ease" }} />
+                  </div>
+                )}
+                {effectiveLastDateStr && !isEligible && daysLeft > 0 && !remindPaused && (
+                  <div key={`${activeCountdownType}-progress-cap`} style={{ fontSize: 11, color: "rgba(255,247,245,0.85)", marginTop: 5, position: "relative", zIndex: 1 }}>
+                    ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน
                   </div>
                 )}
                 {showCycleInfo && (effectiveLastDateStr || hasBothDonationTypes || totalCount > 0) && (
