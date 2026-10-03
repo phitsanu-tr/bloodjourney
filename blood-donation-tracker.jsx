@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.342";
+const APP_VERSION = "1.0.341";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3288,7 +3288,9 @@ function AppInner() {
             let noBlur = false;
             try { noBlur = window.matchMedia("(prefers-reduced-transparency: reduce)").matches; } catch (e) {}
             if (!noBlur) {
-              clone.style.background = "rgba(36, 26, 24, var(--scrim-a, 0.55))";
+              clone.style.background = "rgba(36, 26, 24, var(--scrim-a, 0.3))";
+              clone.style.webkitBackdropFilter = "blur(3px)";
+              clone.style.backdropFilter = "blur(3px)";
             }
             document.body.appendChild(clone);
             setTimeout(() => clone.remove(), 165);
@@ -5700,14 +5702,13 @@ function AppInner() {
            the filter sheet opts out (data-own-motion) since it has its own
            slide. The matching exit is done by cloning the dialog as it
            unmounts -- see the dialog-exit effect in AppInner. */
-        /* Scrim motion: only the tint fades. There is deliberately NO backdrop-filter
-           blur here: animating a full-screen blur stuttered on iOS / LINE WebView.
-           The tint is 0.55 (was 0.3 + 3px blur) so the blood group / age / weight
-           chips behind a dialog are still not readable. */
-        @property --scrim-a { syntax: "<number>"; inherits: false; initial-value: 0.55; }
-        @keyframes dlgScrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.55; } }
+        /* Scrim motion: the blur is on from the first frame and only the tint fades.
+           Animating opacity on an element that carries backdrop-filter forces a
+           full-screen re-blur every frame (janky on iOS / LINE WebView). */
+        @property --scrim-a { syntax: "<number>"; inherits: false; initial-value: 0.3; }
+        @keyframes dlgScrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
         @keyframes dlgPanelIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-        @keyframes dlgScrimOut { from { --scrim-a: 0.55; } to { --scrim-a: 0; } }
+        @keyframes dlgScrimOut { from { --scrim-a: 0.3; } to { --scrim-a: 0; } }
         @keyframes dlgPanelOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px); } }
         [role="dialog"][aria-modal="true"]:not([data-own-motion]) { animation: dlgScrimIn 0.2s ease; }
         /* Open: backdrop and panel 0.2s. Close is deliberately quicker --
@@ -5720,10 +5721,12 @@ function AppInner() {
         @media (prefers-reduced-motion: reduce) {
           [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
         }
-        /* Every modal backdrop: a 0.55 scrim (no blur, see above), so what is
+        /* Every modal backdrop: light blur + a lighter scrim (was a flat 0.45 dim), so what is
            behind (blood group / age / weight chips, other dialogs) is not readable. */
         [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone {
-          background: rgba(36, 26, 24, var(--scrim-a, 0.55)) !important;
+          background: rgba(36, 26, 24, var(--scrim-a, 0.3)) !important;
+          -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
         }
         .hist-card { -webkit-tap-highlight-color: transparent; transition: background 0.12s; }
         /* pressed tint only when the card itself is pressed, not while the ⋮ button / its menu is */
@@ -5732,10 +5735,10 @@ function AppInner() {
         .hist-card.hist-card-carry:active:not(:has(.hist-more:active)) { background: #EBDAD5 !important; border-color: #D9B9B2 !important; }
         .hist-card:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
         @media (prefers-reduced-transparency: reduce) {
-          [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.55) !important; }
+          [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
         }
-        @keyframes scrimOut { from { --scrim-a: 0.55; } to { --scrim-a: 0; } }
-        @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.55; } }
+        @keyframes scrimOut { from { --scrim-a: 0.3; } to { --scrim-a: 0; } }
+        @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -6602,7 +6605,7 @@ function AppInner() {
                 const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
                 return (
                   <>
-                    <div className="filter-scrim" onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,var(--scrim-a, 0.55))", zIndex: 70,
+                    <div className="filter-scrim" onClick={closeFilterSheet} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,var(--scrim-a, 0.3))", WebkitBackdropFilter: "blur(3px)", backdropFilter: "blur(3px)", zIndex: 70,
                       animation: filterSheetClosing ? "scrimOut 0.26s ease 0.04s forwards" : "scrimIn 0.2s ease", pointerEvents: filterSheetClosing ? "none" : "auto" }} />
                     <div role="dialog" aria-modal="true" aria-label="ตัวกรองประวัติ" data-own-motion=""
                       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 71, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
