@@ -50,3 +50,14 @@ test("layout: home with the new chip/caption has no overflow at 390 and 320", as
   }
   assertNoErrors(page);
 });
+
+test("home: waiting countdown has no clock icon; text still shows days left", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(30))] });
+  await expect(page.getByText(/อีก \d+ วัน/)).toBeVisible();
+  await expect(page.locator("svg.lucide-clock")).toHaveCount(0);
+  await seed(page, { donations: [rec("a", daysAgo(200))] });
+  await expect(page.getByText("บริจาคได้แล้ววันนี้")).toBeVisible();
+  await expect(page.locator("svg.lucide-clock")).toHaveCount(0);
+  assertNoErrors(page);
+});

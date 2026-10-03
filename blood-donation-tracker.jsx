@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.343";
+const APP_VERSION = "1.0.344";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6184,6 +6184,11 @@ function AppInner() {
                   </div>
                 )}
                 <div style={{ marginTop: 10, paddingTop: 14, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "flex-start", gap: 10, position: "relative", zIndex: 1 }}>
+                  {/* The waiting state ("อีก N วัน") has no leading icon: the text and the
+                      progress caption below already say it, and the clock only duplicated
+                      them. The other states keep theirs -- the icon is their meaning
+                      (paused bell, info, eligible checkmark). */}
+                  {(remindPaused || totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0) || isEligible) && (
                   <span style={{ display: "flex", flexShrink: 0, marginTop: 1 }}>
                     {/* totalCount === 0 (brand-new user, no history at all) must never
                         show the checkmark -- isEligible is true by default when there's
@@ -6192,8 +6197,9 @@ function AppInner() {
                     {remindPaused ? <BellOff size={18} />
                       : totalCount === 0 || (!effectiveLastDateStr && (hasBothDonationTypes || totalCount > 0) && activeTypeTotalCount > 0)
                       ? <Info size={18} />
-                      : isEligible ? <CheckCircle2 size={18} /> : <Clock size={18} />}
+                      : <CheckCircle2 size={18} />}
                   </span>
+                  )}
                   <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1 }}>
                     {remindPaused ? (
                       // Donor paused reminders (settings → การเตือน → พักการเตือนชั่วคราว).
