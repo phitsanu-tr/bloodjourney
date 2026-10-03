@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.347";
+const APP_VERSION = "1.0.348";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5751,6 +5751,9 @@ function AppInner() {
         }
         @keyframes scrimOut { from { --scrim-a: 0.3; } to { --scrim-a: 0; } }
         @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
+        /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
+        .hero-status { min-height: 121px; }
+        @media (max-width: 349px) { .hero-status { min-height: 138px; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -6109,7 +6112,7 @@ function AppInner() {
                   card and the top of the screen, pushing the card and the
                   primary action further down than they deserve given they're
                   the most important things on this tab. */}
-              <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+              <div data-testid="hero-card" style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
                 {/* Decorative background droplets removed: two sat half outside
                     the card edge (read as broken images) and the last faint one
                     sat behind "อีก N วัน" (removed on user request). */}
@@ -6184,7 +6187,13 @@ function AppInner() {
                     <HeartPulse size={12} /> บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต
                   </div>
                 )}
-                <div style={{ marginTop: 10, paddingTop: 14, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "flex-start", gap: 10, position: "relative", zIndex: 1 }}>
+                {/* Every state's status area (waiting / eligible / paused / no date / new
+                    user) shares one minimum height -- the tallest one, "waiting" with its
+                    progress bar and caption -- so the card doesn't change height when
+                    the state changes or the tab is switched. Shorter states keep their
+                    link pinned to the bottom (marginTop: auto) instead of floating. */}
+                <div data-testid="hero-status" className="hero-status" style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ marginTop: 10, paddingTop: 14, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "stretch", gap: 10, position: "relative", zIndex: 1, flex: "1 0 auto" }}>
                   {/* The waiting state ("อีก N วัน") has no leading icon: the text and the
                       progress caption below already say it, and the clock only duplicated
                       them. The other states keep theirs -- the icon is their meaning
@@ -6201,7 +6210,7 @@ function AppInner() {
                       : <CheckCircle2 size={18} />}
                   </span>
                   )}
-                  <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1 }}>
+                  <div key={activeCountdownType} aria-live="polite" style={{ fontSize: 12, lineHeight: 1.5, animation: "fadeSwap 0.4s ease", flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                     {remindPaused ? (
                       // Donor paused reminders (settings → การเตือน → พักการเตือนชั่วคราว).
                       <>
@@ -6216,7 +6225,7 @@ function AppInner() {
                           </div>
                         )}
                         <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                           เปิดการเตือน หรือเปลี่ยนระยะเวลา <ChevronRight size={13} />
                         </button>
                       </>
@@ -6238,7 +6247,7 @@ function AppInner() {
                               setTab("knowledge");
                               setTimeout(() => document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
                             }}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             ดูวิธีเตรียมตัวก่อนบริจาค <ChevronRight size={13} />
                           </button>
                         </>
@@ -6262,7 +6271,7 @@ function AppInner() {
                             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>ยังไม่มีวันที่บริจาคล่าสุด</div>
                             <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
                             <button onClick={handleAddButtonClick}
-                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "-8px 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                               ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
                             </button>
                           </>
@@ -6300,6 +6309,7 @@ function AppInner() {
                     ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน
                   </div>
                 )}
+                </div>
                 {showCycleInfo && (effectiveLastDateStr && !isEligible) && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 11.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
                     คำนวณจากเกณฑ์{hasBothDonationTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
