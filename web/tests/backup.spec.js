@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { startFresh, seed, stored, rec, noOverflow, assertNoErrors } from "./helpers.js";
+import { startFresh, seed, stored, rec, noOverflow, assertNoErrors, PREFIX } from "./helpers.js";
 
 const two = [rec("a", "2026-06-01"), rec("b", "2026-03-01", "component")];
 
@@ -60,8 +60,73 @@ test("backup: importing the same file twice adds nothing (duplicates skipped)", 
   const text = await exportPlain(page);
   await pasteAndImport(page, text);
   const dlg = page.locator("[role=dialog]").last();
-  await expect(dlg.getByText("ข้าม (มีอยู่แล้ว)")).toBeVisible();
+  await expect(dlg.getByText("ในไฟล์ 2 · มีอยู่แล้ว 2")).toBeVisible();
+  await expect(dlg.getByText("ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด")).toBeVisible();
   await expect(dlg.getByRole("button", { name: "นำเข้า", exact: true })).toBeDisabled();
+  assertNoErrors(page);
+});
+
+// Simulates a new phone: no uiMeta, no carried-over count, default settings.
+async function wipeToNewPhone(page) {
+  await page.evaluate((pre) => localStorage.removeItem(pre + "uiMeta"), PREFIX);
+  await seed(page, { donations: [] });
+}
+
+test("backup: carried-over counts, reminder cycles and home settings move to a new phone", async ({ page }) => {
+  await startFresh(page);
+  await page.evaluate((pre) => localStorage.setItem(pre + "uiMeta", JSON.stringify({ cycleByType: { whole: 120, plasma: 14, platelet: 30, rbc: 120 }, blurInfoPills: false })), PREFIX);
+  await seed(page, { donations: two, profile: { startingCountWhole: 20, startingCountPlasma: 5 } });
+  await openHub(page);
+  const text = await exportPlain(page);
+  const j = JSON.parse(text);
+  expect(j.blurInfoPills).toBe(false);
+  expect(Array.isArray(j.seenAchievements)).toBe(true);
+
+  await wipeToNewPhone(page);
+  await openHub(page);
+  await pasteAndImport(page, text);
+  const dlg = page.locator("[role=dialog]").last();
+  await expect(dlg.getByText("โลหิตรวม 20 · พลาสมา 5")).toBeVisible();
+  await expect(dlg.getByText("+25")).toBeVisible();
+  await expect(dlg.getByText("โลหิตรวม 120 วัน")).toBeVisible();
+  await dlg.getByRole("button", { name: "นำเข้า", exact: true }).tap();
+  await expect.poll(async () => (await stored(page, "profile"))?.startingCountWhole).toBe(20);
+  expect((await stored(page, "profile")).startingCountPlasma).toBe(5);
+  await expect.poll(async () => (await stored(page, "uiMeta"))?.cycleByType?.whole).toBe(120);
+  expect((await stored(page, "uiMeta")).blurInfoPills).toBe(false);
+  await expect(page.getByTestId("hero-card").getByText(/^27/).first()).toBeVisible(); // 2 records + 25 carried over
+  assertNoErrors(page);
+});
+
+test("backup: a file with only a carried-over count can be imported", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [], profile: { startingCountWhole: 12 } });
+  await openHub(page);
+  const text = await exportPlain(page);
+  await wipeToNewPhone(page);
+  await openHub(page);
+  await pasteAndImport(page, text);
+  const btn = page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true });
+  await expect(btn).toBeEnabled();
+  await btn.tap();
+  await expect.poll(async () => (await stored(page, "profile"))?.startingCountWhole).toBe(12);
+  assertNoErrors(page);
+});
+
+test("backup: a device that already has a carried-over count keeps it", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: two, profile: { startingCountWhole: 25 } });
+  await openHub(page);
+  const text = await exportPlain(page);
+  await seed(page, { donations: [], profile: { startingCountWhole: 10 } });
+  await openHub(page);
+  await pasteAndImport(page, text);
+  const dlg = page.locator("[role=dialog]").last();
+  await expect(dlg.getByText("เครื่องนี้ 10 · ในไฟล์ 25")).toBeVisible();
+  await expect(dlg.getByText("คงเดิม", { exact: true })).toBeVisible();
+  await dlg.getByRole("button", { name: "นำเข้า", exact: true }).tap();
+  await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(2);
+  expect((await stored(page, "profile")).startingCountWhole).toBe(10);
   assertNoErrors(page);
 });
 

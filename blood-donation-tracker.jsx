@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.357";
+const APP_VERSION = "1.0.358";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -278,6 +278,9 @@ const startingCountsFromProfile = (p) => {
     rbc: n(p.startingCountRbc),
   };
 };
+// True when an import would change anything the confirm dialog shows.
+const importHasSomething = (pi) => !!pi && (pi.incoming.length > 0 || Object.keys(pi.profileFieldsToFill || {}).length > 0
+  || !!pi.startingToImport || Object.keys(pi.cycleFill || {}).length > 0);
 const startingCountFields = (counts) => Object.fromEntries(DONATION_TYPES.map((t) => [TYPE_STARTING_KEY[t], Number(counts[t]) || 0]));
 const DEFAULT_DONATION_TYPE = "whole";
 const TYPE_REQUIRED_MESSAGE = "ระบุประเภทการบริจาค";
@@ -4435,7 +4438,7 @@ function AppInner() {
   const exportData = async () => {
     setExportMsg(null);
     try {
-      const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, schemaVersion: 2, ...startingCountFields(startingCounts), startingCountCreatedAt, startingCountUpdatedAt, donations, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap, exportedAt: new Date().toISOString() };
+      const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, schemaVersion: 2, ...startingCountFields(startingCounts), startingCountCreatedAt, startingCountUpdatedAt, donations, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap, blurInfoPills, seenAchievements, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
       setShowExportPreview(true);
@@ -4865,48 +4868,108 @@ function AppInner() {
       const incoming = classified.filter(c => c.kind === "ok").map(c => c.record);
       const duplicateCount = classified.filter(c => c.kind === "duplicate").length;
       const invalidCount = classified.filter(c => c.kind === "invalid").length;
-      // Only offer to fill in profile fields that are currently empty —
-      // never silently overwrite something the user already entered here.
-      // Apply the exact same bounds saveProfile enforces on manual entry so
-      // a corrupted/hand-edited backup can't sneak an out-of-range value in.
-      const profileFieldsToFill = {};
+      // Everything in the file comes in except the photo, but nothing the
+      // user already has on this device is overwritten ("แบบ A"): empty
+      // fields are filled, fields that differ are kept and listed in the
+      // confirm dialog. Apply the exact same bounds saveProfile enforces on
+      // manual entry so a corrupted/hand-edited backup can't sneak an
+      // out-of-range value in.
+      const fileProfile = {};
       // A hand-edited or corrupted backup file could carry a nickname with
       // digits/symbols/emoji the profile modal's own input no longer lets
       // you type — sanitize it here too so the import path can't
       // reintroduce what sanitizeNameInput exists to prevent.
-      if (!nickname && parsed.nickname) {
+      if (parsed.nickname) {
         const sanitizedImportedNickname = sanitizeNameInput(String(parsed.nickname)).trim();
-        if (sanitizedImportedNickname) profileFieldsToFill.nickname = sanitizedImportedNickname;
+        if (sanitizedImportedNickname) fileProfile.nickname = sanitizedImportedNickname;
       }
-      if (birthYear === "") {
+      {
         const nowBE = thaiYearNow();
         const byNum = Number(parsed.birthYear);
         const ageNum = Number(parsed.age);
         if (parsed.birthYear !== undefined && parsed.birthYear !== "" && Number.isInteger(byNum) && byNum >= nowBE - 120 && byNum <= nowBE) {
-          profileFieldsToFill.birthYear = byNum;
-          profileFieldsToFill.birthYearApprox = !!parsed.birthYearApprox;
+          fileProfile.birthYear = byNum;
+          fileProfile.birthYearApprox = !!parsed.birthYearApprox;
         } else if (parsed.age !== undefined && parsed.age !== "" && Number.isInteger(ageNum) && ageNum >= 0 && ageNum <= 120) {
-          profileFieldsToFill.birthYear = nowBE - ageNum;
-          profileFieldsToFill.birthYearApprox = true;
+          fileProfile.birthYear = nowBE - ageNum;
+          fileProfile.birthYearApprox = true;
         }
       }
-      if (!gender && ["male", "female", "none"].includes(parsed.gender)) profileFieldsToFill.gender = parsed.gender;
-      if (height === "" && Number(parsed.height) >= MIN_HEIGHT && Number(parsed.height) <= MAX_HEIGHT) profileFieldsToFill.height = Math.round(Number(parsed.height) * 10) / 10;
-      if (!donorId && typeof parsed.donorId === "string" && /^\d{10}$/.test(parsed.donorId.trim())) profileFieldsToFill.donorId = parsed.donorId.trim();
-      if (!bloodRh && ["+", "-", "unknown"].includes(parsed.bloodRh)) profileFieldsToFill.bloodRh = parsed.bloodRh;
-      if (!remindPauseUntil && typeof parsed.remindPauseUntil === "string" && (parsed.remindPauseUntil === "indefinite" || /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil))) profileFieldsToFill.remindPauseUntil = parsed.remindPauseUntil;
-      if (weight === "" && parsed.weight !== undefined && parsed.weight !== "") {
+      if (["male", "female", "none"].includes(parsed.gender)) fileProfile.gender = parsed.gender;
+      if (Number(parsed.height) >= MIN_HEIGHT && Number(parsed.height) <= MAX_HEIGHT) fileProfile.height = Math.round(Number(parsed.height) * 10) / 10;
+      if (typeof parsed.donorId === "string" && /^\d{10}$/.test(parsed.donorId.trim())) fileProfile.donorId = parsed.donorId.trim();
+      if (["+", "-", "unknown"].includes(parsed.bloodRh)) fileProfile.bloodRh = parsed.bloodRh;
+      if (typeof parsed.remindPauseUntil === "string" && (parsed.remindPauseUntil === "indefinite" || /^\d{4}-\d{2}-\d{2}$/.test(parsed.remindPauseUntil))) fileProfile.remindPauseUntil = parsed.remindPauseUntil;
+      if (parsed.weight !== undefined && parsed.weight !== "") {
         const weightNum = Number(parsed.weight);
-        if (!Number.isNaN(weightNum) && weightNum >= 0 && weightNum <= 300) profileFieldsToFill.weight = Math.round(weightNum * 10) / 10;
+        if (!Number.isNaN(weightNum) && weightNum >= 0 && weightNum <= 300) fileProfile.weight = Math.round(weightNum * 10) / 10;
       }
-      if (!bloodType && parsed.bloodType && BLOOD_TYPES.includes(parsed.bloodType)) profileFieldsToFill.bloodType = parsed.bloodType;
-      if (!donorType && (parsed.donorType === "general" || parsed.donorType === "monk")) profileFieldsToFill.donorType = parsed.donorType;
+      if (parsed.bloodType && BLOOD_TYPES.includes(parsed.bloodType)) fileProfile.bloodType = parsed.bloodType;
+      if (parsed.donorType === "general" || parsed.donorType === "monk") fileProfile.donorType = parsed.donorType;
+      const currentProfile = { nickname, birthYear, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType };
+      const profileFieldsToFill = {};
+      const profileFieldsKept = [];
+      Object.keys(currentProfile).forEach((k) => {
+        if (!(k in fileProfile)) return;
+        const cur = currentProfile[k];
+        if (cur === "" || cur === null || cur === undefined) {
+          profileFieldsToFill[k] = fileProfile[k];
+          if (k === "birthYear") profileFieldsToFill.birthYearApprox = fileProfile.birthYearApprox;
+        } else if (String(cur) !== String(fileProfile[k])) {
+          profileFieldsKept.push(k);
+        }
+      });
+      // Carried-over counts come in as one set, and only when this device
+      // has none at all -- mixing two devices' sets per type could produce a
+      // total nobody actually entered.
+      const fileStartingRaw = startingCountsFromProfile(parsed);
+      const fileStarting = Object.fromEntries(DONATION_TYPES.map((t) => [t, Math.min(9999, Math.max(0, Math.floor(Number(fileStartingRaw[t]) || 0)))]));
+      const fileStartingTotal = DONATION_TYPES.reduce((sum, t) => sum + fileStarting[t], 0);
+      let startingToImport = null, startingKept = null;
+      if (fileStartingTotal > 0) {
+        if (startingCountNum === 0) {
+          const nowIso = new Date().toISOString();
+          const updatedAt = typeof parsed.startingCountUpdatedAt === "string" && parsed.startingCountUpdatedAt ? parsed.startingCountUpdatedAt : nowIso;
+          const createdAt = typeof parsed.startingCountCreatedAt === "string" && parsed.startingCountCreatedAt ? parsed.startingCountCreatedAt : updatedAt;
+          startingToImport = { counts: fileStarting, total: fileStartingTotal, createdAt, updatedAt };
+        } else if (DONATION_TYPES.some((t) => startingNum[t] !== fileStarting[t])) {
+          startingKept = { mine: startingCountNum, file: fileStartingTotal };
+        }
+      }
+      // Reminder cycles: per type, only where this device still uses the default.
+      const cycleFill = {};
+      const cycleKept = [];
+      const fileCycles = parsed.cycleByType && typeof parsed.cycleByType === "object" ? parsed.cycleByType : {};
+      DONATION_TYPES.forEach((t) => {
+        const v = fileCycles[t];
+        if (!(Number.isInteger(v) && v >= MIN_CYCLE_DAYS && v <= MAX_CYCLE_DAYS)) return;
+        const cur = effectiveCycleByType[t];
+        if (cur === v) return;
+        if (cur === DEFAULT_CYCLE_BY_TYPE[t]) cycleFill[t] = v;
+        else cycleKept.push({ type: t, mine: cur, file: v });
+      });
+      // Smaller settings come in silently, under the same "only if still the default" rule.
+      const settingsFill = {};
+      const fileGap = parsed.backupReminderGap;
+      if (Number.isInteger(fileGap) && fileGap >= MIN_BACKUP_REMINDER_GAP && fileGap <= MAX_BACKUP_REMINDER_GAP
+        && effectiveBackupReminderGap === DEFAULT_BACKUP_REMINDER_GAP && fileGap !== DEFAULT_BACKUP_REMINDER_GAP) settingsFill.backupReminderGap = fileGap;
+      if (parsed.blurInfoPills === false && blurInfoPills === true) settingsFill.blurInfoPills = false;
+      if (Array.isArray(parsed.seenAchievements)) {
+        const extra = parsed.seenAchievements.filter((id) => typeof id === "string" && id.length <= 64 && !seenAchievements.includes(id)).slice(0, 200);
+        if (extra.length) settingsFill.seenAchievements = [...seenAchievements, ...extra];
+      }
     setPendingImport({
       incoming,
       duplicateCount,
       invalidCount,
       totalInFile: parsed.donations.length,
       profileFieldsToFill,
+      profileFieldsKept,
+      startingToImport,
+      startingKept,
+      cycleFill,
+      cycleKept,
+      settingsFill,
     });
     // The confirm-import dialog below renders after (later in the JSX tree
     // than) the backup/restore hub, so at equal z-index it painted on top
@@ -5070,7 +5133,8 @@ function AppInner() {
       return;
     }
     const fill = pendingImport.profileFieldsToFill || {};
-    if (Object.keys(fill).length > 0) {
+    const startIn = pendingImport.startingToImport;
+    if (Object.keys(fill).length > 0 || startIn) {
       const nextProfile = {
         nickname: "nickname" in fill ? fill.nickname : nickname,
         photo,
@@ -5079,9 +5143,9 @@ function AppInner() {
         weight: "weight" in fill ? fill.weight : weight,
         bloodType: "bloodType" in fill ? fill.bloodType : bloodType,
         donorType: "donorType" in fill ? fill.donorType : donorType,
-        ...startingCountFields(startingCounts),
-        startingCountCreatedAt,
-        startingCountUpdatedAt,
+        ...startingCountFields(startIn ? startIn.counts : startingCounts),
+        startingCountCreatedAt: startIn ? startIn.createdAt : startingCountCreatedAt,
+        startingCountUpdatedAt: startIn ? startIn.updatedAt : startingCountUpdatedAt,
       };
       try {
         await persistProfile(nextProfile, { strict: true });
@@ -5101,8 +5165,30 @@ function AppInner() {
       if ("weight" in fill) setWeight(fill.weight);
       if ("bloodType" in fill) setBloodType(fill.bloodType);
       if ("donorType" in fill) setDonorType(fill.donorType);
+      if (startIn) {
+        setStartingCounts(Object.fromEntries(DONATION_TYPES.map((t) => [t, startIn.counts[t] ? String(startIn.counts[t]) : ""])));
+        setStartingCountCreatedAt(startIn.createdAt);
+        setStartingCountUpdatedAt(startIn.updatedAt);
+      }
     }
-    showToast("success", `นำเข้าสำเร็จ — เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ`);
+    const cycleFill = pendingImport.cycleFill || {};
+    const settingsFill = pendingImport.settingsFill || {};
+    if (Object.keys(cycleFill).length > 0 || Object.keys(settingsFill).length > 0) {
+      const uiPatch = { ...settingsFill };
+      if (Object.keys(cycleFill).length > 0) {
+        uiPatch.cycleByType = { ...effectiveCycleByType, ...cycleFill };
+        setCycleByType(uiPatch.cycleByType);
+      }
+      if ("backupReminderGap" in settingsFill) setBackupReminderGap(settingsFill.backupReminderGap);
+      if ("blurInfoPills" in settingsFill) setBlurInfoPills(settingsFill.blurInfoPills);
+      if ("seenAchievements" in settingsFill) setSeenAchievements(settingsFill.seenAchievements);
+      persistUiMeta(uiPatch);
+    }
+    const added = [
+      pendingImport.incoming.length > 0 ? `เพิ่มรายการใหม่ ${pendingImport.incoming.length} รายการ` : "",
+      startIn ? `ยอดบริจาคที่ผ่านมา ${startIn.total} ครั้ง` : "",
+    ].filter(Boolean).join(" และ");
+    showToast("success", added ? `นำเข้าสำเร็จ — ${added}` : "นำเข้าสำเร็จ");
     setShowBackupRestore(false);
     setShowExportPreview(false);
     setPasteImportText("");
@@ -8947,38 +9033,86 @@ function AppInner() {
               <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
               <DialogX onClick={cancelImport} />
             </div>
-            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "2px 12px", margin: "0 0 10px", fontSize: 13, color: "#5C4A46" }}>
-              {[
-                { label: "ทั้งหมดในไฟล์", n: pendingImport.totalInFile },
-                { label: "เพิ่มใหม่", n: pendingImport.incoming.length, bold: true },
-                ...(pendingImport.duplicateCount > 0 ? [{ label: "ข้าม (มีอยู่แล้ว)", n: pendingImport.duplicateCount, muted: true }] : []),
-                ...(pendingImport.invalidCount > 0 ? [{ label: "ข้าม (วันที่ไม่ถูกต้อง)", n: pendingImport.invalidCount, bad: true }] : []),
-              ].map((row, idx, arr) => (
-                <div key={row.label} role={row.bad ? "alert" : undefined} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "9px 0", borderBottom: idx < arr.length - 1 ? "1px solid #F3E7E4" : "none", color: row.bad ? "#B3261E" : row.muted ? "#7A6360" : "#5C4A46" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>{row.bad && <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />}{row.label}</span>
-                  <b style={{ fontWeight: row.bold || row.bad ? 700 : 500 }}>{row.n}</b>
+            {/* Design I4 of import-confirm-designs.html: one row per kind of
+                data (records / carried-over count / profile / reminder cycles),
+                each with a badge for what happens to it -- "+N", "เติม N",
+                "คงเดิม" (this device already has a value, it isn't overwritten)
+                or "—" (nothing in the file). Smaller settings (backup reminder
+                gap, home blur, seen achievements) come in silently. */}
+            {(() => {
+              const pi = pendingImport;
+              const PROFILE_LABELS = { nickname: "ชื่อเล่น", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" };
+              const filled = Object.keys(pi.profileFieldsToFill || {}).map((k) => PROFILE_LABELS[k]).filter(Boolean);
+              const kept = (pi.profileFieldsKept || []).map((k) => PROFILE_LABELS[k]).filter(Boolean);
+              const cycleFillTypes = Object.keys(pi.cycleFill || {});
+              const cycleKept = pi.cycleKept || [];
+              const badge = (kind, text) => (
+                <span style={{ flexShrink: 0, fontSize: 11, padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap", fontWeight: kind === "none" ? 400 : 600,
+                  background: kind === "add" ? "#E6F1E7" : kind === "keep" ? "#F3EAE8" : "transparent", color: kind === "add" ? "#2F6B3A" : kind === "keep" ? "#7A6360" : "#B39B96" }}>{text}</span>
+              );
+              const rows = [
+                {
+                  Icon: List, title: "รายการบริจาค",
+                  sub: pi.totalInFile > 0
+                    ? [`ในไฟล์ ${pi.totalInFile}`, pi.duplicateCount > 0 ? `มีอยู่แล้ว ${pi.duplicateCount}` : "", pi.invalidCount > 0 ? `วันที่ไม่ถูกต้อง ${pi.invalidCount}` : ""].filter(Boolean).join(" · ")
+                    : "ไม่มีในไฟล์",
+                  badge: pi.incoming.length > 0 ? badge("add", `+${pi.incoming.length}`) : badge("none", "—"),
+                },
+                {
+                  Icon: Trophy, title: "ยอดบริจาคที่ผ่านมา",
+                  sub: pi.startingToImport
+                    ? DONATION_TYPES.filter((t) => pi.startingToImport.counts[t] > 0).map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.startingToImport.counts[t]}`).join(" · ")
+                    : pi.startingKept ? `เครื่องนี้ ${pi.startingKept.mine} · ในไฟล์ ${pi.startingKept.file}` : "ไม่มีในไฟล์",
+                  badge: pi.startingToImport ? badge("add", `+${pi.startingToImport.total}`) : pi.startingKept ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+                {
+                  Icon: User, title: "โปรไฟล์",
+                  sub: [filled.length ? `เติม ${filled.join(", ")}` : "", kept.length ? `คงเดิม ${kept.join(", ")}` : ""].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
+                  badge: filled.length ? badge("add", `เติม ${filled.length}`) : kept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+                {
+                  Icon: Bell, title: "รอบการเตือน",
+                  sub: [
+                    cycleFillTypes.length ? cycleFillTypes.map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.cycleFill[t]} วัน`).join(", ") : "",
+                    cycleKept.length ? `คงเดิม ${cycleKept.map((c) => `${DONATION_TYPE_LABELS[c.type]} (เครื่องนี้ ${c.mine} · ในไฟล์ ${c.file} วัน)`).join(", ")}` : "",
+                  ].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
+                  badge: cycleFillTypes.length ? badge("add", "ตั้งค่า") : cycleKept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+              ];
+              return (
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px", margin: "0 0 8px" }}>
+                  {rows.map(({ Icon, title, sub, badge: b }, idx) => (
+                    <div key={title} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < rows.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                      <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", color: "#9A3B33", flexShrink: 0 }}><Icon size={16} /></span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
+                        <span style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginTop: 1, lineHeight: 1.5 }}>{sub}</span>
+                      </span>
+                      {b}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            {pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0 && (
+              );
+            })()}
+            {pendingImport.invalidCount > 0 && (
+              <div role="alert" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#B3261E", margin: "0 0 8px" }}>
+                <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />ข้าม {pendingImport.invalidCount} รายการที่วันที่ไม่ถูกต้อง
+              </div>
+            )}
+            {!importHasSomething(pendingImport) && (
               <p style={{ fontSize: 12.5, color: "#B39B96", lineHeight: 1.7, margin: "0 0 8px" }}>
                 {pendingImport.invalidCount > 0 && pendingImport.duplicateCount === 0
-                  ? "ไม่มีรายการใหม่ให้เพิ่ม — ทุกรายการมีข้อมูลไม่ถูกต้อง"
-                  : "ไม่มีรายการใหม่ให้เพิ่ม — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
+                  ? "ไม่มีอะไรใหม่ให้นำเข้า — ทุกรายการมีข้อมูลไม่ถูกต้อง"
+                  : "ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
               </p>
             )}
-            {Object.keys(pendingImport.profileFieldsToFill || {}).length > 0 && (
-              <p style={{ fontSize: 13, color: "#5C4A46", lineHeight: 1.8, margin: "0 0 8px" }}>
-                จะเติมข้อมูลโปรไฟล์ที่ยังว่างอยู่ให้ด้วย: {Object.keys(pendingImport.profileFieldsToFill).map(k => ({ nickname: "ชื่อ-นามสกุล", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" }[k])).filter(Boolean).join(", ")}
-                <br /><span style={{ fontSize: 11.5, color: "#B39B96" }}>(ช่องที่คุณกรอกไว้แล้วจะไม่ถูกเขียนทับ)</span>
-              </p>
-            )}
+            <p style={{ fontSize: 11.5, color: "#B39B96", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
             {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
               <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button
                 onClick={confirmImport}
-                disabled={importSaving || (pendingImport.incoming.length === 0 && Object.keys(pendingImport.profileFieldsToFill || {}).length === 0)}
+                disabled={importSaving || !importHasSomething(pendingImport)}
                 className="btn-primary"
                 style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 {importSaving ? "กำลังนำเข้า..." : "นำเข้า"}
