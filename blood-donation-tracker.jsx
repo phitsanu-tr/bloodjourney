@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.351";
+const APP_VERSION = "1.0.352";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2507,7 +2507,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   const dType = normalizeDonationType(d.type);
   const tint = DONATION_TYPE_TINT[dType];
   return (
-    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดรายการบริจาค" onClick={onView} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
+    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดรายการบริจาค" onClick={onView} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
@@ -6791,14 +6791,15 @@ function AppInner() {
                   );
                 })}
                 {displayedStartingCount > 0 && historyYearFilter === "all" && filteredHistory.length <= historyVisibleCount && (
+                  <>
+                    {/* Own heading, same look as the year headings above, so the carried-over count reads as its own group (not part of the last year). */}
+                    <div role="heading" aria-level={3} aria-label={`ก่อนเริ่มใช้แอป · ${displayedStartingCount} ครั้ง`} style={{ margin: visibleHistory.length === 0 ? "2px 2px 0" : "12px 2px 0" }}>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: "#8A5F59", letterSpacing: 0.5, lineHeight: 1 }}>ก่อนเริ่มใช้แอป</span>
+                    </div>
                     <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
                       style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
-                      <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
-                        <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 12 : 14, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
-                        <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
-                      </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         {/* "ทั้งหมด" with both types carried over shows the combined total plus
                             its per-type breakdown; filtering to one specific type (or having
@@ -6807,24 +6808,13 @@ function AppInner() {
                             switching to, say, "พลาสมา/เกล็ดเลือด" would keep showing the
                             combined "เคยบริจาคมาแล้ว 1000 ครั้ง" heading next to a card that's
                             now only about one type (reported directly by the user). */}
-                        {(() => {
-                          // Types that carry a count under the current filter; "ทั้งหมด" with several
-                          // shows the total plus a per-type breakdown, otherwise just that one type.
-                          const carryTypes = (historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter]).filter((t) => startingNum[t] > 0);
-                          const rowS = { display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" };
-                          return (
-                            <div>
-                              {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px rows 5px apart. */}
-                              <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
-                                <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span>
-                              </div>
-                              <div style={rowS}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> ก่อนเริ่มใช้แอป</div>
-                              {carryTypes.map((t) => (
-                                <div key={t} style={rowS}><span style={HIST_ICON_BOX}><TypeIcon type={t} size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>{DONATION_TYPE_LABELS[t]} <span style={{ whiteSpace: "nowrap" }}>{startingNum[t]} ครั้ง</span></span></div>
-                              ))}
-                            </div>
-                          );
-                        })()}
+                        <div>
+                          {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px row below. Per-type split lives in the view dialog. */}
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
+                            <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> แตะเพื่อดูแยกประเภท</div>
+                        </div>
                       </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
                         <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
@@ -6845,6 +6835,7 @@ function AppInner() {
                         )}
                       </div>
                     </div>
+                  </>
                 )}
               </div>
 
