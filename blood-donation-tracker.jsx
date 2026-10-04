@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.353";
+const APP_VERSION = "1.0.354";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3027,18 +3027,16 @@ function AppInner() {
   useEffect(() => {
     if (anyModalOpen) {
       scrollLockYRef.current = window.scrollY || window.pageYOffset || 0;
+      // overflow:hidden on both <html> and <body> (instead of position:fixed on
+      // <body>): the fixed-body trick made LINE's in-app browser re-expand its
+      // top bar when a dialog opened, shoving the page and dialog down ~20px.
+      const html = document.documentElement;
       const body = document.body;
-      body.style.position = "fixed";
-      body.style.top = `-${scrollLockYRef.current}px`;
-      body.style.left = "0";
-      body.style.right = "0";
-      body.style.width = "100%";
+      html.style.overflow = "hidden";
+      body.style.overflow = "hidden";
       return () => {
-        body.style.position = "";
-        body.style.top = "";
-        body.style.left = "";
-        body.style.right = "";
-        body.style.width = "";
+        html.style.overflow = "";
+        body.style.overflow = "";
         window.scrollTo(0, scrollLockYRef.current);
       };
     }
