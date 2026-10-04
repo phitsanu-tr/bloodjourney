@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.355";
+const APP_VERSION = "1.0.356";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2800,15 +2800,26 @@ function AppInner() {
   // scroller (never the page, which is locked) so that card's switch sits at the top and the whole
   // form is in view -- otherwise a switch near the bottom opens a form that is off-screen.
   const quickScrollRef = useRef(null);
-  const scrollQuickCardIntoView = (key) => {
+  // Turning a type OFF collapses its form (the browser clamps scrollTop by itself); just make sure the
+  // switch that was tapped is still in view afterwards ("nearest": no movement if it already is).
+  const scrollQuickCardIntoView = (key, opening = true) => {
     setTimeout(() => {
       const sc = quickScrollRef.current;
       const card = sc && sc.querySelector(`[data-quick-card="${key}"]`);
       if (!sc || !card) return;
       let reduce = false;
       try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-      const top = Math.max(0, sc.scrollTop + (card.getBoundingClientRect().top - sc.getBoundingClientRect().top) - 8);
-      if (top > sc.scrollTop) sc.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
+      const behavior = reduce ? "auto" : "smooth";
+      const scR = sc.getBoundingClientRect();
+      const cR = card.getBoundingClientRect();
+      if (opening) {
+        const top = Math.max(0, sc.scrollTop + (cR.top - scR.top) - 8);
+        if (top > sc.scrollTop) sc.scrollTo({ top, behavior });
+      } else if (cR.top < scR.top + 8) {
+        sc.scrollTo({ top: Math.max(0, sc.scrollTop + (cR.top - scR.top) - 8), behavior });
+      } else if (cR.bottom > scR.bottom) {
+        sc.scrollTo({ top: sc.scrollTop + (cR.bottom - scR.bottom) + 8, behavior });
+      }
     }, 30);
   };
   const quickDateInputRefs = useRef({});
@@ -8449,7 +8460,7 @@ function AppInner() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: on ? "#3A2C29" : "#7A6360" }}>
                     <TypeIcon type={key} size={14} color={on ? "#9A3B33" : "#7A6360"} /> {label}
                   </div>
-                  <button type="button" role="switch" aria-checked={on} aria-label={`เคยบริจาค${label}`} onClick={() => { setOn(v => !v); setQuickStartingCountError(""); if (!on) scrollQuickCardIntoView(key); }}
+                  <button type="button" role="switch" aria-checked={on} aria-label={`เคยบริจาค${label}`} onClick={() => { setOn(v => !v); setQuickStartingCountError(""); scrollQuickCardIntoView(key, !on); }}
                     style={{ width: 38, height: 21, borderRadius: 20, border: "none", cursor: "pointer", position: "relative", background: on ? "#9A3B33" : "#E3C8C3", flexShrink: 0, padding: 0 }}>
                     <span style={{ width: 15, height: 15, borderRadius: "50%", background: "#FFFFFF", position: "absolute", top: 3, left: on ? 20 : 3, transition: "left 0.15s" }} />
                   </button>

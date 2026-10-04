@@ -51,3 +51,21 @@ test("quick entry: turning on a lower type scrolls its form into view", async ({
   expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(y0); // our scroll moves the dialog, not the page
   assertNoErrors(page);
 });
+
+test("quick entry: turning a lower type back off keeps its switch in view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 640 });
+  await startFresh(page);
+  await page.getByRole("button", { name: "บันทึกบริจาคโลหิต" }).tap();
+  await page.getByText("เคยบริจาคแล้ว", { exact: true }).tap();
+  const d = page.locator("[role=dialog]").last();
+  await d.locator("[role=switch]").first().tap();
+  const rbc = d.getByRole("switch", { name: /เม็ดเลือดแดง/ });
+  await rbc.scrollIntoViewIfNeeded();
+  await rbc.tap();
+  await expect(d.locator("[data-quick-card=rbc] input[inputmode=numeric]")).toBeVisible();
+  await page.waitForTimeout(600);
+  await rbc.tap(); // off again: the form collapses
+  await expect(d.locator("[data-quick-card=rbc] input[inputmode=numeric]")).toHaveCount(0);
+  await expect.poll(async () => rbc.evaluate((el) => { const b = el.getBoundingClientRect(); return b.top >= 0 && b.bottom <= window.innerHeight; }), { timeout: 3000 }).toBe(true);
+  assertNoErrors(page);
+});
