@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.350";
+const APP_VERSION = "1.0.351";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5176,8 +5176,8 @@ function AppInner() {
     const box = heroTabsRef.current;
     const el = box && box.querySelector('[data-tab-active="1"]');
     if (!box || !el) return;
-    const left = el.offsetLeft - 22;
-    const right = el.offsetLeft + el.offsetWidth + 22 - box.clientWidth;
+    const left = el.offsetLeft - 16;
+    const right = el.offsetLeft + el.offsetWidth + 16 - box.clientWidth;
     if (box.scrollLeft > left) box.scrollTo({ left, behavior: "smooth" });
     else if (box.scrollLeft < right) box.scrollTo({ left: right, behavior: "smooth" });
   }, [activeCountdownType, hasMultipleTypes]);
@@ -5759,8 +5759,8 @@ function AppInner() {
         @keyframes scrimOut { from { --scrim-a: 0.3; } to { --scrim-a: 0; } }
         @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
         /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
-        .hero-status { min-height: 121px; }
-        @media (max-width: 349px) { .hero-status { min-height: 138px; } }
+        .hero-status { min-height: 91px; }
+        @media (max-width: 349px) { .hero-status { min-height: 121px; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -6119,37 +6119,32 @@ function AppInner() {
                   card and the top of the screen, pushing the card and the
                   primary action further down than they deserve given they're
                   the most important things on this tab. */}
-              <div data-testid="hero-card" style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "22px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+              <div data-testid="hero-card" style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 20, padding: "16px", color: "#FFF7F5", marginBottom: 16, position: "relative", overflow: "hidden" }}>
                 {/* Decorative background droplets removed: two sat half outside
                     the card edge (read as broken images) and the last faint one
                     sat behind "อีก N วัน" (removed on user request). */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative", zIndex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative", zIndex: 1, minHeight: 61 }}>
                   {totalCount === 0 ? (
                     // Brand-new user -- a giant "0 ครั้ง" read as a score of zero
                     // rather than a starting point. Welcome them instead; the
                     // count takes over this spot from the first record onward.
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 6 }}>เริ่มต้นการเดินทาง</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.3 }}>ยินดีต้อนรับสู่<br />Blood Journey</div>
+                      <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 2 }}>เริ่มต้นการเดินทาง</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3 }}>ยินดีต้อนรับสู่ Blood Journey</div>
                     </div>
                   ) : (
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>บริจาคโลหิตสะสมทั้งหมด</div>
+                      <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-                        <div style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 18, fontWeight: 500 }}> ครั้ง</span></div>
+                        <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 15, fontWeight: 500 }}> ครั้ง</span></div>
                         <span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)" }}>≈ {estLiters} ลิตร</span>
                       </div>
                     </div>
                   )}
-                  <div style={{ position: "relative", width: 84, height: 84, flexShrink: 0 }}>
-                    <svg width="52" height="52" viewBox="0 0 24 24" fill="#FFF7F5" style={{ position: "absolute", top: 18, left: 26 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,247,245,0.75)" style={{ position: "absolute", top: 50, left: 0 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,247,245,0.55)" style={{ position: "absolute", top: 0, left: 0 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
-                  </div>
                 </div>
 
                 {hasMultipleTypes ? (
-                  <div ref={heroTabsRef} className="no-scrollbar" role="tablist" aria-label="ประเภทการบริจาค" style={{ display: "flex", gap: 6, position: "relative", zIndex: 2, overflowX: "auto", overflowY: "hidden", margin: "-2px -22px -8px", padding: "8px 22px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+                  <div ref={heroTabsRef} className="no-scrollbar" role="tablist" aria-label="ประเภทการบริจาค" style={{ display: "flex", gap: 6, position: "relative", zIndex: 2, overflowX: "auto", overflowY: "hidden", margin: "-2px -16px -8px", padding: "8px 16px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
                     {/* Selected pill's text/count now tints per donation type (matching
                         the same DONATION_TYPE_TINT used on the history filters and
                         cards below) instead of always reading maroon regardless of
@@ -6204,7 +6199,7 @@ function AppInner() {
                     the state changes or the tab is switched. Shorter states keep their
                     link pinned to the bottom (marginTop: auto) instead of floating. */}
                 <div data-testid="hero-status" className="hero-status" style={{ display: "flex", flexDirection: "column" }}>
-                <div style={{ marginTop: 10, paddingTop: 14, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "stretch", gap: 10, position: "relative", zIndex: 1, flex: "1 0 auto" }}>
+                <div style={{ marginTop: 8, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "stretch", gap: 10, position: "relative", zIndex: 1, flex: "1 0 auto" }}>
                   {/* The waiting state ("อีก N วัน") has no leading icon: the text and the
                       progress caption below already say it, and the clock only duplicated
                       them. The other states keep theirs -- the icon is their meaning
@@ -6225,7 +6220,14 @@ function AppInner() {
                     {remindPaused ? (
                       // Donor paused reminders (settings → การเตือน → พักการเตือนชั่วคราว).
                       <>
-                        <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</div>
+                        <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                          <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</span>
+                          {/* Short label on the title row (not a row of its own) so the paused state is no taller than the others. */}
+                          <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }} aria-label="เปิดการเตือน หรือเปลี่ยนระยะเวลา"
+                            style={{ display: "inline-flex", alignItems: "center", gap: 2, minHeight: 44, margin: "-12px 0", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                            เปิดการเตือน <ChevronRight size={13} />
+                          </button>
+                        </div>
                         <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
                         {/* Reminders are paused, but the donor may still want to know when they can donate. */}
                         {effectiveLastDateStr && (
@@ -6235,10 +6237,6 @@ function AppInner() {
                               : <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
                           </div>
                         )}
-                        <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                          เปิดการเตือน หรือเปลี่ยนระยะเวลา <ChevronRight size={13} />
-                        </button>
                       </>
                     ) : effectiveLastDateStr ? (
                       isEligible ? (
@@ -6268,7 +6266,10 @@ function AppInner() {
                         // sentence (and wrapped so "วัน)" dangled alone on its own
                         // line). Now it leads, with the exact date underneath.
                         <>
-                          <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</div>
+                          <div style={{ width: "100%", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                            <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</span>
+                            <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,247,245,0.85)", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
+                          </div>
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be
                               misread as the other type's. */}
@@ -6311,13 +6312,8 @@ function AppInner() {
                 {effectiveLastDateStr && !isEligible && daysLeft > 0 && !remindPaused && (
                   <div key={`${activeCountdownType}-progress`} role="progressbar" aria-label="ความคืบหน้าของช่วงพักฟื้นก่อนบริจาคครั้งถัดไป"
                     aria-valuemin={0} aria-valuemax={activeCycleDays} aria-valuenow={Math.max(0, activeCycleDays - daysLeft)}
-                    style={{ marginTop: 10, height: 5, borderRadius: 3, background: "rgba(255,247,245,0.2)", overflow: "hidden", position: "relative", zIndex: 1, animation: "fadeSwap 0.4s ease" }}>
+                    style={{ marginTop: 8, height: 5, borderRadius: 3, background: "rgba(255,247,245,0.2)", overflow: "hidden", position: "relative", zIndex: 1, animation: "fadeSwap 0.4s ease" }}>
                     <div style={{ height: "100%", width: `${Math.min(100, Math.max(0, ((activeCycleDays - daysLeft) / activeCycleDays) * 100))}%`, background: "#FFF7F5", borderRadius: 3, transition: "width 0.35s ease" }} />
-                  </div>
-                )}
-                {effectiveLastDateStr && !isEligible && daysLeft > 0 && !remindPaused && (
-                  <div key={`${activeCountdownType}-progress-cap`} style={{ fontSize: 11, color: "rgba(255,247,245,0.85)", marginTop: 5, position: "relative", zIndex: 1 }}>
-                    ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน
                   </div>
                 )}
                 </div>
