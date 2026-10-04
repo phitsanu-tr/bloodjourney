@@ -28,3 +28,26 @@ test("dialog: page scroll is locked with overflow hidden and restored on close",
   expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(y0);
   assertNoErrors(page);
 });
+
+// Quick entry: switching a lower type ON scrolls the dialog so that type's switch sits at the top
+// and its count field is in view (page itself stays locked).
+test("quick entry: turning on a lower type scrolls its form into view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 640 });
+  await startFresh(page);
+  await page.getByRole("button", { name: "บันทึกบริจาคโลหิต" }).tap();
+  await page.getByText("เคยบริจาคแล้ว", { exact: true }).tap();
+  const d = page.locator("[role=dialog]").last();
+  await d.locator("[role=switch]").first().tap();
+  const plasma = d.getByRole("switch", { name: /พลาสมา/ });
+  await plasma.scrollIntoViewIfNeeded();
+  const y0 = await page.evaluate(() => Math.round(window.scrollY));
+  await plasma.tap();
+  const input = d.locator("[data-quick-card=plasma] input[inputmode=numeric]");
+  await expect(input).toBeVisible();
+  await expect.poll(async () => {
+    const r = await input.evaluate((el) => { const b = el.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, vh: window.innerHeight }; });
+    return r.top >= 0 && r.bottom <= r.vh;
+  }, { timeout: 3000 }).toBe(true);
+  expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(y0); // our scroll moves the dialog, not the page
+  assertNoErrors(page);
+});
