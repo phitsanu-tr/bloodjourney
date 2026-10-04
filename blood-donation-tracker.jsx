@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.352";
+const APP_VERSION = "1.0.353";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5750,8 +5750,6 @@ function AppInner() {
         .hist-card { -webkit-tap-highlight-color: transparent; transition: background 0.12s; }
         /* pressed tint only when the card itself is pressed, not while the ⋮ button / its menu is */
         .hist-card:active:not(:has(.hist-more:active)) { background: #FBF1EE !important; }
-        /* the carried-over card already sits on a tinted fill, so the white-card press tint is invisible there -- go darker instead */
-        .hist-card.hist-card-carry:active:not(:has(.hist-more:active)) { background: #EBDAD5 !important; border-color: #D9B9B2 !important; }
         .hist-card:focus-visible { outline: 2px solid #9A3B33; outline-offset: 2px; }
         @media (prefers-reduced-transparency: reduce) {
           [role="dialog"][aria-modal="true"]:not([data-own-motion]), .dlg-exit-clone, .filter-scrim { background: rgba(36, 26, 24, 0.45) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
@@ -6796,10 +6794,14 @@ function AppInner() {
                     <div role="heading" aria-level={3} aria-label={`ก่อนเริ่มใช้แอป · ${displayedStartingCount} ครั้ง`} style={{ margin: visibleHistory.length === 0 ? "2px 2px 0" : "12px 2px 0" }}>
                       <span style={{ fontSize: 24, fontWeight: 600, color: "#8A5F59", letterSpacing: 0.5, lineHeight: 1 }}>ก่อนเริ่มใช้แอป</span>
                     </div>
-                    <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label="ดูรายละเอียดยอดสะสมที่เคยบริจาคมาก่อน"
+                    <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label={`ยอดบริจาคที่ผ่านมา ${displayedStartingCount} ครั้ง ก่อนเริ่มใช้แอป แตะเพื่อดูแยกประเภท`}
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
                       onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
-                      style={{ background: "#F7F0EE", border: "1px dashed #E3C8C3", borderRadius: 14, padding: "13px 6px 13px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }}>
+                      style={{ background: "#FFFFFF", border: "1px dashed #D4A9A2", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #D4A9A2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
+                        <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 12 : 14, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
+                        <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                      </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         {/* "ทั้งหมด" with both types carried over shows the combined total plus
                             its per-type breakdown; filtering to one specific type (or having
@@ -6809,11 +6811,9 @@ function AppInner() {
                             combined "เคยบริจาคมาแล้ว 1000 ครั้ง" heading next to a card that's
                             now only about one type (reported directly by the user). */}
                         <div>
-                          {/* Same type scale as HistoryRow: 14/600 heading with a 12px icon in a 14px box, 12px row below. Per-type split lives in the view dialog. */}
-                          <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 7 }}>
-                            <span style={HIST_ICON_BOX}><Trophy size={12} color="#9A3B33" /></span><span style={{ minWidth: 0 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></span>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5, fontSize: 12, color: "#7A6360" }}><span style={HIST_ICON_BOX}><Clock size={12} color="#9A3B33" /></span> แตะเพื่อดูแยกประเภท</div>
+                          {/* Same type scale as HistoryRow: 14/600 heading + 12px muted line. The per-type split lives in the view dialog. */}
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>ยอดบริจาคที่ผ่านมา</div>
+                          <div style={{ marginTop: 2, fontSize: 12, color: "#7A6360" }}>แตะเพื่อดูแยกประเภท</div>
                         </div>
                       </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
@@ -8719,16 +8719,6 @@ function AppInner() {
       {viewStartingCount && displayedStartingCount > 0 && (() => {
         // Read-only detail for the carried-over total ("เคยบริจาคมาก่อน"), mirroring the donation
         // detail modal: badge + title on top, one row per carried-over type, and the logged-at line.
-        const svRowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
-        const svLbl = (t) => (
-          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", fontSize: 12, lineHeight: 1.6, color: "#A38D89" }}>
-            <div style={{ position: "relative" }}>
-              <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
-              <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
-            </div>
-          </div>
-        );
-        const svVal = { flex: 1, minWidth: 0, fontSize: 12, color: "#3A2C29", lineHeight: 1.6 };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดยอดสะสมที่เคยบริจาคมาก่อน" onClick={(e) => { if (e.target === e.currentTarget) setViewStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
@@ -8738,15 +8728,31 @@ function AppInner() {
                   <div style={{ fontSize: 11, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>บริจาคมาแล้ว <span style={{ whiteSpace: "nowrap" }}>{displayedStartingCount} ครั้ง</span></div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>ยอดบริจาคที่ผ่านมา</div>
                   <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
                 </div>
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                {(historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter]).filter((t) => startingNum[t] > 0).map((t) => (
-                  <div key={t} style={svRowS}>{svLbl(DONATION_TYPE_LABELS[t])}<div style={svVal}><span style={{ color: "#9A3B33", fontWeight: 600 }}>{startingNum[t]}</span> ครั้ง</div></div>
-                ))}
+                {(() => {
+                  const shown = (historyTypeFilter === "all" ? DONATION_TYPES : [historyTypeFilter]).filter((t) => startingNum[t] > 0);
+                  return (
+                    <>
+                      {shown.map((t) => (
+                        <div key={t} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #F3E7E4" }}>
+                          <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: 9, background: DONATION_TYPE_TINT[t].bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TypeIcon type={t} size={15} color={DONATION_TYPE_TINT[t].text} /></span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29" }}>{DONATION_TYPE_LABELS[t]}</span>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: DONATION_TYPE_TINT[t].text, whiteSpace: "nowrap" }}>{startingNum[t]}<span style={{ fontSize: 11, fontWeight: 400, color: "#7A6360", marginLeft: 3 }}>ครั้ง</span></span>
+                        </div>
+                      ))}
+                      {shown.length > 1 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 2px", fontSize: 12, color: "#7A6360" }}>
+                          <span>รวม</span><b style={{ color: "#241A18" }}>{displayedStartingCount} ครั้ง</b>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
                 {startingCountUpdatedAt && (
                   <ModalMetaLine>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
