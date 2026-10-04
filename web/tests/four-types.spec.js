@@ -61,6 +61,23 @@ test("carried-over counts are kept per type and add to the total", async ({ page
   assertNoErrors(page);
 });
 
+test("liters: hero pill follows the selected type; dashboard shows count × ml per type and a total", async ({ page }) => {
+  await startFresh(page);
+  // whole 2 × 350 = 0.7 L · plasma 4 (carried over) × 500 = 2 L · platelet 1 × 250 = 0.25 L → total 2.95 ≈ 3 L
+  await seed(page, { donations: [rec("a", daysAgo(120), "whole"), rec("b", daysAgo(200), "whole"), rec("c", daysAgo(5), "platelet")], profile: { startingCountPlasma: 4 } });
+  const hero = page.getByTestId("hero-card");
+  await page.getByRole("tab", { name: /โลหิตรวม/ }).tap();
+  await expect(hero.getByLabel("โลหิตรวม ประมาณ 0.7 ลิตร")).toBeVisible();
+  await page.getByRole("tab", { name: /พลาสมา/ }).tap();
+  await expect(hero.getByLabel("พลาสมา ประมาณ 2 ลิตร")).toBeVisible();
+  await page.getByRole("button", { name: "แดชบอร์ด" }).tap();
+  await expect(page.getByText("ปริมาณที่ให้สะสม")).toBeVisible();
+  await expect(page.getByRole("row", { name: /เกล็ดเลือด.*1 ครั้ง.*× 250 มล\..*0\.3 ล\./ })).toBeVisible();
+  await expect(page.getByRole("row", { name: /รวม.*7 ครั้ง.*3 ล\./ })).toBeVisible();
+  await expect(page.getByText("คำนวณที่ 350 มล./ครั้ง")).toHaveCount(0);
+  assertNoErrors(page);
+});
+
 test("settings: each type has its own reminder cycle and it is saved", async ({ page }) => {
   await startFresh(page);
   await page.getByRole("button", { name: /ตั้งค่า/ }).first().tap();
@@ -130,6 +147,24 @@ for (const width of [414, 390, 360]) {
       const [sw, cw] = await page.evaluate(() => { const t = document.querySelector("[role=tablist]"); return [t.scrollWidth, t.clientWidth]; });
       expect(sw, `tab ${i} row overflows`).toBeLessThanOrEqual(cw);
     }
+    assertNoErrors(page);
+  });
+}
+
+// The per-type liters pill sits beside the big count; with Mitr and a 3-digit
+// count it must not wrap under it (that would make the hero card taller).
+for (const width of [390, 320]) {
+  test(`home: liters pill stays beside the count with Mitr loaded at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await startFresh(page);
+    await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma"), rec("c", daysAgo(10), "platelet"), rec("d", daysAgo(20), "rbc")], profile: { startingCountRbc: 120 } });
+    await page.addStyleTag({ content: fs.readFileSync(new URL("./mitr-font.css", import.meta.url), "utf8") });
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByRole("tab", { name: /เม็ดเลือดแดง/ }).tap(); await page.waitForTimeout(450);
+    const pill = page.getByTestId("hero-card").getByLabel(/^เม็ดเลือดแดง ประมาณ 48.4 ลิตร$/);
+    await expect(pill).toBeVisible();
+    const rowH = await pill.evaluate((el) => el.parentElement.getBoundingClientRect().height);
+    expect(rowH, "count row wrapped").toBeLessThan(45);
     assertNoErrors(page);
   });
 }

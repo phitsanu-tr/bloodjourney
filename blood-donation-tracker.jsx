@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.356";
+const APP_VERSION = "1.0.357";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -283,6 +283,16 @@ const DEFAULT_DONATION_TYPE = "whole";
 const TYPE_REQUIRED_MESSAGE = "ระบุประเภทการบริจาค";
 const IMPORT_UNSUPPORTED_MESSAGE = "รูปแบบไม่รองรับ หรือไฟล์เสียหาย";
 export const DONATION_TYPE_LABELS = { whole: "โลหิตรวม", plasma: "พลาสมา", platelet: "เกล็ดเลือด", rbc: "เม็ดเลือดแดง" };
+// Rough volume that leaves the donor per donation, for the "≈ X ลิตร" figures
+// only: a whole-blood bag, the collected plasma, a platelet bag (platelets in
+// plasma), two red-cell units. Display estimates, not measured amounts.
+export const DONATION_TYPE_ML = { whole: 350, plasma: 500, platelet: 250, rbc: 400 };
+export function estimateVolumeMl(countByType) {
+  return DONATION_TYPES.reduce((sum, t) => sum + (Number(countByType?.[t]) || 0) * DONATION_TYPE_ML[t], 0);
+}
+export function formatLiters(ml) {
+  return String(Math.round((Number(ml) || 0) / 100) / 10);
+}
 // "เฉพาะส่วน" is the umbrella name for the three apheresis types.
 const COMPONENT_GROUP_LABEL = "เฉพาะส่วน";
 const COMPONENT_TYPES = ["plasma", "platelet", "rbc"];
@@ -1830,6 +1840,8 @@ function base64UrlToBytes(str) {
 //           link's own timestamp, used for the expiry check)
 //   achievement: [4..5] totalCount uint16 | [6] tier | [7] threshold
 //                | [8..] nickname: 1-byte length + UTF-8 bytes
+//                | [..]  estimated volume in 50 ml steps, uint16 (absent in
+//                        links made before per-type volumes: totalCount*350)
 //   record:      [4..5] order uint16 | [6..7] days-since-epoch uint16
 //                | [8..9] minutes-since-midnight uint16 (0xFFFF = none)
 //                | [..]  location: 1-byte length + UTF-8 bytes
@@ -1867,6 +1879,8 @@ function encodeSharePayload(payload) {
     const totalCount = Number(payload.totalCount) || 0;
     out.push((totalCount >> 8) & 0xff, totalCount & 0xff, (Number(payload.tier) || 0) & 0xff, (Number(payload.threshold) || 0) & 0xff);
     pushLenStr(out, payload.nickname);
+    const vol50 = Math.max(0, Math.min(0xffff, Math.round((Number(payload.estVolumeMl) || 0) / 50)));
+    out.push((vol50 >> 8) & 0xff, vol50 & 0xff);
   } else {
     const order = Number(payload.order) || 0;
     out.push((order >> 8) & 0xff, order & 0xff);
@@ -1897,8 +1911,9 @@ function decodeSharePayload(bytes) {
 
   if (kind === "a") {
     const totalCount = (bytes[4] << 8) | bytes[5];
-    const [nickname] = readLenStr(bytes, 8);
-    return { kind, sizeIdx, totalCount, tier: bytes[6], threshold: bytes[7], akind: flagBit3 ? "m" : "p", isMonk, bloodType, nickname, ts };
+    const [nickname, off] = readLenStr(bytes, 8);
+    const estVolumeMl = bytes.length >= off + 2 ? ((bytes[off] << 8) | bytes[off + 1]) * 50 : totalCount * 350;
+    return { kind, sizeIdx, totalCount, estVolumeMl, tier: bytes[6], threshold: bytes[7], akind: flagBit3 ? "m" : "p", isMonk, bloodType, nickname, ts };
   }
   const order = (bytes[4] << 8) | bytes[5];
   const days = (bytes[6] << 8) | bytes[7];
@@ -4557,7 +4572,7 @@ function AppInner() {
         threshold: latestUnlocked.threshold,
         isMonk: donorType === "monk",
       },
-      estVolumeMl: totalCount * 350,
+      estVolumeMl,
       bloodType,
       nickname,
     });
@@ -4717,11 +4732,11 @@ function AppInner() {
           nickname: shareRecordData.nickname || "",
         };
       } else if (shareData) {
-        // estVolumeMl isn't included — it's always totalCount*350 (see
-        // openShareCard), so DownloadPage.jsx recomputes it instead of
-        // carrying a redundant field.
+        // estVolumeMl rides along (in 50 ml steps) since it now depends on
+        // the per-type split, which the token doesn't otherwise carry.
         payload = {
           kind: "a",
+          estVolumeMl: shareData.estVolumeMl ?? 0,
           sizeIdx,
           totalCount: shareData.totalCount ?? 0,
           akind: shareData.achievement?.kind === "medal" ? "m" : "p",
@@ -5217,9 +5232,12 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
   const totalCount = startingCountNum + donations.length;
-  // Rough, clearly-labeled estimate only (350ml/donation) — not meant to be
-  // precise, just to give the cumulative count some tangible meaning.
-  const estLiters = Math.round(totalCount * 0.35 * 10) / 10;
+  // Rough, clearly-labeled estimate only (DONATION_TYPE_ML per type) — not
+  // meant to be precise, just to give the cumulative count tangible meaning.
+  // The hero card shows the selected type's own figure; the dashboard and the
+  // share card show the sum across types.
+  const estVolumeMl = estimateVolumeMl(totalBy);
+  const activeTypeLiters = formatLiters(totalBy[activeCountdownType] * DONATION_TYPE_ML[activeCountdownType]);
   // Native app: a real .ics file through the OS share sheet already lets the
   // user pick whichever calendar app they use — no ambiguity to resolve, so
   // this bypasses the popover entirely. Non-native: opens the small
@@ -5387,8 +5405,6 @@ function AppInner() {
       if (count >= busiestCount) { busiestYear = year; busiestCount = count; }
     });
 
-    const estVolumeMl = totalCount * 350;
-
     const nextAchievement = achievements.find(a => totalCount < a.threshold) || null;
 
     const currentYear = buddhistYear(new Date());
@@ -5406,7 +5422,7 @@ function AppInner() {
     let busiestMonthIdx = null;
     monthCounts.forEach((c, i) => { if (c > 0 && c === maxMonthCount && busiestMonthIdx === null) busiestMonthIdx = i; });
 
-    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, estVolumeMl, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdx };
+    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdx };
   }, [donations, achievements, totalCount]);
 
   // Keep the "yearly count" chart scrolled to the latest years by default —
@@ -5783,6 +5799,7 @@ function AppInner() {
         /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
         .hero-status { min-height: 91px; }
         @media (max-width: 349px) { .hero-status { min-height: 121px; } }
+        @media (max-width: 349px) { .hero-liters-name { display: none; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -6159,7 +6176,18 @@ function AppInner() {
                       <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
                         <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 15, fontWeight: 500 }}> ครั้ง</span></div>
-                        <span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)" }}>≈ {estLiters} ลิตร</span>
+                        {/* Liters of the selected type only (design H3 of
+                            liters-by-type-designs.html), so the pill reads the
+                            same way as the countdown under the type tabs. The
+                            type name drops under 350px to stay on one line. */}
+                        {activeTypeTotalCount > 0 && (
+                          <span key={`${activeCountdownType}-liters`} aria-label={`${DONATION_TYPE_LABELS[activeCountdownType]} ประมาณ ${activeTypeLiters} ลิตร`}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap", fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)", animation: "fadeSwap 0.4s ease" }}>
+                            <TypeIcon type={activeCountdownType} size={11} />
+                            <span className="hero-liters-name">{DONATION_TYPE_LABELS[activeCountdownType]}</span>
+                            ≈ {activeTypeLiters} ลิตร
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -6966,15 +6994,47 @@ function AppInner() {
                   </div>
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปริมาณโลหิตสะสม</div>
+                  {/* Design D3 of liters-by-type-designs.html: every type's
+                      count × ml/donation = liters, plus a total row when there
+                      is more than one type, so the figure explains itself. */}
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปริมาณที่ให้สะสม</div>
                   <div style={{ fontSize: 20, fontWeight: 700 }}>
-                    {(stats.estVolumeMl / 1000).toFixed(stats.estVolumeMl % 1000 === 0 ? 0 : 1)} <span style={{ fontSize: 12, fontWeight: 500 }}>ลิตร (โดยประมาณ)</span>
+                    {formatLiters(estVolumeMl)} <span style={{ fontSize: 12, fontWeight: 500 }}>ลิตร (โดยประมาณ)</span>
                   </div>
-                  <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 2 }}>คำนวณที่ 350 มล./ครั้ง</div>
+                  {recordedTypes.length > 0 && (
+                    <div style={{ marginTop: 10, paddingTop: 4, borderTop: "1px solid #F3E7E4" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <tbody>
+                        {recordedTypes.map((t) => (
+                          <tr key={t}>
+                            <td style={{ padding: "6px 0", borderBottom: "1px dashed #F0E2DF", color: DONATION_TYPE_TINT[t].text }}>
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><TypeIcon type={t} size={12} /> {DONATION_TYPE_LABELS[t]}</span>
+                            </td>
+                            <td style={{ padding: "6px 0 6px 8px", borderBottom: "1px dashed #F0E2DF", textAlign: "right", color: "#7A6360", whiteSpace: "nowrap" }}>{totalBy[t]} ครั้ง</td>
+                            <td style={{ padding: "6px 0 6px 8px", borderBottom: "1px dashed #F0E2DF", textAlign: "right", color: "#7A6360", whiteSpace: "nowrap" }}>× {DONATION_TYPE_ML[t]} มล.</td>
+                            <td style={{ padding: "6px 0 6px 10px", borderBottom: "1px dashed #F0E2DF", textAlign: "right", fontWeight: 600, whiteSpace: "nowrap" }}>{formatLiters(totalBy[t] * DONATION_TYPE_ML[t])} ล.</td>
+                          </tr>
+                        ))}
+                        {recordedTypes.length > 1 && (
+                          <tr>
+                            <td style={{ padding: "8px 0 0", fontWeight: 700, color: "#9A3B33" }}>รวม</td>
+                            <td style={{ padding: "8px 0 0 8px", textAlign: "right", fontWeight: 700, color: "#9A3B33", whiteSpace: "nowrap" }}>{totalCount} ครั้ง</td>
+                            <td />
+                            <td style={{ padding: "8px 0 0 10px", textAlign: "right", fontWeight: 700, color: "#9A3B33", whiteSpace: "nowrap" }}>{formatLiters(estVolumeMl)} ล.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>ค่าประมาณเพื่อให้เห็นภาพ ไม่ใช่ปริมาณที่วัดจริง</div>
                   {/* Compared with the donor's own blood volume (design 6 of
                       profile-gender-height-designs.html) once gender, height
                       and weight are in the profile. */}
-                  {totalCount > 0 && (() => {
+                  {/* Comparison with the donor's own blood counts whole blood
+                      only: plasma, platelets and red cells aren't "blood" in
+                      that sense. Hidden when there is no whole blood at all. */}
+                  {totalBy.whole > 0 && (() => {
                     const bodyL = estimateBloodVolumeL(gender, height, weight);
                     if (!bodyL) {
                       return (
@@ -6985,7 +7045,7 @@ function AppInner() {
                         </button>
                       );
                     }
-                    const times = stats.estVolumeMl / 1000 / bodyL;
+                    const times = totalBy.whole * DONATION_TYPE_ML.whole / 1000 / bodyL;
                     const full = Math.floor(times);
                     const frac = times - full;
                     const shown = Math.min(full, 10);
@@ -6999,14 +7059,14 @@ function AppInner() {
                     return (
                       <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4" }}>
                         <div style={{ fontSize: 12.5, color: "#5C4A46" }}>
-                          {times >= 1 ? <>เท่ากับเลือดทั้งตัวคุณ <b style={{ color: "#9A3B33" }}>{times.toFixed(1)} เท่า</b></> : <>เท่ากับ <b style={{ color: "#9A3B33" }}>{Math.round(times * 100)}%</b> ของเลือดทั้งตัวคุณ</>}
+                          {hasMultipleTypes ? "โลหิตรวม" : ""}{times >= 1 ? <>เท่ากับเลือดทั้งตัวคุณ <b style={{ color: "#9A3B33" }}>{times.toFixed(1)} เท่า</b></> : <>เท่ากับ <b style={{ color: "#9A3B33" }}>{Math.round(times * 100)}%</b> ของเลือดทั้งตัวคุณ</>}
                         </div>
                         <div aria-hidden="true" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 8 }}>
                           {Array.from({ length: shown }, (_, i) => drop(1, i))}
                           {full <= 10 && frac > 0.05 && drop(frac, "f")}
                           {full > 10 && <span style={{ fontSize: 11.5, color: "#7A6360" }}>+{full - 10}</span>}
                         </div>
-                        <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>เลือดในร่างกายประมาณ {bodyL.toFixed(1)} ลิตร · ครั้งละ 350 มล. ≈ {Math.round(0.35 / bodyL * 100)}% (คำนวณจากเพศ ส่วนสูง น้ำหนัก)</div>
+                        <div style={{ fontSize: 11.5, color: "#7A6360", marginTop: 6 }}>เลือดในร่างกายประมาณ {bodyL.toFixed(1)} ลิตร · โลหิตรวมครั้งละ {DONATION_TYPE_ML.whole} มล. ≈ {Math.round(DONATION_TYPE_ML.whole / 1000 / bodyL * 100)}% (คำนวณจากเพศ ส่วนสูง น้ำหนัก)</div>
                       </div>
                     );
                   })()}
