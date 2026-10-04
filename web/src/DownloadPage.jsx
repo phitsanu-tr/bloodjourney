@@ -26,8 +26,9 @@ import {
 // cleanly and isn't expired (see the byte-layout comment above
 // encodeSharePayload in App.jsx). This just reshapes that object into what
 // buildShareCardDataUrl / buildRecordShareCardDataUrl expect, re-deriving
-// the Thai achievement text and estVolumeMl (always totalCount*350) rather
-// than carrying them separately.
+// the Thai achievement text rather than carrying it separately (estVolumeMl
+// comes from the token; older links fall back to totalCount*350 in
+// decodeShareToken).
 function sizeFromIdx(idx) {
   const key = Object.keys(CARD_SIZES)[idx];
   return CARD_SIZES[key] || CARD_SIZES[DEFAULT_CARD_SIZE];
@@ -66,7 +67,7 @@ function buildParsedFromPayload(payload) {
       size,
       data: {
         totalCount,
-        estVolumeMl: totalCount * 350,
+        estVolumeMl: Number(payload.estVolumeMl ?? totalCount * 350),
         achievement: { ...achievementBase, ...deriveAchievementText(achievementBase) },
         bloodType: payload.bloodType || "",
         nickname: payload.nickname || "",
