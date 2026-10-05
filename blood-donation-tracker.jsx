@@ -17,7 +17,7 @@ const YearAreaChart = React.lazy(() => import("recharts").then((R) => ({
   default: function YearAreaChart({ data }) {
     return (
       <R.ResponsiveContainer width="100%" height="100%">
-        <R.AreaChart data={data} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
+        <R.AreaChart data={data} margin={{ top: 22, right: 12, left: -20, bottom: 0 }} accessibilityLayer={false}>
           <defs>
             <linearGradient id="yearAreaGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#9A3B33" stopOpacity={0.35} />
@@ -25,10 +25,13 @@ const YearAreaChart = React.lazy(() => import("recharts").then((R) => ({
             </linearGradient>
           </defs>
           <R.CartesianGrid strokeDasharray="3 3" stroke="#EEDEDA" vertical={false} />
-          <R.XAxis dataKey="year" tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={{ stroke: "#EEDEDA" }} tickLine={false} />
+          <R.XAxis dataKey="year" tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={{ stroke: "#EEDEDA" }} tickLine={false} padding={{ left: 16, right: 16 }} />
           <R.YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#7A6360" }} axisLine={false} tickLine={false} width={24} />
           <R.Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #EEDEDA" }} formatter={(v) => [`${v} ครั้ง`, ""]} labelFormatter={(l) => `ปี ${l}`} />
-          <R.Area type="monotone" dataKey="count" stroke="#9A3B33" strokeWidth={2.5} fill="url(#yearAreaGrad)" dot={{ r: 4, fill: "#9A3B33", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+          <R.Area type="monotone" dataKey="count" stroke="#9A3B33" strokeWidth={2.5} fill="url(#yearAreaGrad)" dot={{ r: 4, fill: "#9A3B33", strokeWidth: 0 }} activeDot={{ r: 5 }}>
+            {/* The count on each point -- the left axis is mostly hidden, so without this nobody could read the numbers. */}
+            <R.LabelList dataKey="count" position="top" offset={8} style={{ fontSize: 11, fill: "#5C4A46", fontWeight: 600 }} />
+          </R.Area>
         </R.AreaChart>
       </R.ResponsiveContainer>
     );
@@ -57,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.390";
+const APP_VERSION = "1.0.391";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5588,20 +5591,35 @@ function AppInner() {
     });
     const monthData = monthCounts.map((count, i) => ({ month: monthNames[i], count }));
     const maxMonthCount = monthCounts.reduce((m, c) => Math.max(m, c), 0);
-    let busiestMonthIdx = null;
-    monthCounts.forEach((c, i) => { if (c > 0 && c === maxMonthCount && busiestMonthIdx === null) busiestMonthIdx = i; });
+    // Every month that ties for the top count (it used to pick only the first one, so "มี.ค." looked like
+    // the busiest month while four others had the same count).
+    const busiestMonthIdxs = maxMonthCount > 0 ? monthCounts.map((c, i) => (c === maxMonthCount ? i : -1)).filter((i) => i >= 0) : [];
+    const datedCount = chronological.length;
 
-    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdx };
+    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdxs, datedCount };
   }, [donations, achievements, totalCount]);
 
   // Keep the "yearly count" chart scrolled to the latest years by default —
   // it only scrolls (shows a fixed per-year width) once there are more than
   // YEAR_CHART_VISIBLE_COUNT years of data.
+  // It used to run only when the year count changed -- usually while another tab was showing and the
+  // chart wasn't in the page -- so the dashboard opened on the OLDEST years. Now it runs whenever the
+  // dashboard is shown, and again while the lazily-loaded chart settles, until the user scrolls it.
   useEffect(() => {
-    if (yearChartScrollRef.current) {
-      yearChartScrollRef.current.scrollLeft = yearChartScrollRef.current.scrollWidth;
-    }
-  }, [stats.yearData.length]);
+    if (tab !== "dashboard") return undefined;
+    const el = yearChartScrollRef.current;
+    if (!el) return undefined;
+    let touched = false;
+    const toEnd = () => { if (!touched) el.scrollLeft = el.scrollWidth; };
+    const onTouch = () => { touched = true; };
+    toEnd();
+    el.addEventListener("pointerdown", onTouch);
+    el.addEventListener("wheel", onTouch, { passive: true });
+    let ro = null;
+    if (typeof ResizeObserver !== "undefined" && el.firstElementChild) { ro = new ResizeObserver(toEnd); ro.observe(el.firstElementChild); }
+    const t = setTimeout(toEnd, 400);
+    return () => { clearTimeout(t); ro?.disconnect(); el.removeEventListener("pointerdown", onTouch); el.removeEventListener("wheel", onTouch); };
+  }, [tab, stats.yearData.length]);
 
   const unlockedIds = useMemo(
     () => achievements.filter(a => totalCount >= a.threshold).map(a => a.id),
@@ -7115,7 +7133,7 @@ function AppInner() {
 
           {tab === "dashboard" && (
             <>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#3A2C29" }}>แดชบอร์ดสรุปข้อมูล</div>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#3A2C29" }}>แดชบอร์ดสรุปข้อมูล</h2>
               <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px" }}>ภาพรวมการบริจาคโลหิตของคุณ</p>
 
               <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: 16, marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12, position: "relative", overflow: "hidden" }}>
@@ -7130,7 +7148,7 @@ function AppInner() {
                     : dashboardShownIsEligible ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                 </span>
                 <div style={{ flex: 1, position: "relative", zIndex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: "#FFF7F5" }}>วันบริจาคโลหิตครั้งถัดไป</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 4, color: "#FFF7F5" }}>วันบริจาคโลหิตครั้งถัดไป</h3>
                   <div key={dashboardShownType} aria-live="polite" style={{ animation: "fadeSwap 0.4s ease" }}>
                     <div style={{ fontSize: 12, color: "#FFF7F5", opacity: 0.9, lineHeight: 1.5 }}>
                       {dashboardShownLastDateStr ? (
@@ -7155,13 +7173,15 @@ function AppInner() {
                   {hasMultipleTypes && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
                       {recordedTypes.map((t) => (
-                        <button key={t} onClick={() => setDashboardRotateType(t)} style={{
-                          display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, whiteSpace: "nowrap",
+                        <button key={t} onClick={() => setDashboardRotateType(t)} aria-pressed={dashboardShownType === t} style={{
+                          position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, whiteSpace: "nowrap",
                           fontFamily: "inherit", border: "none", cursor: "pointer",
                           color: dashboardShownType === t ? "#9A3B33" : "#FFF7F5",
                           background: dashboardShownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>
+                          {/* Invisible 44px-tall tap area; the pill keeps its look. */}
+                          <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -3px" }} />
                           <TypeIcon type={t} size={11} />
                           {DONATION_TYPE_LABELS[t]}
                         </button>
@@ -7173,7 +7193,7 @@ function AppInner() {
 
               {last && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>บริจาคโลหิตครั้งล่าสุด</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>บริจาคโลหิตครั้งล่าสุด</h3>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#3A2C29" }}>{toBuddhistDate(last.date)}</div>
                     <div style={{ fontSize: 14, color: "#9A3B33", fontWeight: 700, background: "#F3EAE8", padding: "5px 12px", borderRadius: 20, flexShrink: 0, whiteSpace: "nowrap" }}>
@@ -7191,13 +7211,22 @@ function AppInner() {
                   carry gridColumn: "span 2" back when this was a 2-column
                   grid) — simplified to a plain stacked flex column since the
                   2-column axis is no longer used anywhere here. */}
+              {totalCount === 0 ? (
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: "22px 18px", marginBottom: 16, textAlign: "center" }}>
+                  <div aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, background: "#F3EAE8", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                    <BarChart3 size={22} color="#9A3B33" />
+                  </div>
+                  <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>ยังไม่มีสถิติ</h3>
+                  <p style={{ margin: "0 0 14px", fontSize: 14, color: "#7A6360", lineHeight: 1.6 }}>บันทึกการบริจาคครั้งแรก แล้วจำนวนครั้ง ปริมาณที่ให้ และกราฟรายปีจะขึ้นที่นี่</p>
+                  <button onClick={openAddForm} className="btn-primary" style={{ padding: "11px 22px", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>บันทึกบริจาคโลหิต</button>
+                </div>
+              ) : (<>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>บริจาคโลหิตสะสม</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>บริจาคโลหิตสะสม</h3>
                   <div style={{ fontSize: 18, fontWeight: 700 }}>
                     {totalCount} <span style={{ fontSize: 12, fontWeight: 500 }}>ครั้ง</span>
                   </div>
-                  <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>ข้อมูล ณ วันที่ {toBuddhistDateTime(dashboardLoadedAt)}</div>
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 12px", marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", fontSize: 12, color: "#5C4A46" }}>
                     {(recordedTypes.length ? recordedTypes : ["whole"]).map((t) => (
                       <span key={t} style={{ display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}><TypeIcon type={t} size={12} color="#9A3B33" /> {DONATION_TYPE_LABELS[t]} <b>{totalBy[t]}</b> ครั้ง</span>
@@ -7208,7 +7237,7 @@ function AppInner() {
                   {/* Design D3 of liters-by-type-designs.html: every type's
                       count × ml/donation = liters, plus a total row when there
                       is more than one type, so the figure explains itself. */}
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปริมาณที่ให้สะสม</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปริมาณที่ให้สะสม</h3>
                   <div style={{ fontSize: 18, fontWeight: 700 }}>
                     {formatLiters(estVolumeMl)} <span style={{ fontSize: 12, fontWeight: 500 }}>ลิตร (โดยประมาณ)</span>
                   </div>
@@ -7300,7 +7329,7 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ระยะห่างเฉลี่ยต่อครั้ง</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ระยะห่างเฉลี่ยต่อครั้ง</h3>
                   {hasMultipleTypes ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                       {/* flexWrap: "wrap" on the row + whiteSpace: "nowrap" on
@@ -7313,16 +7342,16 @@ function AppInner() {
                       {recordedTypes.map((t) => (
                         <div key={t} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5, fontSize: 12, color: "#5C4A46" }}>
                           <TypeIcon type={t} size={11} color={DONATION_TYPE_TINT[t].text} style={{ flexShrink: 0 }} />
-                          <span style={{ whiteSpace: "nowrap" }}>{DONATION_TYPE_LABELS[t]} <b style={{ fontSize: 14, color: "#3A2C29" }}>{stats.avgGapBy[t] ?? "—"}{stats.avgGapBy[t] != null ? " วัน" : ""}</b></span>
-                          {stats.lastGapBy[t] != null ? <span style={{ fontSize: 12, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapBy[t]} วัน)</span> : null}
+                          <span style={{ whiteSpace: "nowrap" }}>{DONATION_TYPE_LABELS[t]} {stats.avgGapBy[t] != null ? <b style={{ fontSize: 14, color: "#3A2C29" }}>{stats.avgGapBy[t]} วัน</b> : <span style={{ color: "#80726F" }}>ต้องมีบันทึกอย่างน้อย 2 ครั้ง</span>}</span>
+                          {stats.lastGapBy[t] != null && stats.lastGapBy[t] !== stats.avgGapBy[t] ? <span style={{ fontSize: 12, color: "#7A6360", whiteSpace: "nowrap" }}>(ล่าสุด {stats.lastGapBy[t]} วัน)</span> : null}
                         </div>
                       ))}
                     </div>
                   ) : (
                     <>
                       <div style={{ fontSize: 18, fontWeight: 700 }}>{stats.avgGap ?? "—"}{stats.avgGap != null ? <span style={{ fontSize: 12, fontWeight: 500 }}> วัน</span> : ""}</div>
-                      {stats.avgGap != null ? <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>เฉลี่ย {(stats.avgGap / 30).toFixed(1)} เดือนต่อครั้ง</div> : null}
-                      {stats.lastGap != null ? (
+                      {stats.avgGap != null ? <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>เฉลี่ย {(stats.avgGap / 30).toFixed(1)} เดือนต่อครั้ง</div> : <div style={{ fontSize: 12, color: "#80726F", marginTop: 2 }}>ต้องมีบันทึกอย่างน้อย 2 ครั้งจึงคำนวณได้</div>}
+                      {stats.lastGap != null && stats.lastGap !== stats.avgGap ? (
                         <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, fontSize: 12, color: "#5C4A46" }}>
                           <Clock size={11} color="#9A3B33" style={{ flexShrink: 0 }} />
                           <span style={{ whiteSpace: "nowrap" }}><span style={{ color: "#7A6360", fontWeight: 600 }}>ห่างจากครั้งก่อนหน้า</span> <b style={{ color: "#3A2C29" }}>{stats.lastGap} วัน</b></span>
@@ -7332,12 +7361,12 @@ function AppInner() {
                   )}
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปีที่บริจาคโลหิตมากที่สุด</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปีที่บริจาคโลหิตมากที่สุด</h3>
                   <div style={{ fontSize: 18, fontWeight: 700 }}>{stats.busiestYear ? `ปี ${stats.busiestYear}` : "—"}</div>
                   <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>
                     {stats.busiestYear ? `จำนวน ${stats.busiestCount} ครั้ง` : "ยังไม่มีข้อมูลพอ"}
                   </div>
-                  {stats.busiestYear && String(buddhistYear(new Date())) === String(stats.busiestYear) ? (
+                  {stats.busiestYear && stats.yearData.length > 1 && String(buddhistYear(new Date())) === String(stats.busiestYear) ? (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", fontSize: 12, color: "#9A6B0B", fontWeight: 600, lineHeight: 1.5 }}>
                       🏆 ปีนี้คือปีที่บริจาคมากที่สุด!
                     </div>
@@ -7363,17 +7392,17 @@ function AppInner() {
 
               {stats.thisYearCount > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ความคืบหน้าปีนี้</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ความคืบหน้าปีนี้</h3>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 12, color: "#7A6360" }}>ปี {buddhistYear(new Date())} บริจาคไปแล้ว</div>
+                    <div style={{ flexShrink: 0 }}>
+                      <div style={{ fontSize: 12, color: "#7A6360", whiteSpace: "nowrap" }}>ปี {buddhistYear(new Date())} บริจาคไปแล้ว</div>
                       <div style={{ fontSize: 18, fontWeight: 700, marginTop: 2 }}>{stats.thisYearCount} ครั้ง</div>
                     </div>
                     {stats.lastYearCount > 0 ? (
                       <div style={{ textAlign: "right" }}>
                         <div style={{
                           display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, borderRadius: 20, padding: "4px 10px",
-                          color: stats.thisYearCount >= stats.lastYearCount ? "#2E7D32" : "#9C5515",
+                          color: stats.thisYearCount >= stats.lastYearCount ? "#2B7530" : "#9C5515",
                           background: stats.thisYearCount >= stats.lastYearCount ? "#E7F3E8" : "#FDF0E6",
                         }}>
                           {stats.thisYearCount >= stats.lastYearCount ? "▲" : "▼"} {stats.thisYearCount >= stats.lastYearCount ? "+" : ""}{stats.thisYearCount - stats.lastYearCount} จากปี {buddhistYear(new Date()) - 1}
@@ -7388,11 +7417,11 @@ function AppInner() {
               )}
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: "16px 12px 8px", marginBottom: 18 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, paddingLeft: 4, color: "#3A2C29" }}>สถิติการบริจาคโลหิตรายปี</div>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, paddingLeft: 4, color: "#3A2C29" }}>สถิติการบริจาคโลหิตรายปี</h3>
                 {stats.yearData.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "24px 0", color: "#7A6360", fontSize: 14 }}>ยังไม่มีข้อมูลให้แสดงกราฟ</div>
                 ) : (
-                  <div ref={yearChartScrollRef} className="no-scrollbar" style={{ width: "100%", height: 180, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <div ref={yearChartScrollRef} className="no-scrollbar" role="img" aria-label={`จำนวนครั้งที่บริจาครายปี: ${stats.yearData.map((y) => `ปี ${y.year} ${y.count} ครั้ง`).join(", ")}`} style={{ width: "100%", height: 180, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                     <div style={{ width: stats.yearData.length > YEAR_CHART_VISIBLE_COUNT ? `${Math.round((stats.yearData.length / YEAR_CHART_VISIBLE_COUNT) * 100)}%` : "100%", minWidth: "100%", height: "100%" }}>
                       <React.Suspense fallback={<div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#7A6360" }}>กำลังโหลดกราฟ…</div>}>
                         <YearAreaChart data={stats.yearData} />
@@ -7409,15 +7438,23 @@ function AppInner() {
                   </p>
                 )}
               </div>
+              </>)}
 
               {stats.maxMonthCount > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 18 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2, color: "#3A2C29" }}>เดือนที่บริจาคโลหิตบ่อยที่สุด</div>
-                  {stats.busiestMonthIdx !== null && (
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 2, color: "#3A2C29" }}>เดือนที่บริจาคโลหิตบ่อยที่สุด</h3>
+                  {/* "Busiest" only means something with 2+ dated donations. Ties list every month (up to 2 by
+                      name, then as a count) and every tied bar is highlighted. */}
+                  {stats.datedCount > 1 && stats.busiestMonthIdxs.length > 0 && (
                     <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 12 }}>
-                      {stats.monthData[stats.busiestMonthIdx].month} ({stats.maxMonthCount} ครั้ง)
+                      {stats.busiestMonthIdxs.length === 1
+                        ? `${stats.monthData[stats.busiestMonthIdxs[0]].month} (${stats.maxMonthCount} ครั้ง)`
+                        : stats.busiestMonthIdxs.length === 2
+                          ? `${stats.monthData[stats.busiestMonthIdxs[0]].month} และ ${stats.monthData[stats.busiestMonthIdxs[1]].month} (${stats.maxMonthCount} ครั้ง)`
+                          : `${stats.busiestMonthIdxs.length} เดือน เดือนละ ${stats.maxMonthCount} ครั้ง`}
                     </div>
                   )}
+                  {stats.datedCount <= 1 && <div style={{ marginBottom: 12 }} />}
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {stats.monthData.map((m, i) => (
                       <div key={m.month} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -7426,7 +7463,7 @@ function AppInner() {
                           <div style={{
                             width: m.count > 0 ? `${Math.max(6, Math.round((m.count / stats.maxMonthCount) * 100))}%` : "0%",
                             height: "100%", borderRadius: 4,
-                            background: i === stats.busiestMonthIdx ? "#9A3B33" : "#D9A9A2",
+                            background: stats.datedCount > 1 && stats.busiestMonthIdxs.includes(i) ? "#9A3B33" : "#D9A9A2",
                           }} />
                         </div>
                         <span style={{ fontSize: 11, color: "#7A6360", width: 34, flexShrink: 0, textAlign: "right" }}>{m.count} ครั้ง</span>
@@ -7438,19 +7475,17 @@ function AppInner() {
 
               {totalCount > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 18 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สัดส่วนการบริจาคโลหิตแต่ละประเภท</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สัดส่วนการบริจาคโลหิตแต่ละประเภท</h3>
                   {(() => {
                     const total = recordedTypes.reduce((sum, t) => sum + totalBy[t], 0);
-                    // Whole percentages that always add up to 100 (largest remainder).
-                    const raw = recordedTypes.map((t) => (totalBy[t] / total) * 100);
-                    const pct = raw.map(Math.floor);
-                    let left = 100 - pct.reduce((a2, b2) => a2 + b2, 0);
-                    raw.map((v, i) => [v - Math.floor(v), i]).sort((x, y) => y[0] - x[0]).forEach(([, i]) => { if (left > 0) { pct[i] += 1; left -= 1; } });
+                    // Each share rounded on its own, so equal counts always show the same % (the old
+                    // "largest remainder" made 1 + 1 of 44 read 3% and 2%); the total may be 99-101%.
+                    const pct = recordedTypes.map((t) => { const v = (totalBy[t] / total) * 100; return v > 0 && v < 1 ? "<1" : String(Math.round(v)); });
                     let offset = 0;
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                         <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
-                          <svg width="96" height="96" viewBox="0 0 36 36" style={{ transform: "rotate(-90deg)" }}>
+                          <svg width="96" height="96" viewBox="0 0 36 36" aria-hidden="true" style={{ transform: "rotate(-90deg)" }}>
                             <circle cx="18" cy="18" r="15.5" fill="none" stroke="#F3EAE8" strokeWidth="5" />
                             {recordedTypes.map((t, i) => {
                               const seg = (totalBy[t] / total) * 100;
@@ -7459,16 +7494,16 @@ function AppInner() {
                               return el;
                             })}
                           </svg>
-                          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>{total}</div>
                             <div style={{ fontSize: 11, color: "#7A6360" }}>ครั้ง</div>
                           </div>
                         </div>
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                           {recordedTypes.map((t, i) => (
-                            <div key={t} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, fontSize: 12 }}>
-                              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: DONATION_TYPE_TINT[t].text, flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]}</span>
-                              <span style={{ color: "#7A6360", whiteSpace: "nowrap" }}>{totalBy[t]} ครั้ง ({pct[i]}%)</span>
+                            <div key={t} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", columnGap: 8, fontSize: 12 }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}><span style={{ width: 9, height: 9, borderRadius: 3, background: DONATION_TYPE_TINT[t].text, flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]}</span>
+                              <span style={{ color: "#7A6360", whiteSpace: "nowrap", marginLeft: "auto" }}>{totalBy[t]} ครั้ง ({pct[i]}%)</span>
                             </div>
                           ))}
                         </div>
@@ -7480,7 +7515,7 @@ function AppInner() {
 
               {topLocations.length > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 18 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สถานที่ที่บริจาคโลหิตบ่อยที่สุด</div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สถานที่ที่บริจาคโลหิตบ่อยที่สุด</h3>
                   {topLocations.map((loc, i) => (
                     <div key={loc.location} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: i === topLocations.length - 1 ? "none" : "1px solid #F3E7E4" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
