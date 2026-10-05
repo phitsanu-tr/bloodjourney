@@ -202,3 +202,35 @@ test("home: profile row opens the profile; the info chip still only peeks; multi
   await expect(page.getByRole("dialog", { name: "โปรไฟล์ของฉัน" })).toBeVisible();
   assertNoErrors(page);
 });
+
+test("history: a ⋮ menu near the bottom tab bar opens upward instead of under it", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 700 });
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(200)), rec("b", daysAgo(30))], profile: { startingCountWhole: 4 } });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(400);
+  const navTop = await page.getByRole("button", { name: "หน้าหลัก" }).evaluate((b) => b.getBoundingClientRect().top);
+  for (const name of ["ตัวเลือกเพิ่มเติม สำหรับยอดบริจาคที่ผ่านมา", /^ตัวเลือกเพิ่มเติม สำหรับครั้งที่ 5$/]) {
+    await page.getByRole("button", { name }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+    const box = await menu.boundingBox();
+    expect(box.y + box.height, `menu for ${name} ends above the tab bar`).toBeLessThanOrEqual(navTop);
+    await page.keyboard.press("Escape");
+    await expect(menu).toHaveCount(0);
+  }
+  assertNoErrors(page);
+});
+
+test("home: the reminder carousel never moves on its own", async ({ page }) => {
+  await page.clock.install();
+  await startFresh(page);
+  // backup (4 unexported) + weight warning + calendar prompt -> three slides
+  await seed(page, { donations: [rec("a", daysAgo(30)), rec("b", daysAgo(200)), rec("c", daysAgo(300)), rec("d", daysAgo(400))], profile: { weight: 45 } });
+  const scroller = page.getByRole("region", { name: /^การแจ้งเตือน \d+ เรื่อง/ });
+  await expect(scroller).toBeVisible();
+  await page.clock.fastForward(20_000);
+  await page.waitForTimeout(300);
+  expect(await scroller.evaluate((el) => el.scrollLeft)).toBe(0);
+  assertNoErrors(page);
+});
