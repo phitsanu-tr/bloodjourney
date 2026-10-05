@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.398";
+const APP_VERSION = "1.0.399";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1770,6 +1770,35 @@ function KnRows({ items }) {
 // Keeps each space-separated phrase whole ("ชิคุนกุนยา" was split mid-word at 390px).
 const keepPhrases = (text) => text.split(" ").map((w, i) => <React.Fragment key={i}>{i > 0 && " "}<span style={{ whiteSpace: "nowrap" }}>{w}</span></React.Fragment>);
 
+// The four donation types as a pressed-button group (4 across, or 2 x 2 when narrow).
+function DonationTypeChips({ value, onChange, label = "ประเภทการบริจาค" }) {
+  return (
+    <div style={{ containerType: "inline-size" }}>
+      <style>{`.kn-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } @container (min-width: 340px) { .kn-types { grid-template-columns: repeat(4, 1fr); } }`}</style>
+      <div role="group" aria-label={label} className="kn-types">
+        {DONATION_TYPES.map((t) => (
+          <button key={t} type="button" onClick={() => onChange(t)} aria-pressed={value === t} style={{
+            position: "relative", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 32, fontSize: 12, fontWeight: 600, padding: "0 4px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer",
+            border: value === t ? "1px solid #9A3B33" : "1px solid #EEDEDA", color: value === t ? "#FFF7F5" : "#7A6360", background: value === t ? "#9A3B33" : "#FFFFFF",
+          }}>
+            {/* Invisible 44px-tall tap area; the pill keeps its look. */}
+            <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -3px" }} />
+            {DONATION_TYPE_LABELS[t]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Per-type limits the eligibility page checks against the profile (same numbers as KNOWLEDGE_CRITERIA).
+const ELIGIBILITY_RULES = {
+  whole: { maxAge: 70, minWeight: 45 },
+  plasma: { maxAge: 60, minWeight: 50 },
+  platelet: { maxAge: 60, minWeight: 50, maleOnly: true },
+  rbc: { maxAge: 60, minWeight: { male: 59, female: 68 }, minHeight: { male: 155, female: 165 } },
+};
+
 // One folding section: the h3 holds the toggle button; only the donor criteria start open.
 function KnSection({ id, icon: Icon, title, open, onToggle, children }) {
   return (
@@ -1787,7 +1816,7 @@ function KnSection({ id, icon: Icon, title, open, onToggle, children }) {
   );
 }
 
-function KnowledgePage({ initialType, jumpToBefore, onJumpDone }) {
+function KnowledgePage({ initialType, jumpToBefore, onJumpDone, onCheckEligibility }) {
   const [type, setType] = useState(DONATION_TYPES.includes(initialType) ? initialType : "whole");
   const [open, setOpen] = useState(() => ({ criteria: true, before: !!jumpToBefore }));
   const toggle = useCallback((id) => setOpen((o) => ({ ...o, [id]: !o[id] })), []);
@@ -1807,21 +1836,7 @@ function KnowledgePage({ initialType, jumpToBefore, onJumpDone }) {
       <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>สรุปจากข้อมูลของศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</p>
 
       <KnSection {...sec("criteria")} icon={ShieldCheck} title="เกณฑ์ผู้บริจาค">
-        <div style={{ containerType: "inline-size", margin: "8px 0 4px" }}>
-          <style>{`.kn-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } @container (min-width: 340px) { .kn-types { grid-template-columns: repeat(4, 1fr); } }`}</style>
-          <div role="group" aria-label="ประเภทการบริจาค" className="kn-types">
-            {DONATION_TYPES.map((t) => (
-              <button key={t} type="button" onClick={() => setType(t)} aria-pressed={type === t} style={{
-                position: "relative", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 32, fontSize: 12, fontWeight: 600, padding: "0 4px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer",
-                border: type === t ? "1px solid #9A3B33" : "1px solid #EEDEDA", color: type === t ? "#FFF7F5" : "#7A6360", background: type === t ? "#9A3B33" : "#FFFFFF",
-              }}>
-                {/* Invisible 44px-tall tap area; the pill keeps its look. */}
-                <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -3px" }} />
-                {DONATION_TYPE_LABELS[t]}
-              </button>
-            ))}
-          </div>
-        </div>
+        <div style={{ margin: "8px 0 4px" }}><DonationTypeChips value={type} onChange={setType} /></div>
         {crit.summary && (
           <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "11px 0", borderBottom: "1px solid #F3E7E4", fontSize: 14, fontWeight: 600, color: "#9A3B33" }}>
             <Clock size={16} aria-hidden="true" style={{ flexShrink: 0 }} />{crit.summary}
@@ -1845,6 +1860,12 @@ function KnowledgePage({ initialType, jumpToBefore, onJumpDone }) {
           {type === "whole"
             ? <>เกณฑ์เต็มมี 32 ข้อ ดูครบได้ที่ <a href={TRC_SITE} target="_blank" rel="noopener noreferrer" style={{ color: "#9A3B33", fontWeight: 600, whiteSpace: "nowrap" }}>เว็บศูนย์บริการโลหิตฯ</a></>
             : <>นัดหมายบริจาค โทร. <a href="tel:022639600" style={{ color: "#9A3B33", fontWeight: 600, whiteSpace: "nowrap" }}>0 2263 9600</a> ต่อ 1143, 1144</>}
+        </div>
+        <div style={{ borderTop: "1px solid #F3E7E4", padding: "8px 0 10px" }}>
+          <button type="button" onClick={() => onCheckEligibility(type)} className="btn-ghost"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", minHeight: 44, borderRadius: 12, fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+            <CheckCircle2 size={16} aria-hidden="true" /> เช็คคุณสมบัติของฉัน ({DONATION_TYPE_LABELS[type]})
+          </button>
         </div>
       </KnSection>
 
@@ -3167,7 +3188,8 @@ function AppInner() {
   // even though nothing about the cumulative stats actually changed.
   const [dashboardLoadedAt] = useState(() => new Date());
   const [seenAchievements, setSeenAchievements] = useState([]);
-  const [knowledgeJump, setKnowledgeJump] = useState(0); // >0: open the knowledge tab at "เตรียมตัวก่อนบริจาค"
+  const [knowledgeJump, setKnowledgeJump] = useState(0);
+  const [eligibilityType, setEligibilityType] = useState(null); // type shown on ?tab=eligibility; null = last donated // >0: open the knowledge tab at "เตรียมตัวก่อนบริจาค"
   const [importing, setImporting] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
   const [pasteImportText, setPasteImportText] = useState("");
@@ -5716,23 +5738,50 @@ function AppInner() {
   const weightWarningDismissed = weight !== "" && Number(weight) === dismissedEligibilityWeight;
 
   // Feeds the "เช็คคุณสมบัติก่อนบริจาค" (?tab=eligibility) page — reuses the
-  // same profile fields and next-eligible-date math already computed above
-  // instead of asking the user to re-enter anything, per data-minimization.
-  const ageCheck = age === ""
+  // same profile fields and per-type next-eligible math instead of asking the
+  // user to re-enter anything, per data-minimization. Limits follow the type
+  // picked on the page (ELIGIBILITY_RULES): components are 17-60 and 50 kg+,
+  // platelets men only, red cells by sex for weight and height.
+  const eligType = DONATION_TYPES.includes(eligibilityType) ? eligibilityType : lastType;
+  const eligRule = ELIGIBILITY_RULES[eligType];
+  const sexKey = gender === "male" || gender === "female" ? gender : null;
+  const eligChecks = [];
+  eligChecks.push({ label: "อายุ", ...(age === ""
     ? { status: "unknown", detail: "ยังไม่ได้กรอกอายุที่หน้าโปรไฟล์" }
-    : ageOutOfRange
-      ? { status: "fail", detail: `อายุ ${age} ปี อยู่นอกเกณฑ์ (${MIN_AGE}-${MAX_AGE} ปี)` }
-      : { status: "pass", detail: `อายุ ${age} ปี อยู่ในเกณฑ์ (${MIN_AGE}-${MAX_AGE} ปี)` };
-  const weightCheck = weight === ""
+    : Number(age) < MIN_AGE || Number(age) > eligRule.maxAge
+      ? { status: "fail", detail: `อายุ ${age} ปี อยู่นอกเกณฑ์ (${MIN_AGE}-${eligRule.maxAge} ปี)` }
+      : { status: "pass", detail: `อายุ ${age} ปี อยู่ในเกณฑ์ (${MIN_AGE}-${eligRule.maxAge} ปี)` }) });
+  if (eligRule.maleOnly) eligChecks.push({ label: "เพศ", ...(sexKey === "male"
+    ? { status: "pass", detail: "เพศชาย อยู่ในเกณฑ์" }
+    : sexKey === "female"
+      ? { status: "fail", detail: "รับบริจาคเกล็ดเลือดจากเพศชายเท่านั้น" }
+      : { status: "unknown", detail: "รับบริจาคเกล็ดเลือดจากเพศชายเท่านั้น — ยังไม่ได้ระบุเพศที่หน้าโปรไฟล์" }) });
+  const minW = typeof eligRule.minWeight === "number" ? eligRule.minWeight : sexKey ? eligRule.minWeight[sexKey] : null;
+  eligChecks.push({ label: "น้ำหนัก", ...(weight === ""
     ? { status: "unknown", detail: "ยังไม่ได้กรอกน้ำหนักที่หน้าโปรไฟล์" }
-    : weightBelowMin
-      ? { status: "fail", detail: `น้ำหนัก ${weight} กก. ต่ำกว่าเกณฑ์ขั้นต่ำ (${MIN_WEIGHT} กก.)` }
-      : { status: "pass", detail: `น้ำหนัก ${weight} กก. อยู่ในเกณฑ์ (ขั้นต่ำ ${MIN_WEIGHT} กก.)` };
-  const intervalCheck = !effectiveLastDateStr
-    ? { status: "pass", detail: "ยังไม่มีประวัติบริจาคในแอป ถือว่าเว้นระยะครบแล้ว" }
-    : nextEligible && Date.now() >= nextEligible.getTime()
-      ? { status: "pass", detail: `ครบกำหนดแล้วตั้งแต่วันที่ ${toBuddhistDate(nextEligible)}` }
-      : { status: "fail", detail: `ยังไม่ครบกำหนด — บริจาคได้อีกครั้งวันที่ ${toBuddhistDate(nextEligible)}` };
+    : minW == null
+      ? { status: "unknown", detail: "เกณฑ์น้ำหนักต่างกันตามเพศ (ชาย 59 · หญิง 68 กก.) — ยังไม่ได้ระบุเพศที่หน้าโปรไฟล์" }
+      : Number(weight) < minW
+        ? { status: "fail", detail: `น้ำหนัก ${weight} กก. ต่ำกว่าเกณฑ์ขั้นต่ำ (${minW} กก.)` }
+        : { status: "pass", detail: `น้ำหนัก ${weight} กก. อยู่ในเกณฑ์ (ขั้นต่ำ ${minW} กก.)` }) });
+  if (eligRule.minHeight) {
+    const minH = sexKey ? eligRule.minHeight[sexKey] : null;
+    eligChecks.push({ label: "ส่วนสูง", ...(height === ""
+      ? { status: "unknown", detail: "ยังไม่ได้กรอกส่วนสูงที่หน้าโปรไฟล์" }
+      : minH == null
+        ? { status: "unknown", detail: "เกณฑ์ส่วนสูงต่างกันตามเพศ (ชาย 155 · หญิง 165 ซม.) — ยังไม่ได้ระบุเพศที่หน้าโปรไฟล์" }
+        : Number(height) > minH
+          ? { status: "pass", detail: `ส่วนสูง ${height} ซม. อยู่ในเกณฑ์ (มากกว่า ${minH} ซม.)` }
+          : { status: "fail", detail: `ส่วนสูง ${height} ซม. ต่ำกว่าเกณฑ์ (ต้องมากกว่า ${minH} ซม.)` }) });
+  }
+  const eligLast = lastBy[eligType];
+  const eligNext = eligLast ? new Date(parseLocalDate(eligLast.date).getTime() + effectiveCycleByType[eligType] * 86400000) : null;
+  eligChecks.push({ label: "ระยะห่างจากการบริจาคครั้งก่อน", ...(!eligNext
+    ? { status: "pass", detail: `ยังไม่มีประวัติบริจาค${DONATION_TYPE_LABELS[eligType]}ในแอป ถือว่าเว้นระยะครบแล้ว` }
+    : Date.now() >= eligNext.getTime()
+      ? { status: "pass", detail: `ครบกำหนดแล้วตั้งแต่วันที่ ${toBuddhistDate(eligNext)}` }
+      : { status: "fail", detail: `ยังไม่ครบกำหนด — บริจาคได้อีกครั้งวันที่ ${toBuddhistDate(eligNext)}` }) });
+  const eligNeedsProfile = eligChecks.some((c) => c.status === "unknown");
 
   const achievements = useMemo(() => buildAchievements(donorType), [donorType]);
   const medalAchievements = useMemo(() => achievements.filter(a => a.kind === "medal"), [achievements]);
@@ -7940,37 +7989,38 @@ function AppInner() {
             </>
           )}
 
-          {tab === "knowledge" && <KnowledgePage initialType={lastType} jumpToBefore={knowledgeJump} onJumpDone={() => setKnowledgeJump(0)} />}
+          {tab === "knowledge" && <KnowledgePage initialType={lastType} jumpToBefore={knowledgeJump} onJumpDone={() => setKnowledgeJump(0)} onCheckEligibility={(t) => { setEligibilityType(t); setTab("eligibility"); }} />}
 
           {tab === "eligibility" && (
             <>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 4 }}>เช็คคุณสมบัติก่อนบริจาคโลหิต</div>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "0 0 4px" }}>เช็คคุณสมบัติก่อนบริจาคโลหิต</h2>
               <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>
                 เช็คเบื้องต้นจากข้อมูลโปรไฟล์และประวัติที่คุณบันทึกไว้ในแอปเอง — เป็นข้อมูลเบื้องต้นเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์และไม่ผูกกับระบบของสภากาชาดไทย
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <ShieldCheck size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เช็คอัตโนมัติจากข้อมูลของคุณ</div>
-              </div>
+              <h3 style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px", fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>
+                <ShieldCheck size={16} color="#9A3B33" aria-hidden="true" />
+                เช็คอัตโนมัติจากข้อมูลของคุณ
+              </h3>
+              <div style={{ marginBottom: 10 }}><DonationTypeChips value={eligType} onChange={setEligibilityType} label="เช็คสำหรับการบริจาคประเภท" /></div>
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 10 }}>
-                <EligibilityCheckRow label="อายุ" status={ageCheck.status} detail={ageCheck.detail} />
-                <div style={{ borderTop: "1px solid #F3E7E4" }} />
-                <EligibilityCheckRow label="น้ำหนัก" status={weightCheck.status} detail={weightCheck.detail} />
-                <div style={{ borderTop: "1px solid #F3E7E4" }} />
-                <EligibilityCheckRow label="ระยะห่างจากการบริจาคครั้งก่อน" status={intervalCheck.status} detail={intervalCheck.detail} />
+                {eligChecks.map((c, i) => (
+                  <React.Fragment key={c.label}>
+                    {i > 0 && <div style={{ borderTop: "1px solid #F3E7E4" }} />}
+                    <EligibilityCheckRow label={c.label} status={c.status} detail={c.detail} />
+                  </React.Fragment>
+                ))}
               </div>
-              {(ageCheck.status === "unknown" || weightCheck.status === "unknown") && (
-                <button onClick={openProfile} style={{ display: "inline-block", marginBottom: 18, background: "none", border: "none", padding: 0, fontSize: 12, color: "#9A3B33", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
-                  ไปกรอกข้อมูลโปรไฟล์
+              {eligNeedsProfile ? (
+                <button onClick={openProfile} className="btn-ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", marginBottom: 18, borderRadius: 12, fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
+                  <User size={16} aria-hidden="true" /> ไปกรอกข้อมูลโปรไฟล์
                 </button>
-              )}
-              {ageCheck.status !== "unknown" && weightCheck.status !== "unknown" && <div style={{ marginBottom: 8 }} />}
+              ) : <div style={{ marginBottom: 8 }} />}
 
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <Info size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เกณฑ์อื่น ๆ ที่ต้องประเมินเอง</div>
-              </div>
+              <h3 style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px", fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>
+                <Info size={16} color="#9A3B33" aria-hidden="true" />
+                เกณฑ์อื่น ๆ ที่ต้องประเมินเอง
+              </h3>
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: "1px solid #F3E7E4" }}>
                   <AlertTriangle size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
