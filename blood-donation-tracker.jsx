@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.399";
+const APP_VERSION = "1.0.400";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1932,7 +1932,7 @@ const APP_FAQ_ITEMS = [
   },
   {
     q: "ถ้าเปลี่ยนเครื่อง ลง LINE ใหม่ หรือล้างแคช ข้อมูลจะหายไหม",
-    a: "มีความเสี่ยงที่ข้อมูลจะหาย เพราะข้อมูลอยู่ในเครื่องเดิมเท่านั้นและไม่มีการซิงก์อัตโนมัติ แนะนำให้กด \"ส่งออกข้อมูล\" ที่หน้าตั้งค่าเก็บเป็นไฟล์สำรองไว้เป็นระยะ แล้วนำเข้าใหม่ได้เมื่อเปลี่ยนเครื่อง",
+    a: "มีความเสี่ยงที่ข้อมูลจะหาย เพราะข้อมูลอยู่ในเครื่องเดิมเท่านั้นและไม่มีการซิงก์อัตโนมัติ แนะนำให้สำรองข้อมูลเป็นไฟล์ไว้เป็นระยะที่ ตั้งค่า → สำรอง/กู้คืนข้อมูล แล้วกู้คืนจากไฟล์นั้นได้เมื่อเปลี่ยนเครื่อง",
   },
   {
     q: "ทำไมเปิดลิงก์แอปผ่าน Chrome/Safari ตรง ๆ (ไม่ผ่าน LINE) ไม่ได้",
@@ -8040,7 +8040,7 @@ function AppInner() {
 
           {tab === "faq" && (
             <>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 4 }}>คำถามที่พบบ่อย</div>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "0 0 4px" }}>คำถามที่พบบ่อย</h2>
               <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>
                 คำถามที่พบบ่อยเกี่ยวกับการใช้งานแอปนี้
               </p>
@@ -8050,14 +8050,16 @@ function AppInner() {
                   const isOpen = openFaqIndex === i;
                   return (
                     <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                      <h3 style={{ margin: 0 }}>
                       <button
                         onClick={() => setOpenFaqIndex(isOpen ? null : i)}
                         aria-expanded={isOpen}
                         style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
                       >
                         <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>{item.q}</span>
-                        <span style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+                        <span aria-hidden="true" style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
                       </button>
+                      </h3>
                       {isOpen && (
                         <div style={{ fontSize: 12, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
                           {item.a}
