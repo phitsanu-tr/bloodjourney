@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.362";
+const APP_VERSION = "1.0.363";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8882,7 +8882,7 @@ function AppInner() {
             </div>
           </div>
         );
-        const valS = { flex: 1, minWidth: 0, fontSize: 12, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
+        const valS = { flex: 1, minWidth: 0, fontSize: 14, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
@@ -8892,13 +8892,13 @@ function AppInner() {
                     <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
                   </svg>
                   <div style={{ position: "absolute", inset: 0, top: 7, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ fontSize: String(vn).length >= 3 ? 13 : 16, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{vn}</div>
+                    <div style={{ fontSize: String(vn).length >= 3 ? 14 : 16, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{vn}</div>
                     <div style={{ fontSize: 11, fontWeight: 500, color: "#FFF7F5", marginTop: 1 }}>ครั้งที่</div>
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
-                  <div style={{ fontSize: 13, color: vd.time ? "#7A6360" : "#A38D89", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
+                  <div style={{ fontSize: 14, color: vd.time ? "#7A6360" : "#A38D89", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
                 </div>
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
@@ -8925,12 +8925,12 @@ function AppInner() {
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 13 : 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
+                  <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 14 : 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                   <div style={{ fontSize: 11, fontWeight: 500, color: "#9A3B33", marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>ยอดบริจาคที่ผ่านมา</div>
-                  <div style={{ fontSize: 13, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
+                  <div style={{ fontSize: 14, color: "#7A6360", marginTop: 1 }}>ก่อนเริ่มใช้แอป</div>
                 </div>
                 <DialogX onClick={() => setViewStartingCount(false)} style={{ alignSelf: "flex-start" }} />
               </div>
@@ -8942,8 +8942,8 @@ function AppInner() {
                       {shown.map((t) => (
                         <div key={t} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #F3E7E4" }}>
                           <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: 9, background: DONATION_TYPE_TINT[t].bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><TypeIcon type={t} size={15} color={DONATION_TYPE_TINT[t].text} /></span>
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "#3A2C29" }}>{DONATION_TYPE_LABELS[t]}</span>
-                          <span style={{ fontSize: 15, fontWeight: 700, color: DONATION_TYPE_TINT[t].text, whiteSpace: "nowrap" }}>{startingNum[t]}<span style={{ fontSize: 11, fontWeight: 400, color: "#7A6360", marginLeft: 3 }}>ครั้ง</span></span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: "#3A2C29" }}>{DONATION_TYPE_LABELS[t]}</span>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: DONATION_TYPE_TINT[t].text, whiteSpace: "nowrap" }}>{startingNum[t]}<span style={{ fontSize: 12, fontWeight: 400, color: "#7A6360", marginLeft: 3 }}>ครั้ง</span></span>
                         </div>
                       ))}
                       {shown.length > 1 && (
