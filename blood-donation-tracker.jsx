@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.392";
+const APP_VERSION = "1.0.393";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5532,7 +5532,14 @@ function AppInner() {
       const y = buddhistYear(d.date);
       yearMap[y] = (yearMap[y] || 0) + 1;
     });
-    const yearData = Object.entries(yearMap).map(([year, count]) => ({ year, count }));
+    // Every year from the first donation up to this year, 0 where nothing was given -- only listing the
+    // years that had donations drew a break (e.g. 2560 -> 2566) as if they were back-to-back years.
+    const yearKeys = Object.keys(yearMap).map(Number);
+    const yearData = [];
+    if (yearKeys.length) {
+      const lastYear = Math.max(...yearKeys, buddhistYear(new Date()));
+      for (let y = Math.min(...yearKeys); y <= lastYear; y++) yearData.push({ year: String(y), count: yearMap[y] || 0 });
+    }
 
     let totalGapDays = 0, gapCount = 0;
     for (let i = 1; i < chronological.length; i++) {
@@ -5574,8 +5581,11 @@ function AppInner() {
     // first-one-wins comparison would apply.
     let busiestYear = null, busiestCount = 0;
     yearData.slice().sort((a, b) => Number(a.year) - Number(b.year)).forEach(({ year, count }) => {
-      if (count >= busiestCount) { busiestYear = year; busiestCount = count; }
+      if (count > 0 && count >= busiestCount) { busiestYear = year; busiestCount = count; }
     });
+    // All years tied for the top count (ascending), so a tie isn't shown as one year (same idea as the months).
+    const busiestYears = busiestCount > 0 ? yearData.filter((y) => y.count === busiestCount).map((y) => y.year) : [];
+    const yearsWithDonations = yearData.filter((y) => y.count > 0).length;
 
     const nextAchievement = achievements.find(a => totalCount < a.threshold) || null;
 
@@ -5596,7 +5606,7 @@ function AppInner() {
     const busiestMonthIdxs = maxMonthCount > 0 ? monthCounts.map((c, i) => (c === maxMonthCount ? i : -1)).filter((i) => i >= 0) : [];
     const datedCount = chronological.length;
 
-    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdxs, datedCount };
+    return { yearData, avgGap, avgGapBy, lastGap, lastGapBy, busiestYear, busiestCount, busiestYears, yearsWithDonations, nextAchievement, thisYearCount, lastYearCount, monthData, maxMonthCount, busiestMonthIdxs, datedCount };
   }, [donations, achievements, totalCount]);
 
   // Keep the "yearly count" chart scrolled to the latest years by default —
@@ -7368,11 +7378,16 @@ function AppInner() {
                 </div>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14 }}>
                   <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ปีที่บริจาคโลหิตมากที่สุด</h3>
-                  <div style={{ fontSize: 18, fontWeight: 700 }}>{stats.busiestYear ? `ปี ${stats.busiestYear}` : "—"}</div>
-                  <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>
-                    {stats.busiestYear ? `จำนวน ${stats.busiestCount} ครั้ง` : "ยังไม่มีข้อมูลพอ"}
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>
+                    {!stats.busiestYear ? "—"
+                      : stats.busiestYears.length === 1 ? `ปี ${stats.busiestYears[0]}`
+                      : stats.busiestYears.length === 2 ? `ปี ${stats.busiestYears[0]} และ ${stats.busiestYears[1]}`
+                      : `${stats.busiestYears.length} ปี`}
                   </div>
-                  {stats.busiestYear && stats.yearData.length > 1 && String(buddhistYear(new Date())) === String(stats.busiestYear) ? (
+                  <div style={{ fontSize: 12, color: "#7A6360", marginTop: 2 }}>
+                    {!stats.busiestYear ? "ยังไม่มีข้อมูลพอ" : stats.busiestYears.length >= 3 ? `ปีละ ${stats.busiestCount} ครั้ง` : `จำนวน ${stats.busiestCount} ครั้ง`}
+                  </div>
+                  {stats.busiestYear && stats.yearsWithDonations > 1 && stats.busiestYears.includes(String(buddhistYear(new Date()))) ? (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3E7E4", fontSize: 12, color: "#9A6B0B", fontWeight: 600, lineHeight: 1.5 }}>
                       🏆 ปีนี้คือปีที่บริจาคมากที่สุด!
                     </div>
