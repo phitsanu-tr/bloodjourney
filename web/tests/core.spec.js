@@ -6,7 +6,7 @@ test("consent: first run asks for consent and remembers it after reload", async 
   expect(await stored(page, "consent")).toBeTruthy();
   await page.reload();
   await expect(page.getByText("ยินยอมและเริ่มใช้งาน")).toHaveCount(0);
-  await expect(page.getByText("บันทึกบริจาคโลหิต", { exact: true }).last()).toBeVisible();
+  await expect(page.locator("[data-testid=hero-card]")).toBeVisible();
   assertNoErrors(page);
 });
 

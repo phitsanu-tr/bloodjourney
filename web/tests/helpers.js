@@ -22,7 +22,9 @@ export async function startFresh(page) {
   await page.goto("/");
   await page.locator("input[type=checkbox]").tap();
   await page.getByText("ยินยอมและเริ่มใช้งาน").tap();
-  await expect(page.getByText("บันทึกบริจาคโลหิต", { exact: true }).last()).toBeVisible();
+  // Wait for the home hero card, not the text "บันทึกบริจาคโลหิต": the loading splash shows that
+  // same text as its subtitle, so waiting on it could return before home has rendered.
+  await expect(page.locator("[data-testid=hero-card]")).toBeVisible();
 }
 
 // Writes data straight into localStorage and reloads, so tests can start from
@@ -33,7 +35,9 @@ export async function seed(page, { donations = [], profile = {} } = {}) {
     localStorage.setItem(pre + "profile", JSON.stringify({ nickname: "ทดสอบ", donorType: "general", donorTypePicked: true, ...p }));
   }, [donations, profile, PREFIX]);
   await page.reload();
-  await expect(page.getByText("บันทึกบริจาคโลหิต", { exact: true }).last()).toBeVisible();
+  // Wait for the home hero card, not the text "บันทึกบริจาคโลหิต": the loading splash shows that
+  // same text as its subtitle, so waiting on it could return before home has rendered.
+  await expect(page.locator("[data-testid=hero-card]")).toBeVisible();
 }
 
 export const stored = (page, key) =>
