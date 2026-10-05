@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { startFresh, seed, rec, assertNoErrors } from "./helpers.js";
+import { startFresh, seed, rec, assertNoErrors, pickToday } from "./helpers.js";
 
 const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); const p = (x) => String(x).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
 const openDashboard = async (page) => { await page.getByRole("button", { name: "แดชบอร์ด" }).click(); await expect(page.getByRole("heading", { name: "แดชบอร์ดสรุปข้อมูล" })).toBeVisible(); };
@@ -72,5 +72,23 @@ test("dashboard: carried-over count only -> same wording as home with a link; si
   await expect(page.getByRole("heading", { name: "สัดส่วนการบริจาคโลหิตแต่ละประเภท" })).toHaveCount(0);
   await page.getByRole("button", { name: "ระบุวันที่บริจาคล่าสุด" }).click();
   await expect(page.locator("[role=dialog]").last()).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("dashboard: saving from the empty card returns focus to the page heading (its button is gone)", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [], profile: {} });
+  await openDashboard(page);
+  const cta = page.getByRole("button", { name: "บันทึกบริจาคโลหิต" }).last();
+  await cta.focus();
+  await page.keyboard.press("Enter");
+  const d = page.locator("[role=dialog]").last();
+  await expect(d).toBeVisible();
+  await pickToday(d);
+  await d.getByText("โลหิตรวม").first().tap();
+  await d.locator("button.btn-primary").last().tap();
+  await expect(page.locator("[role=dialog]")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "ยังไม่มีสถิติ" })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.activeElement?.textContent)).toBe("แดชบอร์ดสรุปข้อมูล");
   assertNoErrors(page);
 });
