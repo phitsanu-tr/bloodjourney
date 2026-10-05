@@ -52,3 +52,16 @@ test("eligibility: complete profile hides the profile button; reached from the k
   await expect(page.getByText("ส่วนสูง 170 ซม. อยู่ในเกณฑ์ (มากกว่า 155 ซม.)")).toBeVisible();
   assertNoErrors(page);
 });
+
+test("eligibility: the home card's 'เช็คคุณสมบัติ' link (eligible today) opens the page on that card's type", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(400)), rec("b", daysAgo(20), "plasma")] });
+  await page.getByRole("tab", { name: /^พลาสมา/ }).click();
+  const link = page.getByRole("button", { name: "เช็คคุณสมบัติของฉัน", exact: true });
+  await expect(link).toBeVisible();
+  expect((await link.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await link.click();
+  await expect(page.getByRole("heading", { level: 2, name: "เช็คคุณสมบัติก่อนบริจาคโลหิต" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "พลาสมา", exact: true })).toHaveAttribute("aria-pressed", "true");
+  assertNoErrors(page);
+});
