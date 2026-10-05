@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.396";
+const APP_VERSION = "1.0.397";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -625,6 +625,12 @@ const DONOR_TYPES = [
   { key: "monk", label: "พระภิกษุสงฆ์" },
 ];
 const DEFAULT_DONOR_TYPE = "general";
+
+// Keeps "ครั้งที่ 60" / "ชั้นที่ 3" together so a narrow card never leaves the number alone on a line.
+function keepTail(title) {
+  const m = /^(.*) ((?:ครั้งที่|ชั้นที่) \d+)$/.exec(title);
+  return m ? <>{m[1]} <span style={{ whiteSpace: "nowrap" }}>{m[2]}</span></> : title;
+}
 
 // Text read by screen readers but not shown on screen.
 const SR_ONLY = { position: "absolute", width: 1, height: 1, margin: -1, padding: 0, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 };
@@ -7596,10 +7602,10 @@ function AppInner() {
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>ภารกิจถัดไป</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>{stats.nextAchievement.title}</div>
-                          <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>
-                            อีก {left} ครั้ง{eta && <> · <span title="คำนวณจากระยะห่างเฉลี่ยระหว่างการบริจาคที่ผ่านมา">{eta}</span></>}
+                          <div style={{ fontSize: 12, color: "#FFE9E5", marginBottom: 6 }}>ภารกิจถัดไป</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>{keepTail(stats.nextAchievement.title)}</div>
+                          <div style={{ fontSize: 12, color: "#FFE9E5", marginTop: 2 }}>
+                            <span style={{ whiteSpace: "nowrap" }}>อีก {left} ครั้ง</span>{eta && <> · <span title="คำนวณจากระยะห่างเฉลี่ยระหว่างการบริจาคที่ผ่านมา" style={{ whiteSpace: "nowrap" }}>{eta}</span></>}
                           </div>
                         </div>
                         <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}" ${done} จาก ${goal} ครั้ง`} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}
@@ -7621,20 +7627,32 @@ function AppInner() {
                 </div>
               )}
 
+              {!stats.nextAchievement && totalCount > 0 && (
+                <div style={{ background: "#FFFBF0", border: "1px solid #E9D9A8", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+                  <div aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 22, background: "#F6E7B8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Award size={22} color="#8A6B1D" />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#6E5414" }}>ปลดล็อกภารกิจครบทุกอันแล้ว</div>
+                    <div style={{ fontSize: 12, color: "#8A6B1D", marginTop: 2 }}>เก่งมาก! คุณทำสำเร็จครบทุกภารกิจในตอนนี้</div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
                 <button
                   onClick={openShareCard}
                   disabled={totalCount === 0 || sharingCard}
                   className="btn-ghost"
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, fontSize: 12, whiteSpace: "nowrap", cursor: totalCount === 0 ? "not-allowed" : "pointer" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 12, whiteSpace: "nowrap", cursor: totalCount === 0 ? "not-allowed" : "pointer" }}>
                   <Share2 size={14} /> {sharingCard ? "กำลังสร้าง..." : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}
                 </button>
               </div>
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14, marginBottom: 16 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "2px 8px", marginBottom: 10 }}>
                   <h3 style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33", margin: 0 }}>เข็มที่ระลึก</h3>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33", whiteSpace: "nowrap" }}>
                     ปลดล็อกแล้ว {pinAchievements.filter(a => totalCount >= a.threshold).length}/{pinAchievements.length}
                   </div>
                 </div>
@@ -7647,7 +7665,7 @@ function AppInner() {
                         position: "relative",
                         background: unlocked ? "#FBF6F5" : isNext ? "#FDF0EE" : "#F3EAE8",
                         border: unlocked ? "1px solid #F3E7E4" : isNext ? "1px solid #9A3B33" : "1px solid #EEDEDA",
-                        borderRadius: 14, padding: 14, opacity: unlocked ? 1 : isNext ? 0.9 : 0.6,
+                        borderRadius: 14, padding: 14,
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
                         {isNext && (
@@ -7662,9 +7680,9 @@ function AppInner() {
                             </div>
                           )}
                         </div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 3 }}>{a.title}</div>
-                        <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5 }}>
-                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : `อีก ${a.threshold - totalCount} ครั้งจะปลดล็อก`}
+                        <div style={{ fontSize: 14, fontWeight: 700, color: unlocked ? "#3A2C29" : "#5E4A47", marginBottom: 3 }}>{keepTail(a.title)}</div>
+                        <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, textWrap: "balance" }}>
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <>อีก {a.threshold - totalCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
                         </div>
                       </div>
                     );
@@ -7673,11 +7691,11 @@ function AppInner() {
               </div>
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14, marginBottom: 24 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "2px 8px", marginBottom: 10 }}>
                   <h3 style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33", margin: 0 }}>
                     {donorType === "monk" ? "พัดกาชาด" : "เหรียญกาชาดสมนาคุณ"}
                   </h3>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33", whiteSpace: "nowrap" }}>
                     ปลดล็อกแล้ว {medalAchievements.filter(a => totalCount >= a.threshold).length}/{medalAchievements.length}
                   </div>
                 </div>
@@ -7690,7 +7708,7 @@ function AppInner() {
                         position: "relative",
                         background: unlocked ? "#FBF6F5" : isNext ? "#FDF0EE" : "#F3EAE8",
                         border: unlocked ? "1px solid #F3E7E4" : isNext ? "1px solid #9A3B33" : "1px solid #EEDEDA",
-                        borderRadius: 14, padding: 14, opacity: unlocked ? 1 : isNext ? 0.9 : 0.6,
+                        borderRadius: 14, padding: 14,
                         boxShadow: unlocked ? "0 6px 14px -6px rgba(154,59,51,0.3)" : "none",
                       }}>
                         {isNext && (
@@ -7705,9 +7723,9 @@ function AppInner() {
                             </div>
                           )}
                         </div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 3, lineHeight: 1.35 }}>{a.title}</div>
-                        <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5 }}>
-                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : `อีก ${a.threshold - totalCount} ครั้งจะปลดล็อก`}
+                        <div style={{ fontSize: 14, fontWeight: 700, color: unlocked ? "#3A2C29" : "#5E4A47", marginBottom: 3, lineHeight: 1.35 }}>{keepTail(a.title)}</div>
+                        <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, textWrap: "balance" }}>
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <>อีก {a.threshold - totalCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
                         </div>
                       </div>
                     );
