@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.364";
+const APP_VERSION = "1.0.365";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2487,10 +2487,12 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // One-line "saved / last edited" note under the detail modal's table. The row labels above are one
 // block centred in a 50px column (as wide as the word "ประเภท"), so this line starts at that block's
 // left edge: we measure a hidden "ประเภท" at the label font size (12px) and indent by (50 - width) / 2.
-function ModalMetaLine({ children }) {
+// flush: no label column to line up with (carried-over dialog) -> start at the rows' left edge.
+function ModalMetaLine({ children, flush = false }) {
   const ghostRef = useRef(null);
-  const [pad, setPad] = useState(5.5);
+  const [pad, setPad] = useState(flush ? 0 : 5.5);
   useLayoutEffect(() => {
+    if (flush) return;
     const measure = () => {
       const w = ghostRef.current ? ghostRef.current.getBoundingClientRect().width : 0;
       if (w > 0 && w < 50) setPad((50 - w) / 2);
@@ -8925,7 +8927,7 @@ function AppInner() {
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดยอดสะสมที่เคยบริจาคมาก่อน" onClick={(e) => { if (e.target === e.currentTarget) setViewStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
             <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #D4A9A2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 14 : 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
                   <div style={{ fontSize: 11, fontWeight: 500, color: "#9A3B33", marginTop: 1 }}>สะสม</div>
                 </div>
@@ -8948,15 +8950,16 @@ function AppInner() {
                         </div>
                       ))}
                       {shown.length > 1 && (
-                        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 2px", fontSize: 12, color: "#7A6360" }}>
-                          <span>รวม</span><b style={{ color: "#241A18" }}>{displayedStartingCount} ครั้ง</b>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0 2px" }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>รวม</span>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: "#241A18", whiteSpace: "nowrap" }}>{displayedStartingCount}<span style={{ fontSize: 12, fontWeight: 400, color: "#7A6360", marginLeft: 3 }}>ครั้ง</span></span>
                         </div>
                       )}
                     </>
                   );
                 })()}
                 {startingCountUpdatedAt && (
-                  <ModalMetaLine>
+                  <ModalMetaLine flush>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
                   </ModalMetaLine>
                 )}
