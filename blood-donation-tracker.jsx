@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check, Syringe, Wine, CigaretteOff, Shirt, Phone, ExternalLink } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.397";
+const APP_VERSION = "1.0.398";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -178,7 +178,7 @@ const MIN_CYCLE_DAYS = 7;
 const MAX_CYCLE_DAYS = 365;
 const MIN_AGE = 17;
 const MAX_AGE = 70;
-const MIN_WEIGHT = 45; // matches ELIGIBILITY_CRITERIA text and the locked criteria in the handoff doc (was inconsistently 50 here)
+const MIN_WEIGHT = 45; // matches KNOWLEDGE_CRITERIA.whole text and the locked criteria in the handoff doc (was inconsistently 50 here)
 // Official Thai Red Cross donation intervals per type (independent of
 // cycleDays/componentCycleDays elsewhere, which are just the user's own
 // adjustable REMINDER cadence, not a redefinition of the actual medical
@@ -1664,40 +1664,237 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
   );
 });
 
-const PRE_DONATION_TIPS = [
-  { icon: Moon, text: "นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 6 ชั่วโมงก่อนวันบริจาค" },
-  { icon: Utensils, text: "ทานอาหารมาก่อน ห้ามบริจาคขณะท้องว่าง" },
-  { icon: GlassWater, text: "ดื่มน้ำเพิ่มอีก 3-4 แก้วก่อนไปบริจาค" },
-  { icon: Beef, text: "งดอาหารไขมันสูงในมื้อก่อนบริจาค" },
-  { icon: CreditCard, text: "พกบัตรประชาชนตัวจริงไปด้วยทุกครั้ง" },
+// ---- Knowledge tab ("ให้ความรู้") ------------------------------------------
+// Content follows the Thai Red Cross National Blood Centre's own pages
+// (คุณสมบัติผู้บริจาคโลหิต, การเตรียมตัวก่อนและหลังบริจาค, ขั้นตอนการบริจาค,
+// การบริจาคพลาสมา/เกล็ดเลือด/เม็ดเลือดแดง), shortened for a phone screen.
+const TRC_SITE = "https://thaibloodcentre.redcross.or.th/";
+const KNOWLEDGE_CRITERIA = {
+  whole: {
+    items: [
+      { icon: Cake, text: "อายุ 17 ปีบริบูรณ์ – 70 ปี" },
+      { icon: Scale, text: "น้ำหนัก 45 กิโลกรัมขึ้นไป" },
+      { icon: Clock, text: "เว้นจากการบริจาคโลหิตรวมครั้งก่อนอย่างน้อย 90 วัน" },
+      { icon: HeartPulse, text: "รู้สึกสบายดี สุขภาพแข็งแรง โรคประจำตัวและยาที่กินอยู่ไม่ส่งผลกับการบริจาค" },
+      { icon: Info, text: "ไม่อยู่ระหว่างตั้งครรภ์หรือให้นมบุตร และไม่เพิ่งคลอดหรือแท้งบุตร" },
+      { icon: ShieldCheck, text: "ไม่มีพฤติกรรมเสี่ยงทางเพศสัมพันธ์ ไม่เคยใช้ยาเสพติด และไม่เคยใช้ยารักษาหรือป้องกันเอชไอวี" },
+    ],
+    waits: [
+      ["ดื่มแอลกอฮอล์", "24 ชั่วโมง"],
+      ["อุดฟัน ขูดหินปูน ถอนฟัน รักษารากฟัน", "1 สัปดาห์"],
+      ["ท้องเสีย ท้องร่วง (นับจากหายขาด)", "7 วัน"],
+      ["ไข้หวัดใหญ่ ไข้เลือดออก โควิด-19 ไข้ซิกา ชิคุนกุนยา", "1 เดือน"],
+      ["เจาะหู สัก ลบรอยสัก ฝังเข็ม ฉีดสารความงาม", "4 เดือน"],
+      ["ผ่าตัด ได้รับเลือด หรือถูกเข็มเปื้อนเลือดตำ", "1 ปี"],
+    ],
+  },
+  plasma: {
+    summary: "บริจาคได้ทุก 14 วัน · ครั้งละประมาณ 45 นาที",
+    items: [
+      { icon: Cake, text: "อายุ 17 ปีบริบูรณ์ – 60 ปี (ครั้งแรกอายุไม่เกิน 50 ปี และต้องเคยบริจาคโลหิตรวมที่ศูนย์บริการโลหิตฯ อย่างน้อย 1 ครั้งในช่วง 1 ปี)" },
+      { icon: Scale, text: "น้ำหนัก 50 กิโลกรัมขึ้นไป" },
+      { icon: Syringe, text: "เส้นเลือดที่ข้อพับแขนมองเห็นชัดเจน" },
+      { icon: Beef, text: "เลี่ยงอาหารไขมันสูงก่อนมาบริจาค เช่น ข้าวขาหมู ข้าวมันไก่" },
+    ],
+  },
+  platelet: {
+    summary: "บริจาคได้ทุกเดือน · ครั้งละประมาณ 1–2 ชั่วโมง",
+    items: [
+      { icon: User, text: "รับบริจาคจากเพศชายเท่านั้น (มาตรฐานสากลของการบริจาคเกล็ดเลือด)" },
+      { icon: Cake, text: "อายุ 17 ปีบริบูรณ์ – 60 ปี (ครั้งแรกอายุไม่เกิน 50 ปี และต้องเคยบริจาคโลหิตรวมที่ศูนย์บริการโลหิตฯ อย่างน้อย 1 ครั้งในช่วง 1 ปี)" },
+      { icon: Scale, text: "น้ำหนัก 50 กิโลกรัมขึ้นไป" },
+      { icon: Droplets, text: "เกล็ดเลือดก่อนบริจาคไม่น้อยกว่า 150,000/ไมโครลิตร (ตรวจ CBC ให้ก่อนบริจาค)" },
+      { icon: Pill, text: "งดแอสไพริน ยาแก้ปวดข้อ และยากลุ่ม NSAIDs อย่างน้อย 48 ชั่วโมง" },
+      { icon: Pill, text: "งดขมิ้นชันและน้ำมันปลาอย่างน้อย 72 ชั่วโมง" },
+    ],
+  },
+  rbc: {
+    summary: "บริจาคได้ทุก 4 เดือน · ครั้งละประมาณ 45 นาที",
+    items: [
+      { icon: Cake, text: "อายุ 17 ปีบริบูรณ์ – 60 ปี (ครั้งแรกอายุไม่เกิน 50 ปี และต้องเคยบริจาคโลหิตรวมที่ศูนย์บริการโลหิตฯ อย่างน้อย 1 ครั้งในช่วง 1 ปี)" },
+      { icon: Scale, text: "ชาย น้ำหนัก 59 กิโลกรัมขึ้นไป สูงเกิน 155 เซนติเมตร · หญิง น้ำหนัก 68 กิโลกรัมขึ้นไป สูงเกิน 165 เซนติเมตร" },
+      { icon: Droplets, text: "ความเข้มข้นโลหิต Hct มากกว่า 40% และฮีโมโกลบินมากกว่า 14.0 g/dl" },
+      { icon: Syringe, text: "เส้นเลือดที่ข้อพับแขนมองเห็นชัดเจน" },
+    ],
+  },
+};
+const KNOWLEDGE_BEFORE = [
+  { icon: Moon, text: "นอนหลับให้เพียงพอ อย่างน้อย 5 ชั่วโมง" },
+  { icon: Utensils, text: "กินอาหารประจำมื้อก่อนมา แต่เลี่ยงอาหารไขมันสูง หวานจัด เค็มจัด ภายใน 6 ชั่วโมง เช่น ข้าวขาหมู ข้าวมันไก่ แกงกะทิ นมข้นหวาน (ไขมันทำให้พลาสมาขุ่น ใช้รักษาผู้ป่วยไม่ได้)" },
+  { icon: GlassWater, text: "ดื่มน้ำ 300–500 ซีซี ก่อนบริจาค 30 นาที ช่วยลดอาการเป็นลม" },
+  { icon: Wine, text: "งดเครื่องดื่มแอลกอฮอล์อย่างน้อย 24 ชั่วโมง" },
+  { icon: CigaretteOff, text: "งดสูบบุหรี่ 1 ชั่วโมง ทั้งก่อนและหลังบริจาค" },
+  { icon: Shirt, text: "ใส่เสื้อแขนไม่คับ ดึงขึ้นเหนือข้อศอกได้" },
+  { icon: Pill, text: "ถ้ากินยาอยู่ แจ้งแพทย์หรือพยาบาลที่คัดกรองทุกครั้ง" },
+  { icon: CreditCard, text: "พกบัตรประชาชนตัวจริงไปด้วย" },
 ];
-
-const POST_DONATION_TIPS = [
-  { icon: Timer, text: "นั่งพักตามคำแนะนำของเจ้าหน้าที่ ประมาณ 10-15 นาที ก่อนลุกเดิน" },
-  { icon: GlassWater, text: "ดื่มน้ำหรือเครื่องดื่มที่จุดบริการเพิ่มเติม" },
-  { icon: Dumbbell, text: "งดยกของหนักหรือออกกำลังกายหนักในวันนั้น" },
-  { icon: HeartPulse, text: "หากมีอาการวิงเวียน ใจสั่น ให้รีบนั่งหรือนอนราบและแจ้งเจ้าหน้าที่ทันที" },
+const KNOWLEDGE_STEPS = [
+  "กรอกใบสมัครและวัดความดัน ตอบข้อมูลสุขภาพตามความจริง",
+  "ลงทะเบียนในระบบคอมพิวเตอร์",
+  "ตรวจความเข้มโลหิต และคัดกรองสุขภาพกับบุคลากรทางการแพทย์",
+  "บริจาคโลหิต ครั้งละ 350–450 ซีซี ระหว่างนั้นบีบลูกยางสม่ำเสมอ",
+  "นั่งพัก 10–15 นาที ดื่มเครื่องดื่มและกินอาหารว่างที่จัดไว้",
+  "วัดความดันอีกครั้งก่อนกลับ",
 ];
-
-const ELIGIBILITY_CRITERIA = [
-  { icon: Cake, text: "อายุระหว่าง 17-70 ปี" },
-  { icon: Scale, text: "น้ำหนักไม่ต่ำกว่า 45 กิโลกรัม" },
-  { icon: Clock, text: "เว้นระยะห่างจากการบริจาคครั้งก่อนอย่างน้อย 90 วัน" },
-  { icon: AlertTriangle, text: "ไม่มีไข้หรืออาการป่วยในช่วง 14 วันที่ผ่านมา" },
-  { icon: ShieldCheck, text: "ไม่มีพฤติกรรมเสี่ยงตามเกณฑ์ของสภากาชาดไทย" },
+const KNOWLEDGE_AFTER = [
+  { icon: Timer, text: "นอนพักบนเตียง 5 นาที แล้วนั่งพักอีก 10–15 นาที" },
+  { icon: GlassWater, text: "ดื่มน้ำมากกว่าปกติ 24 ชั่วโมง" },
+  { icon: Pill, text: "กินยาเสริมธาตุเหล็กที่ได้รับ วันละ 1 เม็ดหลังอาหารจนหมด" },
+  { icon: Dumbbell, text: "เลี่ยงใช้แขนข้างที่บริจาค และงดออกกำลังกายที่เสียเหงื่อ 24 ชั่วโมง" },
+  { icon: AlertTriangle, text: "เลี่ยงที่สูง ที่แออัดอากาศร้อน และงานเสี่ยงที่เกี่ยวกับความเร็ว ความสูง ความลึก เครื่องจักร" },
+  { icon: HeartPulse, text: "ถ้าเวียนศีรษะ ใจสั่น ให้รีบนั่งหรือนอนลง แล้วแจ้งเจ้าหน้าที่ทันที" },
 ];
-
-const DONATION_MYTHS = [
-  { icon: Info, text: "เข้าใจผิด: บริจาคโลหิตแล้วจะอ้วนขึ้นหรือผอมลง — ความจริงคือไม่มีผลต่อน้ำหนักตัวโดยตรง" },
-  { icon: Info, text: "เข้าใจผิด: บริจาคโลหิตทำให้ร่างกายอ่อนแอถาวร — ความจริงคือร่างกายสร้างเลือดทดแทนได้ภายในไม่กี่สัปดาห์" },
-  { icon: Info, text: "เข้าใจผิด: คนมีรอยสักหรือเจาะร่างกายบริจาคไม่ได้เลย — ความจริงคือบริจาคได้หากพ้นระยะเวลาที่กำหนด (สอบถามเจ้าหน้าที่)" },
+const KNOWLEDGE_MYTHS = [
+  ["บริจาคโลหิตแล้วจะอ้วนขึ้นหรือผอมลง", "การบริจาคไม่มีผลต่อน้ำหนักตัวโดยตรง"],
+  ["บริจาคโลหิตทำให้ร่างกายอ่อนแอถาวร", "ร่างกายสร้างเลือดทดแทนได้ภายในไม่กี่สัปดาห์"],
+  ["คนมีรอยสักหรือเจาะร่างกายบริจาคไม่ได้", "บริจาคได้เมื่อพ้น 4 เดือนหลังสัก เจาะ หรือลบรอยสัก"],
 ];
-
-const DONATION_BENEFITS = [
+const KNOWLEDGE_BENEFITS = [
   { icon: HeartPulse, text: "กระตุ้นการสร้างเม็ดเลือดใหม่ในร่างกาย" },
-  { icon: Gauge, text: "ได้ตรวจสุขภาพเบื้องต้นฟรีทุกครั้ง (ความดัน ชีพจร ฮีโมโกลบิน)" },
-  { icon: Sparkles, text: "ช่วยเหลือผู้ป่วยที่ต้องการโลหิตในการรักษา" },
+  { icon: Gauge, text: "ได้ตรวจสุขภาพเบื้องต้นทุกครั้ง (ความดัน ความเข้มโลหิต)" },
+  { icon: Sparkles, text: "ช่วยผู้ป่วยที่ต้องใช้โลหิตในการรักษา" },
 ];
+
+const KN_CARD = { background: "#FFFFFF", border: "1px solid #EEDEDA", borderTop: "none", borderRadius: "0 0 14px 14px", padding: "6px 15px" };
+function KnRows({ items }) {
+  return items.map((t, i) => {
+    const Icon = t.icon;
+    return (
+      <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < items.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+        <Icon size={16} color="#9A3B33" style={{ marginTop: 3, flexShrink: 0 }} aria-hidden="true" />
+        <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
+      </div>
+    );
+  });
+}
+// Keeps each space-separated phrase whole ("ชิคุนกุนยา" was split mid-word at 390px).
+const keepPhrases = (text) => text.split(" ").map((w, i) => <React.Fragment key={i}>{i > 0 && " "}<span style={{ whiteSpace: "nowrap" }}>{w}</span></React.Fragment>);
+
+// One folding section: the h3 holds the toggle button; only the donor criteria start open.
+function KnSection({ id, icon: Icon, title, open, onToggle, children }) {
+  return (
+    <section id={id === "before" ? "pre-donation-tips" : undefined} style={{ marginBottom: 10, scrollMarginTop: "calc(60px + env(safe-area-inset-top) + 16px)" }}>
+      <h3 style={{ margin: 0 }}>
+        <button type="button" aria-expanded={open} onClick={() => onToggle(id)}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 48, padding: "0 14px", background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: open ? "14px 14px 0 0" : 14, fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: "#3A2C29", textAlign: "left", cursor: "pointer" }}>
+          <Icon size={16} color="#9A3B33" aria-hidden="true" style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>{title}</span>
+          <ChevronDown size={18} color="#9A8582" aria-hidden="true" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+        </button>
+      </h3>
+      {open && <div style={KN_CARD}>{children}</div>}
+    </section>
+  );
+}
+
+function KnowledgePage({ initialType, jumpToBefore, onJumpDone }) {
+  const [type, setType] = useState(DONATION_TYPES.includes(initialType) ? initialType : "whole");
+  const [open, setOpen] = useState(() => ({ criteria: true, before: !!jumpToBefore }));
+  const toggle = useCallback((id) => setOpen((o) => ({ ...o, [id]: !o[id] })), []);
+  // Arriving from the home card's "ดูวิธีเตรียมตัวก่อนบริจาค": open that section and scroll to it.
+  useEffect(() => {
+    if (!jumpToBefore) return undefined;
+    setOpen((o) => ({ ...o, before: true }));
+    const t = setTimeout(() => { document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }); onJumpDone(); }, 80);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jumpToBefore]);
+  const crit = KNOWLEDGE_CRITERIA[type];
+  const sec = (id) => ({ id, open: !!open[id], onToggle: toggle });
+  return (
+    <>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "0 0 4px" }}>ให้ความรู้เรื่องการบริจาคโลหิต</h2>
+      <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>สรุปจากข้อมูลของศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย</p>
+
+      <KnSection {...sec("criteria")} icon={ShieldCheck} title="เกณฑ์ผู้บริจาค">
+        <div style={{ containerType: "inline-size", margin: "8px 0 4px" }}>
+          <style>{`.kn-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } @container (min-width: 340px) { .kn-types { grid-template-columns: repeat(4, 1fr); } }`}</style>
+          <div role="group" aria-label="ประเภทการบริจาค" className="kn-types">
+            {DONATION_TYPES.map((t) => (
+              <button key={t} type="button" onClick={() => setType(t)} aria-pressed={type === t} style={{
+                position: "relative", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 32, fontSize: 12, fontWeight: 600, padding: "0 4px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer",
+                border: type === t ? "1px solid #9A3B33" : "1px solid #EEDEDA", color: type === t ? "#FFF7F5" : "#7A6360", background: type === t ? "#9A3B33" : "#FFFFFF",
+              }}>
+                {/* Invisible 44px-tall tap area; the pill keeps its look. */}
+                <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -3px" }} />
+                {DONATION_TYPE_LABELS[t]}
+              </button>
+            ))}
+          </div>
+        </div>
+        {crit.summary && (
+          <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "11px 0", borderBottom: "1px solid #F3E7E4", fontSize: 14, fontWeight: 600, color: "#9A3B33" }}>
+            <Clock size={16} aria-hidden="true" style={{ flexShrink: 0 }} />{crit.summary}
+          </div>
+        )}
+        <KnRows items={crit.items} />
+        {crit.waits && (
+          <div style={{ borderTop: "1px solid #F3E7E4", padding: "11px 0 6px" }}>
+            <h4 style={{ fontSize: 12, fontWeight: 600, color: "#7A6360", margin: "0 0 6px" }}>ต้องเว้นระยะก่อนบริจาค</h4>
+            <dl style={{ margin: 0 }}>
+              {crit.waits.map(([what, wait]) => (
+                <div key={what} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "5px 0" }}>
+                  <dt style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.5, minWidth: 0 }}>{keepPhrases(what)}</dt>
+                  <dd style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#9A3B33", whiteSpace: "nowrap" }}>{wait}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+        <div style={{ borderTop: "1px solid #F3E7E4", padding: "10px 0 8px", fontSize: 12, color: "#7A6360", lineHeight: 1.6 }}>
+          {type === "whole"
+            ? <>เกณฑ์เต็มมี 32 ข้อ ดูครบได้ที่ <a href={TRC_SITE} target="_blank" rel="noopener noreferrer" style={{ color: "#9A3B33", fontWeight: 600, whiteSpace: "nowrap" }}>เว็บศูนย์บริการโลหิตฯ</a></>
+            : <>นัดหมายบริจาค โทร. <a href="tel:022639600" style={{ color: "#9A3B33", fontWeight: 600, whiteSpace: "nowrap" }}>0 2263 9600</a> ต่อ 1143, 1144</>}
+        </div>
+      </KnSection>
+
+      <KnSection {...sec("before")} icon={BookOpen} title="เตรียมตัวก่อนบริจาค"><KnRows items={KNOWLEDGE_BEFORE} /></KnSection>
+
+      <KnSection {...sec("steps")} icon={List} title="ขั้นตอนที่จุดรับบริจาค">
+        <ol style={{ margin: 0, padding: "4px 0", listStyle: "none" }}>
+          {KNOWLEDGE_STEPS.map((step, i) => (
+            <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 0" }}>
+              <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 11, background: "#FDF0EE", color: "#9A3B33", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+              <span style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}><span style={SR_ONLY}>ขั้นตอนที่ {i + 1}: </span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </KnSection>
+
+      <KnSection {...sec("after")} icon={HeartPulse} title="ดูแลตัวเองหลังบริจาค"><KnRows items={KNOWLEDGE_AFTER} /></KnSection>
+
+      <KnSection {...sec("myths")} icon={Info} title="ความเข้าใจผิดที่พบบ่อย">
+        {KNOWLEDGE_MYTHS.map(([myth, fact], i) => (
+          <div key={i} style={{ padding: "11px 0", borderBottom: i < KNOWLEDGE_MYTHS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+            <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6 }}><span style={{ fontWeight: 600 }}>เข้าใจผิด:</span> {myth}</div>
+            <div style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 14, color: "#3A2C29", lineHeight: 1.6, marginTop: 2 }}>
+              <CheckCircle2 size={16} color="#2B7530" aria-hidden="true" style={{ marginTop: 3, flexShrink: 0 }} />
+              <span><span style={SR_ONLY}>ความจริง: </span>{fact}</span>
+            </div>
+          </div>
+        ))}
+      </KnSection>
+
+      <KnSection {...sec("benefits")} icon={Sparkles} title="ประโยชน์ของการบริจาค"><KnRows items={KNOWLEDGE_BENEFITS} /></KnSection>
+
+      <KnSection {...sec("contact")} icon={MapPin} title="ติดต่อศูนย์บริการโลหิตแห่งชาติ">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "10px 0" }}>
+          <a href="tel:1666" className="btn-ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+            <Phone size={16} aria-hidden="true" /> โทร 1666
+          </a>
+          <a href={TRC_SITE} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+            <ExternalLink size={16} aria-hidden="true" /> เว็บไซต์ / หาจุดรับบริจาค
+          </a>
+        </div>
+      </KnSection>
+
+      <p style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6, marginTop: 8 }}>
+        ข้อมูลทั่วไปเพื่อความรู้เบื้องต้นเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์เฉพาะบุคคล เกณฑ์อาจเปลี่ยนแปลงได้ หากมีข้อสงสัยให้สอบถามเจ้าหน้าที่ ณ จุดบริจาคโดยตรง
+      </p>
+    </>
+  );
+}
+
 
 // FAQ content is specifically about using THIS APP (data/privacy, LINE
 // quirks, how features work) — general blood-donation knowledge already has
@@ -2970,6 +3167,7 @@ function AppInner() {
   // even though nothing about the cumulative stats actually changed.
   const [dashboardLoadedAt] = useState(() => new Date());
   const [seenAchievements, setSeenAchievements] = useState([]);
+  const [knowledgeJump, setKnowledgeJump] = useState(0); // >0: open the knowledge tab at "เตรียมตัวก่อนบริจาค"
   const [importing, setImporting] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
   const [pasteImportText, setPasteImportText] = useState("");
@@ -6543,8 +6741,9 @@ function AppInner() {
                           </div>
                           <button
                             onClick={() => {
+                              // The knowledge tab opens its folded "เตรียมตัวก่อนบริจาค" section and scrolls to it.
+                              setKnowledgeJump((n) => n + 1);
                               setTab("knowledge");
-                              setTimeout(() => document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
                             }}
                             style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             ดูวิธีเตรียมตัวก่อนบริจาค <ChevronRight size={13} />
@@ -6649,13 +6848,13 @@ function AppInner() {
 
               {showCareCard && (() => {
                 const items = [
-                  { Icon: GlassWater, text: "ดื่มน้ำมากกว่าปกติ และงดยกของหนักหรือออกกำลังหนักในวันที่บริจาค" },
+                  { Icon: GlassWater, text: "ดื่มน้ำมากกว่าปกติ 24 ชั่วโมง เลี่ยงใช้แขนข้างที่บริจาค และงดออกกำลังกายที่เสียเหงื่อ" },
                 ];
                 // Iron tablets come with donations that take red cells (whole
                 // blood, red-cell apheresis); plasma and platelet apheresis
                 // return the red cells to the donor.
                 if (last.type === "whole" || last.type === "rbc" || !last.type) {
-                  items.push({ Icon: Pill, text: "กินยาธาตุเหล็กที่ได้รับตามที่เจ้าหน้าที่แนะนำ เลี่ยงกินพร้อมนม ชา กาแฟ น้ำส้มช่วยให้ดูดซึมดีขึ้น" });
+                  items.push({ Icon: Pill, text: "กินยาธาตุเหล็กที่ได้รับ วันละ 1 เม็ดหลังอาหารจนหมด เลี่ยงกินพร้อมนม ชา กาแฟ น้ำส้มช่วยให้ดูดซึมดีขึ้น" });
                   if (gender === "female") items.push({ Icon: Info, text: "ผู้หญิงเสียธาตุเหล็กทุกเดือนจากประจำเดือน จึงควรกินยาธาตุเหล็กให้ครบ ช่วยให้ครั้งหน้าผ่านการตรวจความเข้มข้นเลือด" });
                 }
                 return (
@@ -7741,108 +7940,7 @@ function AppInner() {
             </>
           )}
 
-          {tab === "knowledge" && (
-            <>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", marginBottom: 4 }}>ให้ความรู้เรื่องการบริจาคโลหิต</div>
-              <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>
-                ข้อมูลพื้นฐานที่ควรรู้ก่อนและหลังบริจาคโลหิต
-              </p>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <ShieldCheck size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เกณฑ์คุณสมบัติผู้บริจาค</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                {ELIGIBILITY_CRITERIA.map((t, i) => {
-                  const Icon = t.icon;
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < ELIGIBILITY_CRITERIA.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                      <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div id="pre-donation-tips" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, scrollMarginTop: "calc(60px + env(safe-area-inset-top) + 16px)" }}>
-                <BookOpen size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>เตรียมตัวก่อนบริจาค</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                {PRE_DONATION_TIPS.map((t, i) => {
-                  const Icon = t.icon;
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < PRE_DONATION_TIPS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                      <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <HeartPulse size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>ดูแลตัวเองหลังบริจาค</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                {POST_DONATION_TIPS.map((t, i) => {
-                  const Icon = t.icon;
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < POST_DONATION_TIPS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                      <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <Info size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>ความเข้าใจผิดที่พบบ่อย</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                {DONATION_MYTHS.map((t, i) => {
-                  const Icon = t.icon;
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_MYTHS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                      <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <HeartPulse size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>ประโยชน์ต่อร่างกาย</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
-                {DONATION_BENEFITS.map((t, i) => {
-                  const Icon = t.icon;
-                  return (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: i < DONATION_BENEFITS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <Icon size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                      <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>{t.text}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <MapPin size={16} color="#9A3B33" />
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29" }}>ช่องทางติดต่อศูนย์บริจาค</div>
-              </div>
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "14px 15px", marginBottom: 12 }}>
-                <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.7 }}>
-                  ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย โทร. 1666 หรือค้นหาหน่วยรับบริจาคเคลื่อนที่ใกล้บ้านผ่านเว็บไซต์/แอปของสภากาชาดไทย
-                </div>
-              </div>
-
-              <p style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
-                ข้อมูลทั่วไปเพื่อความรู้เบื้องต้นเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์เฉพาะบุคคล หากมีข้อสงสัยให้สอบถามเจ้าหน้าที่ ณ จุดบริจาคโดยตรง
-              </p>
-            </>
-          )}
+          {tab === "knowledge" && <KnowledgePage initialType={lastType} jumpToBefore={knowledgeJump} onJumpDone={() => setKnowledgeJump(0)} />}
 
           {tab === "eligibility" && (
             <>
@@ -7876,7 +7974,7 @@ function AppInner() {
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "6px 15px", marginBottom: 18 }}>
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0", borderBottom: "1px solid #F3E7E4" }}>
                   <AlertTriangle size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
-                  <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>ไม่มีไข้หรืออาการป่วยในช่วง 14 วันที่ผ่านมา</div>
+                  <div style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>รู้สึกสบายดี ไม่ป่วย (ท้องเสียต้องหายแล้ว 7 วัน · ไข้หวัดใหญ่ ไข้เลือดออก โควิด-19 ต้องพ้น 1 เดือน)</div>
                 </div>
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 0" }}>
                   <ShieldCheck size={16} color="#9A3B33" style={{ marginTop: 1, flexShrink: 0 }} />
