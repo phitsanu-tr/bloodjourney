@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.359";
+const APP_VERSION = "1.0.360";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2528,7 +2528,7 @@ function useMenuEscape(isOpen, close, buttonRef) {
   }, [isOpen, close, buttonRef]);
 }
 // ⋮ menu rows: 44px tall like every other tap target in the app (were ~38px).
-const HIST_MENU_ITEM = { width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "inherit" };
+const HIST_MENU_ITEM = { width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontFamily: "inherit" };
 
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onView, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
@@ -5903,6 +5903,9 @@ function AppInner() {
         .hero-status { min-height: 92px; }
         @media (max-width: 349px) { .hero-status { min-height: 124px; } }
         @media (max-width: 349px) { .hero-liters-name { display: none; } }
+        /* Home type scale (T7): only 11 / 12 / 14 / 16 / 18 / 24 / 38px, and one line
+           height for every home text that doesn't set its own (Mitr's "normal" is ~1.57). */
+        .app-shell.home-scale { line-height: 1.4; }
         @keyframes fadeSwap {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -6131,7 +6134,7 @@ function AppInner() {
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>Blood Journey</div>
-                <div style={{ fontSize: 11.5, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
+                <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
@@ -6164,7 +6167,7 @@ function AppInner() {
         </div>
       )}
       {phase === "app" && (
-        <div ref={ptrShellRef} className={tab === "knowledge" ? "app-shell selectable" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
+        <div ref={ptrShellRef} className={tab === "knowledge" ? "app-shell selectable" : tab === "home" ? "app-shell home-scale" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
@@ -6173,7 +6176,7 @@ function AppInner() {
                   {photo ? (
                     <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : nickname ? (
-                    <span style={{ fontSize: 22, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0].toUpperCase()}</span>
+                    <span style={{ fontSize: 24, fontWeight: 700, color: "#9A3B33" }}>{[...nickname.trim()][0].toUpperCase()}</span>
                   ) : (
                     <User size={24} color="#9A3B33" />
                   )}
@@ -6234,7 +6237,7 @@ function AppInner() {
                     </div>
                   ) : (
                     <div style={{ marginTop: 8 }}>
-                      <button onClick={openProfile} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, background: "none", color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", cursor: "pointer", fontFamily: "inherit" }}>
+                      <button onClick={openProfile} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, background: "none", color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
                         <Plus size={11} /> เพิ่มข้อมูลโปรไฟล์
                       </button>
@@ -6250,8 +6253,8 @@ function AppInner() {
                 <div style={{ background: "#FDEDED", border: "1px solid #F0C4BE", borderRadius: 14, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
                   <AlertTriangle size={16} color="#B3261E" style={{ marginTop: 2, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#B3261E" }}>ข้อมูลจะไม่ถูกบันทึกถาวรตอนนี้</div>
-                    <div style={{ fontSize: 11.5, color: "#8A5450", marginTop: 3, lineHeight: 1.6 }}>อุปกรณ์นี้บล็อกการบันทึกข้อมูลถาวร (เช่น โหมดส่วนตัว/พื้นที่เก็บข้อมูลเต็ม) รายการที่บันทึกไว้จะหายเมื่อปิดแอป — แนะนำให้ส่งออกไฟล์สำรองก่อนปิด</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#B3261E" }}>ข้อมูลจะไม่ถูกบันทึกถาวรตอนนี้</div>
+                    <div style={{ fontSize: 12, color: "#8A5450", marginTop: 3, lineHeight: 1.6 }}>อุปกรณ์นี้บล็อกการบันทึกข้อมูลถาวร (เช่น โหมดส่วนตัว/พื้นที่เก็บข้อมูลเต็ม) รายการที่บันทึกไว้จะหายเมื่อปิดแอป — แนะนำให้ส่งออกไฟล์สำรองก่อนปิด</div>
                   </div>
                 </div>
               )}
@@ -6272,20 +6275,20 @@ function AppInner() {
                     // count takes over this spot from the first record onward.
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12, marginBottom: 2 }}>เริ่มต้นการเดินทาง</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3 }}>ยินดีต้อนรับสู่ Blood Journey</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.3 }}>ยินดีต้อนรับสู่ Blood Journey</div>
                     </div>
                   ) : (
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-                        <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 15, fontWeight: 500 }}> ครั้ง</span></div>
+                        <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 16, fontWeight: 500 }}> ครั้ง</span></div>
                         {/* Liters of the selected type only (design H3 of
                             liters-by-type-designs.html), so the pill reads the
                             same way as the countdown under the type tabs. The
                             type name drops under 350px to stay on one line. */}
                         {activeTypeTotalCount > 0 && (
                           <span key={`${activeCountdownType}-liters`} aria-label={`${DONATION_TYPE_LABELS[activeCountdownType]} ประมาณ ${activeTypeLiters} ลิตร`}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap", fontSize: 11.5, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)", animation: "fadeSwap 0.4s ease" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)", animation: "fadeSwap 0.4s ease" }}>
                             <TypeIcon type={activeCountdownType} size={11} />
                             <span className="hero-liters-name">{DONATION_TYPE_LABELS[activeCountdownType]}</span>
                             ≈ {activeTypeLiters} ลิตร
@@ -6317,7 +6320,7 @@ function AppInner() {
                       <button key={t} role="tab" aria-label={`${DONATION_TYPE_LABELS[t]} ${totalBy[t]} ครั้ง${tabEligible ? " บริจาคได้แล้ว" : ""}`} title={DONATION_TYPE_LABELS[t]} aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} data-eligible={tabEligible ? "1" : undefined} onClick={() => setCountdownTab(t)}
                         style={{
                           position: "relative", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, whiteSpace: "nowrap",
-                          padding: compact ? "6px 0" : "6px 12px", width: compact ? 40 : undefined, justifyContent: "center", height: 30, borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
+                          padding: compact ? "6px 0" : "6px 12px", width: compact ? 40 : undefined, justifyContent: "center", height: 30, borderRadius: 20, fontSize: 12, fontFamily: "inherit", cursor: "pointer", border: "none",
                           background: activeCountdownType === t ? "#FFF7F5" : "rgba(255,247,245,0.18)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           fontWeight: activeCountdownType === t ? 600 : 400,
@@ -6342,7 +6345,7 @@ function AppInner() {
                   // chip would just repeat the big "N ครั้ง" number shown right
                   // above -- dropped the chip and kept only the type name, which
                   // is the one thing this pill actually adds.
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, height: 30, boxSizing: "border-box", padding: "0 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, height: 30, boxSizing: "border-box", padding: "0 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
                     <TypeIcon type={activeCountdownType} size={12} /> {DONATION_TYPE_LABELS[activeCountdownType]}
                   </div>
                 ) : (
@@ -6385,7 +6388,7 @@ function AppInner() {
                           <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</span>
                           {/* Short label on the title row (not a row of its own) so the paused state is no taller than the others. */}
                           <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }} aria-label="เปิดการเตือน หรือเปลี่ยนระยะเวลา"
-                            style={{ display: "inline-flex", alignItems: "center", gap: 2, minHeight: 44, margin: "-12px 0", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 2, minHeight: 44, margin: "-12px 0", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                             เปิดการเตือน <ChevronRight size={13} />
                           </button>
                         </div>
@@ -6417,7 +6420,7 @@ function AppInner() {
                               setTab("knowledge");
                               setTimeout(() => document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
                             }}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             ดูวิธีเตรียมตัวก่อนบริจาค <ChevronRight size={13} />
                           </button>
                         </>
@@ -6429,7 +6432,7 @@ function AppInner() {
                         <>
                           <div style={{ width: "100%", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
                             <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</span>
-                            <span style={{ fontSize: 11.5, fontWeight: 400, color: "#FFF7F5", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: "#FFF7F5", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
                           </div>
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be
@@ -6444,7 +6447,7 @@ function AppInner() {
                             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>ยังไม่มีวันที่บริจาคล่าสุด</div>
                             <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
                             <button onClick={handleAddButtonClick}
-                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                               ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
                             </button>
                           </>
@@ -6506,7 +6509,7 @@ function AppInner() {
                   display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF7F5", flexShrink: 0 }}>
                   <Plus size={18} />
                 </span>
-                <span style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
+                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
                 <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
               </button>
 
@@ -6527,10 +6530,10 @@ function AppInner() {
                       style={{ position: "absolute", top: 4, right: 4, width: 44, height: 44, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
                       <X size={16} />
                     </button>
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9A3B33" }}>หลังบริจาค · {careDaysSince === 0 ? "วันนี้" : careDaysSince === 1 ? "เมื่อวาน" : "2 วันก่อน"}</div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29", margin: "2px 0 6px" }}>ดูแลตัวเองหลังบริจาค</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#9A3B33" }}>หลังบริจาค · {careDaysSince === 0 ? "วันนี้" : careDaysSince === 1 ? "เมื่อวาน" : "2 วันก่อน"}</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29", margin: "2px 0 6px" }}>ดูแลตัวเองหลังบริจาค</div>
                     {items.map(({ Icon, text }) => (
-                      <div key={text} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, lineHeight: 1.55, color: "#4A3A37", padding: "6px 0" }}>
+                      <div key={text} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, lineHeight: 1.55, color: "#4A3A37", padding: "6px 0" }}>
                         <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Icon size={15} color="#9A3B33" />
                         </span>
@@ -6560,14 +6563,14 @@ function AppInner() {
                           <Icon size={17} color="#9A3B33" aria-hidden="true" />
                         </span>
                         <span style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
-                          <span style={{ display: "block", fontSize: 11.5, color: "#7A6360", marginTop: 1 }}>{sub}</span>
+                          <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
+                          <span style={{ display: "block", fontSize: 12, color: "#7A6360", marginTop: 1 }}>{sub}</span>
                         </span>
                         <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
                       </button>
                     ))}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 11.5, color: "#7A6360" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 12, color: "#7A6360" }}>
                     <Lock size={13} color="#7A6360" aria-hidden="true" /> ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์
                   </div>
                 </div>
@@ -6614,7 +6617,7 @@ function AppInner() {
                           <ShieldCheck size={15} color="#9A3B33" style={{ flexShrink: 0 }} />
                           <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#5C4A46" }}>{Math.max(1, donations.length - lastExportCount)} รายการยังไม่ได้สำรอง</span>
                           <button aria-label="สำรองข้อมูล" onClick={() => openBackupRestore("export", { fromHome: true })}
-                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                            style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
                             <Download size={13} /> สำรอง
                           </button>
@@ -6634,7 +6637,7 @@ function AppInner() {
                             {kind === "age" ? `อายุอยู่นอกเกณฑ์ทั่วไป (${MIN_AGE}–${MAX_AGE} ปี)` : `น้ำหนักต่ำกว่าเกณฑ์ทั่วไป (${MIN_WEIGHT} กก.)`}
                           </span>
                           <button onClick={() => { setTab("knowledge"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F7E2D0", color: "#7A4A1D", cursor: "pointer" }}>
+                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F7E2D0", color: "#7A4A1D", cursor: "pointer" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
                             ดูเกณฑ์
                           </button>
@@ -6644,11 +6647,11 @@ function AppInner() {
                       {kind === "calendar" && (
                         <>
                           <Calendar size={14} color="#9A3B33" style={{ flexShrink: 0 }} />
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#5C4A46" }}>ให้เตือนเมื่อบริจาคได้อีกครั้งไหม</span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "#5C4A46" }}>ให้เตือนเมื่อบริจาคได้อีกครั้งไหม</span>
                           {/* The pill itself stays 28px tall visually; the transparent
                               span extends its tap area to 44px without changing layout. */}
                           <button onClick={handleAddToCalendar}
-                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F3EAE8", color: "#9A3B33", cursor: "pointer" }}>
+                            style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F3EAE8", color: "#9A3B33", cursor: "pointer" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -4px" }} />
                             เพิ่มลงปฏิทิน
                           </button>
@@ -6708,14 +6711,14 @@ function AppInner() {
                           background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12,
                           boxShadow: "0 10px 28px rgba(90,50,45,0.16)", padding: 6, minWidth: 190,
                         }}>
-                          <div style={{ fontSize: 11.5, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
+                          <div style={{ fontSize: 12, color: "#7A6360", padding: "4px 8px 6px" }}>เพิ่มลงปฏิทินแบบไหน?</div>
                           <button onClick={addToCalendarGoogle} style={{
                             width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
-                            background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                            background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
                           }}>Google Calendar</button>
                           <button onClick={addToCalendarIcs} style={{
                             width: "100%", textAlign: "left", padding: "8px 8px", borderRadius: 8, border: "none",
-                            background: "transparent", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
+                            background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#3A2A27", cursor: "pointer",
                           }}>ไฟล์ .ics (Apple Calendar / อื่น ๆ)</button>
                         </div>
                       </>
@@ -6760,7 +6763,7 @@ function AppInner() {
                                 strokeDasharray={`${circ * frac} ${circ}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
                             )}
                           </svg>
-                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: label.length > 5 ? 11 : 12.5, fontWeight: 700, color: "#9A3B33", fontVariantNumeric: "tabular-nums" }}>
+                          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: label.length > 5 ? 11 : 12, fontWeight: 700, color: "#9A3B33", fontVariantNumeric: "tabular-nums" }}>
                             {done}<span style={{ color: "#7A6360", fontWeight: 600 }}>/{goal}</span>
                           </div>
                         </div>
@@ -6778,7 +6781,7 @@ function AppInner() {
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#8A6B1D", marginBottom: 6 }}>
                     <Award size={14} style={{ flexShrink: 0 }} /> ปลดล็อกภารกิจครบทุกอันแล้ว
                   </div>
-                  <div style={{ fontSize: 12.5, color: "#8A6B1D" }}>
+                  <div style={{ fontSize: 12, color: "#8A6B1D" }}>
                     เก่งมาก! คุณทำสำเร็จครบทุกภารกิจในตอนนี้
                   </div>
                 </button>
@@ -6798,7 +6801,7 @@ function AppInner() {
                   backdrop / Escape discard it. */}
               {totalCount > 0 && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
                 {(hasMultipleTypes || historyYears.length > 1) && (() => {
                   const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
                   const on = activeCount > 0;
@@ -6828,7 +6831,7 @@ function AppInner() {
                   : draftTypeFilter === "all" ? startingCountNum : startingNum[draftTypeFilter];
                 const shownCount = draftRecords + draftCarry;
                 const draftActive = draftTypeFilter !== "all" || draftYearFilter !== "all";
-                const chipBase = { position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, padding: "7px 14px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer" };
+                const chipBase = { position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, padding: "7px 14px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer" };
                 const hit = <span aria-hidden="true" style={{ position: "absolute", inset: "-6px -3px" }} />;
                 return (
                   <>
@@ -6849,7 +6852,7 @@ function AppInner() {
                               filter is actually active. */}
                           {draftActive && (
                             <button onClick={() => { setDraftTypeFilter("all"); setDraftYearFilter("all"); }}
-                              style={{ marginLeft: "auto", minHeight: 44, margin: "-11px 4px -11px auto", padding: "0 8px", border: "none", background: "none", color: "#9A3B33", fontSize: 12.5, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
+                              style={{ marginLeft: "auto", minHeight: 44, margin: "-11px 4px -11px auto", padding: "0 8px", border: "none", background: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer", fontFamily: "inherit" }}>
                               ล้างตัวกรอง
                             </button>
                           )}
@@ -6916,7 +6919,7 @@ function AppInner() {
                   this empty-state message steps aside instead of showing a redundant
                   second explanation above it. */}
               {totalCount > 0 && filteredHistory.length === 0 && !(historyYearFilter === "all" && displayedStartingCount > 0) && (
-                <div style={{ textAlign: "center", padding: "36px 0", color: "#7A6360", fontSize: 13.5 }}>
+                <div style={{ textAlign: "center", padding: "36px 0", color: "#7A6360", fontSize: 14 }}>
                   {(() => {
                     if (donations.length === 0) return "ยังไม่มีรายการ กดปุ่มด้านบนเพื่อเริ่มบันทึก";
                     if (historyTypeFilter !== "all" && historyYearFilter !== "all") return `ไม่มีรายการ${DONATION_TYPE_LABELS[historyTypeFilter]}ในปีที่เลือก`;
@@ -7009,7 +7012,7 @@ function AppInner() {
                 <button
                   onClick={() => setHistoryVisibleCount(c => c + HISTORY_PAGE_SIZE)}
                   className="btn-ghost"
-                  style={{ width: "100%", padding: "10px 0", borderRadius: 10, fontSize: 13, marginTop: 12, cursor: "pointer" }}>
+                  style={{ width: "100%", padding: "10px 0", borderRadius: 10, fontSize: 14, marginTop: 12, cursor: "pointer" }}>
                   ดูเพิ่มเติม ({filteredHistory.length - historyVisibleCount} รายการ)
                 </button>
               )}
