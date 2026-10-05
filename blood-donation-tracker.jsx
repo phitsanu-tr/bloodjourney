@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.380";
+const APP_VERSION = "1.0.381";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2142,7 +2142,7 @@ function drawPortraitShareCard(ctx, W, H, FONT, { totalCount, achievement, liter
   ctx.globalAlpha = 1;
 
   const statParts = [`🩸 ประมาณ ${liters} ลิตร`];
-  if (bloodType && bloodType !== "ไม่ทราบ") statParts.push(`หมู่เลือด ${bloodType}`);
+  if (bloodType && bloodType !== "ไม่ทราบ") statParts.push(`หมู่โลหิต ${bloodType}`);
   ctx.font = `600 ${F(30)}px ${FONT}`;
   ctx.fillText(statParts.join("   •   "), W / 2, Y(1135));
 
@@ -2209,7 +2209,7 @@ function drawLandscapeShareCard(ctx, W, H, FONT, { totalCount, achievement, lite
   ctx.globalAlpha = 1;
 
   const statParts = [`🩸 ประมาณ ${liters} ลิตร`];
-  if (bloodType && bloodType !== "ไม่ทราบ") statParts.push(`หมู่เลือด ${bloodType}`);
+  if (bloodType && bloodType !== "ไม่ทราบ") statParts.push(`หมู่โลหิต ${bloodType}`);
   ctx.font = `600 26px ${FONT}`;
   ctx.fillText(statParts.join("   •   "), textX, numberY + 86);
 
@@ -2333,7 +2333,7 @@ function drawPortraitRecordCard(ctx, W, H, FONT, { order, dateStr, timeStr, type
   if (bloodType && bloodType !== "ไม่ทราบ") {
     ctx.font = `600 ${F(28)}px ${FONT}`;
     ctx.globalAlpha = 0.9;
-    ctx.fillText(`หมู่เลือด ${bloodType}`, W / 2, Y(lineY));
+    ctx.fillText(`หมู่โลหิต ${bloodType}`, W / 2, Y(lineY));
     ctx.globalAlpha = 1;
   }
 
@@ -2401,7 +2401,7 @@ function drawLandscapeRecordCard(ctx, W, H, FONT, { order, dateStr, timeStr, typ
   if (bloodType && bloodType !== "ไม่ทราบ") {
     ctx.font = `600 26px ${FONT}`;
     ctx.globalAlpha = 0.9;
-    ctx.fillText(`หมู่เลือด ${bloodType}`, textX, lineY);
+    ctx.fillText(`หมู่โลหิต ${bloodType}`, textX, lineY);
     ctx.globalAlpha = 1;
   }
 
@@ -9154,7 +9154,7 @@ function AppInner() {
               <AlertTriangle size={19} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>ส่งออกแบบไม่เข้ารหัส?</span>
               <DialogX onClick={() => { setShowPlainWarn(false); setPlainWarnAck(false); }} />
             </div>
-            <p style={{ fontSize: 12, lineHeight: 1.6, color: "#5C4A46", margin: "0 0 12px" }}>ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด เช่น หมู่เลือด เลขผู้บริจาค ประวัติบริจาค ถ้าส่งผ่านแชทหรือเก็บในไดรฟ์ ควรเข้ารหัสไว้</p>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: "#5C4A46", margin: "0 0 12px" }}>ใครได้ไฟล์ไปก็เห็นข้อมูลทั้งหมด เช่น หมู่โลหิต เลขผู้บริจาค ประวัติบริจาค ถ้าส่งผ่านแชทหรือเก็บในไดรฟ์ ควรเข้ารหัสไว้</p>
             <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, lineHeight: 1.5, color: "#3A2C29", marginBottom: 14, cursor: "pointer" }}>
               <input type="checkbox" checked={plainWarnAck} onChange={(e) => setPlainWarnAck(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1, accentColor: "#9A3B33", flexShrink: 0 }} />
               <span>เข้าใจแล้ว และจะเก็บไฟล์ไว้เอง</span>
