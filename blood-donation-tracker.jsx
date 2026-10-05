@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.358";
+const APP_VERSION = "1.0.359";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2518,21 +2518,40 @@ function SegDividers({ n, sel }) {
 }
 
 const HIST_ICON_BOX = { width: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+// Escape closes an open ⋮ menu and puts focus back on its button.
+function useMenuEscape(isOpen, close, buttonRef) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); buttonRef.current?.focus(); } };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen, close, buttonRef]);
+}
+// ⋮ menu rows: 44px tall like every other tap target in the app (were ~38px).
+const HIST_MENU_ITEM = { width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "inherit" };
+
 const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, onToggleMenu, onView, onEdit, onShare, onDelete }) {
   // Used for the type pill only -- the order-number droplet badge below is
   // deliberately kept a single consistent color regardless of type (per
   // explicit user feedback), rather than tinting it per donation type.
   const dType = normalizeDonationType(d.type);
   const tint = DONATION_TYPE_TINT[dType];
+  const moreRef = useRef(null);
+  useMenuEscape(isMenuOpen, onToggleMenu, moreRef);
+  // Screen readers hear what the card is (order, date, type, place) instead of
+  // the same generic label on every card. The ⋮ button sits beside the
+  // focusable area, not inside it (design 4A).
+  const spoken = [`ครั้งที่ ${orderNumber}`, toBuddhistDateFull(d.date), d.time ? `เวลา ${d.time} น.` : "", DONATION_TYPE_LABELS[dType], d.location || ""].filter(Boolean).join(", ");
   return (
-    <div className="hist-card" role="button" tabIndex={0} aria-label="ดูรายละเอียดรายการบริจาค" onClick={onView} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+    <div className="hist-card" onClick={onView} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+      <div role="button" tabIndex={0} aria-label={`${spoken} ดูรายละเอียด`} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 12 : 14, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 10, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -2556,21 +2575,22 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
           </div>
         )}
       </div>
+      </div>
       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-        <button onClick={onToggleMenu} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
+        <button ref={moreRef} onClick={onToggleMenu} aria-label={`ตัวเลือกเพิ่มเติม สำหรับครั้งที่ ${orderNumber}`} aria-haspopup="menu" aria-expanded={isMenuOpen} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
           <MoreVertical size={17} color="#9A3B33" />
         </button>
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
-              <button onClick={onEdit} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
+            <div role="menu" style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+              <button role="menuitem" onClick={onEdit} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
-              <button onClick={onShare} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
+              <button role="menuitem" onClick={onShare} style={{ ...HIST_MENU_ITEM, color: "#3A2C29", borderTop: "1px solid #F3E7E4" }}>
                 <Share2 size={14} color="#9A3B33" /> แชร์
               </button>
-              <button onClick={onDelete} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
+              <button role="menuitem" onClick={onDelete} style={{ ...HIST_MENU_ITEM, color: "#B3261E", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
                           </div>
@@ -5291,12 +5311,11 @@ function AppInner() {
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
-  // Same auto-rotation for the home-tab card's countdownTab on its own timer.
-  // Once the user taps a type tab themselves, auto-rotation stops for the
-  // rest of the session.
-  const countdownManualRef = useRef(false);
   // Keeps the selected type's tab visible in the scrolling tab row (sideways only, never the page).
   const heroTabsRef = useRef(null);
+  const carryMoreRef = useRef(null);
+  const closeCarryMenu = useCallback(() => setOpenActionMenuId(null), []);
+  useMenuEscape(openActionMenuId === "startingCount", closeCarryMenu, carryMoreRef);
   useEffect(() => {
     const box = heroTabsRef.current;
     const el = box && box.querySelector('[data-tab-active="1"]');
@@ -5306,15 +5325,13 @@ function AppInner() {
     if (box.scrollLeft > left) box.scrollTo({ left, behavior: "smooth" });
     else if (box.scrollLeft < right) box.scrollTo({ left: right, behavior: "smooth" });
   }, [activeCountdownType, hasMultipleTypes]);
+  // The home card opens on the type that can be donated soonest and then stays
+  // put until the donor taps another tab (it used to rotate every 30s, which
+  // changed the countdown mid-read and re-announced it through aria-live).
+  // Tabs that can already be donated carry a check mark instead (design 1C).
   useEffect(() => {
     if (!hasMultipleTypes || tab !== "home") return;
     setCountdownTab(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
-    if (countdownManualRef.current) return;
-    const id = setInterval(() => {
-      if (countdownManualRef.current) { clearInterval(id); return; }
-      setCountdownTab(prev => nextRecordedType(prev));
-    }, 30000);
-    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
   const totalCount = startingCountNum + donations.length;
@@ -5883,8 +5900,8 @@ function AppInner() {
         @keyframes scrimOut { from { --scrim-a: 0.3; } to { --scrim-a: 0; } }
         @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
         /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
-        .hero-status { min-height: 91px; }
-        @media (max-width: 349px) { .hero-status { min-height: 121px; } }
+        .hero-status { min-height: 92px; }
+        @media (max-width: 349px) { .hero-status { min-height: 124px; } }
         @media (max-width: 349px) { .hero-liters-name { display: none; } }
         @keyframes fadeSwap {
           from { opacity: 0; }
@@ -6188,7 +6205,7 @@ function AppInner() {
                   {(bloodType || age !== "" || weight !== "") && pillsHidden ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8, minHeight: 22 }}>
                       <button type="button" onClick={() => setPeekPills(true)} aria-label="ข้อมูลส่วนตัวถูกซ่อนอยู่ แตะเพื่อดูชั่วคราว"
-                        style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                        style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
                         <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><EyeOff size={9} /></span>
                         ซ่อนข้อมูลส่วนตัว · แตะเพื่อดู
@@ -6197,19 +6214,19 @@ function AppInner() {
                   ) : (bloodType || age !== "" || weight !== "") ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8, minHeight: 22 }}>
                       {bloodType && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Droplet size={9} /></span>
                           <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
                         </span>
                       )}
                       {age !== "" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Cake size={9} /></span>
                           <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{age} ปี</span>
                         </span>
                       )}
                       {weight !== "" && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Weight size={9} /></span>
                           <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{weight} กก.</span>
                         </span>
@@ -6254,12 +6271,12 @@ function AppInner() {
                     // rather than a starting point. Welcome them instead; the
                     // count takes over this spot from the first record onward.
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 2 }}>เริ่มต้นการเดินทาง</div>
+                      <div style={{ fontSize: 12, marginBottom: 2 }}>เริ่มต้นการเดินทาง</div>
                       <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3 }}>ยินดีต้อนรับสู่ Blood Journey</div>
                     </div>
                   ) : (
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
+                      <div style={{ fontSize: 12, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
                         <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 15, fontWeight: 500 }}> ครั้ง</span></div>
                         {/* Liters of the selected type only (design H3 of
@@ -6289,8 +6306,15 @@ function AppInner() {
                     {recordedTypes.map((t) => {
                       // From 3 types up, only the selected one shows its name and count; the others shrink to an icon so the row always fits on one line.
                       const compact = recordedTypes.length > 2 && activeCountdownType !== t;
+                      // Recorded and past its cycle -> can be donated again now.
+                      const tabEligible = !!lastBy[t] && comparableDaysBy[t] === 0;
+                      const check = (
+                        <span aria-hidden="true" style={{ display: "inline-flex", width: 14, height: 14, borderRadius: "50%", background: "#3FA35E", color: "#FFFFFF", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={9} strokeWidth={4} />
+                        </span>
+                      );
                       return (
-                      <button key={t} role="tab" aria-label={`${DONATION_TYPE_LABELS[t]} ${totalBy[t]} ครั้ง`} title={DONATION_TYPE_LABELS[t]} aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} onClick={() => { countdownManualRef.current = true; setCountdownTab(t); }}
+                      <button key={t} role="tab" aria-label={`${DONATION_TYPE_LABELS[t]} ${totalBy[t]} ครั้ง${tabEligible ? " บริจาคได้แล้ว" : ""}`} title={DONATION_TYPE_LABELS[t]} aria-selected={activeCountdownType === t} data-tab-active={activeCountdownType === t ? "1" : undefined} data-eligible={tabEligible ? "1" : undefined} onClick={() => setCountdownTab(t)}
                         style={{
                           position: "relative", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, whiteSpace: "nowrap",
                           padding: compact ? "6px 0" : "6px 12px", width: compact ? 40 : undefined, justifyContent: "center", height: 30, borderRadius: 20, fontSize: 11.5, fontFamily: "inherit", cursor: "pointer", border: "none",
@@ -6301,13 +6325,14 @@ function AppInner() {
                         }}>
                         {/* Invisible 44px-tall tap area; pill keeps its 30px look. */}
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
- <TypeIcon type={t} size={12} />{compact ? null : <> {DONATION_TYPE_LABELS[t]}</>}
+ {compact && tabEligible ? check : <TypeIcon type={t} size={12} />}{compact ? null : <> {DONATION_TYPE_LABELS[t]}</>}
                         {!compact && <span style={{
                           fontSize: 11, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
                           background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
                           color: activeCountdownType === t ? DONATION_TYPE_TINT[t].text : "#FFF7F5",
                           transition: "background 0.35s ease, color 0.35s ease",
                         }}>{totalBy[t]}</span>}
+                        {!compact && tabEligible && check}
                       </button>
                       );
                     })}
@@ -6317,7 +6342,7 @@ function AppInner() {
                   // chip would just repeat the big "N ครั้ง" number shown right
                   // above -- dropped the chip and kept only the type name, which
                   // is the one thing this pill actually adds.
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, height: 30, boxSizing: "border-box", padding: "0 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 600, background: "#FFF7F5", color: DONATION_TYPE_TINT[activeCountdownType].text, position: "relative", zIndex: 1 }}>
                     <TypeIcon type={activeCountdownType} size={12} /> {DONATION_TYPE_LABELS[activeCountdownType]}
                   </div>
                 ) : (
@@ -6325,7 +6350,7 @@ function AppInner() {
                   // invisible placeholder just to hold the pill's box height, which
                   // left a blank-looking gap in the card. Same box size/position,
                   // now filled with a small useful fact instead of empty space.
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 0", fontSize: 11.5, fontWeight: 500, color: "rgba(255,247,245,0.92)", position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, height: 30, boxSizing: "border-box", padding: 0, fontSize: 12, fontWeight: 500, color: "#FFF7F5", position: "relative", zIndex: 1 }}>
                     <HeartPulse size={12} /> บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต
                   </div>
                 )}
@@ -6364,10 +6389,10 @@ function AppInner() {
                             เปิดการเตือน <ChevronRight size={13} />
                           </button>
                         </div>
-                        <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
+                        <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>{remindPauseUntil === "indefinite" ? "จนกว่าคุณจะเปิดเอง" : <>ถึง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(remindPauseUntil)}</span></>}</div>
                         {/* Reminders are paused, but the donor may still want to know when they can donate. */}
                         {effectiveLastDateStr && (
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 6 }}>
+                          <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 6 }}>
                             {isEligible
                               ? <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้แล้ว</>
                               : <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
@@ -6384,7 +6409,7 @@ function AppInner() {
                         // card ever shows, and it used to be the quietest line.
                         <>
                           <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>บริจาคได้แล้ววันนี้</div>
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>
+                          <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>
                             {hasMultipleTypes ? `สำหรับ${DONATION_TYPE_LABELS[activeCountdownType]} · ` : ""}ครั้งล่าสุด <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(effectiveLastDateStr)}</span>
                           </div>
                           <button
@@ -6404,12 +6429,12 @@ function AppInner() {
                         <>
                           <div style={{ width: "100%", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
                             <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</span>
-                            <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,247,245,0.85)", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 400, color: "#FFF7F5", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
                           </div>
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be
                               misread as the other type's. */}
-                          <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span></div>
+                          <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span></div>
                         </>
                       )
                     ) : hasMultipleTypes || totalCount > 0 ? (
@@ -6417,7 +6442,7 @@ function AppInner() {
                         ? (
                           <>
                             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>ยังไม่มีวันที่บริจาคล่าสุด</div>
-                            <div style={{ fontSize: 11.5, color: "rgba(255,247,245,0.85)", marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
+                            <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
                             <button onClick={handleAddButtonClick}
                               style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                               ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
@@ -6454,7 +6479,7 @@ function AppInner() {
                 )}
                 </div>
                 {showCycleInfo && (effectiveLastDateStr && !isEligible) && (
-                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 11.5, color: "rgba(255,247,245,0.8)", lineHeight: 1.6, position: "relative", zIndex: 1 }}>
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.18)", fontSize: 12, color: "#FFF7F5", fontWeight: 400, lineHeight: 1.6, position: "relative", zIndex: 1 }}>
                     คำนวณจากเกณฑ์{hasMultipleTypes ? `${DONATION_TYPE_LABELS[activeCountdownType]} ` : " "}{activeCycleDays} วันต่อครั้ง (ปรับได้ที่ตั้งค่า)<br />
                     เพื่อการเตือนคร่าว ๆ เท่านั้น โปรดยึดตามคำแนะนำของเจ้าหน้าที่ ณ จุดบริจาค
                   </div>
@@ -6932,13 +6957,15 @@ function AppInner() {
                     <div role="heading" aria-level={3} aria-label={`ก่อนเริ่มใช้แอป · ${displayedStartingCount} ครั้ง`} style={{ margin: visibleHistory.length === 0 ? "2px 2px 0" : "12px 2px 0" }}>
                       <span style={{ fontSize: 24, fontWeight: 600, color: "#8A5F59", letterSpacing: 0.5, lineHeight: 1 }}>ก่อนเริ่มใช้แอป</span>
                     </div>
-                    <div className="hist-card hist-card-carry" role="button" tabIndex={0} aria-label={`ยอดบริจาคที่ผ่านมา ${displayedStartingCount} ครั้ง ก่อนเริ่มใช้แอป แตะเพื่อดูแยกประเภท`}
+                    <div className="hist-card hist-card-carry"
                       onClick={() => { setOpenActionMenuId(null); setViewStartingCount(true); }}
-                      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
                       style={{ background: "#FFFFFF", border: "1px dashed #D4A9A2", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                      <div role="button" tabIndex={0} aria-label={`ยอดบริจาคที่ผ่านมา ${displayedStartingCount} ครั้ง ก่อนเริ่มใช้แอป แตะเพื่อดูแยกประเภท`}
+                        onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setOpenActionMenuId(null); setViewStartingCount(true); } }}
+                        style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #D4A9A2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
                         <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 12 : 14, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
-                        <div style={{ fontSize: 10, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                        <div style={{ fontSize: 11, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         {/* "ทั้งหมด" with both types carried over shows the combined total plus
@@ -6954,18 +6981,19 @@ function AppInner() {
                           <div style={{ marginTop: 2, fontSize: 12, color: "#7A6360" }}>แตะเพื่อดูแยกประเภท</div>
                         </div>
                       </div>
+                      </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-                        <button onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม" style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
+                        <button ref={carryMoreRef} onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม สำหรับยอดบริจาคที่ผ่านมา" aria-haspopup="menu" aria-expanded={openActionMenuId === "startingCount"} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
                           <MoreVertical size={17} color="#9A3B33" />
                         </button>
                         {openActionMenuId === "startingCount" && (
                           <>
                             <div onClick={() => setOpenActionMenuId(null)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                            <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
-                              <button onClick={() => { setOpenActionMenuId(null); openEditStartingCount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#3A2C29", fontFamily: "inherit" }}>
+                            <div role="menu" style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+                              <button role="menuitem" onClick={() => { setOpenActionMenuId(null); openEditStartingCount(); }} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
                                 <Pencil size={14} color="#9A3B33" /> แก้ไข
                               </button>
-                              <button onClick={() => { setOpenActionMenuId(null); requestDeleteStartingCount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#B3261E", fontFamily: "inherit", borderTop: "1px solid #F3E7E4" }}>
+                              <button role="menuitem" onClick={() => { setOpenActionMenuId(null); requestDeleteStartingCount(); }} style={{ ...HIST_MENU_ITEM, color: "#B3261E", borderTop: "1px solid #F3E7E4" }}>
                                 <Trash2 size={14} color="#B3261E" /> ลบ
                               </button>
                             </div>

@@ -13,7 +13,7 @@ test("dialog: page scroll is locked with overflow hidden and restored on close",
   await page.setViewportSize({ width: 390, height: 600 });
   await startFresh(page);
   await seed(page, { donations: [rec("a", daysAgo(10)), rec("b", daysAgo(400), "plasma"), rec("c", daysAgo(800), "platelet"), rec("d", daysAgo(1200), "rbc")], profile: { startingCountWhole: 4, startingCountPlasma: 3 } });
-  const card = page.getByRole("button", { name: /ยอดบริจาคที่ผ่านมา/ });
+  const card = page.getByRole("button", { name: /^ยอดบริจาคที่ผ่านมา/ });
   await card.scrollIntoViewIfNeeded();
   const y0 = await page.evaluate(() => Math.round(window.scrollY));
   expect(y0).toBeGreaterThan(0);

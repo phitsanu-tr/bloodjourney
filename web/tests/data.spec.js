@@ -5,7 +5,7 @@ test("history: edit a record keeps it in place and saves the change", async ({ p
   await startFresh(page);
   await seed(page, { donations: [rec("a", "2026-06-01", "whole", { location: "รพ.เดิม" })] });
   await page.getByLabel("ตัวเลือกเพิ่มเติม").first().tap();
-  await page.getByRole("button", { name: "แก้ไข", exact: true }).tap();
+  await page.getByRole("menuitem", { name: "แก้ไข", exact: true }).tap();
   const d = page.locator("[role=dialog]").last();
   await expect(d.getByRole("button", { name: "บันทึกการแก้ไข" })).toBeDisabled(); // nothing changed yet
   await d.getByPlaceholder(/เช่น ศูนย์/).fill("รพ.ใหม่");
@@ -21,12 +21,12 @@ test("history: delete asks for confirmation and removes only that record", async
   await startFresh(page);
   await seed(page, { donations: [rec("a", "2026-06-01"), rec("b", "2026-03-01")] });
   await page.getByLabel("ตัวเลือกเพิ่มเติม").first().tap();
-  await page.getByRole("button", { name: "ลบ", exact: true }).tap();
+  await page.getByRole("menuitem", { name: "ลบ", exact: true }).tap();
   const d = page.locator("[role=dialog]").last();
   await d.getByRole("button", { name: "ยกเลิก" }).tap(); // cancel keeps both
   expect(await stored(page, "donations")).toHaveLength(2);
   await page.getByLabel("ตัวเลือกเพิ่มเติม").first().tap();
-  await page.getByRole("button", { name: "ลบ", exact: true }).tap();
+  await page.getByRole("menuitem", { name: "ลบ", exact: true }).tap();
   await page.locator("[role=dialog]").last().getByRole("button", { name: "ลบรายการ" }).tap();
   await expect.poll(async () => (await stored(page, "donations")).length).toBe(1);
   expect((await stored(page, "donations"))[0].id).toBe("b"); // "a" is the newest, so it was the one removed

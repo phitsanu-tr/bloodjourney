@@ -135,3 +135,35 @@ test("hero card: brand-new user chip is plain text (no pill background)", async 
   expect(bg === "rgba(0, 0, 0, 0)" || bg === "transparent").toBe(true);
   assertNoErrors(page);
 });
+
+test("home: type tabs stay put (no 30s rotation) and eligible types carry a check", async ({ page }) => {
+  await page.clock.install();
+  await startFresh(page);
+  // whole: 120 days ago (eligible) · plasma: 3 days ago (waiting 11 more days)
+  await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma")] });
+  const whole = page.getByRole("tab", { name: /โลหิตรวม/ });
+  const plasma = page.getByRole("tab", { name: /พลาสมา/ });
+  await expect(whole).toHaveAttribute("aria-label", /บริจาคได้แล้ว$/);
+  await expect(plasma).not.toHaveAttribute("aria-label", /บริจาคได้แล้ว/);
+  await plasma.tap();
+  await expect(plasma).toHaveAttribute("aria-selected", "true");
+  await page.clock.fastForward(95_000); // three of the old 30s rotation steps
+  await expect(plasma).toHaveAttribute("aria-selected", "true");
+  assertNoErrors(page);
+});
+
+test("history: each card has its own spoken label; ⋮ menu rows are 44px and Escape closes it", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(200)), rec("b", daysAgo(30), "whole", { location: "สภากาชาดไทย" })] });
+  await expect(page.getByRole("button", { name: /^ครั้งที่ 2, .*โลหิตรวม, สภากาชาดไทย ดูรายละเอียด$/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^ครั้งที่ 1, .*โลหิตรวม ดูรายละเอียด$/ })).toBeVisible();
+  const more = page.getByRole("button", { name: "ตัวเลือกเพิ่มเติม สำหรับครั้งที่ 2" });
+  await more.click();
+  const edit = page.getByRole("menuitem", { name: "แก้ไข" });
+  await expect(edit).toBeVisible();
+  expect((await edit.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await page.keyboard.press("Escape");
+  await expect(edit).toHaveCount(0);
+  await expect(more).toBeFocused();
+  assertNoErrors(page);
+});
