@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.373";
+const APP_VERSION = "1.0.374";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5952,9 +5952,9 @@ function AppInner() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 15px;
+          font-size: 16px;
           font-weight: 400;
-          color: #B39B96;
+          color: #9A8582;
           font-family: 'Mitr', 'Inter', sans-serif;
           transition: color 0.1s, font-size 0.1s, font-weight 0.1s;
         }
@@ -5988,7 +5988,7 @@ function AppInner() {
           }
         }
         .time-wheel-item-active {
-          font-size: 17px;
+          font-size: 18px;
           font-weight: 700;
           color: #3A2C29;
         }
@@ -6223,7 +6223,7 @@ function AppInner() {
                     </div>
                   )}
                 </div>
-                <ChevronRight size={18} color="#B39B96" aria-hidden="true" style={{ flexShrink: 0 }} />
+                <ChevronRight size={18} color="#9A8582" aria-hidden="true" style={{ flexShrink: 0 }} />
               </div>
               {storageDegraded && (
                 // Persistent — deliberately no "เตือนทีหลัง" dismiss, unlike
@@ -6496,7 +6496,7 @@ function AppInner() {
                   <Plus size={18} />
                 </span>
                 <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: hot ? "#FFF7F5" : "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
-                <ChevronRight size={16} color={hot ? "#FFF7F5" : "#B39B96"} style={{ flexShrink: 0 }} />
+                <ChevronRight size={16} color={hot ? "#FFF7F5" : "#9A8582"} style={{ flexShrink: 0 }} />
               </button>
                 );
               })()}
