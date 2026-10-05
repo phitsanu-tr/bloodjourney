@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.393";
+const APP_VERSION = "1.0.394";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7491,6 +7491,12 @@ function AppInner() {
                       </div>
                     ))}
                   </div>
+                  {/* Same caveat as the yearly chart: carried-over donations have no dates, so no month. */}
+                  {startingCountNum > 0 && (
+                    <p style={{ fontSize: 12, color: "#7A6360", margin: "10px 0 0", lineHeight: 1.5 }}>
+                      * ไม่รวมยอดสะสมยกมา {startingCountNum} ครั้ง เนื่องจากไม่มีวันที่รายครั้ง
+                    </p>
+                  )}
                 </div>
               )}
 

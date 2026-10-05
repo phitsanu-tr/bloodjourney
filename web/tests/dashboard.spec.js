@@ -47,6 +47,8 @@ test("dashboard: tied busiest months are all named/highlighted; equal counts sho
   await openDashboard(page);
   await expect(page.getByText("มี.ค. และ พ.ค. (2 ครั้ง)", { exact: true })).toBeVisible();
   await expect(page.getByText("1 ครั้ง (2%)", { exact: true })).toHaveCount(2);
+  // carried-over donations have no month -- the month card says so
+  await expect(page.getByText("* ไม่รวมยอดสะสมยกมา 40 ครั้ง เนื่องจากไม่มีวันที่รายครั้ง", { exact: true })).toBeVisible();
   assertNoErrors(page);
 });
 
