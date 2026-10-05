@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.391";
+const APP_VERSION = "1.0.392";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7157,7 +7157,13 @@ function AppInner() {
                           : `บริจาคครั้งถัดไปได้ตั้งแต่ ${toBuddhistDate(dashboardShownNextEligible)} (อีก ${dashboardShownDaysLeft} วัน)`
                       ) : hasMultipleTypes || totalCount > 0 ? (
                         dashboardShownTotalCount > 0
-                          ? "กรุณาบันทึกวันที่บริจาคล่าสุดเพื่อคำนวณวันครบกำหนดถัดไป"
+                          ? <>
+                              ระบุวันที่ แล้วแอปจะนับวันครบกำหนดให้
+                              <button onClick={handleAddButtonClick}
+                                style={{ display: "flex", alignItems: "center", gap: 3, minHeight: 44, margin: "0 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                                ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
+                              </button>
+                            </>
                           : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[dashboardShownType]}ในระบบ`
                       ) : "ยังไม่มีประวัติการบริจาค"}
                     </div>
@@ -7248,7 +7254,7 @@ function AppInner() {
                         {recordedTypes.map((t) => (
                           <tr key={t}>
                             <td style={{ padding: "6px 0", borderBottom: "1px dashed #F0E2DF", color: DONATION_TYPE_TINT[t].text }}>
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><TypeIcon type={t} size={12} /> {DONATION_TYPE_LABELS[t]}</span>
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><TypeIcon type={t} size={12} /> {DONATION_TYPE_LABELS[t]}</span>
                             </td>
                             <td style={{ padding: "6px 0 6px 8px", borderBottom: "1px dashed #F0E2DF", textAlign: "right", color: "#7A6360", whiteSpace: "nowrap" }}>{totalBy[t]} ครั้ง</td>
                             <td style={{ padding: "6px 0 6px 8px", borderBottom: "1px dashed #F0E2DF", textAlign: "right", color: "#7A6360", whiteSpace: "nowrap" }}>× {DONATION_TYPE_ML[t]} มล.</td>
@@ -7393,15 +7399,15 @@ function AppInner() {
               {stats.thisYearCount > 0 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 16 }}>
                   <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>ความคืบหน้าปีนี้</h3>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                     <div style={{ flexShrink: 0 }}>
                       <div style={{ fontSize: 12, color: "#7A6360", whiteSpace: "nowrap" }}>ปี {buddhistYear(new Date())} บริจาคไปแล้ว</div>
                       <div style={{ fontSize: 18, fontWeight: 700, marginTop: 2 }}>{stats.thisYearCount} ครั้ง</div>
                     </div>
                     {stats.lastYearCount > 0 ? (
-                      <div style={{ textAlign: "right" }}>
+                      <div style={{ textAlign: "right", marginLeft: "auto" }}>
                         <div style={{
-                          display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, borderRadius: 20, padding: "4px 10px",
+                          display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, borderRadius: 20, padding: "4px 10px", whiteSpace: "nowrap",
                           color: stats.thisYearCount >= stats.lastYearCount ? "#2B7530" : "#9C5515",
                           background: stats.thisYearCount >= stats.lastYearCount ? "#E7F3E8" : "#FDF0E6",
                         }}>
@@ -7473,7 +7479,8 @@ function AppInner() {
                 </div>
               )}
 
-              {totalCount > 0 && (
+              {/* With a single type this was a full ring reading "100%" -- shown only from 2 types up. */}
+              {totalCount > 0 && recordedTypes.length > 1 && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 18 }}>
                   <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, marginBottom: 10, color: "#3A2C29" }}>สัดส่วนการบริจาคโลหิตแต่ละประเภท</h3>
                   {(() => {

@@ -60,3 +60,15 @@ test("dashboard: average gap explains itself until there are 2 records; type pil
   expect(h).toBeGreaterThanOrEqual(44);
   assertNoErrors(page);
 });
+
+test("dashboard: carried-over count only -> same wording as home with a link; single type -> no share ring", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [], profile: { startingCountWhole: 5 } });
+  await openDashboard(page);
+  await expect(page.getByText("ระบุวันที่ แล้วแอปจะนับวันครบกำหนดให้")).toBeVisible();
+  await expect(page.getByRole("button", { name: "ระบุวันที่บริจาคล่าสุด" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "สัดส่วนการบริจาคโลหิตแต่ละประเภท" })).toHaveCount(0);
+  await page.getByRole("button", { name: "ระบุวันที่บริจาคล่าสุด" }).click();
+  await expect(page.locator("[role=dialog]").last()).toBeVisible();
+  assertNoErrors(page);
+});
