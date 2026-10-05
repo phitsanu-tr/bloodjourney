@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check, Syringe, Wine, CigaretteOff, Shirt, Phone, ExternalLink } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check, HelpCircle, Syringe, Wine, CigaretteOff, Shirt, Phone, ExternalLink } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.400";
+const APP_VERSION = "1.0.401";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8056,12 +8056,12 @@ function AppInner() {
                         aria-expanded={isOpen}
                         style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5 }}>{item.q}</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, textWrap: "balance" }}>{item.q}</span>
                         <span aria-hidden="true" style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
                       </button>
                       </h3>
                       {isOpen && (
-                        <div style={{ fontSize: 12, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
+                        <div style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
                           {item.a}
                         </div>
                       )}
@@ -9126,6 +9126,9 @@ function AppInner() {
               </div>
               <button onClick={() => { setShowSettings(false); setShowPrivacy(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Info size={16} color="#9A3B33" /> ความเป็นส่วนตัว
+              </button>
+              <button onClick={() => { setShowSettings(false); setTab("faq"); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
+                <HelpCircle size={16} color="#9A3B33" /> คำถามที่พบบ่อย
               </button>
               <div title="ช่องทางนี้ยังไม่เปิดให้ใช้งานในตอนนี้" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 8px", fontSize: 14, color: "#80726F", cursor: "default" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Mail size={16} color="#9A8582" /> ส่งความคิดเห็น / แจ้งปัญหา</span>

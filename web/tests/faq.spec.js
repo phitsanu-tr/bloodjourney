@@ -18,3 +18,15 @@ test("faq: headings, question buttons named without +/-, answers point at real s
   for (const row of ["สำรอง/กู้คืนข้อมูล", "ความเป็นส่วนตัว", "ลบข้อมูลทั้งหมด"]) await expect(settings.getByRole("button", { name: new RegExp("^" + row) })).toHaveCount(1);
   assertNoErrors(page);
 });
+
+test("faq: Settings has a row that opens the FAQ; answers are 14px", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", "2026-06-01")] });
+  await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
+  await page.getByRole("dialog", { name: "ตั้งค่า" }).getByRole("button", { name: "คำถามที่พบบ่อย" }).click();
+  await expect(page.getByRole("dialog", { name: "ตั้งค่า" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 2, name: "คำถามที่พบบ่อย" })).toBeVisible();
+  await page.getByRole("button", { name: "แอปนี้ฟรีไหม ใครเป็นผู้พัฒนา", exact: true }).click();
+  expect(await page.getByText(/^ใช้งานได้ฟรี/).evaluate((e) => getComputedStyle(e).fontSize)).toBe("14px");
+  assertNoErrors(page);
+});
