@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.384";
+const APP_VERSION = "1.0.385";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3392,6 +3392,57 @@ function AppInner() {
     return () => obs.disconnect();
   }, []);
 
+  // Focus for modal dialogs and ⋮ menus, app-wide.
+  // - A dialog that opens takes focus onto its own container (tabindex=-1), unless something inside it
+  //   already took focus. Focusing the container, not a field, means no on-screen keyboard pops up;
+  //   screen readers announce the dialog's label and Tab starts inside it.
+  // - When it closes and focus fell to <body> (or onto a removed node), focus goes back to whatever
+  //   opened it -- e.g. the "บันทึกบริจาคโลหิต" button after saving.
+  // - A ⋮ menu opened from the keyboard moves focus to its first item (touch keeps focus where it was,
+  //   so no focus ring appears on phones).
+  useEffect(() => {
+    if (typeof MutationObserver === "undefined") return undefined;
+    const openers = new WeakMap();
+    let keyboard = false;
+    const onKeyDown = (e) => { if (!e.metaKey && !e.altKey && !e.ctrlKey) keyboard = true; };
+    const onPointer = () => { keyboard = false; };
+    document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("pointerdown", onPointer, true);
+    const isLive = (el) => el && el !== document.body && el.isConnected;
+    const obs = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (!(node instanceof HTMLElement) || node.classList.contains("dlg-exit-clone")) continue;
+          const dialogs = node.matches('[role="dialog"][aria-modal="true"]') ? [node] : [...node.querySelectorAll('[role="dialog"][aria-modal="true"]')];
+          for (const d of dialogs) {
+            const opener = document.activeElement;
+            if (isLive(opener) && !d.contains(opener)) openers.set(d, opener);
+            requestAnimationFrame(() => {
+              if (!d.isConnected || d.contains(document.activeElement)) return;
+              if (!d.hasAttribute("tabindex")) d.setAttribute("tabindex", "-1");
+              d.focus({ preventScroll: true });
+            });
+          }
+          const menus = node.matches('[role="menu"]') ? [node] : [...node.querySelectorAll('[role="menu"]')];
+          if (keyboard) for (const menu of menus) requestAnimationFrame(() => { menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true }); });
+        }
+        for (const node of m.removedNodes) {
+          if (!(node instanceof HTMLElement) || node.classList.contains("dlg-exit-clone")) continue;
+          const dialogs = node.matches('[role="dialog"][aria-modal="true"]') ? [node] : [...node.querySelectorAll('[role="dialog"][aria-modal="true"]')];
+          for (const d of dialogs) {
+            const opener = openers.get(d);
+            requestAnimationFrame(() => {
+              if (isLive(document.activeElement)) return;
+              if (isLive(opener)) opener.focus({ preventScroll: true });
+            });
+          }
+        }
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => { obs.disconnect(); document.removeEventListener("keydown", onKeyDown, true); document.removeEventListener("pointerdown", onPointer, true); };
+  }, []);
+
   // Warm the dashboard chart's chunk well after the first screen is up
   // (8s, then whenever the browser is idle), so switching to แดชบอร์ด later
   // draws the chart at once and it lands in the service worker cache for
@@ -5852,6 +5903,7 @@ function AppInner() {
            filter sheet's timings; reverted per user request.) */
         [role="dialog"][aria-modal="true"]:not([data-own-motion]) > :first-child { animation: dlgPanelIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .dlg-exit-clone { animation: dlgScrimOut 0.16s ease forwards; pointer-events: none !important; }
+        [role="dialog"][tabindex="-1"]:focus { outline: none; }
         .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
         @media (prefers-reduced-motion: reduce) {
           [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }

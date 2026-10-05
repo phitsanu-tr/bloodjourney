@@ -248,3 +248,35 @@ test("home at 320px: the countdown and the hidden-info chip each stay on one lin
   expect((await chip.boundingBox()).height).toBeLessThan(30);
   assertNoErrors(page);
 });
+
+test("focus: dialogs take focus and hand it back; a keyboard-opened ⋮ menu focuses its first item", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(300))] });
+  const record = page.getByRole("button", { name: "บันทึกบริจาคโลหิต" });
+  const inTopDialog = () => page.evaluate(() => { const d = [...document.querySelectorAll('[role="dialog"]')].pop(); return !!d && d.contains(document.activeElement); });
+  // open with the keyboard -> focus is inside the dialog; Escape -> back on the button
+  await record.focus(); await page.keyboard.press("Enter");
+  await expect.poll(inTopDialog).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(record).toBeFocused();
+  // save a donation -> focus returns to the record button, not a removed node
+  await record.focus(); await page.keyboard.press("Enter");
+  const dlg = page.locator("[role=dialog]").last();
+  await dlg.getByText("ระบุวันที่", { exact: true }).first().click();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "วันนี้" }).click();
+  await page.locator("[role=dialog]").last().getByText("ยืนยัน", { exact: true }).click();
+  await page.locator("[role=dialog]").last().getByRole("radio", { name: "โลหิตรวม" }).click();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: /^บันทึก$/ }).click();
+  await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+  await expect(record).toBeFocused();
+  // ⋮ menu from the keyboard -> first item focused; Escape -> back on ⋮
+  const more = page.getByRole("button", { name: /^ตัวเลือกเพิ่มเติม สำหรับครั้งที่ 3/ });
+  await more.focus(); await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitem").first()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(more).toBeFocused();
+  // light-only page: Android WebViews must not auto-darken it
+  expect(await page.locator('meta[name="color-scheme"]').getAttribute("content")).toBe("light");
+  assertNoErrors(page);
+});
+
