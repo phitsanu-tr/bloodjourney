@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.360";
+const APP_VERSION = "1.0.361";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2551,7 +2551,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: String(orderNumber).length >= 3 ? 12 : 14, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{orderNumber}</div>
-          <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#FFF7F5", marginTop: 1 }}>ครั้งที่</div>
         </div>
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -8893,7 +8893,7 @@ function AppInner() {
                   </svg>
                   <div style={{ position: "absolute", inset: 0, top: 7, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ fontSize: String(vn).length >= 3 ? 13 : 16, fontWeight: 800, color: "#FFF7F5", lineHeight: 1.1 }}>{vn}</div>
-                    <div style={{ fontSize: 11, color: "#FFF7F5", opacity: 0.9, marginTop: 1 }}>ครั้งที่</div>
+                    <div style={{ fontSize: 11, fontWeight: 500, color: "#FFF7F5", marginTop: 1 }}>ครั้งที่</div>
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
