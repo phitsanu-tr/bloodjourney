@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.365";
+const APP_VERSION = "1.0.366";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8878,7 +8878,7 @@ function AppInner() {
         // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
         // sizes it), and every label starts at that block's left edge so all three share one left edge.
         const lbl = (t) => (
-          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", fontSize: 12, lineHeight: 1.6, color: "#A38D89" }}>
+          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", fontSize: 12, lineHeight: 1.6, color: "#7A6360" }}>
             <div style={{ position: "relative" }}>
               <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
               <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
@@ -8901,14 +8901,14 @@ function AppInner() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>{toBuddhistDateFull(vd.date)}</div>
-                  <div style={{ fontSize: 14, color: vd.time ? "#7A6360" : "#A38D89", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
+                  <div style={{ fontSize: 14, color: "#7A6360", marginTop: 1 }}>{vd.time ? `เวลา\u00A0${vd.time}\u00A0น.` : "ไม่ระบุเวลา"}</div>
                 </div>
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
                 <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ color: vTint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[normalizeDonationType(vd.type)]}</span></div></div>
-                <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#A38D89" }}>{vd.location || "—"}</div></div>
-                <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#A38D89" }}>{vd.note || "—"}</div></div>
+                <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#7A6360" }}>{vd.location || "—"}</div></div>
+                <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#7A6360" }}>{vd.note || "—"}</div></div>
                 {vd.loggedAt && (
                   <ModalMetaLine>
                     {(vd.createdAt && vd.createdAt !== vd.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(vd.loggedAt)}
