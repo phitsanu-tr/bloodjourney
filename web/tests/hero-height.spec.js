@@ -8,7 +8,8 @@ const daysAgo = (n) => {
 };
 
 // Every state of the home hero card must be the same height, so the card
-// doesn't jump when the state changes or the tab is switched.
+// doesn't jump when the state changes or the tab is switched. The brand-new
+// user is the exception: its card fits its content (it changes state only once).
 const STATES = {
   "new user": { donations: [], profile: {} },
   "prior count only": { donations: [], profile: { startingCountWhole: 5 } },
@@ -45,8 +46,7 @@ for (const width of (process.env.W || "390,320").split(",").map(Number)) {
     // Single-type states must all match. The two tab states must match each
     // other (and, from 390px up, the single-type states too -- at narrower
     // widths the two-type tab row wraps, which is unrelated to the status area).
-    // At 320px the brand-new user's welcome heading wraps one extra line.
-    const single = Object.entries(hs).filter(([k]) => !k.startsWith("both") && k !== "four types" && !(width < 360 && k === "new user")).map(([, v]) => v);
+    const single = Object.entries(hs).filter(([k]) => !k.startsWith("both") && k !== "four types" && k !== "new user").map(([, v]) => v);
     const both = [hs["both: whole tab"], hs["both: component tab"]];
     const spread = (a) => Math.max(...a) - Math.min(...a);
     expect(spread(single), "single-type states " + JSON.stringify(hs)).toBeLessThan(1);
@@ -54,6 +54,8 @@ for (const width of (process.env.W || "390,320").split(",").map(Number)) {
     if (width >= 390) expect(spread([...single, ...both]), "single vs tabs " + JSON.stringify(hs)).toBeLessThan(1);
     // Four recorded types: the tab row scrolls sideways instead of wrapping, so the card keeps its height.
     expect(Math.abs(hs["four types"] - single[0]), "four types " + JSON.stringify(hs)).toBeLessThan(1);
+    // Brand-new user: no reserved empty band, so the card is shorter than the others.
+    expect(hs["new user"], "new user fits its content " + JSON.stringify(hs)).toBeLessThan(single[0]);
     assertNoErrors(page);
   });
 }

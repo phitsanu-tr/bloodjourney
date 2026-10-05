@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.379";
+const APP_VERSION = "1.0.380";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1676,8 +1676,8 @@ const ELIGIBILITY_CRITERIA = [
 ];
 
 const DONATION_MYTHS = [
-  { icon: Info, text: "เข้าใจผิด: บริจาคเลือดแล้วจะอ้วนขึ้นหรือผอมลง — ความจริงคือไม่มีผลต่อน้ำหนักตัวโดยตรง" },
-  { icon: Info, text: "เข้าใจผิด: บริจาคเลือดทำให้ร่างกายอ่อนแอถาวร — ความจริงคือร่างกายสร้างเลือดทดแทนได้ภายในไม่กี่สัปดาห์" },
+  { icon: Info, text: "เข้าใจผิด: บริจาคโลหิตแล้วจะอ้วนขึ้นหรือผอมลง — ความจริงคือไม่มีผลต่อน้ำหนักตัวโดยตรง" },
+  { icon: Info, text: "เข้าใจผิด: บริจาคโลหิตทำให้ร่างกายอ่อนแอถาวร — ความจริงคือร่างกายสร้างเลือดทดแทนได้ภายในไม่กี่สัปดาห์" },
   { icon: Info, text: "เข้าใจผิด: คนมีรอยสักหรือเจาะร่างกายบริจาคไม่ได้เลย — ความจริงคือบริจาคได้หากพ้นระยะเวลาที่กำหนด (สอบถามเจ้าหน้าที่)" },
 ];
 
@@ -2138,7 +2138,7 @@ function drawPortraitShareCard(ctx, W, H, FONT, { totalCount, achievement, liter
   ctx.fillText(String(totalCount), W / 2, Y(1015));
   ctx.font = `400 ${F(32)}px ${FONT}`;
   ctx.globalAlpha = 0.9;
-  ctx.fillText("ครั้งที่บริจาคเลือดสะสม", W / 2, Y(1060));
+  ctx.fillText("ครั้งที่บริจาคโลหิตสะสม", W / 2, Y(1060));
   ctx.globalAlpha = 1;
 
   const statParts = [`🩸 ประมาณ ${liters} ลิตร`];
@@ -2205,7 +2205,7 @@ function drawLandscapeShareCard(ctx, W, H, FONT, { totalCount, achievement, lite
   ctx.fillText(String(totalCount), textX, numberY);
   ctx.font = `400 28px ${FONT}`;
   ctx.globalAlpha = 0.9;
-  ctx.fillText("ครั้งที่บริจาคเลือดสะสม", textX, numberY + 42);
+  ctx.fillText("ครั้งที่บริจาคโลหิตสะสม", textX, numberY + 42);
   ctx.globalAlpha = 1;
 
   const statParts = [`🩸 ประมาณ ${liters} ลิตร`];
@@ -5875,6 +5875,9 @@ function AppInner() {
         /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
         .hero-status { min-height: 92px; }
         @media (max-width: 349px) { .hero-status { min-height: 124px; } }
+        /* Brand-new user: the welcome has only one short line here, so the reserved height left a big empty
+           band at the bottom of the card. The card grows once, on the first record; no state toggles back. */
+        .hero-status.hero-status-new { min-height: 0; }
         @media (max-width: 349px) { .hero-liters-name { display: none; } }
         /* Home type scale (T7): only 11 / 12 / 14 / 16 / 18 / 24 / 38px, and one line
            height for every home text that doesn't set its own (Mitr's "normal" is ~1.57). */
@@ -6026,7 +6029,7 @@ function AppInner() {
             </p>
           )}
           <p style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.7, margin: "0 0 20px" }}>
-            แอปนี้ช่วยให้คุณบันทึกวันที่บริจาคเลือดด้วยตัวเอง เพื่อดูจำนวนครั้งสะสมและวันที่บริจาคได้ครั้งถัดไป
+            แอปนี้ช่วยให้คุณบันทึกวันที่บริจาคโลหิตด้วยตัวเอง เพื่อดูจำนวนครั้งสะสมและวันที่บริจาคได้ครั้งถัดไป
           </p>
 
           <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: 18, marginBottom: 20 }}>
@@ -6050,7 +6053,7 @@ function AppInner() {
             <input type="checkbox" checked={checkedConsent} onChange={(e) => setCheckedConsent(e.target.checked)}
               style={{ marginTop: 3, width: 18, height: 18, accentColor: "#9A3B33" }} />
             <span style={{ fontSize: 14, color: "#3A2C29", lineHeight: 1.6 }}>
-              ฉันยินยอมให้เก็บข้อมูลการบริจาคเลือดของฉันตามที่อธิบายไว้ข้างต้น
+              ฉันยินยอมให้เก็บข้อมูลการบริจาคโลหิตของฉันตามที่อธิบายไว้ข้างต้น
             </span>
           </label>
 
@@ -6342,7 +6345,7 @@ function AppInner() {
                     progress bar and caption -- so the card doesn't change height when
                     the state changes or the tab is switched. Shorter states keep their
                     link pinned to the bottom (marginTop: auto) instead of floating. */}
-                <div data-testid="hero-status" className="hero-status" style={{ display: "flex", flexDirection: "column" }}>
+                <div data-testid="hero-status" className={totalCount === 0 ? "hero-status hero-status-new" : "hero-status"} style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ marginTop: 8, paddingTop: 10, borderTop: "1px solid rgba(255,247,245,0.25)", display: "flex", alignItems: "stretch", gap: 10, position: "relative", zIndex: 1, flex: "1 0 auto" }}>
                   {/* The waiting state ("อีก N วัน") has no leading icon: the text and the
                       progress caption below already say it, and the clock only duplicated
@@ -8557,7 +8560,7 @@ function AppInner() {
       )}
 
       {showOnboardingChoice && (
-        <div role="dialog" aria-modal="true" aria-label="เริ่มบันทึกการบริจาคเลือด" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="เริ่มบันทึกการบริจาคโลหิต" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22, overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>นี่คือการบริจาคโลหิตครั้งใด?</div>
@@ -8581,10 +8584,10 @@ function AppInner() {
       )}
 
       {showStartingCountQuickEntry && (
-        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคเลือดมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="เคยบริจาคโลหิตมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>เคยบริจาคเลือดมาแล้วกี่ครั้ง?</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>เคยบริจาคโลหิตมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll scrollRef={quickScrollRef} style={{ padding: "0 22px 22px" }}>
@@ -9518,7 +9521,7 @@ function AppInner() {
               {shareCardDataUrl && !sharingCard ? (
                 <img
                   src={shareCardDataUrl}
-                  alt={shareRecordData ? "ภาพรายการบริจาคโลหิตของคุณจาก Blood Journey พร้อมวันที่และลำดับครั้งที่บริจาค" : "ภาพความสำเร็จการบริจาคเลือดของคุณจาก Blood Journey พร้อมจำนวนครั้งสะสมและตราความสำเร็จล่าสุด"}
+                  alt={shareRecordData ? "ภาพรายการบริจาคโลหิตของคุณจาก Blood Journey พร้อมวันที่และลำดับครั้งที่บริจาค" : "ภาพความสำเร็จการบริจาคโลหิตของคุณจาก Blood Journey พร้อมจำนวนครั้งสะสมและตราความสำเร็จล่าสุด"}
                   style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
                 />
               ) : (
