@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.367";
+const APP_VERSION = "1.0.368";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8859,10 +8859,10 @@ function AppInner() {
         const vn = donationOrderMap[vd.id];
         // baseline: the 12px label and the 14px value sit on one text line (flex-start left the label ~2px high).
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "baseline" };
-        // Label column (design D1): the same 12px icon the history card shows for that field, then the
+        // Label column (design D1, 56px = icon + "ประเภท", the widest label): the same 12px icon the history card shows for that field, then the
         // word. Plain inline text (not flex) so the row's baseline alignment uses the word's baseline.
         const lbl = (t, icon) => (
-          <div style={{ width: 68, flexShrink: 0, fontSize: 12, lineHeight: 1.6, color: "#7A6360", whiteSpace: "nowrap" }}>
+          <div style={{ width: 56, flexShrink: 0, fontSize: 12, lineHeight: 1.6, color: "#7A6360", whiteSpace: "nowrap" }}>
             <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6, position: "relative", top: -1 }}>{icon}</span>{t}
           </div>
         );
