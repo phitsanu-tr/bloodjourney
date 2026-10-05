@@ -151,6 +151,29 @@ for (const width of [414, 390, 360]) {
   });
 }
 
+// With 3+ types the unselected tabs shrink to an icon. A donatable one must keep its type icon (the ✓ is a
+// corner badge), or several ✓ tabs look identical; and the row still fits at 390px.
+test("home: compact type tabs keep their type icon when donatable", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(200)), rec("b", daysAgo(200), "plasma"), rec("c", daysAgo(10), "platelet"), rec("d", daysAgo(200), "rbc")] });
+  await page.addStyleTag({ content: fs.readFileSync(new URL("./mitr-font.css", import.meta.url), "utf8") });
+  await page.evaluate(() => document.fonts.ready);
+  for (const name of ["พลาสมา", "เม็ดเลือดแดง"]) {
+    const tab = page.getByRole("tab", { name: new RegExp(`^${name} 1 ครั้ง บริจาคได้แล้ว$`) });
+    await expect(tab.getByTestId("tab-eligible-badge")).toHaveCount(1);
+    await expect(tab.locator("svg")).toHaveCount(2); // type icon + the badge's check
+  }
+  await expect(page.getByRole("tab", { name: /^เกล็ดเลือด 1 ครั้ง$/ }).getByTestId("tab-eligible-badge")).toHaveCount(0);
+  const tabs = page.getByRole("tab");
+  for (let i = 0; i < 4; i++) {
+    await tabs.nth(i).tap(); await page.waitForTimeout(450);
+    const [sw, cw] = await page.evaluate(() => { const t = document.querySelector("[role=tablist]"); return [t.scrollWidth, t.clientWidth]; });
+    expect(sw, `tab ${i} row overflows`).toBeLessThanOrEqual(cw);
+  }
+  assertNoErrors(page);
+});
+
 // The per-type liters pill sits beside the big count; with Mitr and a 3-digit
 // count it must not wrap under it (that would make the hero card taller).
 for (const width of [390, 320]) {
