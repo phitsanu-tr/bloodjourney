@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.386";
+const APP_VERSION = "1.0.387";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4206,7 +4206,15 @@ function AppInner() {
       }
       next = [...next].sort((a, b) => new Date(b.date) - new Date(a.date));
       await saveDonations(next, { strict: true });
-      showToast("success", editingId ? "แก้ไขรายการแล้ว" : "บันทึกรายการแล้ว");
+      if (editingId) showToast("success", "แก้ไขรายการแล้ว");
+      else {
+        // Same order as the history cards (donationOrderMap): by date, then by when it was logged.
+        const order = startingCountNum + 1 + next.filter((d) => {
+          const diff = new Date(d.date) - new Date(form.date);
+          return diff < 0 || (diff === 0 && d.loggedAt && new Date(d.loggedAt) < new Date(nowIso));
+        }).length;
+        showToast("success", `บันทึกการบริจาคครั้งที่ ${order} แล้ว`);
+      }
       closeForm();
     } catch (e) {
       setFormSaveError("บันทึกไม่สำเร็จ ลองอีกครั้ง");
@@ -7848,8 +7856,13 @@ function AppInner() {
         </nav>
       )}
 
+      {/* Always mounted, so screen readers announce each new toast: a live region that appears together
+          with its text is often skipped. The visible toast below is hidden from them to avoid a double read. */}
+      <div role="status" aria-live="polite" style={{ position: "absolute", width: 1, height: 1, margin: -1, padding: 0, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 }}>
+        {toast ? toast.message : ""}
+      </div>
       {toast && (
-        <div role="status" style={{
+        <div aria-hidden="true" style={{
           position: "fixed", bottom: phase === "app" ? 82 : 24, left: "50%", transform: "translateX(-50%)",
           background: toast.type === "error" ? "#B3261E" : "#2E5E4E", color: "#FFF7F5", padding: "10px 18px",
           borderRadius: 12, fontSize: 12, maxWidth: "88%", textAlign: "center", zIndex: 70, boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
