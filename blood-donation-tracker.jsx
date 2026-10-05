@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.383";
+const APP_VERSION = "1.0.384";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6291,6 +6291,7 @@ function AppInner() {
                         color signal as the rest of the tab. */}
                     {recordedTypes.map((t) => {
                       // From 3 types up, only the selected one shows its name and count; the others shrink to an icon so the row always fits on one line.
+                      // A donatable compact tab keeps its type icon and gets the ✓ as a corner badge -- a lone ✓ couldn't say which type it was.
                       const compact = recordedTypes.length > 2 && activeCountdownType !== t;
                       // Recorded and past its cycle -> can be donated again now.
                       const tabEligible = !!lastBy[t] && comparableDaysBy[t] === 0;
@@ -6311,7 +6312,7 @@ function AppInner() {
                         }}>
                         {/* Invisible 44px-tall tap area; pill keeps its 30px look. */}
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-8px -3px" }} />
- {compact && tabEligible ? check : <TypeIcon type={t} size={12} />}{compact ? null : <> {DONATION_TYPE_LABELS[t]}</>}
+ <TypeIcon type={t} size={12} />{compact && tabEligible && <span data-testid="tab-eligible-badge" aria-hidden="true" style={{ position: "absolute", top: -3, right: -3, display: "inline-flex", width: 14, height: 14, borderRadius: "50%", background: "#3FA35E", color: "#FFFFFF", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 2px #A8433A" }}><Check size={9} strokeWidth={4} /></span>}{compact ? null : <> {DONATION_TYPE_LABELS[t]}</>}
                         {!compact && <span style={{
                           fontSize: 11, padding: "1px 6px", borderRadius: 10, fontWeight: 600,
                           background: activeCountdownType === t ? DONATION_TYPE_TINT[t].bg : "rgba(255,247,245,0.22)",
