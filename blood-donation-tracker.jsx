@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.378";
+const APP_VERSION = "1.0.379";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1620,7 +1620,7 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
             const mid = !major && midEvery && k % midEvery === 0;
             return (
               <div key={i} style={{ position: "relative", flex: `0 0 ${RULER_TICK}px`, height: "100%", scrollSnapAlign: "center" }}>
-                <span style={{ position: "absolute", left: RULER_TICK / 2 - 0.5, top: 6, width: 1, height: major ? 28 : mid ? 20 : 12, background: major ? "#B7A5A1" : "#D9C3BE" }} />
+                <span style={{ position: "absolute", left: RULER_TICK / 2 - 0.5, top: 6, width: 1, height: major ? 28 : mid ? 20 : 12, background: major ? "#9A8582" : "#D9C3BE" }} />
                 {major && <span style={{ position: "absolute", left: RULER_TICK / 2, top: 40, transform: "translateX(-50%)", fontSize: 11, color: "#7A6360", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{Math.round(valAt(i))}</span>}
               </div>
             );
@@ -8729,7 +8729,7 @@ function AppInner() {
                     {remindPaused ? (remindPauseUntil === "indefinite" ? "พักอยู่ จนกว่าจะเปิดเอง" : `พักถึง ${toBuddhistDate(remindPauseUntil)}`) : "ปิดอยู่"}
                   </span>
                 </span>
-                <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} />
+                <ChevronRight size={16} color="#9A8582" style={{ flexShrink: 0 }} />
               </button>
               {DONATION_TYPES.map((t) => (
                 <React.Fragment key={t}>
@@ -8759,9 +8759,9 @@ function AppInner() {
               <button onClick={() => { setShowSettings(false); setShowPrivacy(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Info size={16} color="#9A3B33" /> ความเป็นส่วนตัว
               </button>
-              <div title="ช่องทางนี้ยังไม่เปิดให้ใช้งานในตอนนี้" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 8px", fontSize: 14, color: "#B7A5A1", cursor: "default" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Mail size={16} color="#B7A5A1" /> ส่งความคิดเห็น / แจ้งปัญหา</span>
-                <span style={{ fontSize: 12, background: "#F3E7E4", color: "#9A8480", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
+              <div title="ช่องทางนี้ยังไม่เปิดให้ใช้งานในตอนนี้" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 8px", fontSize: 14, color: "#80726F", cursor: "default" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Mail size={16} color="#9A8582" /> ส่งความคิดเห็น / แจ้งปัญหา</span>
+                <span style={{ fontSize: 12, background: "#F3E7E4", color: "#7A6360", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
               </div>
             </div>
             </FadeScroll>
@@ -8776,7 +8776,7 @@ function AppInner() {
               <div style={{ fontSize: 16, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
               <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
-            <p style={{ fontSize: 11, color: "#B7A5A1", margin: "0 22px 12px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#7A6360", margin: "0 22px 12px", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
             </p>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
