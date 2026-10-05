@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.366";
+const APP_VERSION = "1.0.367";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2487,25 +2487,9 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 // One-line "saved / last edited" note under the detail modal's table. The row labels above are one
 // block centred in a 50px column (as wide as the word "ประเภท"), so this line starts at that block's
 // left edge: we measure a hidden "ประเภท" at the label font size (12px) and indent by (50 - width) / 2.
-// flush: no label column to line up with (carried-over dialog) -> start at the rows' left edge.
-function ModalMetaLine({ children, flush = false }) {
-  const ghostRef = useRef(null);
-  const [pad, setPad] = useState(flush ? 0 : 5.5);
-  useLayoutEffect(() => {
-    if (flush) return;
-    const measure = () => {
-      const w = ghostRef.current ? ghostRef.current.getBoundingClientRect().width : 0;
-      if (w > 0 && w < 50) setPad((50 - w) / 2);
-    };
-    measure();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
-  }, []);
-  return (
-    <div style={{ position: "relative", padding: `10px 0 2px ${pad}px`, fontSize: 12, color: "#7A6360", lineHeight: 1.6 }}>
-      <span ref={ghostRef} aria-hidden="true" style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap", fontSize: 12 }}>ประเภท</span>
-      {children}
-    </div>
-  );
+// "บันทึกเมื่อ / แก้ไขล่าสุดเมื่อ" line at the foot of the detail dialogs, starting at the rows' left edge.
+function ModalMetaLine({ children }) {
+  return <div style={{ padding: "10px 0 2px", fontSize: 12, color: "#7A6360", lineHeight: 1.6 }}>{children}</div>;
 }
 // Faint dividers between the options of a segmented picker (white outlined track + pale-pink sliding pill).
 // Shown only while nothing is chosen, so the empty control still reads as N separate choices; once an option
@@ -8875,14 +8859,11 @@ function AppInner() {
         const vn = donationOrderMap[vd.id];
         // baseline: the 12px label and the 14px value sit on one text line (flex-start left the label ~2px high).
         const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "baseline" };
-        // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
-        // sizes it), and every label starts at that block's left edge so all three share one left edge.
-        const lbl = (t) => (
-          <div style={{ width: 50, flexShrink: 0, display: "flex", justifyContent: "center", fontSize: 12, lineHeight: 1.6, color: "#7A6360" }}>
-            <div style={{ position: "relative" }}>
-              <span aria-hidden="true" style={{ visibility: "hidden" }}>ประเภท</span>
-              <span style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>{t}</span>
-            </div>
+        // Label column (design D1): the same 12px icon the history card shows for that field, then the
+        // word. Plain inline text (not flex) so the row's baseline alignment uses the word's baseline.
+        const lbl = (t, icon) => (
+          <div style={{ width: 68, flexShrink: 0, fontSize: 12, lineHeight: 1.6, color: "#7A6360", whiteSpace: "nowrap" }}>
+            <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6, position: "relative", top: -1 }}>{icon}</span>{t}
           </div>
         );
         const valS = { flex: 1, minWidth: 0, fontSize: 14, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
@@ -8906,9 +8887,9 @@ function AppInner() {
                 <DialogX onClick={() => setViewDonationId(null)} style={{ alignSelf: "flex-start" }} />
               </div>
               <div style={{ marginTop: 14, borderTop: "1px solid #F3E7E4" }}>
-                <div style={rowS}>{lbl("ประเภท")}<div style={valS}><span style={{ color: vTint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[normalizeDonationType(vd.type)]}</span></div></div>
-                <div style={rowS}>{lbl("สถานที่")}<div style={vd.location ? valS : { ...valS, color: "#7A6360" }}>{vd.location || "—"}</div></div>
-                <div style={rowS}>{lbl("โน้ต")}<div style={vd.note ? valS : { ...valS, color: "#7A6360" }}>{vd.note || "—"}</div></div>
+                <div style={rowS}>{lbl("ประเภท", <TypeIcon type={normalizeDonationType(vd.type)} size={12} color="#7A6360" />)}<div style={valS}><span style={{ color: vTint.text, fontWeight: 600 }}>{DONATION_TYPE_LABELS[normalizeDonationType(vd.type)]}</span></div></div>
+                <div style={rowS}>{lbl("สถานที่", <MapPin size={12} />)}<div style={vd.location ? valS : { ...valS, color: "#7A6360" }}>{vd.location || "—"}</div></div>
+                <div style={rowS}>{lbl("บันทึก", <StickyNote size={12} />)}<div style={vd.note ? valS : { ...valS, color: "#7A6360" }}>{vd.note || "—"}</div></div>
                 {vd.loggedAt && (
                   <ModalMetaLine>
                     {(vd.createdAt && vd.createdAt !== vd.loggedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(vd.loggedAt)}
@@ -8959,7 +8940,7 @@ function AppInner() {
                   );
                 })()}
                 {startingCountUpdatedAt && (
-                  <ModalMetaLine flush>
+                  <ModalMetaLine>
                     {(startingCountCreatedAt && startingCountCreatedAt !== startingCountUpdatedAt) ? "แก้ไขล่าสุดเมื่อ" : "บันทึกเมื่อ"} {toBuddhistDateTimeFull(startingCountUpdatedAt)}
                   </ModalMetaLine>
                 )}
