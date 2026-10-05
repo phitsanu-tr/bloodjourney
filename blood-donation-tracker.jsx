@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.363";
+const APP_VERSION = "1.0.364";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -8871,7 +8871,8 @@ function AppInner() {
         if (!vd) return null;
         const vTint = DONATION_TYPE_TINT[normalizeDonationType(vd.type)];
         const vn = donationOrderMap[vd.id];
-        const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "flex-start" };
+        // baseline: the 12px label and the 14px value sit on one text line (flex-start left the label ~2px high).
+        const rowS = { display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid #F3E7E4", alignItems: "baseline" };
         // Label column: the block of labels is centred on the drop's axis as wide as "ประเภท" (the ghost span
         // sizes it), and every label starts at that block's left edge so all three share one left edge.
         const lbl = (t) => (
