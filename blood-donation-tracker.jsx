@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
-import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check, HelpCircle, Syringe, Wine, CigaretteOff, Shirt, Phone, ExternalLink } from "lucide-react";
+import { Droplet, Plus, PlusCircle, Calendar, MapPin, Trash2, Pencil, Download, Upload, ShieldCheck, X, Info, CheckCircle2, Clock, Home, BarChart3, Award, Gauge, Trophy, Lock, BookOpen, Sparkles, Moon, Utensils, GlassWater, Beef, CreditCard, Timer, Dumbbell, HeartPulse, AlertTriangle, AlertCircle, User, Scale, Weight, Cake, Droplets, Share2, StickyNote, MoreVertical, Settings, Mail, Camera, Image as ImageIcon, Eye, EyeOff, ChevronRight, SlidersHorizontal, Users, ChevronDown, PersonStanding, Ruler, BellOff, Bell, List, Copy, Pill, Unlock, Dices, Check, ChevronLeft, HelpCircle, Syringe, Wine, CigaretteOff, Shirt, Phone, ExternalLink } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Filesystem, Directory } from "@capacitor/filesystem";
@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.402";
+const APP_VERSION = "1.0.403";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4143,6 +4143,27 @@ function AppInner() {
     setShowProfile(false);
     profileOpenerRef.current?.focus?.();
   };
+
+  // The phone's back button (Android, LINE) closes the full-screen profile /
+  // settings pages and the privacy page opened from them, instead of leaving
+  // the app. One history entry covers the whole group, so moving between them
+  // (profile -> settings, privacy -> back to settings) doesn't touch history;
+  // closing with ← drops the entry again.
+  const closeProfileRef = useRef(closeProfile);
+  closeProfileRef.current = closeProfile;
+  const pageOverlayOpen = showProfile || showSettings || showPrivacy;
+  useEffect(() => {
+    if (!pageOverlayOpen || typeof window === "undefined" || !window.history?.pushState) return undefined;
+    const marker = `bj-page-${Date.now()}`;
+    try { window.history.pushState({ ...(window.history.state || {}), bjPage: marker }, ""); } catch (e) { return undefined; }
+    let popped = false;
+    const onPop = () => { popped = true; setShowSettings(false); setShowPrivacy(false); closeProfileRef.current(); };
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      if (!popped && window.history.state?.bjPage === marker) window.history.back();
+    };
+  }, [pageOverlayOpen]);
 
   // sanitizeNameInput can remove characters from the middle of what the
   // user just typed/pasted, which — left to React's default controlled-
@@ -8305,22 +8326,16 @@ function AppInner() {
           : icon;
         return (
           <>
-          {/* Profile (design 3 from profile-box-rows-designs.html): the same
-              centered box as ตั้งค่า -- title + ✕, small red group labels,
-              white row cards with an icon per row -- listing each field; a
-              row opens the one-field sheet below. The box itself has no text
-              inputs, so the keyboard can never cover it. (A full-screen page
-              version, v1.0.104, didn't match the app's other dialogs.) */}
-          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน"
-            onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
-            style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(85vh / var(--ui-zoom, 1))", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
-              <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px" }}>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
-                <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
-                  <span aria-hidden="true" style={{ position: "absolute", inset: -12 }} />
-                  <X size={20} />
-                </button>
+          {/* Profile (design 3 from profile-box-rows-designs.html): small red group
+              labels, white row cards with an icon per row -- listing each field; a
+              row opens the one-field sheet below, so the page itself has no text
+              inputs. Full-screen page with ← like ตั้งค่า (v1.0.403), which both
+              open from the header icons; the phone's back button closes it. */}
+          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" style={{ position: "fixed", inset: 0, background: "#FBF6F5", display: "flex", justifyContent: "center", zIndex: 50 }}>
+            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
+                <button onClick={closeProfile} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>โปรไฟล์ของฉัน</h2>
               </div>
               <div ref={profileScrollRef} className="no-scrollbar" onScroll={(e) => { const sc = e.currentTarget.scrollTop > 2; setProfileScrolled(v => (v === sc ? v : sc)); }}
                 style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "6px 22px 22px", ...(profileScrolled ? { WebkitMaskImage: "linear-gradient(transparent 0, #000 18px)", maskImage: "linear-gradient(transparent 0, #000 18px)" } : null) }}>
@@ -9059,13 +9074,15 @@ function AppInner() {
       )}
 
       {showSettings && (
-        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(85vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>ตั้งค่า</div>
-              <button onClick={() => setShowSettings(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
-            </div>
-            <FadeScroll style={{ padding: "0 22px 22px" }}>
+        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "#FBF6F5", display: "flex", justifyContent: "center", zIndex: 50 }}>
+          {/* Full-screen page (v1.0.403): the settings list is about two screens long, so a
+            centered box left only ~600px to read; ← and the phone's back button close it. */}
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
+                <button onClick={() => setShowSettings(false)} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>ตั้งค่า</h2>
+              </div>
+            <FadeScroll style={{ padding: "16px 20px calc(24px + env(safe-area-inset-bottom))" }}>
 
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 18, display: "flex", flexDirection: "column", gap: 10 }}>
               <div>
