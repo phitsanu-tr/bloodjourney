@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.374";
+const APP_VERSION = "1.0.375";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -937,8 +937,8 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
     <>
       <button type="button" onClick={() => { setSheetKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${value}` : ": ยังไม่ระบุ"}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#A38D89", textAlign: "center" }}>
-        {!value && <Clock size={14} color="#A38D89" />}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#7A6360", textAlign: "center" }}>
+        {!value && <Clock size={14} color="#9A8582" />}
         {value ? `${value} น.` : "ระบุเวลา"}
       </button>
       {open && (
@@ -1597,7 +1597,7 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
       <div aria-hidden="true" style={{ textAlign: "center", fontVariantNumeric: "tabular-nums", marginBottom: 2 }}>
         {/* Thai puts พ.ศ. before the year ("พ.ศ. 2546"), units after (162 ซม.). */}
         {unitBefore && <span style={{ fontSize: 14, color: "#7A6360", marginRight: 5 }}>{unitBefore}</span>}
-        <span style={{ fontSize: 28, fontWeight: 700, color: "#9A3B33" }}>{shown}</span>
+        <span style={{ fontSize: 24, fontWeight: 700, color: "#9A3B33" }}>{shown}</span>
         {unit && <span style={{ fontSize: 14, color: "#7A6360", marginLeft: 4 }}>{unit}</span>}
         {caption && <span style={{ fontSize: 12, color: "#7A6360", marginLeft: 6 }}>· {caption(valAt(idx))}</span>}
       </div>
@@ -1639,8 +1639,8 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
     <>
       <button ref={ref} type="button" onClick={() => { setDialogKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${toBuddhistDate(value)}` : ""}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#A38D89", textAlign: "center" }}>
-        {!value && <Calendar size={14} color="#A38D89" />}
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#7A6360", textAlign: "center" }}>
+        {!value && <Calendar size={14} color="#9A8582" />}
         {value ? toBuddhistDate(value) : "ระบุวันที่"}
       </button>
       {open && (
@@ -5745,7 +5745,7 @@ function AppInner() {
               </svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards" }}>Blood Journey</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#241A18", textAlign: "center", marginBottom: 8, fontFamily: "'Mitr', 'Inter', sans-serif", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards" }}>Blood Journey</div>
           <div style={{ fontSize: 14, fontWeight: 500, color: "#9A8580", textAlign: "center", fontFamily: "'Mitr', 'Inter', sans-serif", letterSpacing: "0.06em", opacity: 0, animation: "bjSplashFadeUp 0.5s cubic-bezier(.2,.7,.3,1) forwards", animationDelay: "0.35s" }}>บันทึกบริจาคโลหิต</div>
         </div>
       </div>
@@ -8103,7 +8103,7 @@ function AppInner() {
                                         // Rh still missing: bring it into view so the panel doesn't look finished.
                                         else setTimeout(() => { try { document.getElementById("prof-blood-rh-group")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: 18, color: on ? "#8A2F28" : "#A38D89", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: 18, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {bt}
                                     </button>
                                   );
@@ -8129,7 +8129,7 @@ function AppInner() {
                                         commitProfile({ bloodRh: v }, "blood");
                                         if (bloodType) closeBloodSoon(true);
                                       }}
-                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#A38D89", transition: "color .2s" }}>
+                                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: v === "unknown" ? 13.5 : 17, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                       {v === "+" ? "Rh+" : v === "-" ? "Rh−" : "ไม่ทราบ"}
                                     </button>
                                   );
@@ -8194,7 +8194,7 @@ function AppInner() {
                                             if (o.v !== r.current) commitProfile({ [r.key]: o.v }, r.key);
                                             closeRowSoon(r.key, o.v !== r.current);
                                           }}
-                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#A38D89", transition: "color .2s" }}>
+                                          style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", fontWeight: on ? 600 : 400, fontSize: longest > 8 ? 14 : 16, whiteSpace: "nowrap", color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                                           {o.label}
                                         </button>
                                       );
@@ -8493,7 +8493,7 @@ function AppInner() {
                         if (g === "whole") { setForm(f => ({ ...f, type: "whole" })); setFormGroupChoice("whole"); setFormError(e => (e === TYPE_REQUIRED_MESSAGE ? "" : e)); }
                         else { setForm(f => ({ ...f, type: DONATION_TYPES.includes(f.type) && f.type !== "whole" ? f.type : "" })); setFormGroupChoice("component"); }
                       }}
-                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", fontWeight: on ? 600 : 400, color: on ? "#8A2F28" : "#A38D89", transition: "color .2s" }}>
+                      style={{ position: "relative", zIndex: 1, flex: 1, minWidth: 0, height: 40, border: "none", background: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", fontWeight: on ? 600 : 400, color: on ? "#8A2F28" : "#7A6360", transition: "color .2s" }}>
                       {label}
                     </button>
                   );
@@ -8820,7 +8820,7 @@ function AppInner() {
                   <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))", columnGap: 10, rowGap: 3, fontSize: 14, lineHeight: 1.55, color: "#3A2C29" }}>
                     {col.items.map(t => (
                       <li key={t} style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-                        <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: col.tint || "#FBEAE8", color: col.color, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{col.mark}</span>
+                        <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: col.tint || "#FBEAE8", color: col.color, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{col.mark}</span>
                         <span style={{ minWidth: 0 }}>{t}</span>
                       </li>
                     ))}
@@ -9184,7 +9184,7 @@ function AppInner() {
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "export" ? "#F3E7E4" : "transparent",
-                  color: backupRestoreTab === "export" ? "#8A2F28" : "#A38D89",
+                  color: backupRestoreTab === "export" ? "#8A2F28" : "#7A6360",
                   fontSize: 14, fontWeight: backupRestoreTab === "export" ? 600 : 400,
                   boxShadow: "none",
                 }}>
@@ -9196,7 +9196,7 @@ function AppInner() {
                 style={{
                   flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
                   background: backupRestoreTab === "import" ? "#F3E7E4" : "transparent",
-                  color: backupRestoreTab === "import" ? "#8A2F28" : "#A38D89",
+                  color: backupRestoreTab === "import" ? "#8A2F28" : "#7A6360",
                   fontSize: 14, fontWeight: backupRestoreTab === "import" ? 600 : 400,
                   boxShadow: "none",
                 }}>
