@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { startFresh, seed, stored, rec, openForm, pickToday, todayStr, assertNoErrors } from "./helpers.js";
+import { startFresh, seed, stored, rec, openForm, pickToday, todayStr, assertNoErrors, PREFIX } from "./helpers.js";
 
 test("history: edit a record keeps it in place and saves the change", async ({ page }) => {
   await startFresh(page);
@@ -112,3 +112,41 @@ test("settings: delete everything wipes all stored data after confirmation", asy
   expect(await stored(page, "profile")).toBeNull();
   assertNoErrors(page);
 });
+
+test("unreadable history: a copy is kept, the user is told, and a new save doesn't destroy it", async ({ page }) => {
+  await startFresh(page);
+  await page.evaluate((pre) => localStorage.setItem(pre + "donations", "{broken"), PREFIX);
+  await page.reload();
+  const warn = page.getByRole("dialog", { name: "อ่านประวัติการบริจาคไม่ได้" });
+  await expect(warn).toBeVisible();
+  const copies = () => page.evaluate((pre) => JSON.parse(localStorage.getItem(pre + "donationsUnreadable") || "[]").map((c) => c.raw), PREFIX);
+  expect(await copies()).toEqual(["{broken"]);
+  // a second open doesn't duplicate the same copy
+  await page.reload();
+  await expect(warn).toBeVisible();
+  expect(await copies()).toEqual(["{broken"]);
+  // "เริ่มบันทึกใหม่": record a donation; the copy is still there
+  await warn.getByRole("button", { name: /^เริ่มบันทึกใหม่/ }).tap();
+  await expect(warn).toHaveCount(0);
+  await seed(page, { donations: [rec("a", "2026-06-01")] });
+  expect(await copies()).toEqual(["{broken"]);
+  await expect(page.getByRole("dialog", { name: "อ่านประวัติการบริจาคไม่ได้" })).toHaveCount(0);
+  // "ลบข้อมูลทั้งหมด" also removes the copy
+  await page.getByLabel("ตั้งค่า").tap();
+  await page.getByRole("button", { name: "ลบข้อมูลทั้งหมด" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ลบข้อมูล", exact: true }).tap();
+  await expect.poll(() => page.evaluate((pre) => localStorage.getItem(pre + "donationsUnreadable"), PREFIX)).toBeNull();
+  assertNoErrors(page);
+});
+
+test("unreadable history: กู้คืนจากไฟล์สำรอง opens the restore tab", async ({ page }) => {
+  await startFresh(page);
+  await page.evaluate((pre) => localStorage.setItem(pre + "donations", '{"not":"a list"}'), PREFIX);
+  await page.reload();
+  const warn = page.getByRole("dialog", { name: "อ่านประวัติการบริจาคไม่ได้" });
+  await warn.getByRole("button", { name: "กู้คืนจากไฟล์สำรอง" }).tap();
+  await expect(warn).toHaveCount(0);
+  await expect(page.getByLabel("วางข้อความ JSON สำรองที่คัดลอกไว้")).toBeVisible();
+  assertNoErrors(page);
+});
+

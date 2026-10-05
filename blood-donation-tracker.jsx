@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.385";
+const APP_VERSION = "1.0.386";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2739,6 +2739,9 @@ function AppInner() {
   const [showSettings, setShowSettings] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
+  // Stored donation history that could not be read (corrupt JSON / not a list). Its raw text is copied to
+  // `unreadableCopyKey` before anything else happens, so a new save can never destroy it.
+  const [unreadableCopyKey, setUnreadableCopyKey] = useState("");
   showClearProfileRef.current = showClearProfile;
   showResetRef.current = showReset;
   const profileBoxRef = useRef(null);
@@ -3290,7 +3293,28 @@ function AppInner() {
         } catch {}
       }
       if (donationsRes && donationsRes.value) {
-        try { setDonations(JSON.parse(donationsRes.value).map((d) => ({ ...d, type: normalizeDonationType(d.type) }))); } catch { setDonations([]); }
+        let readable = false;
+        try {
+          const list = JSON.parse(donationsRes.value);
+          if (Array.isArray(list)) { setDonations(list.map((d) => ({ ...d, type: normalizeDonationType(d.type) }))); readable = true; }
+        } catch {}
+        if (!readable) {
+          // Used to fall back to an empty list silently -- the app then looked brand new and the next
+          // save overwrote the old (maybe recoverable) data for good. Keep a copy first, then tell the user.
+          setDonations([]);
+          // One key holds the last 3 distinct unreadable copies ({ at, raw }), so "ลบข้อมูลทั้งหมด" can remove them.
+          try {
+            const prev = await storage.get("donationsUnreadable").catch(() => null);
+            let copies = [];
+            try { copies = prev && prev.value ? JSON.parse(prev.value) : []; } catch {}
+            if (!Array.isArray(copies)) copies = [];
+            if (!copies.some((c) => c && c.raw === donationsRes.value)) {
+              copies = [...copies, { at: new Date().toISOString(), raw: donationsRes.value }].slice(-3);
+              await storage.set("donationsUnreadable", JSON.stringify(copies));
+            }
+          } catch {}
+          setUnreadableCopyKey("donationsUnreadable");
+        }
       }
       if (backupRes && backupRes.value) {
         try { setLastExportCount(JSON.parse(backupRes.value).lastExportCount || 0); } catch {}
@@ -4317,6 +4341,7 @@ function AppInner() {
       await storage.delete("consent").catch(() => {});
       await storage.delete("backupMeta").catch(() => {});
       await storage.delete("uiMeta").catch(() => {});
+      await storage.delete("donationsUnreadable").catch(() => {});
       setDonations([]);
       setNickname("");
       setPhoto("");
@@ -8850,6 +8875,24 @@ function AppInner() {
                 ให้ความยินยอมเมื่อ: {new Date().toLocaleDateString("th-TH")}
               </p>
             </FadeScroll>
+          </div>
+        </div>
+      )}
+
+      {phase === "app" && unreadableCopyKey && (
+        <div role="dialog" aria-modal="true" aria-label="อ่านประวัติการบริจาคไม่ได้"
+          style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 72, padding: 20 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 360, borderRadius: 18, padding: 22 }}>
+            <div aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, background: "#FBEAE8", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <AlertTriangle size={22} color="#B3261E" />
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>อ่านประวัติการบริจาคไม่ได้</div>
+            <p style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 8px" }}>ข้อมูลในเครื่องนี้เสียหาย แอปเก็บสำเนาไว้แล้ว <b>ยังไม่มีอะไรถูกลบ</b></p>
+            <p style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.6, margin: "0 0 16px" }}>ถ้ามีไฟล์สำรอง กู้คืนได้ทันที</p>
+            <button onClick={() => { setUnreadableCopyKey(""); openBackupRestore("import", { fromHome: true }); }} className="btn-primary"
+              style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", marginBottom: 8 }}>กู้คืนจากไฟล์สำรอง</button>
+            <button onClick={() => setUnreadableCopyKey("")} className="btn-ghost"
+              style={{ width: "100%", padding: "11px 0", borderRadius: 12, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>เริ่มบันทึกใหม่ (เก็บสำเนาเดิมไว้)</button>
           </div>
         </div>
       )}
