@@ -168,3 +168,17 @@ for (const width of [390, 320]) {
     assertNoErrors(page);
   });
 }
+
+test("dashboard: the shown type stays put (no 30s rotation)", async ({ page }) => {
+  await page.clock.install();
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(120)), rec("b", daysAgo(3), "plasma")] });
+  await page.getByRole("button", { name: "แดชบอร์ด" }).tap();
+  const shown = () => page.evaluate(() => [...document.querySelectorAll("button")].filter((b) => ["โลหิตรวม", "พลาสมา"].includes(b.textContent.trim()) && getComputedStyle(b).backgroundColor === "rgb(255, 247, 245)").map((b) => b.textContent.trim()));
+  await expect.poll(shown).toHaveLength(1);
+  const before = await shown();
+  await page.clock.fastForward(95_000);
+  await page.waitForTimeout(300);
+  expect(await shown()).toEqual(before);
+  assertNoErrors(page);
+});
