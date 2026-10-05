@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.387";
+const APP_VERSION = "1.0.388";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2911,6 +2911,14 @@ function AppInner() {
   // Blood group / age / weight / donor ID on Home: blurred by default; the profile switch
   // "ซ่อนข้อมูลบนหน้าแรก" turns the blur off (persisted).
   const [blurInfoPills, setBlurInfoPills] = useState(true);
+  // "ขนาดตัวอักษร: ใหญ่" -- the whole app at 1.15x (CSS zoom on <html>, see .text-large). A per-device
+  // preference: saved in uiMeta, not carried in backups.
+  const [textLarge, setTextLarge] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("text-large", textLarge);
+    root.style.setProperty("--ui-zoom", textLarge ? "1.15" : "1");
+  }, [textLarge]);
   // Tap the hidden-info chip on Home to peek for 5 seconds; it re-hides itself.
   const [peekPills, setPeekPills] = useState(false);
   useEffect(() => {
@@ -3336,6 +3344,7 @@ function AppInner() {
           setDismissedEligibilityWeight(typeof u.dismissedEligibilityWeight === "number" ? u.dismissedEligibilityWeight : null);
           setDismissedCareFor(typeof u.dismissedCareFor === "string" ? u.dismissedCareFor : null);
           if (typeof u.blurInfoPills === "boolean") setBlurInfoPills(u.blurInfoPills);
+          if (typeof u.textLarge === "boolean") setTextLarge(u.textLarge);
           if (u.dismissedReminders && typeof u.dismissedReminders === "object") {
             setDismissedReminders(u.dismissedReminders);
           } else if (typeof u.dismissedReminderKey === "string" && typeof u.dismissedReminderDate === "string") {
@@ -3682,7 +3691,7 @@ function AppInner() {
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
       seenAchievements, backupSnoozeCount, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap,
-      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills,
+      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills, textLarge,
       ...uiMetaRef.current, ...patch,
     };
     uiMetaWriteQueueRef.current = uiMetaWriteQueueRef.current
@@ -5785,7 +5794,7 @@ function AppInner() {
 
   if (phase === "loading") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
+      <div style={{ minHeight: "calc(100vh / var(--ui-zoom, 1))", display: "flex", alignItems: "center", justifyContent: "center", background: "#FBF6F5" }}>
         <style>{`
           @keyframes bjSplashSpin { to { transform: rotate(360deg); } }
           /* Staggered fade-up for the splash text: the title settles in
@@ -5837,7 +5846,7 @@ function AppInner() {
   }
 
   return (
-    <div style={{ fontFamily: "'Mitr', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "100vh", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
+    <div style={{ fontFamily: "'Mitr', 'Inter', sans-serif", background: "#FBF6F5", minHeight: "calc(100vh / var(--ui-zoom, 1))", color: "#241A18", position: "relative", zIndex: 0, textAlign: "left" }}>
       <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "50%", transform: "translateX(-50%)", width: 420, maxWidth: "100%", height: "100%", zIndex: -1, overflow: "hidden", pointerEvents: "none" }}>
         {/* Background (design "A" from background-alt-8-designs.html): two
             soft pink glows fading to nothing -- top-right and mid-left --
@@ -5964,6 +5973,10 @@ function AppInner() {
            band at the bottom of the card. The card grows once, on the first record; no state toggles back. */
         .hero-status.hero-status-new { min-height: 0; }
         @media (max-width: 349px) { .hero-liters-name { display: none; } }
+        /* Text size "ใหญ่": everything 1.15x. Media queries still see the real screen width, so the
+           narrow-screen rules above are repeated for the width that is left after zooming (349 x 1.15). */
+        html.text-large { zoom: 1.15; }
+        @media (max-width: 401px) { html.text-large .hero-status:not(.hero-status-new) { min-height: 124px; } html.text-large .hero-liters-name { display: none; } }
         /* Home type scale (T7): only 11 / 12 / 14 / 16 / 18 / 24 / 38px, and one line
            height for every home text that doesn't set its own (Mitr's "normal" is ~1.57). */
         .app-shell.home-scale { line-height: 1.4; }
@@ -5991,7 +6004,7 @@ function AppInner() {
             margin: 0 auto !important;
             background: #FFFFFF;
             box-shadow: 0 0 40px rgba(122,42,35,0.14), 0 0 0 1px #F0DEDA;
-            min-height: 100vh;
+            min-height: calc(100vh / var(--ui-zoom, 1));
           }
         }
         /* Date + time inputs: side by side on one row (per user request --
@@ -8046,7 +8059,7 @@ function AppInner() {
           <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน"
             onClick={(e) => { if (e.target === e.currentTarget) closeProfile(); }}
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
+            <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(85vh / var(--ui-zoom, 1))", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
               <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 22px 12px" }}>
                 <div style={{ fontSize: 16, fontWeight: 700 }}>โปรไฟล์ของฉัน</div>
                 <button onClick={closeProfile} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
@@ -8425,7 +8438,7 @@ function AppInner() {
           <div role="dialog" aria-modal="true" aria-label="พักการเตือนชั่วคราว"
             onClick={(e) => { if (e.target === e.currentTarget) close(); }}
             style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}>
-            <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(85vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
                 <div style={{ fontSize: 16, fontWeight: 700 }}>พักการเตือนชั่วคราว</div>
                 <button onClick={close} aria-label="ปิด" style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0, display: "flex" }}>
@@ -8676,7 +8689,7 @@ function AppInner() {
 
       {showStartingCountQuickEntry && (
         <div role="dialog" aria-modal="true" aria-label="เคยบริจาคโลหิตมาแล้วกี่ครั้ง" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "90vh", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, maxHeight: "calc(90vh / var(--ui-zoom, 1))", borderRadius: 18 , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>เคยบริจาคโลหิตมาแล้วกี่ครั้ง?</div>
               <button onClick={cancelStartingCountQuickEntry} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
@@ -8792,12 +8805,30 @@ function AppInner() {
 
       {showSettings && (
         <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "85vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(85vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>ตั้งค่า</div>
               <button onClick={() => setShowSettings(false)} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
             </div>
             <FadeScroll style={{ padding: "0 22px 22px" }}>
+
+            <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 18, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div>
+                <div id="text-size-label" style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>ขนาดตัวอักษร</div>
+                <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.5, marginTop: 2 }}>ขยายตัวอักษรและปุ่มทั้งแอป</div>
+              </div>
+              <div role="radiogroup" aria-labelledby="text-size-label" style={{ display: "flex", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4, gap: 4 }}>
+                {[[false, "ปกติ", 14], [true, "ใหญ่", 16]].map(([large, label, size]) => {
+                  const on = textLarge === large;
+                  return (
+                    <button key={label} type="button" role="radio" aria-checked={on}
+                      onClick={() => { if (!on) { setTextLarge(large); persistUiMeta({ textLarge: large }); } }}
+                      style={{ flex: 1, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: size,
+                        background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>{label}</button>
+                  );
+                })}
+              </div>
+            </div>
 
             <div style={{ fontSize: 11, color: "#9A3B33", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, margin: "0 0 6px" }}>ข้อมูลของฉัน</div>
             <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 4px", marginBottom: 18 }}>
@@ -8865,7 +8896,7 @@ function AppInner() {
 
       {showPrivacy && (
         <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" onClick={(e) => { if (e.target === e.currentTarget) { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "85vh", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "calc(85vh / var(--ui-zoom, 1))", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
               <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
@@ -8987,7 +9018,7 @@ function AppInner() {
         const valS = { flex: 1, minWidth: 0, fontSize: 14, color: "#3A2C29", lineHeight: 1.6, wordBreak: "break-word" };
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดรายการบริจาค" onClick={(e) => { if (e.target === e.currentTarget) setViewDonationId(null); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "calc(90vh / var(--ui-zoom, 1))", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 60, position: "relative", flexShrink: 0 }}>
                   <svg width="50" height="60" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
@@ -9024,7 +9055,7 @@ function AppInner() {
         // detail modal: badge + title on top, one row per carried-over type, and the logged-at line.
         return (
           <div role="dialog" aria-modal="true" aria-label="รายละเอียดยอดสะสมที่เคยบริจาคมาก่อน" onClick={(e) => { if (e.target === e.currentTarget) setViewStartingCount(false); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ background: "#FFFFFF", width: "100%", maxWidth: 360, borderRadius: 20, padding: "20px 18px 14px", maxHeight: "calc(90vh / var(--ui-zoom, 1))", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #D4A9A2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 14 : 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
@@ -9282,7 +9313,7 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, maxHeight: "92vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, maxHeight: "calc(92vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <button onClick={closeBackupRestore} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
@@ -9595,7 +9626,7 @@ function AppInner() {
 
       {showShareCard && (
         <div role="dialog" aria-modal="true" aria-label={shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์ความสำเร็จ"} onClick={(e) => { if (e.target === e.currentTarget) closeShareCard(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "90vh" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, maxHeight: "calc(90vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "20px 20px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{shareRecordData ? "แชร์รายการบริจาคนี้" : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}</div>
               <button onClick={closeShareCard} aria-label="ปิด" style={{ background: "none", border: "none", cursor: "pointer", color: "#3A2C29" }}><X size={20} /></button>
