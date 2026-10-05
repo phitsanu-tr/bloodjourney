@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.377";
+const APP_VERSION = "1.0.378";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6561,7 +6561,7 @@ function AppInner() {
                           <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
                           <span style={{ display: "block", fontSize: 12, color: "#7A6360", marginTop: 1 }}>{sub}</span>
                         </span>
-                        <ChevronRight size={16} color="#B7A5A1" style={{ flexShrink: 0 }} aria-hidden="true" />
+                        <ChevronRight size={16} color="#9A8582" style={{ flexShrink: 0 }} aria-hidden="true" />
                       </button>
                     ))}
                   </div>
