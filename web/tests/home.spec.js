@@ -25,7 +25,7 @@ test("home: hidden personal info shows one chip; tap peeks then re-hides", async
 test("home: countdown bar says how far along the wait is", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: [rec("a", daysAgo(30))] });
-  await expect(page.getByText(/ผ่านมาแล้ว \d+ จาก \d+ วัน/)).toBeVisible();
+  await expect(page.getByText(/ผ่านมา \d+\/\d+ วัน/)).toBeVisible();
   assertNoErrors(page);
 });
 
@@ -232,5 +232,19 @@ test("home: the reminder carousel never moves on its own", async ({ page }) => {
   await page.clock.fastForward(20_000);
   await page.waitForTimeout(300);
   expect(await scroller.evaluate((el) => el.scrollLeft)).toBe(0);
+  assertNoErrors(page);
+});
+
+test("home at 320px: the countdown and the hidden-info chip each stay on one line", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(10)), rec("b", daysAgo(200))], profile: { bloodType: "O", bloodRh: "+", weight: 60 } });
+  const oneLine = (loc) => loc.evaluate((el) => Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)));
+  await expect(page.getByTestId("hero-card").getByText(/^อีก \d+ วัน$/)).toBeVisible();
+  expect(await oneLine(page.getByTestId("hero-card").getByText(/^อีก \d+ วัน$/))).toBe(1);
+  expect(await oneLine(page.getByTestId("hero-card").getByText(/^ผ่านมา \d+\/\d+ วัน$/))).toBe(1);
+  const chip = page.getByRole("button", { name: /^ข้อมูลส่วนตัวถูกซ่อนอยู่/ });
+  await expect(chip).toHaveText("ซ่อนข้อมูลส่วนตัว · แตะดู");
+  expect((await chip.boundingBox()).height).toBeLessThan(30);
   assertNoErrors(page);
 });

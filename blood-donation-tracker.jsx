@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.382";
+const APP_VERSION = "1.0.383";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6193,7 +6193,7 @@ function AppInner() {
                         style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-11px -1px" }} />
                         <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><EyeOff size={9} /></span>
-                        ซ่อนข้อมูลส่วนตัว · แตะเพื่อดู
+                        ซ่อนข้อมูลส่วนตัว · แตะดู
                       </button>
                     </div>
                   ) : (bloodType || age !== "" || weight !== "") ? (
@@ -6414,8 +6414,8 @@ function AppInner() {
                         // line). Now it leads, with the exact date underneath.
                         <>
                           <div style={{ width: "100%", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>อีก {daysLeft} วัน</span>
-                            <span style={{ fontSize: 12, fontWeight: 400, color: "#FFF7F5", whiteSpace: "nowrap" }}>ผ่านมาแล้ว {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))} จาก {activeCycleDays} วัน</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35, whiteSpace: "nowrap" }}>อีก {daysLeft} วัน</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: "#FFF7F5", whiteSpace: "nowrap" }}>ผ่านมา {Math.min(activeCycleDays, Math.max(0, activeCycleDays - daysLeft))}/{activeCycleDays} วัน</span>
                           </div>
                           {/* With two donation types the countdown depends on which tab is
                               selected -- name the type here so the date can't be

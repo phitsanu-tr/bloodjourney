@@ -36,11 +36,11 @@ test("home: tabs show only recorded types and each counts down on its own cycle"
   await expect(page.getByRole("tab", { name: /พลาสมา/ })).toHaveCount(0);
   const hero = page.getByTestId("hero-card");
   await page.getByRole("tab", { name: /เกล็ดเลือด/ }).tap();
-  await expect(hero.getByText(/ผ่านมาแล้ว 10 จาก 30 วัน/)).toBeVisible();   // platelet: every 30 days
+  await expect(hero.getByText(/ผ่านมา 10\/30 วัน/)).toBeVisible();   // platelet: every 30 days
   await page.getByRole("tab", { name: /เม็ดเลือดแดง/ }).tap();
-  await expect(hero.getByText(/ผ่านมาแล้ว 40 จาก 120 วัน/)).toBeVisible();  // red cells: every 120 days
+  await expect(hero.getByText(/ผ่านมา 40\/120 วัน/)).toBeVisible();  // red cells: every 120 days
   await page.getByRole("tab", { name: /โลหิตรวม/ }).tap();
-  await expect(hero.getByText(/ผ่านมาแล้ว 10 จาก 90 วัน/)).toBeVisible();   // whole blood: every 90 days
+  await expect(hero.getByText(/ผ่านมา 10\/90 วัน/)).toBeVisible();   // whole blood: every 90 days
   assertNoErrors(page);
 });
 
@@ -49,7 +49,7 @@ test("legacy 'component' records are read as plasma", async ({ page }) => {
   await seed(page, { donations: [rec("a", daysAgo(5), "component")] });
   await expect(page.getByRole("tab")).toHaveCount(0); // single type -> no tab row
   await expect(page.getByTestId("hero-card").getByText("พลาสมา").first()).toBeVisible();
-  await expect(page.getByTestId("hero-card").getByText(/ผ่านมาแล้ว 5 จาก 14 วัน/)).toBeVisible();
+  await expect(page.getByTestId("hero-card").getByText(/ผ่านมา 5\/14 วัน/)).toBeVisible();
   assertNoErrors(page);
 });
 
