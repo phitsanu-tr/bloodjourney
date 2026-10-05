@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.381";
+const APP_VERSION = "1.0.382";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2544,7 +2544,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
     <div className="hist-card" onClick={view} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
       <div role="button" tabIndex={0} aria-label={`${spoken} ดูรายละเอียด`} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); view(); } }} style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
-        <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
+        <svg width="46" height="56" viewBox="0 0 46 56" fill="none" aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
         </svg>
         <div style={{ position: "absolute", inset: 0, top: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -6109,7 +6109,7 @@ function AppInner() {
                 <Droplet size={17} color="#FFF7F5" />
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>Blood Journey</div>
+                <h1 style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25, margin: 0 }}>Blood Journey</h1>
                 <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
               </div>
             </div>
@@ -6143,7 +6143,7 @@ function AppInner() {
         </div>
       )}
       {phase === "app" && (
-        <div ref={ptrShellRef} className={tab === "knowledge" ? "app-shell selectable" : tab === "home" ? "app-shell home-scale" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
+        <div ref={ptrShellRef} role="main" className={tab === "knowledge" ? "app-shell selectable" : tab === "home" ? "app-shell home-scale" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
               {/* The whole row opens the profile (mouse/touch); the avatar is the keyboard /
@@ -6191,7 +6191,7 @@ function AppInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8, minHeight: 22 }}>
                       <button type="button" onClick={(e) => { e.stopPropagation(); setPeekPills(true); }} aria-label="ข้อมูลส่วนตัวถูกซ่อนอยู่ แตะเพื่อดูชั่วคราว"
                         style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                        <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-11px -1px" }} />
                         <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><EyeOff size={9} /></span>
                         ซ่อนข้อมูลส่วนตัว · แตะเพื่อดู
                       </button>
@@ -6796,7 +6796,7 @@ function AppInner() {
                   backdrop / Escape discard it. */}
               {totalCount > 0 && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>ประวัติบริจาคโลหิต</div>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29", margin: 0 }}>ประวัติบริจาคโลหิต</h2>
                 {(hasMultipleTypes || historyYears.length > 1) && (() => {
                   const activeCount = (historyTypeFilter !== "all" ? 1 : 0) + (historyYearFilter !== "all" ? 1 : 0);
                   const on = activeCount > 0;
@@ -7742,7 +7742,7 @@ function AppInner() {
       )}
 
       {phase === "app" && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40 }}>
+        <nav aria-label="เมนูหลัก" style={{ position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 40 }}>
           <div style={{ width: "100%", maxWidth: 420, background: "#FFFFFF", borderTop: "1px solid #EEDEDA", display: "flex", padding: "8px 20px calc(8px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setTab("home")} aria-label="หน้าหลัก" aria-current={tab === "home" ? "page" : undefined} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", color: tab === "home" ? "#9A3B33" : "#7A6360" }}>
               <Home size={19} />
@@ -7767,7 +7767,7 @@ function AppInner() {
               <span style={{ fontSize: 11, fontWeight: 600 }}>ให้ความรู้</span>
             </button>
           </div>
-        </div>
+        </nav>
       )}
 
       {toast && (
