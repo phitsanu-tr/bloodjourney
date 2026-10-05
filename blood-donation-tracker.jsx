@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.388";
+const APP_VERSION = "1.0.389";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6527,7 +6527,7 @@ function AppInner() {
                         ? (
                           <>
                             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>ยังไม่มีวันที่บริจาคล่าสุด</div>
-                            <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>ระบุวันที่เพื่อให้แอปนับวันครบกำหนดให้</div>
+                            <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>ระบุวันที่ แล้วแอปจะนับวันครบกำหนดให้</div>
                             <button onClick={handleAddButtonClick}
                               style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                               ระบุวันที่บริจาคล่าสุด <ChevronRight size={13} />
@@ -6732,7 +6732,7 @@ function AppInner() {
                         <>
                           <AlertTriangle size={15} color="#9C5515" style={{ flexShrink: 0 }} />
                           <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#7A4A1D" }}>
-                            {kind === "age" ? `อายุอยู่นอกเกณฑ์ทั่วไป (${MIN_AGE}–${MAX_AGE} ปี)` : `น้ำหนักต่ำกว่าเกณฑ์ทั่วไป (${MIN_WEIGHT} กก.)`}
+                            {kind === "age" ? `อายุอยู่นอกเกณฑ์ทั่วไป (${MIN_AGE}–${MAX_AGE} ปี)` : `น้ำหนักต่ำกว่าเกณฑ์ ${MIN_WEIGHT} กก.`}
                           </span>
                           <button onClick={() => { setTab("knowledge"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                             style={{ position: "relative", flexShrink: 0, padding: "5px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: "inherit", border: "none", background: "#F7E2D0", color: "#7A4A1D", cursor: "pointer" }}>
