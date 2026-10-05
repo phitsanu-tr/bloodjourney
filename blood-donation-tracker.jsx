@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.371";
+const APP_VERSION = "1.0.372";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2532,14 +2532,17 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   const tint = DONATION_TYPE_TINT[dType];
   const moreRef = useRef(null);
   const [menuUp, setMenuUp] = useState(false);
-  useMenuEscape(isMenuOpen, onToggleMenu, moreRef);
+  // Handlers come in stable (they take the record), so React.memo can skip unchanged rows.
+  const toggle = useCallback(() => onToggleMenu(d.id), [onToggleMenu, d.id]);
+  const view = useCallback(() => onView(d.id), [onView, d.id]);
+  useMenuEscape(isMenuOpen, toggle, moreRef);
   // Screen readers hear what the card is (order, date, type, place) instead of
   // the same generic label on every card. The ⋮ button sits beside the
   // focusable area, not inside it (design 4A).
   const spoken = [`ครั้งที่ ${orderNumber}`, toBuddhistDateFull(d.date), d.time ? `เวลา ${d.time} น.` : "", DONATION_TYPE_LABELS[dType], d.location || ""].filter(Boolean).join(", ");
   return (
-    <div className="hist-card" onClick={onView} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
-      <div role="button" tabIndex={0} aria-label={`${spoken} ดูรายละเอียด`} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onView(); } }} style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
+    <div className="hist-card" onClick={view} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 6px 10px 13px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+      <div role="button" tabIndex={0} aria-label={`${spoken} ดูรายละเอียด`} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); view(); } }} style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
       <div style={{ width: 46, height: 56, position: "relative", flexShrink: 0 }}>
         <svg width="46" height="56" viewBox="0 0 46 56" fill="none" style={{ position: "absolute", inset: 0 }}>
           <path d="M23 2 C23 2 40 24 40 35 C40 45.5 32.5 54 23 54 C13.5 54 6 45.5 6 35 C6 24 23 2 23 2 Z" fill="#9A3B33" />
@@ -2572,20 +2575,20 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
       </div>
       </div>
       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-        <button ref={moreRef} onClick={() => { if (!isMenuOpen) setMenuUp(menuOpensUp(moreRef.current, 3)); onToggleMenu(); }} aria-label={`ตัวเลือกเพิ่มเติม สำหรับครั้งที่ ${orderNumber}`} aria-haspopup="menu" aria-expanded={isMenuOpen} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
+        <button ref={moreRef} onClick={() => { if (!isMenuOpen) setMenuUp(menuOpensUp(moreRef.current, 3)); toggle(); }} aria-label={`ตัวเลือกเพิ่มเติม สำหรับครั้งที่ ${orderNumber}`} aria-haspopup="menu" aria-expanded={isMenuOpen} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
           <MoreVertical size={17} color="#9A3B33" />
         </button>
         {isMenuOpen && (
           <>
-            <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
+            <div onClick={toggle} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
             <div role="menu" style={{ position: "absolute", ...(menuUp ? { bottom: "100%", marginBottom: 2 } : { top: "100%", marginTop: 2 }), right: 0, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
-              <button role="menuitem" onClick={onEdit} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
+              <button role="menuitem" onClick={() => onEdit(d)} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
-              <button role="menuitem" onClick={onShare} style={{ ...HIST_MENU_ITEM, color: "#3A2C29", borderTop: "1px solid #F3E7E4" }}>
+              <button role="menuitem" onClick={() => onShare(d)} style={{ ...HIST_MENU_ITEM, color: "#3A2C29", borderTop: "1px solid #F3E7E4" }}>
                 <Share2 size={14} color="#9A3B33" /> แชร์
               </button>
-              <button role="menuitem" onClick={onDelete} style={{ ...HIST_MENU_ITEM, color: "#B3261E", borderTop: "1px solid #F3E7E4" }}>
+              <button role="menuitem" onClick={() => onDelete(d.id)} style={{ ...HIST_MENU_ITEM, color: "#B3261E", borderTop: "1px solid #F3E7E4" }}>
                 <Trash2 size={14} color="#B3261E" /> ลบ
               </button>
                           </div>
@@ -5264,22 +5267,25 @@ function AppInner() {
   const dashboardShownNextEligible = dashboardShownLastDateStr ? new Date(new Date(dashboardShownLastDateStr).getTime() + dashboardShownCycleDays * 86400000) : null;
   const dashboardShownDaysLeft = dashboardShownNextEligible ? daysBetween(new Date(), new Date(dashboardShownNextEligible)) : 0;
   const dashboardShownIsEligible = !dashboardShownNextEligible || dashboardShownDaysLeft <= 0;
-  // Auto-rotate the dashboard card's shown type every 30s while more than one
-  // type is recorded, only while that tab is on screen. A manual pill tap sets
-  // dashboardRotateType immediately and the cycle continues from there.
-  const nextRecordedType = (cur) => recordedTypes[(Math.max(0, recordedTypes.indexOf(cur)) + 1) % recordedTypes.length];
+  // The dashboard card opens on the soonest type and stays there until a pill is
+  // tapped (it used to rotate every 30s, like the home card did before v1.0.359).
   useEffect(() => {
     if (!hasMultipleTypes || tab !== "dashboard") return;
     setDashboardRotateType(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
-    const id = setInterval(() => {
-      setDashboardRotateType(prev => nextRecordedType(prev));
-    }, 30000);
-    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
   // Keeps the selected type's tab visible in the scrolling tab row (sideways only, never the page).
   const heroTabsRef = useRef(null);
   const carryMoreRef = useRef(null);
+  // Stable history-card handlers (see HistoryRow). The actions they call are redefined every
+  // render, so they're read through a ref that always holds the latest ones.
+  const historyActionsRef = useRef({});
+  historyActionsRef.current = { openEditForm, openRecordShareCard, requestDeleteDonation };
+  const historyToggleMenu = useCallback((id) => setOpenActionMenuId((cur) => (cur === id ? null : id)), []);
+  const historyView = useCallback((id) => { setOpenActionMenuId(null); setViewDonationId(id); }, []);
+  const historyEdit = useCallback((d) => { setOpenActionMenuId(null); historyActionsRef.current.openEditForm(d); }, []);
+  const historyShare = useCallback((d) => { setOpenActionMenuId(null); historyActionsRef.current.openRecordShareCard(d); }, []);
+  const historyDelete = useCallback((id) => { setOpenActionMenuId(null); historyActionsRef.current.requestDeleteDonation(id); }, []);
   const [carryMenuUp, setCarryMenuUp] = useState(false);
   const closeCarryMenu = useCallback(() => setOpenActionMenuId(null), []);
   useMenuEscape(openActionMenuId === "startingCount", closeCarryMenu, carryMoreRef);
@@ -6192,19 +6198,19 @@ function AppInner() {
                       {bloodType && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Droplet size={9} /></span>
-                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
+                          <span>{bloodType === "ไม่ทราบ" ? "ไม่ระบุ" : `${bloodType}${bloodRh ? ` Rh${bloodRh === "+" ? "+" : "−"}` : ""}`}</span>
                         </span>
                       )}
                       {age !== "" && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Cake size={9} /></span>
-                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{age} ปี</span>
+                          <span>{age} ปี</span>
                         </span>
                       )}
                       {weight !== "" && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600 }}>
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Weight size={9} /></span>
-                          <span style={{ filter: pillsHidden ? "blur(4px)" : "none", userSelect: pillsHidden ? "none" : "auto", transition: "filter 0.15s" }}>{weight} กก.</span>
+                          <span>{weight} กก.</span>
                         </span>
                       )}
                     </div>
@@ -6931,11 +6937,11 @@ function AppInner() {
                     d={d}
                     orderNumber={donationOrderMap[d.id]}
                     isMenuOpen={openActionMenuId === d.id}
-                    onToggleMenu={() => setOpenActionMenuId(openActionMenuId === d.id ? null : d.id)}
-                    onView={() => { setOpenActionMenuId(null); setViewDonationId(d.id); }}
-                    onEdit={() => { setOpenActionMenuId(null); openEditForm(d); }}
-                    onShare={() => { setOpenActionMenuId(null); openRecordShareCard(d); }}
-                    onDelete={() => { setOpenActionMenuId(null); requestDeleteDonation(d.id); }}
+                    onToggleMenu={historyToggleMenu}
+                    onView={historyView}
+                    onEdit={historyEdit}
+                    onShare={historyShare}
+                    onDelete={historyDelete}
                   />
                   </React.Fragment>
                   );
