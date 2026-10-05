@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.395";
+const APP_VERSION = "1.0.396";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -625,6 +625,9 @@ const DONOR_TYPES = [
   { key: "monk", label: "พระภิกษุสงฆ์" },
 ];
 const DEFAULT_DONOR_TYPE = "general";
+
+// Text read by screen readers but not shown on screen.
+const SR_ONLY = { position: "absolute", width: 1, height: 1, margin: -1, padding: 0, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 };
 
 const PIN_MILESTONES = [1, 7, 16, 24, 36, 48, 60, 72, 84, 96, 108];
 const MEDAL_TIERS = [
@@ -7567,7 +7570,7 @@ function AppInner() {
 
           {tab === "missions" && (
             <>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#3A2C29" }}>ภารกิจนักบริจาค</div>
+              <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 4px", color: "#3A2C29" }}>ภารกิจนักบริจาค</h2>
               <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 16px" }}>สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</p>
 
               {stats.nextAchievement && (
@@ -7586,7 +7589,9 @@ function AppInner() {
                     let eta = null;
                     if (stats.avgGap != null) {
                       const months = left * stats.avgGap / 30;
-                      eta = months < 1 ? "ไม่ถึงเดือน" : `ประมาณ ${Math.round(months)} เดือน`;
+                      // "ประมาณ 3 ปี 4 เดือน" reads easier than "ประมาณ 40 เดือน".
+                      const m = Math.round(months), y = Math.floor(m / 12), rest = m % 12;
+                      eta = months < 1 ? "ไม่ถึงเดือน" : y === 0 ? `ประมาณ ${m} เดือน` : `ประมาณ ${y} ปี${rest ? ` ${rest} เดือน` : ""}`;
                     }
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -7628,7 +7633,7 @@ function AppInner() {
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14, marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33" }}>เข็มที่ระลึก</div>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33", margin: 0 }}>เข็มที่ระลึก</h3>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33" }}>
                     ปลดล็อกแล้ว {pinAchievements.filter(a => totalCount >= a.threshold).length}/{pinAchievements.length}
                   </div>
@@ -7659,7 +7664,7 @@ function AppInner() {
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 3 }}>{a.title}</div>
                         <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5 }}>
-                          {unlocked ? a.desc : `อีก ${a.threshold - totalCount} ครั้งจะปลดล็อก`}
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : `อีก ${a.threshold - totalCount} ครั้งจะปลดล็อก`}
                         </div>
                       </div>
                     );
@@ -7669,9 +7674,9 @@ function AppInner() {
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14, marginBottom: 24 }}>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33" }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#9A3B33", margin: 0 }}>
                     {donorType === "monk" ? "พัดกาชาด" : "เหรียญกาชาดสมนาคุณ"}
-                  </div>
+                  </h3>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "#9A3B33" }}>
                     ปลดล็อกแล้ว {medalAchievements.filter(a => totalCount >= a.threshold).length}/{medalAchievements.length}
                   </div>
@@ -7702,7 +7707,7 @@ function AppInner() {
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", marginBottom: 3, lineHeight: 1.35 }}>{a.title}</div>
                         <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5 }}>
-                          {unlocked ? a.desc : `อีก ${a.threshold - totalCount} ครั้ง`}
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : `อีก ${a.threshold - totalCount} ครั้งจะปลดล็อก`}
                         </div>
                       </div>
                     );
