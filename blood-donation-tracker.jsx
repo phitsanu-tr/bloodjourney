@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.361";
+const APP_VERSION = "1.0.362";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2499,7 +2499,7 @@ function ModalMetaLine({ children }) {
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
   }, []);
   return (
-    <div style={{ position: "relative", padding: `10px 0 2px ${pad}px`, fontSize: 10, color: "#B5A29E", lineHeight: 1.6 }}>
+    <div style={{ position: "relative", padding: `10px 0 2px ${pad}px`, fontSize: 12, color: "#7A6360", lineHeight: 1.6 }}>
       <span ref={ghostRef} aria-hidden="true" style={{ position: "absolute", visibility: "hidden", whiteSpace: "nowrap", fontSize: 12 }}>ประเภท</span>
       {children}
     </div>
@@ -6968,7 +6968,7 @@ function AppInner() {
                         style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0, flex: 1, borderRadius: 10 }}>
                       <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFFFF", border: "1px solid #D4A9A2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: "0 2px" /* 46px column like the droplet badge, so text lines up */ }}>
                         <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 12 : 14, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
-                        <div style={{ fontSize: 11, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                        <div style={{ fontSize: 11, fontWeight: 500, color: "#9A3B33", marginTop: 1 }}>สะสม</div>
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         {/* "ทั้งหมด" with both types carried over shows the combined total plus
@@ -8926,7 +8926,7 @@ function AppInner() {
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 50, height: 50, borderRadius: 14, background: "#FFFFFF", border: "1px solid #E3C8C3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <div style={{ fontSize: String(displayedStartingCount).length >= 3 ? 13 : 16, fontWeight: 800, color: "#9A3B33", lineHeight: 1.1 }}>+{displayedStartingCount}</div>
-                  <div style={{ fontSize: 11, color: "#9A3B33", opacity: 0.75, marginTop: 1 }}>สะสม</div>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: "#9A3B33", marginTop: 1 }}>สะสม</div>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#241A18", lineHeight: 1.5 }}>ยอดบริจาคที่ผ่านมา</div>
