@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.401";
+const APP_VERSION = "1.0.402";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6788,15 +6788,27 @@ function AppInner() {
                           <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 1 }}>
                             {hasMultipleTypes ? `สำหรับ${DONATION_TYPE_LABELS[activeCountdownType]} · ` : ""}ครั้งล่าสุด <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(effectiveLastDateStr)}</span>
                           </div>
-                          <button
-                            onClick={() => {
-                              // The knowledge tab opens its folded "เตรียมตัวก่อนบริจาค" section and scrolls to it.
-                              setKnowledgeJump((n) => n + 1);
-                              setTab("knowledge");
-                            }}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "auto 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                            ดูวิธีเตรียมตัวก่อนบริจาค <ChevronRight size={13} />
-                          </button>
+                          {/* Two links on one row so the eligible card stays the height of the other states;
+                              at 320px they wrap into the taller status area that width already has. */}
+                          <div style={{ display: "flex", flexWrap: "wrap", columnGap: 12, margin: "auto 0 -12px" }}>
+                            <button
+                              onClick={() => {
+                                // The knowledge tab opens its folded "เตรียมตัวก่อนบริจาค" section and scrolls to it.
+                                setKnowledgeJump((n) => n + 1);
+                                setTab("knowledge");
+                              }}
+                              aria-label="ดูวิธีเตรียมตัวก่อนบริจาค"
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                              วิธีเตรียมตัว <ChevronRight size={13} aria-hidden="true" />
+                            </button>
+                            {/* Eligible today is when donors are about to go -- the check page opens on this card's type. */}
+                            <button
+                              onClick={() => { setEligibilityType(activeCountdownType); setTab("eligibility"); }}
+                              aria-label="เช็คคุณสมบัติของฉัน"
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                              เช็คคุณสมบัติ <ChevronRight size={13} aria-hidden="true" />
+                            </button>
+                          </div>
                         </>
                       ) : (
                         // "อีก N วัน" is the number a waiting donor actually acts
