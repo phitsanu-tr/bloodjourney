@@ -269,6 +269,8 @@ test("focus: dialogs take focus and hand it back; a keyboard-opened ⋮ menu foc
   await page.locator("[role=dialog]").last().getByRole("button", { name: /^บันทึก$/ }).click();
   await expect(page.locator('[role="dialog"]')).toHaveCount(0);
   await expect(record).toBeFocused();
+  // the toast names the new donation's number, through the always-present live region
+  await expect(page.getByRole("status").filter({ hasText: /^บันทึกการบริจาคครั้งที่ 3 แล้ว$/ })).toHaveCount(1);
   // ⋮ menu from the keyboard -> first item focused; Escape -> back on ⋮
   const more = page.getByRole("button", { name: /^ตัวเลือกเพิ่มเติม สำหรับครั้งที่ 3/ });
   await more.focus(); await page.keyboard.press("Enter");
