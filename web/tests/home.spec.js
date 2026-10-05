@@ -76,7 +76,7 @@ test("nav: all four bottom-tab labels sit on the same line", async ({ page }) =>
 test("home reminders: backup card shows the count; several reminders peek the next slide", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: [rec("a", daysAgo(90)), rec("b", daysAgo(60)), rec("c", daysAgo(10))] });
-  await expect(page.getByText("3 รายการยังไม่ได้สำรอง")).toBeVisible();
+  await expect(page.getByText("ยังไม่สำรอง 3 รายการ")).toBeVisible();
   await expect(page.getByRole("button", { name: "สำรองข้อมูล" })).toBeVisible();
   const slides = page.locator('[role="group"][aria-label^="เรื่องที่"]');
   const n = await slides.count();
@@ -122,7 +122,7 @@ test("hero card: prior count only asks for the last date and the link opens the 
 test("hero card: paused reminders still show the next donation date", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: [rec("a", daysAgo(30))], profile: { remindPauseUntil: "indefinite" } });
-  await expect(page.getByText("พักการเตือนไว้")).toBeVisible();
+  await expect(page.getByText("พักการเตือน", { exact: true })).toBeVisible();
   await expect(page.getByText(/บริจาคได้อีกครั้ง .* \(อีก \d+ วัน\)/)).toBeVisible();
   assertNoErrors(page);
 });
@@ -238,7 +238,7 @@ test("home: the reminder carousel never moves on its own", async ({ page }) => {
 test("home at 320px: the countdown and the hidden-info chip each stay on one line", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await startFresh(page);
-  await seed(page, { donations: [rec("a", daysAgo(10)), rec("b", daysAgo(200))], profile: { bloodType: "O", bloodRh: "+", weight: 60 } });
+  await seed(page, { donations: [rec("a", daysAgo(10)), rec("b", daysAgo(200)), rec("c", daysAgo(400))], profile: { bloodType: "O", bloodRh: "+", weight: 60 } });
   const oneLine = (loc) => loc.evaluate((el) => Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)));
   await expect(page.getByTestId("hero-card").getByText(/^อีก \d+ วัน$/)).toBeVisible();
   expect(await oneLine(page.getByTestId("hero-card").getByText(/^อีก \d+ วัน$/))).toBe(1);
@@ -246,6 +246,12 @@ test("home at 320px: the countdown and the hidden-info chip each stay on one lin
   const chip = page.getByRole("button", { name: /^ข้อมูลส่วนตัวถูกซ่อนอยู่/ });
   await expect(chip).toHaveText("ซ่อนข้อมูลส่วนตัว · แตะดู");
   expect((await chip.boundingBox()).height).toBeLessThan(30);
+  // backup reminder: if it wraps, it breaks before the count ("ยังไม่สำรอง / 2 รายการ"), never inside it
+  expect(await oneLine(page.getByText(/^\d+ รายการ$/).first())).toBe(1);
+  // paused: the title and "(อีก N วัน)" each stay on one line
+  await seed(page, { donations: [rec("a", daysAgo(30))], profile: { remindPauseUntil: "indefinite" } });
+  expect(await oneLine(page.getByTestId("hero-card").getByText("พักการเตือน", { exact: true }))).toBe(1);
+  expect(await oneLine(page.getByTestId("hero-card").getByText(/^\(อีก \d+ วัน\)$/))).toBe(1);
   assertNoErrors(page);
 });
 
