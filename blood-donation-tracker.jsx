@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.368";
+const APP_VERSION = "1.0.369";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -5217,6 +5217,8 @@ function AppInner() {
   // on home for the day of the latest donation and the two days after.
   const careDaysSince = last ? daysBetween(parseLocalDate(last.date), new Date()) : null;
   const showCareCard = !!last && careDaysSince >= 0 && careDaysSince <= 2 && dismissedCareFor !== last.id;
+  // Post-donation tips start folded to the first one, so the card doesn't push history off screen.
+  const [careExpanded, setCareExpanded] = useState(false);
   // Carried-over counts as numbers, per type.
   const startingNum = Object.fromEntries(DONATION_TYPES.map((t) => [t, Number(startingCounts[t]) || 0]));
   const startingCountNum = DONATION_TYPES.reduce((sum, t) => sum + startingNum[t], 0);
@@ -6156,9 +6158,12 @@ function AppInner() {
         <div ref={ptrShellRef} className={tab === "knowledge" ? "app-shell selectable" : tab === "home" ? "app-shell home-scale" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                {/* Display-only avatar: photo is changed from the profile, not from here */}
-                <div role="img" aria-label="รูปโปรไฟล์" style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {/* The whole row opens the profile (mouse/touch); the avatar is the keyboard /
+                  screen-reader button, so the info-pill buttons inside the row aren't nested in one. */}
+              <div onClick={openProfile} style={{ display: "flex", alignItems: "center", gap: 14, margin: "-6px 0 14px", padding: "6px 0", cursor: "pointer" }}>
+                <div role="button" tabIndex={0} aria-label="เปิดโปรไฟล์" onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openProfile(); } }}
+                  style={{ position: "relative", width: 56, height: 56, flexShrink: 0, borderRadius: "50%" }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {photo ? (
                     <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : nickname ? (
@@ -6166,6 +6171,8 @@ function AppInner() {
                   ) : (
                     <User size={24} color="#9A3B33" />
                   )}
+                </div>
+                <span aria-hidden="true" style={{ position: "absolute", right: -2, bottom: -2, width: 20, height: 20, borderRadius: "50%", background: "#FFFFFF", border: "1px solid #EEDEDA", display: "flex", alignItems: "center", justifyContent: "center", color: "#9A3B33" }}><Pencil size={10} strokeWidth={2.4} /></span>
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -6185,15 +6192,16 @@ function AppInner() {
                       สวัสดี วันนี้คุณบริจาคโลหิตแล้วหรือยัง?
                     </div>
                   ) : (
+                    // No nickname but a history: a greeting for the time of day instead of a lone "สวัสดี".
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.4 }}>
-                      สวัสดี
+                      {(() => { const h = new Date().getHours(); return h < 12 ? "สวัสดีตอนเช้า" : h < 17 ? "สวัสดีตอนบ่าย" : h < 20 ? "สวัสดีตอนเย็น" : "สวัสดีตอนค่ำ"; })()}
                     </div>
                   )}
                   </div>
                   </div>
                   {(bloodType || age !== "" || weight !== "") && pillsHidden ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8, minHeight: 22 }}>
-                      <button type="button" onClick={() => setPeekPills(true)} aria-label="ข้อมูลส่วนตัวถูกซ่อนอยู่ แตะเพื่อดูชั่วคราว"
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setPeekPills(true); }} aria-label="ข้อมูลส่วนตัวถูกซ่อนอยู่ แตะเพื่อดูชั่วคราว"
                         style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
                         <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><EyeOff size={9} /></span>
@@ -6223,13 +6231,14 @@ function AppInner() {
                     </div>
                   ) : (
                     <div style={{ marginTop: 8 }}>
-                      <button onClick={openProfile} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, background: "none", color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", cursor: "pointer", fontFamily: "inherit" }}>
+                      <button onClick={(e) => { e.stopPropagation(); openProfile(); }} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, background: "none", color: "#9A3B33", padding: "5px 12px", borderRadius: 20, fontWeight: 600, border: "1px solid #E3C8C3", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-9px -1px" }} />
                         <Plus size={11} /> เพิ่มข้อมูลโปรไฟล์
                       </button>
                     </div>
                   )}
                 </div>
+                <ChevronRight size={18} color="#B39B96" aria-hidden="true" style={{ flexShrink: 0 }} />
               </div>
               {storageDegraded && (
                 // Persistent — deliberately no "เตือนทีหลัง" dismiss, unlike
@@ -6265,7 +6274,7 @@ function AppInner() {
                     </div>
                   ) : (
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 12, marginBottom: 2 }}>บริจาคโลหิตสะสมทั้งหมด</div>
+                      <div style={{ fontSize: 12, marginBottom: 2 }}>{hasMultipleTypes ? "บริจาคโลหิตสะสม · รวมทุกประเภท" : "บริจาคโลหิตสะสมทั้งหมด"}</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
                         <div style={{ fontSize: 38, fontWeight: 700, lineHeight: 1 }}>{totalCount}<span style={{ fontSize: 16, fontWeight: 500 }}> ครั้ง</span></div>
                         {/* Liters of the selected type only (design H3 of
@@ -6487,17 +6496,25 @@ function AppInner() {
                   pushed down below the disclaimer paragraph and the
                   calendar-reminder card) since this is the single most
                   important action on the tab. */}
+              {/* Solid red once the type shown on the hero card can be donated again
+                  (the moment this button matters most); the quiet white row otherwise. */}
+              {(() => {
+                const hot = !!effectiveLastDateStr && isEligible;
+                return (
               <button onClick={handleAddButtonClick}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: 14,
-                  background: "#FFFFFF", border: "1px solid #EEDEDA", boxShadow: "0 4px 14px rgba(122,42,35,0.06)",
+                  background: hot ? "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)" : "#FFFFFF", border: hot ? "1px solid transparent" : "1px solid #EEDEDA",
+                  boxShadow: hot ? "0 10px 22px -8px rgba(122,42,35,0.6)" : "0 4px 14px rgba(122,42,35,0.06)",
                   marginBottom: 16, cursor: "pointer", fontFamily: "inherit" }}>
-                <span style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)",
+                <span style={{ width: 38, height: 38, borderRadius: 11, background: hot ? "rgba(255,247,245,0.18)" : "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)",
                   display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF7F5", flexShrink: 0 }}>
                   <Plus size={18} />
                 </span>
-                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
-                <ChevronRight size={16} color="#B39B96" style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1, textAlign: "left", fontSize: 14, fontWeight: 600, color: hot ? "#FFF7F5" : "#3A2C29" }}>บันทึกบริจาคโลหิต</span>
+                <ChevronRight size={16} color={hot ? "#FFF7F5" : "#B39B96"} style={{ flexShrink: 0 }} />
               </button>
+                );
+              })()}
 
               {showCareCard && (() => {
                 const items = [
@@ -6518,7 +6535,7 @@ function AppInner() {
                     </button>
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#9A3B33" }}>หลังบริจาค · {careDaysSince === 0 ? "วันนี้" : careDaysSince === 1 ? "เมื่อวาน" : "2 วันก่อน"}</div>
                     <div style={{ fontSize: 16, fontWeight: 600, color: "#3A2C29", margin: "2px 0 6px" }}>ดูแลตัวเองหลังบริจาค</div>
-                    {items.map(({ Icon, text }) => (
+                    {(careExpanded ? items : items.slice(0, 1)).map(({ Icon, text }) => (
                       <div key={text} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, lineHeight: 1.55, color: "#4A3A37", padding: "6px 0" }}>
                         <span aria-hidden="true" style={{ width: 30, height: 30, borderRadius: "50%", background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Icon size={15} color="#9A3B33" />
@@ -6526,6 +6543,13 @@ function AppInner() {
                         <span style={{ paddingTop: 4 }}>{text}</span>
                       </div>
                     ))}
+                    {items.length > 1 && (
+                      <button onClick={() => setCareExpanded((v) => !v)} aria-expanded={careExpanded}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4, minHeight: 44, margin: "-2px 0 -4px", padding: 0, border: "none", background: "none", color: "#9A3B33", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                        {careExpanded ? "ย่อคำแนะนำ" : `ดูคำแนะนำอีก ${items.length - 1} ข้อ`}
+                        <ChevronDown size={16} aria-hidden="true" style={{ transform: careExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+                      </button>
+                    )}
                   </div>
                 );
               })()}

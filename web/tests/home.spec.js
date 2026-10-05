@@ -167,3 +167,38 @@ test("history: each card has its own spoken label; ⋮ menu rows are 44px and Es
   await expect(more).toBeFocused();
   assertNoErrors(page);
 });
+
+test("home: post-donation tips start folded to one and expand on tap", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(1)), rec("b", daysAgo(200))], profile: { gender: "female" } });
+  const care = page.getByRole("region", { name: "ดูแลตัวเองหลังบริจาค" });
+  await expect(care.getByText(/ดื่มน้ำมากกว่าปกติ/)).toBeVisible();
+  await expect(care.getByText(/^กินยาธาตุเหล็กที่ได้รับ/)).toHaveCount(0);
+  const toggle = care.getByRole("button", { name: "ดูคำแนะนำอีก 2 ข้อ" });
+  await toggle.tap();
+  await expect(care.getByText(/^กินยาธาตุเหล็กที่ได้รับ/)).toBeVisible();
+  await expect(care.getByText(/^ผู้หญิงเสียธาตุเหล็ก/)).toBeVisible();
+  await expect(care.getByRole("button", { name: "ย่อคำแนะนำ" })).toHaveAttribute("aria-expanded", "true");
+  assertNoErrors(page);
+});
+
+test("home: record button turns solid red only when the shown type can be donated", async ({ page }) => {
+  await startFresh(page);
+  const cta = page.getByRole("button", { name: "บันทึกบริจาคโลหิต" });
+  await seed(page, { donations: [rec("a", daysAgo(120))] });
+  await expect.poll(() => cta.evaluate((b) => getComputedStyle(b).backgroundImage)).toContain("gradient");
+  await seed(page, { donations: [rec("a", daysAgo(30))] });
+  await expect.poll(() => cta.evaluate((b) => getComputedStyle(b).backgroundImage)).toBe("none");
+  assertNoErrors(page);
+});
+
+test("home: profile row opens the profile; the info chip still only peeks; multi-type hero says all types", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(200)), rec("b", daysAgo(30), "plasma")], profile: PROFILE });
+  await expect(page.getByTestId("hero-card").getByText("บริจาคโลหิตสะสม · รวมทุกประเภท")).toBeVisible();
+  await page.getByRole("button", { name: /ข้อมูลส่วนตัวถูกซ่อนอยู่/ }).tap();
+  await expect(page.getByRole("dialog", { name: "โปรไฟล์ของฉัน" })).toHaveCount(0);
+  await page.getByRole("button", { name: "เปิดโปรไฟล์" }).tap();
+  await expect(page.getByRole("dialog", { name: "โปรไฟล์ของฉัน" })).toBeVisible();
+  assertNoErrors(page);
+});
