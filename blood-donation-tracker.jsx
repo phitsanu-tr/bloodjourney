@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.394";
+const APP_VERSION = "1.0.395";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3469,7 +3469,13 @@ function AppInner() {
             const opener = openers.get(d);
             requestAnimationFrame(() => {
               if (isLive(document.activeElement)) return;
-              if (isLive(opener)) opener.focus({ preventScroll: true });
+              if (isLive(opener)) { opener.focus({ preventScroll: true }); return; }
+              // The opener went away with the dialog's result (e.g. the dashboard's empty card
+              // disappears after the first save) -- land on the page's heading instead of <body>.
+              const h = document.querySelector('[role="main"] :is(h1, h2, h3)');
+              if (!h) return;
+              if (!h.hasAttribute("tabindex")) { h.setAttribute("tabindex", "-1"); h.setAttribute("data-focus-fallback", ""); }
+              h.focus({ preventScroll: true });
             });
           }
         }
@@ -5974,6 +5980,7 @@ function AppInner() {
         [role="dialog"][aria-modal="true"]:not([data-own-motion]) > :first-child { animation: dlgPanelIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .dlg-exit-clone { animation: dlgScrimOut 0.16s ease forwards; pointer-events: none !important; }
         [role="dialog"][tabindex="-1"]:focus { outline: none; }
+        [data-focus-fallback]:focus { outline: none; }
         .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
         @media (prefers-reduced-motion: reduce) {
           [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
