@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.376";
+const APP_VERSION = "1.0.377";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -937,7 +937,7 @@ function TimeHourMinuteSelect({ value, onChange, ariaLabelPrefix, height = 44, f
     <>
       <button type="button" onClick={() => { setSheetKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${value}` : ": ยังไม่ระบุ"}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#7A6360", textAlign: "center" }}>
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#80726F", textAlign: "center" }}>
         {!value && <Clock size={14} color="#9A8582" />}
         {value ? `${value} น.` : "ระบุเวลา"}
       </button>
@@ -1639,7 +1639,7 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
     <>
       <button ref={ref} type="button" onClick={() => { setDialogKey((k) => k + 1); setOpen(true); }}
         aria-label={`${ariaLabelPrefix}${value ? `: ${toBuddhistDate(value)}` : ""}`}
-        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#7A6360", textAlign: "center" }}>
+        style={{ width: "100%", height, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Mitr', 'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize, fontWeight: value ? 600 : 400, color: value ? "#3A2C29" : "#80726F", textAlign: "center" }}>
         {!value && <Calendar size={14} color="#9A8582" />}
         {value ? toBuddhistDate(value) : "ระบุวันที่"}
       </button>
@@ -5790,9 +5790,9 @@ function AppInner() {
         .btn-primary:active { background: #7E2F28; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-ghost { background: transparent; color: #9A3B33; border: 1px solid #E3C8C3; }
-        /* One "still empty" tone across forms (3.1:1 on white): placeholders match the empty date/time
-           fields and the unchosen options of the segmented pickers. Profile rows keep their own rule below. */
-        input::placeholder, textarea::placeholder { color: #A38D89; opacity: 1; }
+        /* One "still empty" tone across the app (#80726F, 4.6:1 on white): placeholders, the empty
+           date/time fields, profile rows' empty values, "(ไม่บังคับ)" and the character counters. */
+        input::placeholder, textarea::placeholder { color: #80726F; opacity: 1; }
         /* Typed text uses the app's body brown (same as chosen date/time), not the browser's pure black. */
         input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea { color: #3A2C29; }
         /* App-like text: nothing is selectable by a long-press / double-tap (no blue selection, no iOS
@@ -8455,7 +8455,7 @@ function AppInner() {
                 </div>
               </div>
               <div style={{ minWidth: 0 }}>
-                <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>เวลา <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
                 <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                   <TimeHourMinuteSelect value={form.time} ariaLabelPrefix="เวลาบริจาค"
                     onChange={(time) => setForm(f => ({ ...f, time }))}
@@ -8525,18 +8525,18 @@ function AppInner() {
               {formError === TYPE_REQUIRED_MESSAGE && <FieldError>{formError}</FieldError>}
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+              <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
               <input type="text" value={form.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                 onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-              <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{form.location.length}/{MAX_LOCATION_LEN}</div>
+              <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{form.location.length}/{MAX_LOCATION_LEN}</div>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+              <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>บันทึกช่วยจำ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
               <textarea value={form.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                 onChange={(e) => setForm(f => ({ ...f, note: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
-              <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{form.note.length}/{MAX_NOTE_LEN}</div>
+              <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{form.note.length}/{MAX_NOTE_LEN}</div>
             </div>
             </div>
             {formError && !dateFieldHasError && formError !== TYPE_REQUIRED_MESSAGE && formError !== sameDateConflictMessage && (
@@ -8655,7 +8655,7 @@ function AppInner() {
                         </div>
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                        <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>เวลา <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
                         <div style={{ overflow: "hidden", borderRadius: 10, background: "#FFFFFF", border: "1px solid #E3C8C3" }}>
                           <TimeHourMinuteSelect value={tf.time} ariaLabelPrefix="เวลาบริจาคครั้งล่าสุด"
                             onChange={(time) => setTf(f => ({ ...f, time }))}
@@ -8664,16 +8664,16 @@ function AppInner() {
                       </div>
                     </div>
                     {(sameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) && <div style={{ marginBottom: 10 }}><FieldError>{sameDateLive ? "วันที่ซ้ำกับประเภทอื่น เลือกวันอื่น" : quickStartingCountError}</FieldError></div>}
-                    <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                    <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
                     <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
-                    <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4, marginBottom: 10 }}>{tf.location.length}/{MAX_LOCATION_LEN}</div>
-                    <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>บันทึกช่วยจำ <span style={{ color: "#B7A5A1" }}>(ไม่บังคับ)</span></label>
+                    <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4, marginBottom: 10 }}>{tf.location.length}/{MAX_LOCATION_LEN}</div>
+                    <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>บันทึกช่วยจำ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
                     <textarea value={tf.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                       onChange={(e) => setTf(f => ({ ...f, note: e.target.value }))}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
-                    <div style={{ fontSize: 11, color: "#B7A5A1", textAlign: "right", marginTop: 4 }}>{tf.note.length}/{MAX_NOTE_LEN}</div>
+                    <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{tf.note.length}/{MAX_NOTE_LEN}</div>
                   </div>
                 )}
               </div>
