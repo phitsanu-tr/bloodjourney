@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.389";
+const APP_VERSION = "1.0.390";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6467,7 +6467,7 @@ function AppInner() {
                       // Donor paused reminders (settings → การเตือน → พักการเตือนชั่วคราว).
                       <>
                         <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                          <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35 }}>พักการเตือนไว้</span>
+                          <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.35, whiteSpace: "nowrap" }}>พักการเตือน</span>
                           {/* Short label on the title row (not a row of its own) so the paused state is no taller than the others. */}
                           <button onClick={() => { setRemindPauseChoice("6"); setShowRemindPause(true); }} aria-label="เปิดการเตือน หรือเปลี่ยนระยะเวลา"
                             style={{ display: "inline-flex", alignItems: "center", gap: 2, minHeight: 44, margin: "-12px 0", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
@@ -6480,7 +6480,7 @@ function AppInner() {
                           <div style={{ fontSize: 12, color: "#FFF7F5", fontWeight: 400, marginTop: 6 }}>
                             {isEligible
                               ? <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้แล้ว</>
-                              : <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> (อีก {daysLeft} วัน)</>}
+                              : <>บริจาค{hasMultipleTypes ? DONATION_TYPE_LABELS[activeCountdownType] : ""}ได้อีกครั้ง <span style={{ whiteSpace: "nowrap" }}>{toBuddhistDate(nextEligible)}</span> <span style={{ whiteSpace: "nowrap" }}>(อีก {daysLeft} วัน)</span></>}
                           </div>
                         )}
                       </>
@@ -6713,7 +6713,7 @@ function AppInner() {
                       {kind === "backup" && (
                         <>
                           <ShieldCheck size={15} color="#9A3B33" style={{ flexShrink: 0 }} />
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#5C4A46" }}>{Math.max(1, donations.length - lastExportCount)} รายการยังไม่ได้สำรอง</span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#5C4A46" }}>ยังไม่สำรอง <span style={{ whiteSpace: "nowrap" }}>{Math.max(1, donations.length - lastExportCount)} รายการ</span></span>
                           <button aria-label="สำรองข้อมูล" onClick={() => openBackupRestore("export", { fromHome: true })}
                             style={{ position: "relative", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                             <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -2px" }} />
