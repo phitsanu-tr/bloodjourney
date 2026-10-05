@@ -57,7 +57,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.370";
+const APP_VERSION = "1.0.371";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2513,6 +2513,14 @@ function useMenuEscape(isOpen, close, buttonRef) {
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen, close, buttonRef]);
 }
+// True when a ⋮ menu of `rows` items wouldn't fit between its button and the fixed bottom
+// tab bar (or the screen edge), so it should open upward instead of under the bar.
+function menuOpensUp(btn, rows) {
+  if (!btn) return false;
+  const navBtn = document.querySelector('button[aria-label="หน้าหลัก"]');
+  const limit = navBtn ? navBtn.getBoundingClientRect().top : window.innerHeight;
+  return limit - btn.getBoundingClientRect().bottom < rows * 44 + 8;
+}
 // ⋮ menu rows: 44px tall like every other tap target in the app (were ~38px).
 const HIST_MENU_ITEM = { width: "100%", minHeight: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 14px", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontFamily: "inherit" };
 
@@ -2523,6 +2531,7 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
   const dType = normalizeDonationType(d.type);
   const tint = DONATION_TYPE_TINT[dType];
   const moreRef = useRef(null);
+  const [menuUp, setMenuUp] = useState(false);
   useMenuEscape(isMenuOpen, onToggleMenu, moreRef);
   // Screen readers hear what the card is (order, date, type, place) instead of
   // the same generic label on every card. The ⋮ button sits beside the
@@ -2563,13 +2572,13 @@ const HistoryRow = React.memo(function HistoryRow({ d, orderNumber, isMenuOpen, 
       </div>
       </div>
       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-        <button ref={moreRef} onClick={onToggleMenu} aria-label={`ตัวเลือกเพิ่มเติม สำหรับครั้งที่ ${orderNumber}`} aria-haspopup="menu" aria-expanded={isMenuOpen} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
+        <button ref={moreRef} onClick={() => { if (!isMenuOpen) setMenuUp(menuOpensUp(moreRef.current, 3)); onToggleMenu(); }} aria-label={`ตัวเลือกเพิ่มเติม สำหรับครั้งที่ ${orderNumber}`} aria-haspopup="menu" aria-expanded={isMenuOpen} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
           <MoreVertical size={17} color="#9A3B33" />
         </button>
         {isMenuOpen && (
           <>
             <div onClick={onToggleMenu} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-            <div role="menu" style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+            <div role="menu" style={{ position: "absolute", ...(menuUp ? { bottom: "100%", marginBottom: 2 } : { top: "100%", marginTop: 2 }), right: 0, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
               <button role="menuitem" onClick={onEdit} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
                 <Pencil size={14} color="#9A3B33" /> แก้ไข
               </button>
@@ -3016,16 +3025,6 @@ function AppInner() {
   // dots under it). Updated from the scroller's own scroll position.
   const [reminderIdx, setReminderIdx] = useState(0);
   const reminderScrollerRef = useRef(null);
-  // Auto-advance for that carousel: every 5s, move to the next slide (looping
-  // back to the first). Any touch/click/hover/keyboard focus inside it pauses
-  // auto-advance until 8s after the last interaction, so it never slides out
-  // from under someone reading or about to tap. Skipped entirely with
-  // prefers-reduced-motion, while the calendar picker is open, when the page
-  // is in the background, or off the home tab.
-  const reminderLastTouchRef = useRef(0);
-  // Auto-advance plays through the queue once (ending back on the first
-  // slide) and then stops; swiping and the dots keep working.
-  const reminderAutoStepsRef = useRef(0);
   const [toast, setToast] = useState(null);
   const [historyYearFilter, setHistoryYearFilter] = useState("all");
   // Bottom sheet holding the history type + year filters (see the
@@ -3338,27 +3337,6 @@ function AppInner() {
   loadRef.current = load;
 
   useEffect(() => { load(); }, [load]);
-
-  useEffect(() => {
-    if (tab !== "home") return;
-    let reduce = false;
-    try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-    if (reduce) return;
-    const id = setInterval(() => {
-      const el = reminderScrollerRef.current;
-      if (!el || el.children.length < 2) return;
-      if (document.hidden || showCalendarChoice) return;
-      if (Date.now() - reminderLastTouchRef.current < 8000) return;
-      if (el.contains(document.activeElement)) return;
-      if (reminderAutoStepsRef.current >= el.children.length) return;
-      const step = el.clientWidth + 8;
-      const cur = Math.round(el.scrollLeft / step);
-      const next = (cur + 1) % el.children.length;
-      reminderAutoStepsRef.current += 1;
-      el.scrollTo({ left: next * step, behavior: "smooth" });
-    }, 5000);
-    return () => clearInterval(id);
-  }, [tab, showCalendarChoice]);
 
   // Exit animation for centered dialogs: each one is rendered conditionally,
   // so React removes it from the DOM the instant it closes. Rather than
@@ -5302,6 +5280,7 @@ function AppInner() {
   // Keeps the selected type's tab visible in the scrolling tab row (sideways only, never the page).
   const heroTabsRef = useRef(null);
   const carryMoreRef = useRef(null);
+  const [carryMenuUp, setCarryMenuUp] = useState(false);
   const closeCarryMenu = useCallback(() => setOpenActionMenuId(null), []);
   useMenuEscape(openActionMenuId === "startingCount", closeCarryMenu, carryMoreRef);
   useEffect(() => {
@@ -6594,9 +6573,10 @@ function AppInner() {
                   most important first -- backup (real data-loss risk) >
                   eligibility warning > calendar prompt -- as a horizontal
                   swipe carousel (CSS scroll-snap, so it follows the finger
-                  natively), auto-advancing every 5s (see reminderLastTouchRef).
-                  Slides are full width (the earlier "peek" of the next slide
-                  was removed per user feedback); the dots under it show
+                  natively). It never moves on its own (the auto-advance was
+                  removed for the same reason as the hero's type rotation:
+                  content changing mid-read); with more than one slide each is
+                  90% wide so the next one peeks in, and the dots under it show
                   position and can be tapped. Finishing or dismissing
                   (✕) a slide removes it from the queue. */}
               {(() => {
@@ -6677,10 +6657,6 @@ function AppInner() {
                         44px tap areas room inside the scroller, which clips
                         anything that overflows it. */}
                     <div ref={reminderScrollerRef} className="no-scrollbar" role="region" aria-label={multi ? `การแจ้งเตือน ${queue.length} เรื่อง ปัดซ้ายขวาเพื่อดูเรื่องอื่น` : "การแจ้งเตือน"}
-                      onPointerDown={() => { reminderLastTouchRef.current = Date.now(); }}
-                      onTouchStart={() => { reminderLastTouchRef.current = Date.now(); }}
-                      onMouseMove={() => { reminderLastTouchRef.current = Date.now(); }}
-                      onWheel={() => { reminderLastTouchRef.current = Date.now(); }}
                       onScroll={(e) => {
                         const el = e.currentTarget;
                         const first = el.children[0];
@@ -6699,7 +6675,7 @@ function AppInner() {
                       <div style={{ display: "flex", justifyContent: "center", gap: 0, marginTop: 12, marginBottom: 2 }}>
                         {queue.map((k, i) => (
                           <button key={k} aria-label={`ไปเรื่องที่ ${i + 1}`} aria-current={i === activeIdx ? "true" : undefined}
-                            onClick={() => { reminderLastTouchRef.current = Date.now(); const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
+                            onClick={() => { const el = reminderScrollerRef.current; const c = el?.children[i]; if (el && c) el.scrollTo({ left: c.offsetLeft - el.children[0].offsetLeft, behavior: "smooth" }); }}
                             // Each dot's tap area is a 44px-tall tile, the tiles
                             // touching edge to edge (no dead gaps between dots);
                             // the dots themselves keep their size, just a little
@@ -6996,13 +6972,13 @@ function AppInner() {
                       </div>
                       </div>
                       <div className="hist-more" onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0 }}>
-                        <button ref={carryMoreRef} onClick={() => setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount")} aria-label="ตัวเลือกเพิ่มเติม สำหรับยอดบริจาคที่ผ่านมา" aria-haspopup="menu" aria-expanded={openActionMenuId === "startingCount"} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
+                        <button ref={carryMoreRef} onClick={() => { if (openActionMenuId !== "startingCount") setCarryMenuUp(menuOpensUp(carryMoreRef.current, 2)); setOpenActionMenuId(openActionMenuId === "startingCount" ? null : "startingCount"); }} aria-label="ตัวเลือกเพิ่มเติม สำหรับยอดบริจาคที่ผ่านมา" aria-haspopup="menu" aria-expanded={openActionMenuId === "startingCount"} style={{ background: "none", border: "none", cursor: "pointer", padding: 13.5, margin: "-10px -3px -10px 0", lineHeight: 0 }}>
                           <MoreVertical size={17} color="#9A3B33" />
                         </button>
                         {openActionMenuId === "startingCount" && (
                           <>
                             <div onClick={() => setOpenActionMenuId(null)} style={{ position: "fixed", inset: 0, zIndex: 55 }} />
-                            <div role="menu" style={{ position: "absolute", top: "100%", right: 0, marginTop: 2, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
+                            <div role="menu" style={{ position: "absolute", ...(carryMenuUp ? { bottom: "100%", marginBottom: 2 } : { top: "100%", marginTop: 2 }), right: 0, background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, boxShadow: "0 4px 14px rgba(36,26,24,0.15)", overflow: "hidden", zIndex: 56, minWidth: 120 }}>
                               <button role="menuitem" onClick={() => { setOpenActionMenuId(null); openEditStartingCount(); }} style={{ ...HIST_MENU_ITEM, color: "#3A2C29" }}>
                                 <Pencil size={14} color="#9A3B33" /> แก้ไข
                               </button>
