@@ -72,5 +72,18 @@ test("missions: a brand-new user sees no share button; the subtitle says what th
   await openMissions(page);
   await expect(page.getByText("สะสมเข็มที่ระลึกและเหรียญกาชาดจากการบริจาคโลหิตแต่ละครั้ง", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "แชร์การให้ที่ยิ่งใหญ่ของคุณ" })).toHaveCount(0);
+  // the next-mission card offers the way to the first record
+  const cta = page.locator("main, [role=main]").getByRole("button", { name: "บันทึกบริจาคโลหิต", exact: true });
+  expect(Math.round((await cta.boundingBox()).height)).toBeGreaterThanOrEqual(44);
+  await cta.click();
+  await expect(page.locator("[role=dialog]").last()).toBeVisible();
+  assertNoErrors(page);
+});
+
+test("missions: once there is a record, the next-mission card has no record link", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", daysAgo(10))] });
+  await openMissions(page);
+  await expect(page.locator("[role=main]").getByRole("button", { name: "บันทึกบริจาคโลหิต", exact: true })).toHaveCount(0);
   assertNoErrors(page);
 });
