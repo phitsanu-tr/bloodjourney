@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.411";
+const APP_VERSION = "1.0.412";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7920,6 +7920,13 @@ function AppInner() {
                           <div style={{ fontSize: 12, color: "#FFE9E5", marginTop: 2 }}>
                             <span style={{ whiteSpace: "nowrap" }}>อีก {left} ครั้ง</span>{eta && <> · <span title="คำนวณจากระยะห่างเฉลี่ยระหว่างการบริจาคที่ผ่านมา" style={{ whiteSpace: "nowrap" }}>{eta}</span></>}
                           </div>
+                          {/* Brand-new user: the way to the first record, styled like the home card's links. */}
+                          {totalCount === 0 && (
+                            <button onClick={openAddForm}
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, minHeight: 44, margin: "0 0 -12px", padding: 0, background: "none", border: "none", color: "#FFF7F5", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                              บันทึกบริจาคโลหิต <ChevronRight size={13} aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                         <div role="progressbar" aria-label={`ความคืบหน้าไปถึง "${stats.nextAchievement.title}" ${done} จาก ${goal} ครั้ง`} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={done}
                           style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
