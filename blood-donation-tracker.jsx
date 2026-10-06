@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.406";
+const APP_VERSION = "1.0.407";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7468,6 +7468,9 @@ function AppInner() {
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#3A2C29" }}>แดชบอร์ดสรุปข้อมูล</h2>
               <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px" }}>ภาพรวมการบริจาคโลหิตของคุณ</p>
 
+              {/* Brand-new user: no countdown card -- it had nothing to count, showed a ✓ next to
+                  "ยังไม่มีประวัติ", and repeated the "ยังไม่มีสถิติ" card below. */}
+              {(hasMultipleTypes || totalCount > 0) && (
               <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: 16, marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12, position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", top: 8, right: 8, width: 60, height: 60 }}>
                   <svg width="36" height="36" viewBox="0 0 24 24" fill="#FFF7F5" style={{ position: "absolute", top: 12, left: 18, opacity: 0.9 }}><path d="M12 2 C12 2 4 12.5 4 17 C4 21 7.6 24 12 24 C16.4 24 20 21 20 17 C20 12.5 12 2 12 2 Z" /></svg>
@@ -7497,7 +7500,7 @@ function AppInner() {
                               </button>
                             </>
                           : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[dashboardShownType]}ในระบบ`
-                      ) : "ยังไม่มีประวัติการบริจาค"}
+                      ) : null}
                     </div>
                     {dashboardShownLastDateStr && (
                       <div style={{ height: 6, borderRadius: 3, background: "rgba(255,247,245,0.3)", overflow: "hidden", marginTop: 10 }}>
@@ -7528,6 +7531,7 @@ function AppInner() {
                   )}
                 </div>
               </div>
+              )}
 
               {last && (
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 16, marginBottom: 16 }}>
