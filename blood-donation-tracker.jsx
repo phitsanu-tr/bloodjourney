@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.405";
+const APP_VERSION = "1.0.406";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -4165,16 +4165,12 @@ function AppInner() {
   // settings pages and the privacy page opened from them, instead of leaving
   // the app. One history entry covers the whole group, so moving between them
   // (profile -> settings, privacy -> back to settings) doesn't touch history;
-  // closing with ← drops the entry again. Skipped on iPhone/iPad: there is no
-  // hardware back button there, and the extra entry only made LINE show its own
-  // "<" next to the page's ← (two back arrows).
+  // closing with ← drops the entry again.
   const closeProfileRef = useRef(closeProfile);
   closeProfileRef.current = closeProfile;
   const pageOverlayOpen = showProfile || showSettings || showPrivacy;
   useEffect(() => {
     if (!pageOverlayOpen || typeof window === "undefined" || !window.history?.pushState) return undefined;
-    const ua = navigator.userAgent || "";
-    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return undefined;
     const marker = `bj-page-${Date.now()}`;
     try { window.history.pushState({ ...(window.history.state || {}), bjPage: marker }, ""); } catch (e) { return undefined; }
     let popped = false;
