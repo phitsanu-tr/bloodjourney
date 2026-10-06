@@ -65,3 +65,12 @@ test("missions: 320px + large text keeps the unlocked count on one line", async 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   assertNoErrors(page);
 });
+
+test("missions: a brand-new user sees no share button; the subtitle says what the page holds", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [], profile: {} });
+  await openMissions(page);
+  await expect(page.getByText("สะสมเข็มที่ระลึกและเหรียญกาชาดจากการบริจาคโลหิตแต่ละครั้ง", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "แชร์การให้ที่ยิ่งใหญ่ของคุณ" })).toHaveCount(0);
+  assertNoErrors(page);
+});
