@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.409";
+const APP_VERSION = "1.0.410";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7561,7 +7561,7 @@ function AppInner() {
                   <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>ยังไม่มีสถิติ</h3>
                   <p style={{ margin: "0 0 14px", fontSize: 14, color: "#7A6360", lineHeight: 1.6 }}>
                     {/* Two unbreakable halves: on a narrow screen the line breaks before "เพื่อเริ่มดู…", never inside "ครั้งแรก". */}
-                    <span style={{ whiteSpace: "nowrap" }}>บันทึกการบริจาคโลหิตครั้งแรก</span> <span style={{ whiteSpace: "nowrap" }}>เพื่อเริ่มดูสถิติของคุณ</span>
+                    <span style={{ whiteSpace: "nowrap" }}>บันทึกบริจาคโลหิตครั้งแรก</span> <span style={{ whiteSpace: "nowrap" }}>เพื่อเริ่มดูสถิติของคุณ</span>
                   </p>
                   <button onClick={openAddForm} className="btn-primary" style={{ padding: "11px 22px", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>บันทึกบริจาคโลหิต</button>
                 </div>
