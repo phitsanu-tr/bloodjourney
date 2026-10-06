@@ -56,3 +56,17 @@ test("settings -> privacy keeps one history entry; back closes everything", asyn
   await expect(page.getByTestId("hero-card")).toBeVisible();
   assertNoErrors(page);
 });
+
+test("pages slide in from the right with no dimmed/blurred backdrop, and slide out on close", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", "2026-06-01")] });
+  await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
+  const d = settings(page);
+  await expect(d).toBeVisible();
+  const look = await d.evaluate((el) => { const cs = getComputedStyle(el), p = getComputedStyle(el.firstElementChild); return { bg: cs.backgroundColor, blur: cs.backdropFilter, anim: p.animationName }; });
+  expect(look).toEqual({ bg: "rgba(0, 0, 0, 0)", blur: "none", anim: "pageIn" });
+  await d.getByRole("button", { name: "ย้อนกลับ" }).click();
+  await expect(page.locator(".page-exit-clone")).toHaveCount(1);
+  await expect(page.locator(".page-exit-clone")).toHaveCount(0);
+  assertNoErrors(page);
+});

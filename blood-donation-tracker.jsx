@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.403";
+const APP_VERSION = "1.0.404";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3624,6 +3624,23 @@ function AppInner() {
           if (!(node instanceof HTMLElement) || node.classList.contains("dlg-exit-clone")) continue;
           const dialogs = node.matches('[role="dialog"][aria-modal="true"]') ? [node] : [...node.querySelectorAll('[role="dialog"][aria-modal="true"]')];
           for (const d of dialogs) {
+            if (d.hasAttribute("data-page-motion")) {
+              // Full-screen pages (profile / settings) slide back out to the right instead.
+              const pageClone = d.cloneNode(true);
+              pageClone.removeAttribute("role");
+              pageClone.removeAttribute("aria-modal");
+              pageClone.removeAttribute("aria-label");
+              pageClone.removeAttribute("data-page-motion");
+              pageClone.setAttribute("aria-hidden", "true");
+              pageClone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+              pageClone.classList.add("page-exit-clone");
+              pageClone.style.fontFamily = "'Mitr', 'Inter', sans-serif";
+              pageClone.style.color = "#241A18";
+              pageClone.style.textAlign = "left";
+              document.body.appendChild(pageClone);
+              setTimeout(() => pageClone.remove(), 190);
+              continue;
+            }
             if (d.hasAttribute("data-own-motion")) continue;
             const clone = d.cloneNode(true);
             clone.removeAttribute("role");
@@ -6259,8 +6276,16 @@ function AppInner() {
         [role="dialog"][tabindex="-1"]:focus { outline: none; }
         [data-focus-fallback]:focus { outline: none; }
         .dlg-exit-clone > :first-child { animation: dlgPanelOut 0.14s ease-in forwards; }
+        /* Full-screen pages (profile / settings, data-page-motion) slide in from the right and
+           back out to the right, like a pushed page -- no scrim, no blur, no fade, which on a
+           whole screen read as "still loading". */
+        @keyframes pageIn { from { transform: translateX(100%); } to { transform: none; } }
+        @keyframes pageOut { from { transform: none; } to { transform: translateX(100%); } }
+        [data-page-motion] > :first-child { animation: pageIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .page-exit-clone { pointer-events: none !important; }
+        .page-exit-clone > :first-child { animation: pageOut 0.18s ease-in forwards; }
         @media (prefers-reduced-motion: reduce) {
-          [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child { animation: none !important; }
+          [role="dialog"][aria-modal="true"], [role="dialog"][aria-modal="true"] > :first-child, [data-page-motion] > :first-child { animation: none !important; }
         }
         /* Every modal backdrop: light blur + a lighter scrim (was a flat 0.45 dim), so what is
            behind (blood group / age / weight chips, other dialogs) is not readable. */
@@ -8331,7 +8356,7 @@ function AppInner() {
               row opens the one-field sheet below, so the page itself has no text
               inputs. Full-screen page with ← like ตั้งค่า (v1.0.403), which both
               open from the header icons; the phone's back button closes it. */}
-          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" style={{ position: "fixed", inset: 0, background: "#FBF6F5", display: "flex", justifyContent: "center", zIndex: 50 }}>
+          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
             <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
                 <button onClick={closeProfile} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
@@ -9074,7 +9099,7 @@ function AppInner() {
       )}
 
       {showSettings && (
-        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" style={{ position: "fixed", inset: 0, background: "#FBF6F5", display: "flex", justifyContent: "center", zIndex: 50 }}>
+        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
           {/* Full-screen page (v1.0.403): the settings list is about two screens long, so a
             centered box left only ~600px to read; ← and the phone's back button close it. */}
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
