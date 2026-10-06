@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.410";
+const APP_VERSION = "1.0.411";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7890,7 +7890,7 @@ function AppInner() {
           {tab === "missions" && (
             <>
               <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 4px", color: "#3A2C29" }}>ภารกิจนักบริจาค</h2>
-              <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 16px" }}>สะสมความสำเร็จและเตรียมตัวให้พร้อมทุกครั้งที่บริจาค</p>
+              <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 16px" }}>สะสมเข็มที่ระลึกและเหรียญกาชาดจากการบริจาคโลหิตแต่ละครั้ง</p>
 
               {stats.nextAchievement && (
                 <div style={{ background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 14px 32px -8px rgba(122,42,35,0.55)", borderRadius: 16, padding: "16px 18px", color: "#FFF7F5", marginBottom: 16 }}>
@@ -7952,15 +7952,18 @@ function AppInner() {
                 </div>
               )}
 
+              {/* Nothing to share before the first record -- hidden rather than a greyed-out button. */}
+              {totalCount > 0 && (
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
                 <button
                   onClick={openShareCard}
-                  disabled={totalCount === 0 || sharingCard}
+                  disabled={sharingCard}
                   className="btn-ghost"
-                  style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 12, whiteSpace: "nowrap", cursor: totalCount === 0 ? "not-allowed" : "pointer" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 12, whiteSpace: "nowrap", cursor: "pointer" }}>
                   <Share2 size={14} /> {sharingCard ? "กำลังสร้าง..." : "แชร์การให้ที่ยิ่งใหญ่ของคุณ"}
                 </button>
               </div>
+              )}
 
               <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 16, padding: 14, marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: "2px 8px", marginBottom: 10 }}>
