@@ -9,7 +9,7 @@ test("dashboard: brand-new user sees one empty card instead of 0 / — cards", a
   await seed(page, { donations: [], profile: {} });
   await openDashboard(page);
   await expect(page.getByRole("heading", { name: "ยังไม่มีสถิติ" })).toBeVisible();
-  await expect(page.getByText("บันทึกการบริจาคโลหิตครั้งแรก เพื่อเริ่มดูสถิติของคุณ", { exact: true })).toBeVisible();
+  await expect(page.getByText("บันทึกบริจาคโลหิตครั้งแรก เพื่อเริ่มดูสถิติของคุณ", { exact: true })).toBeVisible();
   await expect(page.getByText("0 ลิตร", { exact: false })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "ระยะห่างเฉลี่ยต่อครั้ง" })).toHaveCount(0);
   // no countdown card with nothing to count (it showed a ✓ beside "ยังไม่มีประวัติ")
