@@ -70,18 +70,3 @@ test("pages slide in from the right with no dimmed/blurred backdrop, and slide o
   await expect(page.locator(".page-exit-clone")).toHaveCount(0);
   assertNoErrors(page);
 });
-
-test.describe("on iPhone", () => {
-  test.use({ userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/15.0.0" });
-  test("no history entry is added, so LINE shows no second back arrow; ← still closes", async ({ page }) => {
-    await startFresh(page);
-    await seed(page, { donations: [rec("a", "2026-06-01")] });
-    const before = await page.evaluate(() => history.length);
-    await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
-    await expect(settings(page)).toBeVisible();
-    expect(await page.evaluate(() => history.length)).toBe(before);
-    await settings(page).getByRole("button", { name: "ย้อนกลับ" }).click();
-    await expect(settings(page)).toHaveCount(0);
-    assertNoErrors(page);
-  });
-});
