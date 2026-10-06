@@ -11,6 +11,9 @@ test("dashboard: brand-new user sees one empty card instead of 0 / — cards", a
   await expect(page.getByRole("heading", { name: "ยังไม่มีสถิติ" })).toBeVisible();
   await expect(page.getByText("0 ลิตร", { exact: false })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "ระยะห่างเฉลี่ยต่อครั้ง" })).toHaveCount(0);
+  // no countdown card with nothing to count (it showed a ✓ beside "ยังไม่มีประวัติ")
+  await expect(page.getByRole("heading", { name: "วันบริจาคโลหิตครั้งถัดไป" })).toHaveCount(0);
+  await expect(page).toHaveTitle("Blood Journey");
   assertNoErrors(page);
 });
 
