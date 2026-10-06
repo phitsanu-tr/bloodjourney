@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.407";
+const APP_VERSION = "1.0.408";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -7559,7 +7559,7 @@ function AppInner() {
                     <BarChart3 size={22} color="#9A3B33" />
                   </div>
                   <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 600, color: "#3A2C29" }}>ยังไม่มีสถิติ</h3>
-                  <p style={{ margin: "0 0 14px", fontSize: 14, color: "#7A6360", lineHeight: 1.6 }}>บันทึกการบริจาคครั้งแรก แล้วจำนวนครั้ง ปริมาณที่ให้ และกราฟรายปีจะขึ้นที่นี่</p>
+                  <p style={{ margin: "0 0 14px", fontSize: 14, color: "#7A6360", lineHeight: 1.6 }}>บันทึกการบริจาคโลหิตครั้งแรก เพื่อเริ่มดูสถิติของคุณ</p>
                   <button onClick={openAddForm} className="btn-primary" style={{ padding: "11px 22px", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>บันทึกบริจาคโลหิต</button>
                 </div>
               ) : (<>
