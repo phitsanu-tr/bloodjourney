@@ -22,6 +22,9 @@ test("knowledge: only the criteria start open, on the type donated last; section
   await expect(page.getByText(/^รับบริจาคจากเพศชายเท่านั้น/)).toBeVisible();
   await page.getByRole("button", { name: "โลหิตรวม", exact: true }).click();
   await expect(page.getByText("ต้องเว้นระยะก่อนบริจาค")).toBeVisible();
+  // whole blood now has a cycle line like the other types (and no duplicate 90-day row)
+  await expect(page.getByText("บริจาคได้ทุก 90 วัน", { exact: true })).toBeVisible();
+  await expect(page.getByText(/^เว้นจากการบริจาคโลหิตรวมครั้งก่อน/)).toHaveCount(0);
   await expect(page.getByText("4 เดือน", { exact: true })).toBeVisible();
 
   const myths = section(page, "ความเข้าใจผิดที่พบบ่อย");
