@@ -2,7 +2,9 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+    <!-- No maximum-scale: people with low vision must be able to pinch-zoom. iOS Safari zooms into any field
+         whose text is under 16px when it gets focus, which maximum-scale=1 used to hide -- so fields are 16px there. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#8A2F28" />
     <!-- Light-only design: tells browsers / Android WebViews (e.g. inside LINE) not to auto-darken the page. -->
     <meta name="color-scheme" content="light" />
@@ -43,6 +45,7 @@
          tap flash. Text fields re-enabled explicitly (some iOS Safari versions inherit "none" and then
          refuse typing/pasting). The app re-opens reading content via .selectable once it renders. */
       html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+      @supports (-webkit-touch-callout: none) { input, textarea, select { font-size: 16px !important; } }
       input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
     </style>
     <link rel="manifest" href="/manifest.json" />

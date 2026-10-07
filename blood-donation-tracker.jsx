@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.415";
+const APP_VERSION = "1.0.416";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3948,7 +3948,7 @@ function AppInner() {
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
       seenAchievements, backupSnoozeCount, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap,
-      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills, textLarge,
+      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills, textLarge, dismissedCareFor,
       ...uiMetaRef.current, ...patch,
     };
     uiMetaWriteQueueRef.current = uiMetaWriteQueueRef.current
@@ -4662,6 +4662,9 @@ function AppInner() {
       setDismissedEligibilityWeight(null);
       setDismissedReminders({});
       setBlurInfoPills(true);
+      setTextLarge(false);
+      setDismissedCareFor(null);
+      uiMetaRef.current = {}; // otherwise the next setting change would write the old values back
       setShowReset(false);
       setShowSettings(false);
       // resetAll wipes everything back to a fresh start, but never touched
@@ -8949,14 +8952,14 @@ function AppInner() {
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>สถานที่ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
-              <input type="text" value={form.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
+              <input type="text" aria-label="สถานที่ (ไม่บังคับ)" value={form.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                 onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
               <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{form.location.length}/{MAX_LOCATION_LEN}</div>
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: 14, color: "#7A6360", display: "block", marginBottom: 6 }}>บันทึกช่วยจำ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
-              <textarea value={form.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
+              <textarea aria-label="บันทึกช่วยจำ (ไม่บังคับ)" value={form.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                 onChange={(e) => setForm(f => ({ ...f, note: e.target.value }))}
                 style={{ width: "100%", padding: "11px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
               <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{form.note.length}/{MAX_NOTE_LEN}</div>
@@ -9088,12 +9091,12 @@ function AppInner() {
                     </div>
                     {(sameDateLive || (quickStartingCountError && quickErrorField === `${key}-date`)) && <div style={{ marginBottom: 10 }}><FieldError>{sameDateLive ? "วันที่ซ้ำกับประเภทอื่น เลือกวันอื่น" : quickStartingCountError}</FieldError></div>}
                     <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>สถานที่ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
-                    <input type="text" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
+                    <input type="text" aria-label="สถานที่ (ไม่บังคับ)" value={tf.location} placeholder="เช่น ศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย" maxLength={MAX_LOCATION_LEN}
                       onChange={(e) => setTf(f => ({ ...f, location: e.target.value }))}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit" }} />
                     <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4, marginBottom: 10 }}>{tf.location.length}/{MAX_LOCATION_LEN}</div>
                     <label style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 5 }}>บันทึกช่วยจำ <span style={{ color: "#80726F" }}>(ไม่บังคับ)</span></label>
-                    <textarea value={tf.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
+                    <textarea aria-label="บันทึกช่วยจำ (ไม่บังคับ)" value={tf.note} placeholder="การบริจาคโลหิตครั้งนี้เป็นอย่างไรบ้าง ?" maxLength={MAX_NOTE_LEN} rows={3}
                       onChange={(e) => setTf(f => ({ ...f, note: e.target.value }))}
                       style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
                     <div style={{ fontSize: 11, color: "#80726F", textAlign: "right", marginTop: 4 }}>{tf.note.length}/{MAX_NOTE_LEN}</div>
@@ -9186,7 +9189,7 @@ function AppInner() {
               ))}
 
               <label style={{ fontSize: 12, color: "#7A6360", display: "block", marginBottom: 6 }}>เตือนสำรองข้อมูลทุก (รายการ)</label>
-              <input type="number" inputMode="numeric" pattern="[0-9]*" min={MIN_BACKUP_REMINDER_GAP} max={MAX_BACKUP_REMINDER_GAP} step="1" value={backupReminderGap}
+              <input type="number" aria-label="เตือนสำรองข้อมูลทุกกี่รายการ" inputMode="numeric" pattern="[0-9]*" min={MIN_BACKUP_REMINDER_GAP} max={MAX_BACKUP_REMINDER_GAP} step="1" value={backupReminderGap}
                 onChange={(e) => setBackupReminderGap(e.target.value === "" ? "" : Number(e.target.value))}
                 onBlur={(e) => updateBackupReminderGap(e.target.value === "" ? DEFAULT_BACKUP_REMINDER_GAP : e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E3C8C3", fontSize: 14, fontFamily: "inherit", marginBottom: 4 }} />
