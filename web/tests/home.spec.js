@@ -129,7 +129,7 @@ test("hero card: paused reminders still show the next donation date", async ({ p
 
 test("hero card: brand-new user chip is plain text (no pill background)", async ({ page }) => {
   await startFresh(page);
-  const chip = page.getByText("บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต");
+  const chip = page.getByText("บริจาคโลหิต 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต");
   await expect(chip).toBeVisible();
   const bg = await chip.evaluate((e) => getComputedStyle(e).backgroundColor);
   expect(bg === "rgba(0, 0, 0, 0)" || bg === "transparent").toBe(true);

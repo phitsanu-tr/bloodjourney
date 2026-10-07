@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.412";
+const APP_VERSION = "1.0.413";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6772,8 +6772,10 @@ function AppInner() {
                   // invisible placeholder just to hold the pill's box height, which
                   // left a blank-looking gap in the card. Same box size/position,
                   // now filled with a small useful fact instead of empty space.
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, height: 30, boxSizing: "border-box", padding: 0, fontSize: 12, fontWeight: 500, color: "#FFF7F5", position: "relative", zIndex: 1 }}>
-                    <HeartPulse size={12} /> บริจาค 1 ครั้ง ช่วยได้สูงสุด 3 ชีวิต
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, minHeight: 30, boxSizing: "border-box", padding: 0, fontSize: 12, fontWeight: 500, color: "#FFF7F5", position: "relative", zIndex: 1 }}>
+                    <HeartPulse size={12} style={{ flexShrink: 0 }} />
+                    {/* Two no-wrap halves: 320px + large text breaks before "ช่วยได้…", never leaving "ชีวิต" alone. */}
+                    <span><span style={{ whiteSpace: "nowrap" }}>บริจาคโลหิต 1 ครั้ง</span> <span style={{ whiteSpace: "nowrap" }}>ช่วยได้สูงสุด 3 ชีวิต</span></span>
                   </div>
                 )}
                 {/* Every state's status area (waiting / eligible / paused / no date / new
