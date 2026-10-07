@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.413";
+const APP_VERSION = "1.0.414";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6887,7 +6887,7 @@ function AppInner() {
                           </>
                         )
                         : `ยังไม่มีประวัติการบริจาค${DONATION_TYPE_LABELS[activeCountdownType]}ในระบบ`
-                    ) : "พอบันทึกครั้งแรก แอปจะนับวันให้ว่าบริจาคครั้งถัดไปได้เมื่อไร"}
+                    ) : "บันทึกครั้งแรก เพื่อเริ่มนับวันบริจาคครั้งถัดไป"}
                   </div>
                   {/* Disclosure toggle for the "คำนวณจากเกณฑ์...วันต่อครั้ง" note --
                       previously a standalone 3-line paragraph printed under the card
