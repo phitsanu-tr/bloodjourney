@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.414";
+const APP_VERSION = "1.0.415";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1671,10 +1671,10 @@ const DateField = React.forwardRef(function DateField({ value, onChange, maxDate
 const TRC_SITE = "https://thaibloodcentre.redcross.or.th/";
 const KNOWLEDGE_CRITERIA = {
   whole: {
+    summary: "บริจาคได้ทุก 90 วัน",
     items: [
       { icon: Cake, text: "อายุ 17 ปีบริบูรณ์ – 70 ปี" },
       { icon: Scale, text: "น้ำหนัก 45 กิโลกรัมขึ้นไป" },
-      { icon: Clock, text: "เว้นจากการบริจาคโลหิตรวมครั้งก่อนอย่างน้อย 90 วัน" },
       { icon: HeartPulse, text: "รู้สึกสบายดี สุขภาพแข็งแรง โรคประจำตัวและยาที่กินอยู่ไม่ส่งผลกับการบริจาค" },
       { icon: Info, text: "ไม่อยู่ระหว่างตั้งครรภ์หรือให้นมบุตร และไม่เพิ่งคลอดหรือแท้งบุตร" },
       { icon: ShieldCheck, text: "ไม่มีพฤติกรรมเสี่ยงทางเพศสัมพันธ์ ไม่เคยใช้ยาเสพติด และไม่เคยใช้ยารักษาหรือป้องกันเอชไอวี" },
@@ -1772,17 +1772,19 @@ const keepPhrases = (text) => text.split(" ").map((w, i) => <React.Fragment key=
 
 // The four donation types as a pressed-button group (4 across, or 2 x 2 when narrow).
 function DonationTypeChips({ value, onChange, label = "ประเภทการบริจาค" }) {
+  // One segmented control (4 across, or 2 x 2 when narrow) instead of four loose pills.
   return (
     <div style={{ containerType: "inline-size" }}>
-      <style>{`.kn-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } @container (min-width: 340px) { .kn-types { grid-template-columns: repeat(4, 1fr); } }`}</style>
-      <div role="group" aria-label={label} className="kn-types">
+      <style>{`.kn-seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; } @container (min-width: 340px) { .kn-seg { grid-template-columns: repeat(4, 1fr); } }`}</style>
+      <div role="group" aria-label={label} className="kn-seg" style={{ background: "#F3EAE8", borderRadius: 14, padding: 4 }}>
         {DONATION_TYPES.map((t) => (
           <button key={t} type="button" onClick={() => onChange(t)} aria-pressed={value === t} style={{
-            position: "relative", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 32, fontSize: 12, fontWeight: 600, padding: "0 4px", borderRadius: 20, whiteSpace: "nowrap", fontFamily: "inherit", cursor: "pointer",
-            border: value === t ? "1px solid #9A3B33" : "1px solid #EEDEDA", color: value === t ? "#FFF7F5" : "#7A6360", background: value === t ? "#9A3B33" : "#FFFFFF",
+            position: "relative", minHeight: 36, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer", padding: "0 4px",
+            background: value === t ? "#9A3B33" : "transparent", color: value === t ? "#FFF7F5" : "#6E5854",
+            boxShadow: value === t ? "0 2px 6px -2px rgba(122,42,35,0.5)" : "none",
           }}>
-            {/* Invisible 44px-tall tap area; the pill keeps its look. */}
-            <span aria-hidden="true" style={{ position: "absolute", inset: "-7px -3px" }} />
+            {/* Invisible 44px-tall tap area; the control keeps its look. */}
+            <span aria-hidden="true" style={{ position: "absolute", inset: "-4px -2px" }} />
             {DONATION_TYPE_LABELS[t]}
           </button>
         ))}
