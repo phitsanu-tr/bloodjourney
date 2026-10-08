@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.432";
+const APP_VERSION = "1.0.433";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1403,6 +1403,8 @@ function AppInner() {
   closeProfileRef.current = closeProfile;
   usePageHistoryLayer(showProfile || showSettings, () => { setShowSettings(false); closeProfileRef.current(); });
   usePageHistoryLayer(upperPageOpen, () => { setShowPrivacy(false); setShowFaq(false); });
+  // The backup/restore dialog is its own layer on top of Settings: the phone's back button closes just it.
+  usePageHistoryLayer(showBackupRestore, () => { setShowBackupRestore(false); resetBackupProtection(); backupOpenedFromHomeRef.current = false; });
 
   // sanitizeNameInput can remove characters from the middle of what the
   // user just typed/pasted, which — left to React's default controlled-
@@ -2614,7 +2616,7 @@ function AppInner() {
   const openBackupRestore = (tab, { fromHome = false } = {}) => {
     backupOpenedFromHomeRef.current = fromHome;
     setImportMsg(null);
-    setShowSettings(false);
+    // Settings stays mounted (inert) underneath, like privacy/FAQ, instead of sliding away and coming back on close (v1.0.433).
     setError("");
     resetBackupProtection();
     setBackupRestoreTab(tab);
@@ -6307,7 +6309,7 @@ function AppInner() {
       )}
 
       {showSettings && (
-        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" data-own-motion data-page-motion inert={upperPageOpen} style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
+        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" data-own-motion data-page-motion inert={upperPageOpen || showBackupRestore} style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
           {/* Full-screen page (v1.0.403): the settings list is about two screens long, so a
             centered box left only ~600px to read; ← and the phone's back button close it. */}
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
