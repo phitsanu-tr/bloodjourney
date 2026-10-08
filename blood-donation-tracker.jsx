@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.453";
+const APP_VERSION = "1.0.454";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -3463,6 +3463,8 @@ function AppInner() {
            from running its built-in one on top of it. */
         html, body { overscroll-behavior-y: contain; }
         .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        /* monospace has no Thai glyphs: without this the Thai placeholder falls back to a system serif font */
+        textarea.mono-ta::placeholder { font-family: "Mitr", sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .btn-primary { background: #9A3B33; color: #FFF7F5; }
         .btn-primary:active { background: #7E2F28; }
@@ -6933,6 +6935,7 @@ function AppInner() {
                     )}
                     <p style={{ fontSize: 14, color: "#6E5A56", lineHeight: 1.6, margin: "0 2px 10px" }}>เก็บไฟล์ไว้ในที่ที่ปลอดภัย เช่น ไดรฟ์หรืออีเมลของคุณเอง และเก็บรหัสผ่านแยกไว้อีกที่</p>
                     <textarea
+                      className="mono-ta"
                       ref={exportTextareaRef}
                       readOnly
                       tabIndex={exportTabIdx}
@@ -7002,7 +7005,7 @@ function AppInner() {
                   tabIndex={importSource === "text" ? importTabIdx : -1}
                   placeholder="วางข้อมูลสำรองที่คัดลอกไว้ที่นี่"
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", height: 110, borderRadius: 10, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "10px 12px", fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
+                  style={{ width: "100%", height: 110, borderRadius: 10, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "11px 12px", fontSize: 14, fontFamily: "inherit", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
                 />
                 {pasteImportError && <div style={{ margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
                 {pasteEnc && <div style={{ marginBottom: 12 }}>{importPwField("import-pw-text", "รหัสผ่านของข้อมูล", importSource === "text" ? importTabIdx : -1)}</div>}
