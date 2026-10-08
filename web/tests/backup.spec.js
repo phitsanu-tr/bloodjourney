@@ -22,33 +22,30 @@ async function exportEncrypted(page) {
   return { text: await box.inputValue(), pw };
 }
 
-// Export as plain JSON through the "unencrypted" warning dialog.
-async function exportPlain(page) {
-  await page.getByRole("button", { name: "ตัวเลือกอื่น" }).tap();
-  await page.getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
-  await page.locator("[role=alertdialog] input[type=checkbox]").check();
-  await page.locator("[role=alertdialog]").getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
-  const box = page.getByLabel(/^ข้อมูลสำรองแบ/);
-  await expect(box).not.toHaveValue("");
-  return box.inputValue();
-}
+// There is no plain export any more: tests that only need "a backup file to import" use the encrypted one and type its password.
+const exportPlain = exportEncrypted;
 
-async function pasteAndImport(page, text) {
+async function pasteAndImport(page, backup) {
+  const { text, pw } = typeof backup === "string" ? { text: backup, pw: "" } : backup;
   await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
   await pasteBox(page).fill(text);
   await page.getByRole("button", { name: "นำเข้าจากข้อความ" }).tap();
+  if (pw) {
+    await page.locator("[role=dialog]").last().locator("input[type=password], input[type=text]").last().fill(pw);
+    await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
+  }
 }
 
-test("backup: plain export then import into an empty app restores every donation", async ({ page }) => {
+test("backup: export then import into an empty app restores every donation", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: two });
   await openHub(page);
-  const text = await exportPlain(page);
-  expect(JSON.parse(text).donations).toHaveLength(2);
+  const backup = await exportPlain(page);
+  expect(backup.text).not.toContain("2026-06-01"); // the only export is encrypted
 
   await seed(page, { donations: [] });
   await openHub(page);
-  await pasteAndImport(page, text);
+  await pasteAndImport(page, backup);
   await page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true }).tap();
   await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(2);
   assertNoErrors(page);
@@ -58,8 +55,8 @@ test("backup: importing the same file twice adds nothing (duplicates skipped)", 
   await startFresh(page);
   await seed(page, { donations: two });
   await openHub(page);
-  const text = await exportPlain(page);
-  await pasteAndImport(page, text);
+  const backup = await exportPlain(page);
+  await pasteAndImport(page, backup);
   const dlg = page.locator("[role=dialog]").last();
   await expect(dlg.getByText("ในไฟล์ 2 · มีอยู่แล้ว 2")).toBeVisible();
   await expect(dlg.getByText("ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด")).toBeVisible();
@@ -78,14 +75,11 @@ test("backup: carried-over counts, reminder cycles and home settings move to a n
   await page.evaluate((pre) => localStorage.setItem(pre + "uiMeta", JSON.stringify({ cycleByType: { whole: 120, plasma: 14, platelet: 30, rbc: 120 }, blurInfoPills: false })), PREFIX);
   await seed(page, { donations: two, profile: { startingCountWhole: 20, startingCountPlasma: 5 } });
   await openHub(page);
-  const text = await exportPlain(page);
-  const j = JSON.parse(text);
-  expect(j.blurInfoPills).toBe(false);
-  expect(Array.isArray(j.seenAchievements)).toBe(true);
+  const backup = await exportPlain(page);
 
   await wipeToNewPhone(page);
   await openHub(page);
-  await pasteAndImport(page, text);
+  await pasteAndImport(page, backup);
   const dlg = page.locator("[role=dialog]").last();
   await expect(dlg.getByText("โลหิตรวม 20 · พลาสมา 5")).toBeVisible();
   await expect(dlg.getByText("+25")).toBeVisible();
@@ -103,10 +97,10 @@ test("backup: a file with only a carried-over count can be imported", async ({ p
   await startFresh(page);
   await seed(page, { donations: [], profile: { startingCountWhole: 12 } });
   await openHub(page);
-  const text = await exportPlain(page);
+  const backup = await exportPlain(page);
   await wipeToNewPhone(page);
   await openHub(page);
-  await pasteAndImport(page, text);
+  await pasteAndImport(page, backup);
   const btn = page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true });
   await expect(btn).toBeEnabled();
   await btn.tap();
@@ -118,10 +112,10 @@ test("backup: a device that already has a carried-over count keeps it", async ({
   await startFresh(page);
   await seed(page, { donations: two, profile: { startingCountWhole: 25 } });
   await openHub(page);
-  const text = await exportPlain(page);
+  const backup = await exportPlain(page);
   await seed(page, { donations: [], profile: { startingCountWhole: 10 } });
   await openHub(page);
-  await pasteAndImport(page, text);
+  await pasteAndImport(page, backup);
   const dlg = page.locator("[role=dialog]").last();
   await expect(dlg.getByText("เครื่องนี้ 10 · ในไฟล์ 25")).toBeVisible();
   await expect(dlg.getByText("คงเดิม", { exact: true })).toBeVisible();
@@ -182,5 +176,36 @@ test("layout: backup hub has no horizontal overflow at 390 and 320 (both tabs)",
     expect(await noOverflow(page), `import @${w}`).toBe(true);
     await page.reload();
   }
+  assertNoErrors(page);
+});
+
+test("backup export: both modes end with ต่อไป; own password needs a matching 8+ char password; no plain export is offered", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: two });
+  const dlg = await openHub(page);
+  await expect(dlg.getByRole("radio", { name: "แอปตั้งให้" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByText("ส่งออกแบบไม่เข้ารหัส")).toHaveCount(0);
+  await expect(page.getByText("ตัวเลือกอื่น")).toHaveCount(0);
+  const pw = (await page.locator(".selectable").first().innerText()).trim();
+  expect(pw).toMatch(/^[^\s]{16}$/);
+  // switch to own password: button is disabled until both fields match
+  await dlg.getByRole("radio", { name: "ตั้งเอง" }).tap();
+  const next = dlg.getByRole("button", { name: "ต่อไป", exact: true });
+  await expect(next).toBeDisabled();
+  await dlg.locator("#export-pw").fill("MyPass#2026");
+  await dlg.locator("#export-pw2").fill("MyPass#2027");
+  await expect(next).toBeDisabled();
+  await dlg.locator("#export-pw2").fill("MyPass#2026");
+  await expect(next).toBeEnabled();
+  await next.tap();
+  // own mode: no typed re-check, the file is ready on this step
+  const box = page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก");
+  await expect(box).not.toHaveValue("");
+  await expect(dlg.getByRole("button", { name: "ดาวน์โหลดไฟล์" })).toBeEnabled();
+  // back keeps what was typed; switching to the app's password and back keeps it too
+  await dlg.getByRole("button", { name: "ย้อนกลับไปแก้รหัสผ่าน" }).tap();
+  await expect(dlg.locator("#export-pw")).toHaveValue("MyPass#2026");
+  await dlg.getByRole("radio", { name: "แอปตั้งให้" }).tap();
+  await expect(dlg.getByRole("button", { name: "ต่อไป: ยืนยันรหัส" })).toBeEnabled();
   assertNoErrors(page);
 });
