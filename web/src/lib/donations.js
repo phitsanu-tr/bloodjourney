@@ -1,4 +1,4 @@
-import { todayLocalStr, dateToLocalStr } from "./dates.js";
+import { todayLocalStr, dateToLocalStr, parseLocalDate } from "./dates.js";
 
 export const MIN_CYCLE_DAYS = 7;
 
@@ -183,4 +183,14 @@ export const DONATION_TYPE_TINT = {
 
 export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// The day a donor may give again: the last donation's calendar date plus the cycle, counted in calendar days (setDate),
+// not in 24-hour blocks, and with the stored "YYYY-MM-DD" read as a local date -- so the countdown is the same in
+// every timezone and across daylight-saving changes. Returns a Date at local midnight.
+export function nextEligibleFrom(lastDate, cycleDays) {
+  const d = new Date(parseLocalDate(lastDate));
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + Number(cycleDays));
+  return d;
 }

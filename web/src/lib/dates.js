@@ -38,7 +38,7 @@ export function toBuddhistDateTime(d) {
 // Whole calendar days from a to b. Works on copies: it used to call setHours on the dates passed in, which silently
 // changed the caller's Date objects (harmless only while every caller handed in a fresh one).
 export function daysBetween(a, b) {
-  const from = new Date(a), to = new Date(b);
+  const from = new Date(parseLocalDate(a)), to = new Date(parseLocalDate(b)); // copies; "YYYY-MM-DD" strings read as local dates
   from.setHours(0, 0, 0, 0);
   to.setHours(0, 0, 0, 0);
   return Math.round((to - from) / 86400000);
@@ -53,7 +53,7 @@ export function daysBetween(a, b) {
 // donation forms defaulting to yesterday's date, and the reminder dismiss
 // "see you tomorrow" resetting hours earlier than an actual local midnight.
 export function dateToLocalStr(d) {
-  const date = new Date(d);
+  const date = parseLocalDate(d);
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
