@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.450";
+const APP_VERSION = "1.0.451";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -6792,7 +6792,7 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" inert={!!pendingImport} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div ref={hubBoxRef} style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div ref={hubBoxRef} style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <DialogX onClick={closeBackupRestore} style={{ width: 32, height: 28, justifyContent: "center" }} />
@@ -6849,7 +6849,7 @@ function AppInner() {
                     {/* Both modes live in one grid cell (like the two tabs above), so the dialog keeps the same height when you switch. */}
                     <div style={{ display: "grid" }}>
                     <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "inherit" : "hidden" }} aria-hidden={!exportGenPw}>
-                    <div style={{ background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+                    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
                       <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -6867,12 +6867,12 @@ function AppInner() {
                     </div>
                     <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "hidden" : "inherit" }} aria-hidden={!!exportGenPw}>
                       <div style={{ marginBottom: 4 }}>
-                    <label htmlFor="export-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>ตั้งรหัสผ่าน (8 ตัวขึ้นไป)</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
+                    <label htmlFor="export-pw" style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 4 }}>ตั้งรหัสผ่าน (8 ตัวขึ้นไป)</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 10, padding: "0 4px 0 12px", minHeight: 44 }}>
                       <input id="export-pw" type={exportShowPw ? "text" : "password"} value={exportPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportPw(e.target.value)}
                         autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="ตั้งรหัสผ่าน"
-                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 16, fontFamily: "inherit", color: "#3A2C29" }} />
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
                       <button type="button" tabIndex={exportTabIdx} onClick={() => setExportShowPw(v => !v)} aria-label={exportShowPw ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={exportShowPw}
                         style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
                         {exportShowPw ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -6891,12 +6891,12 @@ function AppInner() {
                       </div>
                     )}
                     </div>
-                    <label htmlFor="export-pw2" style={{ display: "block", fontSize: 12, color: "#7A6360", margin: "2px 0 4px" }}>ยืนยันรหัสผ่าน</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2B7530" : (exportPw2.length > 0 && exportPw2 !== exportPw) ? "#B3261E" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
+                    <label htmlFor="export-pw2" style={{ display: "block", fontSize: 14, color: "#7A6360", margin: "2px 0 4px" }}>ยืนยันรหัสผ่าน</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2B7530" : (exportPw2.length > 0 && exportPw2 !== exportPw) ? "#B3261E" : "#E3C8C3"}`, borderRadius: 10, padding: "0 12px", minHeight: 44 }}>
                       <input id="export-pw2" type={exportShowPw ? "text" : "password"} value={exportPw2} tabIndex={exportTabIdx}
                         onChange={(e) => setExportPw2(e.target.value)}
                         autoComplete="new-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสผ่านอีกครั้ง"
-                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 16, fontFamily: "inherit", color: "#3A2C29" }} />
+                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
                       {exportPw2 && exportPw2 === exportPw && exportStrength.ok && <Check size={17} color="#2B7530" aria-label="รหัสผ่านตรงกัน" />}
                     </div>
                     <div style={{ minHeight: 24 }}>{exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}</div>
@@ -6905,7 +6905,7 @@ function AppInner() {
                     </div>
                     <div aria-hidden="true" style={{ height: 14, flexShrink: 0 }} />
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
-                      style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
+                      style={{ width: "100%", marginTop: "auto", padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
                       ถัดไป
                     </button>
                   </>
@@ -6918,8 +6918,8 @@ function AppInner() {
                     </div>
                     {exportGenPw && (
                       <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่จดไว้อีกครั้ง</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2B7530" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
+                    <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 14, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่จดไว้อีกครั้ง</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2B7530" : "#E3C8C3"}`, borderRadius: 10, padding: "0 12px", minHeight: 44 }}>
                       <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportConfirmPw(e.target.value)}
                         autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสให้ตรง ตัวเล็กใหญ่ต้องตรงกัน"
@@ -6943,11 +6943,11 @@ function AppInner() {
                       style={{ width: "100%", height: 76, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                     />
                     <BackupMsg msg={exportMsg} at="pre" />
-                    <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
+                    <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
                       <Download size={17} /> {exportEncrypting ? "กำลังเข้ารหัส…" : "ดาวน์โหลดไฟล์สำรอง"}
                     </button>
                     <BackupMsg msg={exportMsg} at="mid" />
-                    <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
+                    <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
                       <StickyNote size={16} /> คัดลอกข้อมูลสำรอง
                     </button>
                     <BackupMsg msg={exportMsg} at="post" />
@@ -6991,7 +6991,7 @@ function AppInner() {
                   {importMsg && importMsg.at === "file" && <div style={{ margin: "10px 0 0" }}><BackupMsg msg={importMsg} at="file" /></div>}
                   <div aria-hidden="true" style={{ height: 14, flexShrink: 0 }} />
                   <button onClick={confirmPickedImport} disabled={importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)} tabIndex={importSource === "file" ? importTabIdx : -1} className="btn-primary"
-                    style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? 0.4 : 1 }}>
+                    style={{ width: "100%", marginTop: "auto", padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? 0.4 : 1 }}>
                     {importLockBusy ? "กำลังปลดล็อก…" : "ถัดไป"}
                   </button>
                 </div>
@@ -7002,7 +7002,7 @@ function AppInner() {
                   tabIndex={importSource === "text" ? importTabIdx : -1}
                   placeholder="วางข้อมูลสำรองที่คัดลอกไว้ที่นี่"
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", height: 110, borderRadius: 12, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "10px 12px", fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
+                  style={{ width: "100%", height: 110, borderRadius: 10, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "10px 12px", fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
                 />
                 {pasteImportError && <div style={{ margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
                 {pasteEnc && <div style={{ marginBottom: 12 }}>{importPwField("import-pw-text", "รหัสผ่านของข้อมูล", importSource === "text" ? importTabIdx : -1)}</div>}
@@ -7020,7 +7020,7 @@ function AppInner() {
                   )}
                 </div>
                 <button onClick={confirmPasteImport} disabled={importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)} tabIndex={importSource === "text" ? importTabIdx : -1} className="btn-primary"
-                  style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? 0.4 : 1 }}>
+                  style={{ width: "100%", marginTop: "auto", padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? 0.4 : 1 }}>
                   {importLockBusy ? "กำลังปลดล็อก…" : importing ? "กำลังตรวจสอบ..." : "ถัดไป"}
                 </button>
                 </div>
@@ -7036,7 +7036,7 @@ function AppInner() {
 
       {pendingImport && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" data-own-motion onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 51, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
               <DialogX onClick={cancelImport} />
