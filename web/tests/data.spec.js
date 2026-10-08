@@ -146,7 +146,7 @@ test("unreadable history: กู้คืนจากไฟล์สำรอง
   const warn = page.getByRole("dialog", { name: "อ่านประวัติการบริจาคไม่ได้" });
   await warn.getByRole("button", { name: "กู้คืนจากไฟล์สำรอง" }).tap();
   await expect(warn).toHaveCount(0);
-  await expect(page.getByLabel("วางข้อความ JSON สำรองที่คัดลอกไว้")).toBeVisible();
+  await expect(page.getByRole("radio", { name: "ไฟล์" })).toHaveAttribute("aria-checked", "true"); // the restore tab, on its file source
   assertNoErrors(page);
 });
 
