@@ -4,7 +4,7 @@ import { thaiYearNow, startOfToday, todayLocalStr, toBuddhistDate, dateToLocalSt
 import { MAX_AGE, MIN_AGE, DONATION_TYPES, TYPE_INTERVAL_DAYS, STARTING_COUNT_CAP_MARGIN, emptyByType, DEFAULT_CYCLE_BY_TYPE, DEFAULT_BACKUP_REMINDER_GAP, MAX_CYCLE_DAYS, MIN_CYCLE_DAYS, MAX_BACKUP_REMINDER_GAP, MIN_BACKUP_REMINDER_GAP, IMPORT_UNSUPPORTED_MESSAGE, HISTORY_PAGE_SIZE, startingCountsFromProfile, normalizeDonationType, startingCountFields, sanitizeNameInput, capitalizeLowerWords, DEFAULT_DONATION_TYPE, uid, MAX_LOCATION_LEN, MAX_NOTE_LEN, TYPE_REQUIRED_MESSAGE, DONATION_TYPE_LABELS, MIN_HEIGHT, MAX_HEIGHT, BLOOD_TYPES, isRemindPaused, estimateVolumeMl, formatLiters, DONATION_TYPE_ML, MIN_WEIGHT, DONATION_TYPE_TINT, estimateBloodVolumeL, YEAR_CHART_VISIBLE_COUNT, GENDERS, ABO_ONLY, BLOOD_RH, remindPauseUntilFor, REMIND_PAUSE_OPTIONS, COMPONENT_GROUP_LABEL, COMPONENT_TYPES, TYPE_CYCLE_NOTE, importHasSomething, nextEligibleFrom } from "./lib/donations.js";
 import { DEFAULT_DONOR_TYPE, buildAchievements, DONOR_TYPES } from "./lib/achievements.js";
 import { storage } from "./lib/storage.js";
-import { backupPasswordStrength, encryptBackupText, canEncryptBackup, generateBackupPassphrase, readEncryptedBackup, decryptBackupText } from "./lib/backup.js";
+import { backupPasswordStrength, encryptBackupText, canEncryptBackup, generateBackupPassword, readEncryptedBackup, decryptBackupText } from "./lib/backup.js";
 import { isNativeApp, isLineInAppBrowser, openInExternalBrowser } from "./lib/env.js";
 import { DEFAULT_CARD_SIZE, CARD_SIZES, buildRecordShareCardDataUrl, buildShareCardDataUrl, encodeShareToken } from "./lib/shareCard.js";
 import { nativeSaveAndShare, dataUrlToBase64, buildIcsForReminder, icsContentToBase64, buildGoogleCalendarUrl } from "./lib/calendarFiles.js";
@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.433";
+const APP_VERSION = "1.0.434";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -481,7 +481,7 @@ function AppInner() {
   // What the textarea / download / copy use: the plain JSON, or the
   // ciphertext once it has been made for the current data + password.
   const exportOutText = !exportProtect ? exportJsonText : (exportEncrypted && exportKey && exportEncrypted.key === exportKey ? exportEncrypted.text : "");
-  const exportTypedOk = !!exportGenPw && exportConfirmPw.trim().toLowerCase() === exportGenPw;
+  const exportTypedOk = !!exportGenPw && exportConfirmPw.trim() === exportGenPw;
   const exportReady = !!exportOutText && (!exportProtect || !exportGenPw || (exportStep === 2 && exportTypedOk));
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareCardDataUrl, setShareCardDataUrl] = useState("");
@@ -1985,11 +1985,11 @@ function AppInner() {
   useEffectOn(() => {
     if (!showBackupRestore) return;
     if (!canEncryptBackup()) { setExportProtect(false); return; }
-    if (exportProtect && !exportGenPw && !exportPw) setExportGenPw(generateBackupPassphrase());
+    if (exportProtect && !exportGenPw && !exportPw) setExportGenPw(generateBackupPassword());
   }, [showBackupRestore]);
   const generateExportPassword = () => {
     setExportProtect(true);
-    setExportGenPw(generateBackupPassphrase());
+    setExportGenPw(generateBackupPassword());
     setExportStep(1);
     setExportConfirmPw("");
     setExportPw("");
@@ -6998,7 +6998,7 @@ function AppInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2B7530" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
                       <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportConfirmPw(e.target.value)}
-                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="เช่น word-word-word-word-word"
+                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสให้ตรง ตัวเล็กใหญ่ต้องตรงกัน"
                         style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
                       {exportTypedOk && <Check size={17} color="#2B7530" aria-label="รหัสตรงกัน" />}
                     </div>
