@@ -25,16 +25,19 @@ async function exportEncrypted(page) {
 // There is no plain export any more: tests that only need "a backup file to import" use the encrypted one and type its password.
 const exportPlain = exportEncrypted;
 
-async function pasteAndImport(page, backup) {
-  const { text, pw } = typeof backup === "string" ? { text: backup, pw: "" } : backup;
+// Restore tab, text source: paste the text (an encrypted backup shows the password field under the box).
+async function pasteText(page, text) {
   await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
   await page.getByRole("radio", { name: "ข้อความ" }).tap();
   await pasteBox(page).fill(text);
-  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
-  if (pw) {
-    await page.locator("[role=dialog]").last().locator("input[type=password], input[type=text]").last().fill(pw);
-    await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
-  }
+}
+const nextBtn = (page) => page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true });
+
+async function pasteAndImport(page, backup) {
+  const { text, pw } = typeof backup === "string" ? { text: backup, pw: "" } : backup;
+  await pasteText(page, text);
+  if (pw) await page.locator("#import-pw-text").fill(pw);
+  await nextBtn(page).tap();
 }
 
 test("backup: export then import into an empty app restores every donation", async ({ page }) => {
@@ -135,15 +138,16 @@ test("backup: encrypted export needs the right password to import", async ({ pag
 
   await seed(page, { donations: [] });
   await openHub(page);
-  await pasteAndImport(page, text);
-  const pwInput = page.locator("[role=dialog]").last().locator("input[type=password], input[type=text]").last();
+  await pasteText(page, text);
+  const pwInput = page.locator("#import-pw-text");
+  await expect(nextBtn(page)).toBeDisabled(); // an encrypted backup needs its password first
   await pwInput.fill("wrong-password-1");
-  await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
+  await nextBtn(page).tap();
   await expect(page.getByText("รหัสผ่านไม่ถูกต้อง หรือไฟล์ถูกแก้ไข")).toBeVisible();
   expect(await stored(page, "donations")).toHaveLength(0);
 
   await pwInput.fill(pw);
-  await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
+  await nextBtn(page).tap();
   await page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true }).tap();
   await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(2);
   assertNoErrors(page);
@@ -228,5 +232,26 @@ test("backup hub: the other tab's content never shows through (restore card on t
   await expect(dlg.locator("#export-pw")).toBeHidden();
   await dlg.getByRole("button", { name: "สำรองข้อมูล", exact: true }).tap();
   await expect(dlg.getByText("เลือกไฟล์สำรอง")).toBeHidden();
+  assertNoErrors(page);
+});
+
+test("restore by file: an encrypted file asks for its password on the same page, then goes to the confirm dialog", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: two });
+  await openHub(page);
+  const backup = await exportEncrypted(page);
+  await seed(page, { donations: [] });
+  const dlg = await openHub(page);
+  await dlg.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  await page.locator("input[type=file][accept*=json]").setInputFiles({ name: "enc.json", mimeType: "application/json", buffer: Buffer.from(backup.text) });
+  await expect(dlg.getByText("ไฟล์นี้เข้ารหัสอยู่")).toBeVisible();
+  await expect(nextBtn(page)).toBeDisabled();
+  await dlg.locator("#import-pw-file").fill("wrong-password-1");
+  await nextBtn(page).tap();
+  await expect(dlg.getByText("รหัสผ่านไม่ถูกต้อง หรือไฟล์ถูกแก้ไข")).toBeVisible();
+  await dlg.locator("#import-pw-file").fill(backup.pw);
+  await nextBtn(page).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true }).tap();
+  await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(2);
   assertNoErrors(page);
 });

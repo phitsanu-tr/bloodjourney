@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.444";
+const APP_VERSION = "1.0.445";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -468,12 +468,13 @@ function AppInner() {
   const [exportEncrypted, setExportEncrypted] = useState(null); // { key, text }
   const [exportEncrypting, setExportEncrypting] = useState(false);
   const exportEncryptRunRef = useRef(0);
-  const [importLock, setImportLock] = useState(null); // { text, name } while asking for the file's password
   const [importLockPw, setImportLockPw] = useState("");
   const [importLockShow, setImportLockShow] = useState(false);
   const [importLockError, setImportLockError] = useState("");
   const [importLockBusy, setImportLockBusy] = useState(false);
-  const importBroken = importLockError === IMPORT_UNSUPPORTED_MESSAGE;
+  // The password of an encrypted backup is asked for inline on the restore tab (v1.0.445), shared by the file and text sources.
+  const importPickedEnc = !!(importPicked && readEncryptedBackup(importPicked.text));
+  const pasteEnc = !!(pasteImportText && readEncryptedBackup(pasteImportText.trim()));
   const exportStrength = backupPasswordStrength(exportPw);
   const exportEffectivePw = exportGenPw || (exportStrength.ok && exportPw === exportPw2 ? exportPw : "");
   const exportKey = exportEffectivePw && exportJsonText ? `${exportEffectivePw}\u0000${exportJsonText}` : "";
@@ -1972,7 +1973,6 @@ function AppInner() {
     setExportShowPw(false);
     setExportGenPw("");
     setExportEncrypted(null);
-    setImportLock(null);
     setImportLockPw("");
     setImportLockShow(false);
     setImportLockError("");
@@ -2388,17 +2388,9 @@ function AppInner() {
   // "คัดลอกข้อความ" in the export modal). Throws on malformed input; callers
   // decide how to report that.
   const processImportedText = async (text, meta) => {
-    // A password-protected backup: ask for the password first, then run the
-    // decrypted text through this same function.
+    // Encrypted backups are decrypted by runImport() before they get here.
     if (readEncryptedBackup(text)) {
-      if (!canEncryptBackup()) {
-        setImportMsg({ kind: "note", at: meta && meta.name ? "file" : "paste", text: "เบราว์เซอร์นี้ถอดรหัสไม่ได้ ลองเปิดด้วยเบราว์เซอร์อื่น" });
-        return;
-      }
-      setImportLock({ text, name: (meta && meta.name) || "" });
-      setImportLockPw("");
-      setImportLockShow(false);
-      setImportLockError("");
+      setImportMsg({ kind: "note", at: meta && meta.name ? "file" : "paste", text: "ไฟล์นี้เข้ารหัสอยู่ กรอกรหัสผ่านก่อน" });
       return;
     }
     const parsed = JSON.parse(text);
@@ -2583,6 +2575,7 @@ function AppInner() {
     try {
       // Picking a file only stages it (its name shows on the card); ถัดไป does the actual import, like the paste source.
       setImportPicked({ name: file.name, text: await file.text() });
+      setImportLockPw(""); setImportLockError(""); setImportLockShow(false);
     } catch (err) {
       setImportPicked(null);
       setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
@@ -2595,7 +2588,7 @@ function AppInner() {
     setImportMsg(null);
     setImporting(true);
     try {
-      await processImportedText(importPicked.text, { name: importPicked.name });
+      await runImport(importPicked.text, { name: importPicked.name });
     } catch (err) {
       setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
     } finally {
@@ -2652,6 +2645,47 @@ function AppInner() {
     backupOpenedFromHomeRef.current = false;
   };
 
+  // Decrypts first when the text is an encrypted backup (password from the inline field), then runs the normal import.
+  const runImport = async (text, meta) => {
+    const header = readEncryptedBackup(text);
+    if (!header) { await processImportedText(text, meta); return; }
+    if (!canEncryptBackup()) {
+      setImportMsg({ kind: "note", at: meta && meta.name ? "file" : "paste", text: "เบราว์เซอร์นี้ถอดรหัสไม่ได้ ลองเปิดด้วย LINE หรือ Chrome/Safari รุ่นใหม่" });
+      return;
+    }
+    if (!importLockPw || importLockBusy) return;
+    setImportLockBusy(true);
+    setImportLockError("");
+    let plain = null;
+    try {
+      plain = await decryptBackupText(header, importLockPw);
+    } catch (e) {
+      setImportLockError(e && e.code === "UNSUPPORTED" ? IMPORT_UNSUPPORTED_MESSAGE : "รหัสผ่านไม่ถูกต้อง หรือไฟล์ถูกแก้ไข");
+      setImportLockBusy(false);
+      return;
+    }
+    setImportLockBusy(false);
+    await processImportedText(plain, meta);
+  };
+
+  const importPwField = (id, label, tabIdx) => (
+    <div style={{ marginTop: 12 }}>
+      <label htmlFor={id} style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>{label}</label>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, background: importLockError ? "#FFF6F5" : "#FFFFFF", border: `1px solid ${importLockError ? "#B3261E" : "#E3C8C3"}`, borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
+        <input id={id} type={importLockShow ? "text" : "password"} value={importLockPw} tabIndex={tabIdx}
+          onChange={(e) => { setImportLockPw(e.target.value); if (importLockError) setImportLockError(""); }}
+          autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสผ่าน"
+          aria-invalid={!!importLockError} aria-describedby={importLockError ? `${id}-err` : undefined}
+          style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 16, fontFamily: "inherit", color: "#3A2C29" }} />
+        <button type="button" tabIndex={tabIdx} onClick={() => setImportLockShow(v => !v)} aria-label={importLockShow ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={importLockShow}
+          style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+          {importLockShow ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+      {importLockError && <div id={`${id}-err`} style={{ margin: "4px 2px 0" }}><FieldError>{importLockError}</FieldError></div>}
+    </div>
+  );
+
   const confirmPasteImport = async () => {
     const text = pasteImportText.trim();
     if (!text) return;
@@ -2663,36 +2697,11 @@ function AppInner() {
       // and the pasted text should still be sitting in the box, not gone.
       // It's cleared for real once the import is actually confirmed
       // (see confirmImport) or the hub is closed/reset for a fresh entry.
-      await processImportedText(text);
+      await runImport(text);
     } catch (err) {
       setPasteImportError('ข้อความที่วางไม่ถูกต้อง ลองคัดลอกใหม่จากแอปนี้');
     } finally {
       setImporting(false);
-    }
-  };
-
-  const unlockImport = async () => {
-    if (!importLock || !importLockPw || importLockBusy) return;
-    setImportLockBusy(true);
-    setImportLockError("");
-    let plain = null;
-    try {
-      plain = await decryptBackupText(readEncryptedBackup(importLock.text), importLockPw);
-    } catch (e) {
-      setImportLockError(e && e.code === "UNSUPPORTED"
-        ? IMPORT_UNSUPPORTED_MESSAGE
-        : "รหัสผ่านไม่ถูกต้อง หรือไฟล์ถูกแก้ไข");
-      setImportLockBusy(false);
-      return;
-    }
-    try {
-      setImportLock(null);
-      setImportLockPw("");
-      await processImportedText(plain);
-    } catch (e) {
-      setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
-    } finally {
-      setImportLockBusy(false);
     }
   };
 
@@ -7040,58 +7049,13 @@ function AppInner() {
                 display: "flex",
                 flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "import"}>
-                {importLock ? (
-                  // The chosen file / pasted text is password-protected
-                  // (designs 5 and 6 of backup-encrypt-designs.html).
-                  <>
-                    <div style={{ display: "flex", alignItems: "center", gap: 11, background: importBroken ? "#FFF6F5" : "#FFFFFF", border: `1px solid ${importBroken ? "#F0C4BE" : "#EEDEDA"}`, borderRadius: 14, padding: "11px 13px", marginBottom: 12 }}>
-                      <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: "50%", background: importBroken ? "#FBEAE8" : "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{importBroken ? <AlertTriangle size={17} color="#B3261E" /> : <Lock size={17} color="#9A3B33" />}</span>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", wordBreak: "break-all" }}>{importLock.name || "ข้อความที่วางไว้"}</div>
-                        <div style={{ fontSize: 12, color: importBroken ? "#B3261E" : "#7A6360" }}>{importBroken ? "เปิดไฟล์นี้ไม่ได้" : "ไฟล์นี้เข้ารหัสอยู่"}</div>
-                      </div>
-                    </div>
-                    {importBroken ? (
-                      <div style={{ margin: "0 2px 10px" }}><FieldError>{IMPORT_UNSUPPORTED_MESSAGE}</FieldError></div>
-                    ) : (
-                    <>
-                    <label htmlFor="import-pw" style={{ fontSize: 12, color: "#7A6360", marginBottom: 4 }}>รหัสผ่านของไฟล์</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: importLockError ? "#FFF6F5" : "#FFFFFF", border: `1px solid ${importLockError ? "#B3261E" : "#E3C8C3"}`, borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
-                      <input id="import-pw" type={importLockShow ? "text" : "password"} value={importLockPw} tabIndex={importTabIdx}
-                        onChange={(e) => { setImportLockPw(e.target.value); if (importLockError) setImportLockError(""); }}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); unlockImport(); } }}
-                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
-                        aria-invalid={!!importLockError} aria-describedby={importLockError ? "import-pw-err" : undefined}
-                        style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 16, fontFamily: "inherit", color: "#3A2C29" }} />
-                      <button type="button" tabIndex={importTabIdx} onClick={() => setImportLockShow(v => !v)} aria-label={importLockShow ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"} aria-pressed={importLockShow}
-                        style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer", color: "#7A6360", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
-                        {importLockShow ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {importLockError && <div id="import-pw-err" style={{ margin: "0 2px 4px" }}><FieldError>{importLockError}</FieldError></div>}
-                    <button onClick={unlockImport} disabled={!importLockPw || importLockBusy} tabIndex={importTabIdx} className="btn-primary"
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: (!importLockPw || importLockBusy) ? "not-allowed" : "pointer", opacity: (!importLockPw || importLockBusy) ? 0.5 : 1, margin: "14px 0 10px" }}>
-                      <Unlock size={17} /> {importLockBusy ? "กำลังปลดล็อก…" : "ปลดล็อกและนำเข้า"}
-                    </button>
-                    <p style={{ fontSize: 12, color: "#7A6360", textAlign: "center", lineHeight: 1.6, margin: "0 0 8px" }}>
-                      {importLockError ? "ลืมรหัส? ไฟล์นี้จะเปิดไม่ได้ ถ้ามีไฟล์สำรองอื่นให้ลองเลือกไฟล์อื่นแทน" : "ถอดรหัสในเครื่องนี้ ไม่ส่งรหัสหรือข้อมูลไปที่ไหน"}
-                    </p>
-                    </>
-                    )}
-                    <button type="button" onClick={() => { setImportLock(null); setImportLockPw(""); setImportLockError(""); }} tabIndex={importTabIdx}
-                      className={importBroken ? "btn-ghost" : undefined}
-                      style={importBroken ? { width: "100%", padding: "12px 0", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" } : { alignSelf: "center", background: "none", border: "none", color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 6 }}>
-                      เลือกไฟล์อื่น
-                    </button>
-                  </>
-                ) : (
                 <>
                 <div id="import-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>นำเข้าข้อมูลสำรองจาก</div>
                 <div role="radiogroup" aria-labelledby="import-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px", flexShrink: 0 }}>
                   {[["file", "ไฟล์"], ["text", "ข้อความ"]].map(([k, label]) => {
                     const on = importSource === k;
                     return (
-                      <button key={k} type="button" role="radio" aria-checked={on} tabIndex={importTabIdx} onClick={() => setImportSource(k)}
+                      <button key={k} type="button" role="radio" aria-checked={on} tabIndex={importTabIdx} onClick={() => { if (k !== importSource) { setImportSource(k); setImportLockPw(""); setImportLockError(""); } }}
                         style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>
                         {label}
                       </button>
@@ -7103,16 +7067,18 @@ function AppInner() {
                 <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "inherit" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "file"}>
                   <button onClick={triggerImport} disabled={importing} tabIndex={importSource === "file" ? importTabIdx : -1}
                     style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "#FFFFFF", border: `1px solid ${importPicked ? "#9A3B33" : "#E3CFCB"}`, borderRadius: 14, padding: "16px 14px", fontFamily: "inherit", color: "#3A2C29", cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1 }}>
-                    <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{importPicked ? <Check size={19} /> : <Upload size={19} />}</span>
+                    <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{importPickedEnc ? <Lock size={19} /> : importPicked ? <Check size={19} /> : <Upload size={19} />}</span>
                     <span style={{ minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 14, fontWeight: 600, wordBreak: "break-all" }}>{importing ? "กำลังอ่านไฟล์..." : importPicked ? importPicked.name : "เลือกไฟล์สำรอง"}</span>
-                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>{importPicked ? "แตะเพื่อเลือกไฟล์อื่น" : "ไฟล์ที่ดาวน์โหลดจากแอปนี้"}</span>
+                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>{importPicked ? (importPickedEnc ? "ไฟล์นี้เข้ารหัสอยู่ · แตะเพื่อเลือกไฟล์อื่น" : "แตะเพื่อเลือกไฟล์อื่น") : "ไฟล์ที่ดาวน์โหลดจากแอปนี้"}</span>
                     </span>
                   </button>
+                  {importPickedEnc && importPwField("import-pw-file", "รหัสผ่านของไฟล์", importSource === "file" ? importTabIdx : -1)}
                   {importMsg && importMsg.at === "file" && <div style={{ margin: "10px 0 0" }}><BackupMsg msg={importMsg} at="file" /></div>}
-                  <button onClick={confirmPickedImport} disabled={importing || !importPicked} tabIndex={importSource === "file" ? importTabIdx : -1} className="btn-primary"
-                    style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || !importPicked) ? "not-allowed" : "pointer", opacity: (importing || !importPicked) ? 0.4 : 1 }}>
-                    ถัดไป
+                  <div aria-hidden="true" style={{ height: 14, flexShrink: 0 }} />
+                  <button onClick={confirmPickedImport} disabled={importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)} tabIndex={importSource === "file" ? importTabIdx : -1} className="btn-primary"
+                    style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !importPicked || (importPickedEnc && !importLockPw)) ? 0.4 : 1 }}>
+                    {importLockBusy ? "กำลังปลดล็อก…" : "ถัดไป"}
                   </button>
                 </div>
                 <div style={{ gridArea: "1 / 1", visibility: importSource === "text" ? "inherit" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "text"}>
@@ -7125,6 +7091,7 @@ function AppInner() {
                   style={{ width: "100%", height: 110, borderRadius: 12, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "10px 12px", fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
                 />
                 {pasteImportError && <div style={{ margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
+                {pasteEnc && <div style={{ marginBottom: 12 }}>{importPwField("import-pw-text", "รหัสผ่านของข้อมูล", importSource === "text" ? importTabIdx : -1)}</div>}
                 {importMsg && importMsg.at === "paste" && <div style={{ margin: "0 0 8px" }}><BackupMsg msg={importMsg} at="paste" /></div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <button type="button" onClick={pasteFromClipboard} tabIndex={importSource === "text" ? importTabIdx : -1}
@@ -7138,14 +7105,13 @@ function AppInner() {
                     </button>
                   )}
                 </div>
-                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={importSource === "text" ? importTabIdx : -1} className="btn-primary"
-                  style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.4 : 1 }}>
-                  {importing ? "กำลังตรวจสอบ..." : "ถัดไป"}
+                <button onClick={confirmPasteImport} disabled={importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)} tabIndex={importSource === "text" ? importTabIdx : -1} className="btn-primary"
+                  style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? 0.4 : 1 }}>
+                  {importLockBusy ? "กำลังปลดล็อก…" : importing ? "กำลังตรวจสอบ..." : "ถัดไป"}
                 </button>
                 </div>
                 </div>
                 </>
-                )}
               </div>
             </div>
             </FadeScroll>
