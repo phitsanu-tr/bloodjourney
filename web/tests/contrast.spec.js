@@ -20,7 +20,8 @@ test("text colours that used to be too faint now reach 4.5:1", async ({ page }) 
   await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
   await page.getByRole("button", { name: /^สำรอง\/กู้คืนข้อมูล/ }).click();
   await page.waitForTimeout(600);
-  expect(await ratio(page.getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส", exact: true }))).toBeGreaterThanOrEqual(4.5);
+  await page.getByRole("button", { name: "ตัวเลือกอื่น" }).click(); await page.waitForTimeout(200);
+  expect(await ratio(page.getByRole("button", { name: /^ส่งออกแบบไม่เข้ารหัส/ }))).toBeGreaterThanOrEqual(4.5);
   await page.keyboard.press("Escape"); await page.waitForTimeout(300);
   // green "อยู่ในเกณฑ์" badge in the profile weight sheet
   await page.goto("/"); await expect(page.getByTestId("hero-card")).toBeVisible();

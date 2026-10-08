@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.431";
+const APP_VERSION = "1.0.432";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -457,6 +457,7 @@ function AppInner() {
   // hub opens with a generated passphrase; a plain file is a small link that
   // goes through a warning. exportGenPw = generated mode, empty = own password.
   const [exportProtect, setExportProtect] = useState(true);
+  const [exportMoreOpen, setExportMoreOpen] = useState(false); // step 1: "ตัวเลือกอื่น" disclosure (own password / plain export)
   const [exportStep, setExportStep] = useState(1); // generated mode: 1 = show the passphrase, 2 = type it back
   const [exportConfirmPw, setExportConfirmPw] = useState("");
   const [showPlainWarn, setShowPlainWarn] = useState(false);
@@ -1993,11 +1994,13 @@ function AppInner() {
     setExportPw2("");
   };
   const useOwnExportPassword = () => {
+    setExportMoreOpen(false);
     setExportGenPw("");
     setExportStep(1);
     setExportConfirmPw("");
   };
   const goPlainExport = () => {
+    setExportMoreOpen(false);
     setShowPlainWarn(false);
     setPlainWarnAck(false);
     setExportProtect(false);
@@ -6919,6 +6922,10 @@ function AppInner() {
                 // import tab as tall while it's hidden.
                 display: backupRestoreTab !== "export" && exportProtect ? "none" : undefined,
               }} aria-hidden={backupRestoreTab !== "export"}>
+                {exportProtect && exportGenPw && exportStep === 1 ? (
+                  <p style={{ margin: "0 2px 12px", fontSize: 12, color: "#7A6360" }}>ไฟล์สำรองเข้ารหัสทุกครั้ง · {donations.length} รายการ</p>
+                ) : (
+                  <>
                 <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
                   <p style={{ margin: "0 0 4px", fontSize: 12, color: "#7A6360" }}>จำนวนรายการบริจาคที่บันทึกไว้</p>
                   <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#3A2C29" }}>{donations.length} รายการ</p>
@@ -6932,6 +6939,8 @@ function AppInner() {
                     <ShieldCheck size={17} color="#2B7530" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                     <div><b style={{ color: "#1F3A2B" }}>ไฟล์สำรองเข้ารหัสทุกครั้ง</b><br />ข้อมูลสุขภาพของคุณจะอ่านไม่ได้ ถ้าไม่มีรหัสผ่าน</div>
                   </div>
+                )}
+                  </>
                 )}
                 {!exportProtect && (
                   <div role="note" style={{ display: "flex", gap: 10, background: "#FFF3DC", border: "1px solid #F2D9A4", borderRadius: 12, padding: "10px 12px", fontSize: 12, lineHeight: 1.55, color: "#6B4A00", marginBottom: 12 }}>
@@ -6957,18 +6966,27 @@ function AppInner() {
                       </div>
                     </div>
                     <div style={{ margin: "-4px 0 12px" }}><BackupMsg msg={exportMsg} at="pw" /></div>
-                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
-                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
-                      <div><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b><br />แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</div>
-                    </div>
+                    <p role="note" style={{ margin: "0 2px 14px", fontSize: 12, lineHeight: 1.6, color: "#6E5A56" }}><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b> แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</p>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 6 }}>
                       ต่อไป: ยืนยันรหัส
                     </button>
-                    <button type="button" tabIndex={exportTabIdx} onClick={useOwnExportPassword}
+                    <button type="button" tabIndex={exportTabIdx} onClick={() => setExportMoreOpen(v => !v)} aria-expanded={exportMoreOpen}
                       style={{ display: "block", margin: "8px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0, position: "relative" }}>
-                      <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -8px" }} />ตั้งรหัสผ่านเอง
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -8px" }} />ตัวเลือกอื่น
                     </button>
+                    {exportMoreOpen && (
+                      <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, marginTop: 14, overflow: "hidden" }}>
+                        <button type="button" tabIndex={exportTabIdx} onClick={useOwnExportPassword}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", padding: "11px 14px", minHeight: 44, fontFamily: "inherit", fontSize: 14, color: "#3A2C29", cursor: "pointer" }}>
+                          ตั้งรหัสผ่านเอง<span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>ใช้รหัสที่คุณจำได้</span>
+                        </button>
+                        <button type="button" tabIndex={exportTabIdx} onClick={() => { setPlainWarnAck(false); setShowPlainWarn(true); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", borderTop: "1px solid #F0E4E1", padding: "11px 14px", minHeight: 44, fontFamily: "inherit", fontSize: 14, color: "#3A2C29", cursor: "pointer" }}>
+                          ส่งออกแบบไม่เข้ารหัส<span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>ใครได้ไฟล์ไปก็อ่านได้</span>
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -7059,12 +7077,6 @@ function AppInner() {
                   <button type="button" tabIndex={exportTabIdx} onClick={generateExportPassword}
                     style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
                     ให้แอปสร้างรหัสให้แทน
-                  </button>
-                )}
-                {exportProtect && exportGenPw && exportStep === 1 && (
-                  <button type="button" tabIndex={exportTabIdx} onClick={() => { setPlainWarnAck(false); setShowPlainWarn(true); }}
-                    style={{ display: "block", margin: "10px auto 0", background: "none", border: "none", color: "#7A6360", fontSize: 12, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", padding: 0, position: "relative" }}>
-                    <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -8px" }} />ส่งออกแบบไม่เข้ารหัส
                   </button>
                 )}
                 {!exportProtect && canEncryptBackup() && (
