@@ -122,8 +122,9 @@ test("backup: all four types survive an export and import (old 'component' reads
   await page.getByLabel("ตั้งค่า").tap();
   await page.getByRole("button", { name: "สำรอง/กู้คืนข้อมูล" }).tap();
   await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  await page.getByRole("radio", { name: "ข้อความ" }).tap();
   await page.getByLabel("วางข้อความ JSON สำรองที่คัดลอกไว้").fill(text);
-  await page.getByRole("button", { name: "นำเข้าจากข้อความ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await page.locator("[role=dialog]").last().locator("input[type=password], input[type=text]").last().fill(pw);
   await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
   await page.locator("[role=dialog]").last().getByRole("button", { name: "นำเข้า", exact: true }).tap();

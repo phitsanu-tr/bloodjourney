@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.441";
+const APP_VERSION = "1.0.442";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -457,6 +457,7 @@ function AppInner() {
   // hub opens with a generated passphrase; a plain file is a small link that
   // goes through a warning. exportGenPw = generated mode, empty = own password.
   const [exportProtect, setExportProtect] = useState(true);
+  const [importSource, setImportSource] = useState("file"); // restore tab: "file" | "text" (same switch as the export tab)
   const [exportStep, setExportStep] = useState(1); // 1 = choose / show the password, 2 = (generated: type it back) save the file
   const [exportConfirmPw, setExportConfirmPw] = useState("");
   const [exportPw, setExportPw] = useState("");
@@ -2604,6 +2605,7 @@ function AppInner() {
     // Settings stays mounted (inert) underneath, like privacy/FAQ, instead of sliding away and coming back on close (v1.0.433).
     setError("");
     resetBackupProtection();
+    setImportSource("file");
     // The generated password is already there on the first frame (not after an effect), so the own-password fields never flash.
     if (canEncryptBackup()) setExportGenPw(generateBackupPassword());
     setBackupRestoreTab(tab);
@@ -7069,49 +7071,60 @@ function AppInner() {
                   </>
                 ) : (
                 <>
-                <button onClick={triggerImport} disabled={importing} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-primary" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1, marginBottom: 14 }}>
-                  <Upload size={17} /> {importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์"}
-                </button>
-                {importMsg && importMsg.at === "file" && <div style={{ flexShrink: 0, margin: "-2px 0 8px" }}><BackupMsg msg={importMsg} at="file" /></div>}
-                <p style={{ flexShrink: 0, fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "0 0 10px" }}>
-                  หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อมูลสำรอง" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
-                </p>
-                {/* flex:1 lets this textarea grow to fill whatever vertical
-                    space is left over after the equal-height grid trick
-                    above sizes this tab to match the (taller) export tab —
-                    otherwise that leftover space would just be empty gap
-                    below the "นำเข้าจากข้อความ" button. */}
+                <div id="import-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>นำเข้าข้อมูลสำรองจาก</div>
+                <div role="radiogroup" aria-labelledby="import-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px", flexShrink: 0 }}>
+                  {[["file", "ไฟล์"], ["text", "ข้อความ"]].map(([k, label]) => {
+                    const on = importSource === k;
+                    return (
+                      <button key={k} type="button" role="radio" aria-checked={on} tabIndex={importTabIdx} onClick={() => setImportSource(k)}
+                        style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Both sources share one grid cell so the tab keeps its height when you switch (same trick as the export tab). */}
+                <div style={{ display: "grid", flex: 1 }}>
+                <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "visible" : "hidden" }} aria-hidden={importSource !== "file"}>
+                  <button onClick={triggerImport} disabled={importing} tabIndex={importSource === "file" ? importTabIdx : -1}
+                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "16px 14px", fontFamily: "inherit", color: "#3A2C29", cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1 }}>
+                    <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Upload size={19} /></span>
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 600 }}>{importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์สำรอง"}</span>
+                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>ไฟล์ที่ดาวน์โหลดจากแอปนี้</span>
+                    </span>
+                  </button>
+                  {importMsg && importMsg.at === "file" && <div style={{ margin: "10px 0 0" }}><BackupMsg msg={importMsg} at="file" /></div>}
+                </div>
+                <div style={{ gridArea: "1 / 1", visibility: importSource === "text" ? "visible" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "text"}>
                 <textarea
                   value={pasteImportText}
                   onChange={(e) => { setPasteImportText(e.target.value); if (pasteImportError) setPasteImportError(""); setImportMsg(null); }}
-                  tabIndex={backupRestoreTab === "import" ? 0 : -1}
-                  placeholder='{"nickname": "...", "donations": [...] }'
+                  tabIndex={importSource === "text" ? importTabIdx : -1}
+                  placeholder="วางข้อมูลสำรองที่คัดลอกไว้ที่นี่"
                   aria-label="วางข้อความ JSON สำรองที่คัดลอกไว้"
-                  style={{ width: "100%", flex: 1, minHeight: 100, borderRadius: 10, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", marginBottom: 4, resize: "vertical", boxSizing: "border-box" }}
+                  style={{ width: "100%", height: 110, borderRadius: 12, border: `1px solid ${pasteImportError ? "#B3261E" : "#E3C8C3"}`, padding: "10px 12px", fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: pasteImportError ? "#FFF6F5" : "#FFFFFF", resize: "none", boxSizing: "border-box", marginBottom: 8 }}
                 />
-                {pasteImportError && <div style={{ flexShrink: 0, margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
-                {importMsg && importMsg.at === "paste" && <div style={{ flexShrink: 0, margin: "0 0 8px" }}><BackupMsg msg={importMsg} at="paste" /></div>}
-                <div style={{ flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <button
-                    type="button"
-                    onClick={pasteFromClipboard}
-                    tabIndex={backupRestoreTab === "import" ? 0 : -1}
-                    style={{ position: "relative", display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                    <span aria-hidden="true" style={{ position: "absolute", inset: "-11px -4px" }} /><StickyNote size={13} /> วางจากคลิปบอร์ด
+                {pasteImportError && <div style={{ margin: "0 2px 6px" }}><FieldError>{pasteImportError}</FieldError></div>}
+                {importMsg && importMsg.at === "paste" && <div style={{ margin: "0 0 8px" }}><BackupMsg msg={importMsg} at="paste" /></div>}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <button type="button" onClick={pasteFromClipboard} tabIndex={importSource === "text" ? importTabIdx : -1}
+                    style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 10, padding: "0 12px", color: "#9A3B33", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                    <StickyNote size={14} /> วางจากคลิปบอร์ด
                   </button>
                   {pasteImportText.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => { setPasteImportText(""); setPasteImportError(""); setImportMsg(null); }}
-                      tabIndex={backupRestoreTab === "import" ? 0 : -1}
-                      style={{ background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                      ล้างข้อความ
+                    <button type="button" onClick={() => { setPasteImportText(""); setPasteImportError(""); setImportMsg(null); }} tabIndex={importSource === "text" ? importTabIdx : -1}
+                      style={{ position: "relative", background: "none", border: "none", padding: "2px 0", margin: 0, color: "#9A3B33", fontSize: 12, fontWeight: 600, textDecoration: "underline", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -8px" }} />ล้างข้อความ
                     </button>
                   )}
                 </div>
-                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={backupRestoreTab === "import" ? 0 : -1} className="btn-ghost" style={{ width: "100%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.5 : 1 }}>
-                  {importing ? "กำลังตรวจสอบ..." : "นำเข้าจากข้อความ"}
+                <button onClick={confirmPasteImport} disabled={importing || !pasteImportText.trim()} tabIndex={importSource === "text" ? importTabIdx : -1} className="btn-primary"
+                  style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || !pasteImportText.trim()) ? "not-allowed" : "pointer", opacity: (importing || !pasteImportText.trim()) ? 0.4 : 1 }}>
+                  {importing ? "กำลังตรวจสอบ..." : "ถัดไป"}
                 </button>
+                </div>
+                </div>
                 </>
                 )}
               </div>

@@ -28,8 +28,9 @@ const exportPlain = exportEncrypted;
 async function pasteAndImport(page, backup) {
   const { text, pw } = typeof backup === "string" ? { text: backup, pw: "" } : backup;
   await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  await page.getByRole("radio", { name: "ข้อความ" }).tap();
   await pasteBox(page).fill(text);
-  await page.getByRole("button", { name: "นำเข้าจากข้อความ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   if (pw) {
     await page.locator("[role=dialog]").last().locator("input[type=password], input[type=text]").last().fill(pw);
     await page.getByRole("button", { name: /ปลดล็อก/ }).tap();
@@ -154,9 +155,11 @@ test("import errors: garbage text and garbage file show inline messages, data un
   await openHub(page);
   await page.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
 
+  await page.getByRole("radio", { name: "ข้อความ" }).tap();
   await pasteBox(page).fill("this is not a backup");
-  await page.getByRole("button", { name: "นำเข้าจากข้อความ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await expect(page.getByText("ข้อความที่วางไม่ถูกต้อง ลองคัดลอกใหม่จากแอปนี้")).toBeVisible();
+  await page.getByRole("radio", { name: "ไฟล์" }).tap();
 
   await page.locator("input[type=file][accept*=json]").setInputFiles({ name: "x.json", mimeType: "application/json", buffer: Buffer.from("not json at all") });
   await expect(page.getByText("อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้")).toBeVisible();
