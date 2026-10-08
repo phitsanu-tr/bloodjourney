@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.423";
+const APP_VERSION = "1.0.424";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -805,12 +805,11 @@ function TimeWheelColumn({ items, initialIndex, onSettle, ariaLabel }) {
   // is what reports the value upward / snaps the scroll position exactly.
   const [centerIndex, setCenterIndex] = useState(initialIndex);
 
-  useEffect(() => {
+  useEffectOn(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = initialIndex * WHEEL_ITEM_HEIGHT;
     }
     return () => { if (settleTimer.current) clearTimeout(settleTimer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleScroll = () => {
@@ -1827,12 +1826,11 @@ function KnowledgePage({ initialType, jumpToBefore, onJumpDone, onCheckEligibili
   const [open, setOpen] = useState(() => ({ criteria: true, before: !!jumpToBefore }));
   const toggle = useCallback((id) => setOpen((o) => ({ ...o, [id]: !o[id] })), []);
   // Arriving from the home card's "ดูวิธีเตรียมตัวก่อนบริจาค": open that section and scroll to it.
-  useEffect(() => {
+  useEffectOn(() => {
     if (!jumpToBefore) return undefined;
     setOpen((o) => ({ ...o, before: true }));
     const t = setTimeout(() => { document.getElementById("pre-donation-tips")?.scrollIntoView({ behavior: "smooth", block: "start" }); onJumpDone(); }, 80);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jumpToBefore]);
   const crit = KNOWLEDGE_CRITERIA[type];
   const sec = (id) => ({ id, open: !!open[id], onToggle: toggle });
@@ -2879,6 +2877,19 @@ function initialTabFromUrl() {
   } catch (e) {
     return "home";
   }
+}
+
+// A useEffect that runs only when the values in `deps` change, while its body reads whatever the latest render holds
+// (the react-hooks lint rule would want every value the body touches listed in `deps`, which would re-run these effects
+// far too often: they are "on open", "on filter change" style effects keyed by a few values or string keys).
+// Same behaviour as a plain useEffect with those deps: the body and the cleanup it returns come from the render that
+// triggered the run. This is the one place the lint exception lives; do not copy it for effects that should follow all
+// their inputs.
+function useEffectOn(effect, deps) {
+  const ref = useRef(effect);
+  ref.current = effect;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => ref.current(), deps);
 }
 
 let _pageLayerSeq = 0;
@@ -4750,7 +4761,7 @@ function AppInner() {
   // Encrypts ahead of time (not on the tap) so the share sheet, which needs
   // to open straight from the tap, has the file ready. Re-runs when the
   // password or the data changes; the run counter drops stale results.
-  useEffect(() => {
+  useEffectOn(() => {
     if (!exportProtect || !exportKey) {
       exportEncryptRunRef.current += 1;
       setExportEncrypting(false);
@@ -4773,7 +4784,6 @@ function AppInner() {
       }
     }, exportGenPw ? 0 : 400);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exportProtect, exportKey]);
 
   const resetBackupProtection = () => {
@@ -4796,11 +4806,10 @@ function AppInner() {
   };
   // Every time the hub opens: encrypted, with a passphrase already waiting.
   // (Browsers without WebCrypto fall back to the plain file.)
-  useEffect(() => {
+  useEffectOn(() => {
     if (!showBackupRestore) return;
     if (!canEncryptBackup()) { setExportProtect(false); return; }
     if (exportProtect && !exportGenPw && !exportPw) setExportGenPw(generateBackupPassphrase());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showBackupRestore]);
   const generateExportPassword = () => {
     setExportProtect(true);
@@ -5019,7 +5028,7 @@ function AppInner() {
   // snapshot of data (achievement or single-record) or the chosen size
   // preset changes — this is what makes switching size chips instantly
   // redraw at the new dimensions.
-  useEffect(() => {
+  useEffectOn(() => {
     if (!showShareCard || (!shareData && !shareRecordData)) return;
     let cancelled = false;
     setSharingCard(true);
@@ -5038,7 +5047,6 @@ function AppInner() {
     // effect run that starts a new generation will set it true again right
     // after, so this is safe even on a deps change rather than a real close.
     return () => { cancelled = true; setSharingCard(false); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showShareCard, shareData, shareRecordData, cardSizeKey]);
 
   const downloadShareCard = async () => {
@@ -5682,10 +5690,9 @@ function AppInner() {
   const dashboardShownIsEligible = !dashboardShownNextEligible || dashboardShownDaysLeft <= 0;
   // The dashboard card opens on the soonest type and stays there until a pill is
   // tapped (it used to rotate every 30s, like the home card did before v1.0.359).
-  useEffect(() => {
+  useEffectOn(() => {
     if (!hasMultipleTypes || tab !== "dashboard") return;
     setDashboardRotateType(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
   // Keeps the selected type's tab visible in the scrolling tab row (sideways only, never the page).
   const heroTabsRef = useRef(null);
@@ -5715,10 +5722,9 @@ function AppInner() {
   // put until the donor taps another tab (it used to rotate every 30s, which
   // changed the countdown mid-read and re-announced it through aria-live).
   // Tabs that can already be donated carry a check mark instead (design 1C).
-  useEffect(() => {
+  useEffectOn(() => {
     if (!hasMultipleTypes || tab !== "home") return;
     setCountdownTab(prev => (prev && recordedTypes.includes(prev) ? prev : soonestDonationType));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey, tab]);
   const totalCount = startingCountNum + donations.length;
   // Rough, clearly-labeled estimate only (DONATION_TYPE_ML per type) — not
@@ -5989,22 +5995,20 @@ function AppInner() {
   // it. Prune stale ids on every change to unlockedIds, not just when the
   // missions tab happens to be open.
   const unlockedIdsKey = unlockedIds.join(",");
-  useEffect(() => {
+  useEffectOn(() => {
     setSeenAchievements(prev => {
       const pruned = prev.filter(id => unlockedIds.includes(id));
       if (pruned.length === prev.length) return prev;
       persistUiMeta({ seenAchievements: pruned });
       return pruned;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlockedIdsKey]);
 
-  useEffect(() => {
+  useEffectOn(() => {
     if (tab === "missions" && hasNewAchievement) {
       setSeenAchievements(unlockedIds);
       persistUiMeta({ seenAchievements: unlockedIds });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, hasNewAchievement]);
 
   const historyYears = useMemo(() => {
@@ -6057,8 +6061,7 @@ function AppInner() {
       list = list.filter(d => normalizeDonationType(d.type) === historyTypeFilter);
     }
     return list;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donations, historyYearFilter, historyTypeFilter]);
+  }, [sorted, historyYearFilter, historyTypeFilter]); // `sorted` is itself memoized on donations
 
   // The "ยอดยกมา" (carried-over starting count) card at the end of the
   // history list used to only ever show/hide based on the COMBINED total
@@ -6083,13 +6086,11 @@ function AppInner() {
   // list with no chip on screen to show why. Same class of bug existed for
   // the year filter (its <select> also only renders conditionally) whenever
   // the selected year's last record gets deleted/edited away.
-  useEffect(() => {
+  useEffectOn(() => {
     if (historyTypeFilter !== "all" && (!hasMultipleTypes || !recordedTypes.includes(historyTypeFilter))) setHistoryTypeFilter("all");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMultipleTypes, recordedTypesKey]);
-  useEffect(() => {
+  useEffectOn(() => {
     if (historyYearFilter !== "all" && !historyYears.includes(historyYearFilter)) setHistoryYearFilter("all");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyYears]);
 
   const visibleHistory = filteredHistory.slice(0, historyVisibleCount);

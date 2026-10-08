@@ -1,4 +1,4 @@
-# ส่งต่องาน BloodJourney — สถานะล่าสุด v1.0.423 (2026-10-08)
+# ส่งต่องาน BloodJourney — สถานะล่าสุด v1.0.424 (2026-10-08)
 
 ไฟล์นี้แทน `handoff-latest-v1.0.390.md` (ลบแล้ว เนื้อหาที่ยังใช้ย้ายมาไว้ที่นี่) ต่อจาก `handoff-latest-v1.0.356.md` และ `handoff-blood-donation-app.md`
 อ่านไฟล์นี้ก่อนเริ่มงาน แล้วทำต่อได้เลยโดยไม่ต้องถามซ้ำเรื่องที่ตัดสินใจไปแล้ว
@@ -23,8 +23,8 @@
 - ระวังแก้คำอธิบายที่ยังไม่ได้ตรวจก่อนเขียน (เคยเขียนว่า "มี 2 บิตว่าง" ทั้งที่ byte แรกของลิงก์แชร์เต็มแล้ว) — ตรวจโค้ดก่อนอ้าง
 
 ## 2. สถานะ git
-- ตรวจเวอร์ชันด้วย `grep -n 'APP_VERSION =' blood-donation-tracker.jsx` (ตอนเขียนไฟล์นี้ = `1.0.423`)
-- GitHub `main` เคยยืนยันที่ v1.0.415 ส่วน v1.0.416–v1.0.423 ส่งเป็นไฟล์แพตช์ให้ผู้ใช้ลง `git am` ตามลำดับ (ถ้ายังไม่ลง ให้ถามผู้ใช้ก่อนทำต่อ)
+- ตรวจเวอร์ชันด้วย `grep -n 'APP_VERSION =' blood-donation-tracker.jsx` (ตอนเขียนไฟล์นี้ = `1.0.424`)
+- GitHub `main` เคยยืนยันที่ v1.0.415 ส่วน v1.0.416–v1.0.424 ส่งเป็นไฟล์แพตช์ให้ผู้ใช้ลง `git am` ตามลำดับ (ถ้ายังไม่ลง ให้ถามผู้ใช้ก่อนทำต่อ)
 - ไฟล์หลักคือ `blood-donation-tracker.jsx` ที่ root (build จะคัดลอกไป `web/src/App.jsx` ซึ่งอยู่ใน .gitignore — แก้ที่ root เท่านั้น)
 
 ## 3. สิ่งที่ต้องรู้ก่อนแก้ต่อ (สะสมถึง v1.0.419)
@@ -67,7 +67,7 @@
 
 **เครื่องมือตรวจใหม่ (v1.0.423) ทั้งหมดอยู่ใน `web/tests` ไม่แตะ `web/package.json`**
 - `npm run unit` — เทสต์หน่วยด้วย `node --test` (`unit/*.test.mjs`): `daysBetween` (ไม่แก้ Date ที่ส่งเข้ามา), `formatLiters`/`estimateVolumeMl`, ลิงก์แชร์ (หมู่โลหิต/Rh/วันที่ ไปกลับ + token เสีย), ตัวกันสูตรลิตรซ้ำซ้อน; `unit/_load.mjs` bundle ไฟล์แอปด้วย esbuild (ของ vite) เข้า `unit/.build/` (gitignore) ฟังก์ชันที่จะเทสต์ต้อง `export` จากไฟล์แอป (ฟังก์ชันที่อยู่ใน `AppInner` เทสต์แบบนี้ไม่ได้ ต้องแยกออกมาก่อน)
-- `npm run lint` — ESLint เฉพาะกฎ react-hooks (`eslint.config.js`) ตอนนี้ไม่มีคำเตือน; `npm run lint -- --no-inline-config` แสดงสิ่งที่คอมเมนต์ `eslint-disable` ซ่อนไว้ **12 จุดที่เหลือ** (เดิม 16: ลบ 4 จุดที่ไม่ได้ซ่อนอะไรแล้ว) — เป็นการรันครั้งเดียว/รันเฉพาะบางค่าโดยตั้งใจ การแก้ (ใช้ ref เก็บ callback ล่าสุด) เปลี่ยนจังหวะการรัน effect (เสี่ยงวนซ้ำ/โทสต์ซ้ำ) จึงต้องแก้ทีละจุดพร้อมรันเทสต์: บรรทัด ~814 initialIndex, ~1837 onJumpDone, ~4781/4808 รหัสผ่านส่งออก, ~5046 showToast, ~5693/5726 recordedTypes+soonestDonationType, ~6004/6012 persistUiMeta+unlockedIds, ~6065 sorted, ~6093/6097 ตัวกรองประวัติ
+- `npm run lint` — ESLint เฉพาะกฎ react-hooks (`eslint.config.js`) ไม่มีคำเตือน (v1.0.424): คอมเมนต์ `eslint-disable` 16 จุดเดิมเหลือ **1 จุด** ในฮุก `useEffectOn(effect, deps)` (ใกล้ `usePageHistoryLayer`) — effect แบบ "รันเมื่อค่าเหล่านี้เปลี่ยน" 11 ตัวใช้ฮุกนี้แทน พฤติกรรมเท่าเดิมทุกประการ (ตัว effect และ cleanup มาจาก render ที่ทำให้รัน) อย่าใช้กับ effect ที่ควรตามค่าทั้งหมด; อีก 4 จุดเดิมไม่ได้ซ่อนอะไรจึงลบ และ `useMemo` ของ `filteredHistory` แก้ deps เป็น `[sorted, …]` (sorted memo ตาม donations อยู่แล้ว) `npm run lint -- --no-inline-config` ควรแสดงเฉพาะบรรทัดในฮุกนั้น
 - Playwright: `BJ_WORKERS=4` รันขนาน (ยังไม่ได้ลองทั้งชุด), `BJ_WEBKIT=1` เพิ่ม WebKit (ต้อง `npx playwright install webkit` ในเครื่องที่รัน; ยังไม่ได้ลอง และอาร์กิวเมนต์ `--host-resolver-rules` ใน config เป็นของ Chromium)
 - **ระวังตัวกรองไฟล์:** `npx playwright test home` จับ path เต็มของไฟล์ ซึ่งมี `/home/` อยู่ → รันครอบทั้งชุด (เกิดมาแล้วหลายรอบ) ใช้ `home.spec` / `pages.spec` แทน และดูจำนวนที่รันทุกครั้ง
 
