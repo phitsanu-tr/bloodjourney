@@ -162,6 +162,8 @@ test("import errors: garbage text and garbage file show inline messages, data un
   await page.getByRole("radio", { name: "ไฟล์" }).tap();
 
   await page.locator("input[type=file][accept*=json]").setInputFiles({ name: "x.json", mimeType: "application/json", buffer: Buffer.from("not json at all") });
+  await expect(page.getByText("x.json")).toBeVisible(); // staged, not imported yet
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await expect(page.getByText("อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้")).toBeVisible();
 
   expect(await stored(page, "donations")).toHaveLength(2);

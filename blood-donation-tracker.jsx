@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.443";
+const APP_VERSION = "1.0.444";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -457,6 +457,7 @@ function AppInner() {
   // hub opens with a generated passphrase; a plain file is a small link that
   // goes through a warning. exportGenPw = generated mode, empty = own password.
   const [exportProtect, setExportProtect] = useState(true);
+  const [importPicked, setImportPicked] = useState(null); // { name, text } of the chosen backup file, waiting for ถัดไป
   const [importSource, setImportSource] = useState("file"); // restore tab: "file" | "text" (same switch as the export tab)
   const [exportStep, setExportStep] = useState(1); // 1 = choose / show the password, 2 = (generated: type it back) save the file
   const [exportConfirmPw, setExportConfirmPw] = useState("");
@@ -2580,8 +2581,21 @@ function AppInner() {
     setImportMsg(null);
     setImporting(true);
     try {
-      const text = await file.text();
-      await processImportedText(text, { name: file.name });
+      // Picking a file only stages it (its name shows on the card); ถัดไป does the actual import, like the paste source.
+      setImportPicked({ name: file.name, text: await file.text() });
+    } catch (err) {
+      setImportPicked(null);
+      setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
+    } finally {
+      setImporting(false);
+    }
+  };
+  const confirmPickedImport = async () => {
+    if (!importPicked) return;
+    setImportMsg(null);
+    setImporting(true);
+    try {
+      await processImportedText(importPicked.text, { name: importPicked.name });
     } catch (err) {
       setImportMsg({ kind: "err", at: "file", text: "อ่านไฟล์ไม่ได้ ใช้ไฟล์สำรองจากแอปนี้" });
     } finally {
@@ -2606,6 +2620,7 @@ function AppInner() {
     setError("");
     resetBackupProtection();
     setImportSource("file");
+    setImportPicked(null);
     // The generated password is already there on the first frame (not after an effect), so the own-password fields never flash.
     if (canEncryptBackup()) setExportGenPw(generateBackupPassword());
     setBackupRestoreTab(tab);
@@ -7085,16 +7100,20 @@ function AppInner() {
                 </div>
                 {/* Both sources share one grid cell so the tab keeps its height when you switch (same trick as the export tab). */}
                 <div style={{ display: "grid", flex: 1 }}>
-                <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "inherit" : "hidden" }} aria-hidden={importSource !== "file"}>
+                <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "inherit" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "file"}>
                   <button onClick={triggerImport} disabled={importing} tabIndex={importSource === "file" ? importTabIdx : -1}
-                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "16px 14px", fontFamily: "inherit", color: "#3A2C29", cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1 }}>
-                    <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Upload size={19} /></span>
+                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "#FFFFFF", border: `1px solid ${importPicked ? "#9A3B33" : "#E3CFCB"}`, borderRadius: 14, padding: "16px 14px", fontFamily: "inherit", color: "#3A2C29", cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1 }}>
+                    <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{importPicked ? <Check size={19} /> : <Upload size={19} />}</span>
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 14, fontWeight: 600 }}>{importing ? "กำลังอ่านไฟล์..." : "เลือกไฟล์สำรอง"}</span>
-                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>ไฟล์ที่ดาวน์โหลดจากแอปนี้</span>
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 600, wordBreak: "break-all" }}>{importing ? "กำลังอ่านไฟล์..." : importPicked ? importPicked.name : "เลือกไฟล์สำรอง"}</span>
+                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>{importPicked ? "แตะเพื่อเลือกไฟล์อื่น" : "ไฟล์ที่ดาวน์โหลดจากแอปนี้"}</span>
                     </span>
                   </button>
                   {importMsg && importMsg.at === "file" && <div style={{ margin: "10px 0 0" }}><BackupMsg msg={importMsg} at="file" /></div>}
+                  <button onClick={confirmPickedImport} disabled={importing || !importPicked} tabIndex={importSource === "file" ? importTabIdx : -1} className="btn-primary"
+                    style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || !importPicked) ? "not-allowed" : "pointer", opacity: (importing || !importPicked) ? 0.4 : 1 }}>
+                    ถัดไป
+                  </button>
                 </div>
                 <div style={{ gridArea: "1 / 1", visibility: importSource === "text" ? "inherit" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "text"}>
                 <textarea
