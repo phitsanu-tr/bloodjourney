@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.438";
+const APP_VERSION = "1.0.439";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6907,11 +6907,12 @@ function AppInner() {
                       })}
                     </div>
 
-                    {exportGenPw ? (
-                      <>
+                    {/* Both modes live in one grid cell (like the two tabs above), so the dialog keeps the same height when you switch. */}
+                    <div style={{ display: "grid" }}>
+                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "visible" : "hidden" }} aria-hidden={!exportGenPw}>
                     <div style={{ background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสของคุณ</div>
-                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
                           style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
@@ -6924,8 +6925,8 @@ function AppInner() {
                       </div>
                     </div>
                     <div style={{ margin: "-4px 0 12px" }}><BackupMsg msg={exportMsg} at="pw" /></div>
-                      </>
-                    ) : (
+                    </div>
+                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "hidden" : "visible" }} aria-hidden={!!exportGenPw}>
                       <div style={{ marginBottom: 4 }}>
                     <label htmlFor="export-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>ตั้งรหัสผ่าน (8 ตัวขึ้นไป)</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
@@ -6938,17 +6939,20 @@ function AppInner() {
                         {exportShowPw ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    {/* Bar + word on one row, with the row's height always reserved so nothing below moves while typing. */}
+                    <div style={{ minHeight: 28, display: "flex", alignItems: "center" }}>
                     {exportPw.length > 0 && (
-                      <div aria-live="polite">
-                        <div aria-hidden="true" style={{ display: "flex", gap: 4, margin: "8px 0 3px" }}>
+                      <div aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
+                        <div aria-hidden="true" style={{ display: "flex", gap: 4, flex: 1 }}>
                           {[1, 2, 3].map(n => (
                             <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2B7530" : "#D9A03A") : "#EEDEDA" }} />
                           ))}
                         </div>
-                        {exportStrength.label && <div style={{ fontSize: 12, color: exportStrength.level === 3 ? "#2B7530" : "#9C5515" }}>{exportStrength.label}</div>}
+                        {exportStrength.label && <div style={{ fontSize: 12, flexShrink: 0, color: exportStrength.level === 3 ? "#2B7530" : "#9C5515" }}>{exportStrength.label}</div>}
                       </div>
                     )}
-                    <label htmlFor="export-pw2" style={{ display: "block", fontSize: 12, color: "#7A6360", margin: "10px 0 4px" }}>ยืนยันรหัสผ่าน</label>
+                    </div>
+                    <label htmlFor="export-pw2" style={{ display: "block", fontSize: 12, color: "#7A6360", margin: "2px 0 4px" }}>ยืนยันรหัสผ่าน</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportPw2 && exportPw2 === exportPw && exportStrength.ok ? "#2B7530" : (exportPw2.length > 0 && exportPw2 !== exportPw) ? "#B3261E" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
                       <input id="export-pw2" type={exportShowPw ? "text" : "password"} value={exportPw2} tabIndex={exportTabIdx}
                         onChange={(e) => setExportPw2(e.target.value)}
@@ -6956,12 +6960,13 @@ function AppInner() {
                         style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 16, fontFamily: "inherit", color: "#3A2C29" }} />
                       {exportPw2 && exportPw2 === exportPw && exportStrength.ok && <Check size={17} color="#2B7530" aria-label="รหัสผ่านตรงกัน" />}
                     </div>
-                    {exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}
+                    <div style={{ minHeight: 24 }}>{exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}</div>
                       </div>
-                    )}
-                    <div role="note" style={{ display: "flex", gap: 9, background: "rgba(179,38,30,0.06)", borderRadius: 12, padding: "10px 12px", margin: "0 0 14px", fontSize: 13, lineHeight: 1.6, color: "#5A3F3B" }}>
+                    </div>
+                    </div>
+                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", margin: "0 0 14px", fontSize: 13, lineHeight: 1.6, color: "#7A2A24" }}>
                       <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
-                      <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b> แอปไม่เก็บรหัสไว้ ถ้าลืม ผู้พัฒนาก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</div>
+                      <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b><br />แอปไม่เก็บรหัสไว้ ถ้าลืม <span style={{ whiteSpace: "nowrap" }}>ผู้พัฒนา</span>ก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</div>
                     </div>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
