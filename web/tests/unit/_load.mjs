@@ -9,12 +9,14 @@ import fs from "node:fs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const APP_SOURCE = path.resolve(here, "../../../blood-donation-tracker.jsx");
 // The root file imports ./lib and ./components, which live next to web/src/App.jsx (the build copies the root file there).
-const APP_COPY = path.resolve(here, "../../src/App.jsx");
+const APP_COPY = path.resolve(here, `../../src/.unit-app-${process.pid}.jsx`);
 export const SOURCE_FILES = (() => {
   const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(dir, e.name)) : /\.jsx?$/.test(e.name) ? [path.join(dir, e.name)] : []);
   return [APP_SOURCE, ...walk(path.resolve(here, "../../src/lib")), ...walk(path.resolve(here, "../../src/components"))];
 })();
-const out = path.join(here, ".build", "app.mjs");
+// One bundle and one entry copy per test process: node --test runs the files in parallel, and a shared file was rewritten
+// while another process read it ("app.encodeShareToken is not a function" at random).
+const out = path.join(here, ".build", `app-${process.pid}.mjs`);
 
 globalThis.window ??= globalThis;
 globalThis.localStorage ??= { getItem() { return null; }, setItem() {}, removeItem() {} };
@@ -26,3 +28,4 @@ await build({
   loader: { ".jsx": "jsx" }, jsx: "automatic", logLevel: "error",
 });
 export const app = await import(pathToFileURL(out).href);
+for (const f of [APP_COPY, out]) { try { fs.unlinkSync(f); } catch (e) {} }

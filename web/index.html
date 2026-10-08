@@ -12,10 +12,18 @@
     <!-- Mitr is served from our own /fonts (SIL Open Font License) instead of Google Fonts: no third-party
          request on every open (nothing sent to Google), and the font also works offline and inside the native
          app. The @font-face rules are inline so the browser can start fetching right away, in parallel with
-         the JS bundle, and the two most used Thai files are preloaded; the other weights/subsets load only
-         when a page actually uses them (unicode-range). -->
+         the JS bundle. Every weight x (Thai, Latin) pair the screens use is preloaded, so all of them arrive during
+         the splash screen: left to unicode-range lazy loading, each pair was only fetched when a screen first
+         needed it, and Thai text, digits and Latin letters swapped from the fallback font at different moments.
+         (Latin-extended is rare and stays lazy.) -->
     <link rel="preload" href="/fonts/mitr-400-thai.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/mitr-600-thai.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-600-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-700-thai.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-500-thai.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/mitr-500-latin.woff2" as="font" type="font/woff2" crossorigin />
     <style>
       @font-face{font-family:'Mitr';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/mitr-400-thai.woff2) format('woff2');unicode-range:U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC}
       @font-face{font-family:'Mitr';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/mitr-400-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
