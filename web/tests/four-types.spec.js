@@ -113,7 +113,7 @@ test("backup: all four types survive an export and import (old 'component' reads
   await page.getByLabel("ตั้งค่า").tap();
   await page.getByRole("button", { name: "สำรอง/กู้คืนข้อมูล" }).tap();
   const pw = (await page.locator(".selectable").first().innerText()).trim();
-  await page.getByRole("button", { name: "จดไว้แล้ว ไปต่อ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await page.locator("#export-confirm-pw").fill(pw);
   const box = page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก");
   await expect(box).not.toHaveValue("");

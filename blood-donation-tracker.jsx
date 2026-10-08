@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.440";
+const APP_VERSION = "1.0.441";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6894,7 +6894,7 @@ function AppInner() {
                   </div>
                 ) : exportStep === 1 ? (
                   <>
-                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรอง</div>
+                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรองข้อมูล</div>
                     <div role="radiogroup" aria-labelledby="export-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px" }}>
                       {[["auto", "แอปสุ่มให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
                         const on = (k === "auto") === !!exportGenPw;
@@ -6911,7 +6911,7 @@ function AppInner() {
                     <div style={{ display: "grid" }}>
                     <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "visible" : "hidden" }} aria-hidden={!exportGenPw}>
                     <div style={{ background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-                      <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสของคุณ</div>
+                      <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
                       <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
@@ -6966,7 +6966,7 @@ function AppInner() {
                     </div>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
-                      {exportGenPw ? "จดไว้แล้ว ไปต่อ" : "ต่อไป"}
+                      ถัดไป
                     </button>
                   </>
                 ) : (
