@@ -16,12 +16,11 @@ test("text colours that used to be too faint now reach 4.5:1", async ({ page }) 
   await seed(page, { donations: [rec("a", "2026-06-01", "whole", { time: "09:30" })], profile: { nickname: "แพรว", gender: "female", weight: 52, height: 158, birthYear: 2536 } });
   // time in a history card
   expect(await ratio(page.getByText("เวลา 09:30 น.").first())).toBeGreaterThanOrEqual(4.5);
-  // "ส่งออกแบบไม่เข้ารหัส" link in the backup dialog
+  // the unselected "ตั้งเอง" choice in the backup dialog
   await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
   await page.getByRole("button", { name: /^สำรอง\/กู้คืนข้อมูล/ }).click();
   await page.waitForTimeout(600);
-  await page.getByRole("button", { name: "ตัวเลือกอื่น" }).click(); await page.waitForTimeout(200);
-  expect(await ratio(page.getByRole("button", { name: /^ส่งออกแบบไม่เข้ารหัส/ }))).toBeGreaterThanOrEqual(4.5);
+  expect(await ratio(page.getByRole("radio", { name: "ตั้งเอง" }))).toBeGreaterThanOrEqual(4.5);
   await page.keyboard.press("Escape"); await page.waitForTimeout(300);
   // green "อยู่ในเกณฑ์" badge in the profile weight sheet
   await page.goto("/"); await expect(page.getByTestId("hero-card")).toBeVisible();
