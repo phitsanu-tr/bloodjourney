@@ -15,7 +15,7 @@ const pasteBox = (page) => page.getByLabel("วางข้อความ JSON 
 // Export (encrypted, generated password). Returns { text, pw }.
 async function exportEncrypted(page) {
   const pw = (await page.locator(".selectable").first().innerText()).trim();
-  await page.getByRole("button", { name: "ต่อไป: ยืนยันรหัส" }).tap();
+  await page.getByRole("button", { name: "จดไว้แล้ว ไปต่อ" }).tap();
   await page.locator("#export-confirm-pw").fill(pw);
   const box = page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก");
   await expect(box).not.toHaveValue("");
@@ -183,7 +183,7 @@ test("backup export: both modes end with ต่อไป; own password needs a m
   await startFresh(page);
   await seed(page, { donations: two });
   const dlg = await openHub(page);
-  await expect(dlg.getByRole("radio", { name: "แอปตั้งให้" })).toHaveAttribute("aria-checked", "true");
+  await expect(dlg.getByRole("radio", { name: "แอปสุ่มให้" })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByText("ส่งออกแบบไม่เข้ารหัส")).toHaveCount(0);
   await expect(page.getByText("ตัวเลือกอื่น")).toHaveCount(0);
   const pw = (await page.locator(".selectable").first().innerText()).trim();
@@ -205,7 +205,7 @@ test("backup export: both modes end with ต่อไป; own password needs a m
   // back keeps what was typed; switching to the app's password and back keeps it too
   await dlg.getByRole("button", { name: "ย้อนกลับไปแก้รหัสผ่าน" }).tap();
   await expect(dlg.locator("#export-pw")).toHaveValue("MyPass#2026");
-  await dlg.getByRole("radio", { name: "แอปตั้งให้" }).tap();
-  await expect(dlg.getByRole("button", { name: "ต่อไป: ยืนยันรหัส" })).toBeEnabled();
+  await dlg.getByRole("radio", { name: "แอปสุ่มให้" }).tap();
+  await expect(dlg.getByRole("button", { name: "จดไว้แล้ว ไปต่อ" })).toBeEnabled();
   assertNoErrors(page);
 });
