@@ -44,16 +44,39 @@ test("the phone's back button closes settings / profile without leaving the app"
   assertNoErrors(page);
 });
 
-test("settings -> privacy keeps one history entry; back closes everything", async ({ page }) => {
+test("settings -> privacy / FAQ stack over settings; the phone's back button closes one layer at a time", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: [rec("a", "2026-06-01")] });
+  const privacy = page.getByRole("dialog", { name: "นโยบายความเป็นส่วนตัว" });
+  const faq = page.getByRole("dialog", { name: "คำถามที่พบบ่อย" });
   await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
   await settings(page).getByRole("button", { name: "ความเป็นส่วนตัว" }).click();
-  await expect(page.getByRole("dialog", { name: "นโยบายความเป็นส่วนตัว" })).toBeVisible();
-  await expect(settings(page)).toHaveCount(0);
+  await expect(privacy).toBeVisible();
+  // settings stays underneath (mounted, but inert: not reachable by Tab or a screen reader)
+  await expect(settings(page)).toHaveCount(1);
+  expect(await settings(page).evaluate((el) => el.hasAttribute("inert"))).toBe(true);
+  await page.goBack();
+  await expect(privacy).toHaveCount(0);
+  await expect(settings(page)).toBeVisible();
+  expect(await settings(page).evaluate((el) => el.hasAttribute("inert"))).toBe(false);
+  // FAQ is a page too, opened from the same list
+  await settings(page).getByRole("button", { name: "คำถามที่พบบ่อย" }).click();
+  await expect(faq).toBeVisible();
+  await faq.getByRole("button", { name: "ย้อนกลับ", exact: true }).click();
+  await expect(faq).toHaveCount(0);
+  await expect(settings(page)).toBeVisible();
+  // second back press closes settings, third stays in the app (no leftover history entries)
   await page.goBack();
   await expect(page.locator("[role=dialog]")).toHaveCount(0);
   await expect(page.getByTestId("hero-card")).toBeVisible();
+  // Escape closes only the top page
+  await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
+  await settings(page).getByRole("button", { name: "ความเป็นส่วนตัว" }).click();
+  await page.keyboard.press("Escape");
+  await expect(privacy).toHaveCount(0);
+  await expect(settings(page)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[role=dialog]")).toHaveCount(0);
   assertNoErrors(page);
 });
 
@@ -75,6 +98,7 @@ test("privacy policy is a full-screen page; ← returns to where it was opened f
   await page.getByRole("button", { name: "โปรไฟล์ของฉัน", exact: true }).click();
   await profile(page).getByRole("button", { name: "อ่านนโยบายความเป็นส่วนตัว" }).click();
   await expect(pv).toBeVisible();
+  await expect(profile(page)).toHaveCount(1); // profile stays underneath
   await pv.getByRole("button", { name: "ย้อนกลับ" }).click();
   await expect(profile(page)).toBeVisible();
   await page.goBack();
