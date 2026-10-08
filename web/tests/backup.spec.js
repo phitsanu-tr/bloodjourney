@@ -15,7 +15,7 @@ const pasteBox = (page) => page.getByLabel("วางข้อความ JSON 
 // Export (encrypted, generated password). Returns { text, pw }.
 async function exportEncrypted(page) {
   const pw = (await page.locator(".selectable").first().innerText()).trim();
-  await page.getByRole("button", { name: "จดไว้แล้ว ไปต่อ" }).tap();
+  await page.locator("[role=dialog]").last().getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await page.locator("#export-confirm-pw").fill(pw);
   const box = page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก");
   await expect(box).not.toHaveValue("");
@@ -179,7 +179,7 @@ test("layout: backup hub has no horizontal overflow at 390 and 320 (both tabs)",
   assertNoErrors(page);
 });
 
-test("backup export: both modes end with ต่อไป; own password needs a matching 8+ char password; no plain export is offered", async ({ page }) => {
+test("backup export: both modes end with ถัดไป; own password needs a matching 8+ char password; no plain export is offered", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: two });
   const dlg = await openHub(page);
@@ -190,7 +190,7 @@ test("backup export: both modes end with ต่อไป; own password needs a m
   expect(pw).toMatch(/^[^\s]{16}$/);
   // switch to own password: button is disabled until both fields match
   await dlg.getByRole("radio", { name: "ตั้งเอง" }).tap();
-  const next = dlg.getByRole("button", { name: "ต่อไป", exact: true });
+  const next = dlg.getByRole("button", { name: "ถัดไป", exact: true });
   await expect(next).toBeDisabled();
   await dlg.locator("#export-pw").fill("MyPass#2026");
   await dlg.locator("#export-pw2").fill("MyPass#2027");
@@ -206,6 +206,6 @@ test("backup export: both modes end with ต่อไป; own password needs a m
   await dlg.getByRole("button", { name: "ย้อนกลับไปแก้รหัสผ่าน" }).tap();
   await expect(dlg.locator("#export-pw")).toHaveValue("MyPass#2026");
   await dlg.getByRole("radio", { name: "แอปสุ่มให้" }).tap();
-  await expect(dlg.getByRole("button", { name: "จดไว้แล้ว ไปต่อ" })).toBeEnabled();
+  await expect(dlg.getByRole("button", { name: "ถัดไป" })).toBeEnabled();
   assertNoErrors(page);
 });
