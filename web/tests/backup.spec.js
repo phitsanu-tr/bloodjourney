@@ -256,31 +256,31 @@ test("restore by file: an encrypted file asks for its password on the same page,
   assertNoErrors(page);
 });
 
-test("backup hub and the import confirm dialog keep exactly the same window size on every page", async ({ page }) => {
+test("backup hub: the window height follows its content, never shrinks back within a visit, and the confirm dialog matches it; all segmented controls are the same height", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: two });
   const dlg = await openHub(page);
-  const size = () => page.locator("[role=dialog]").last().evaluate((el) => { const b = el.firstElementChild.getBoundingClientRect(); return `${Math.round(b.width)}x${Math.round(b.height)}`; });
-  const first = await size();
-  const seen = { "backup, app password": await size() };
-  await dlg.getByRole("radio", { name: "ตั้งเอง" }).tap();
-  seen["backup, own password"] = await size();
-  await dlg.getByRole("radio", { name: "แอปสุ่มให้" }).tap();
+  const box = () => page.locator("[role=dialog]").last().evaluate((el) => { const b = el.firstElementChild.getBoundingClientRect(); return Math.round(b.height); });
+  const segs = () => page.locator("[role=dialog]").last().evaluate((el) => [...el.querySelectorAll("[role=radiogroup]")].map((g) => Math.round(g.getBoundingClientRect().height)));
+  const first = await box();
+  expect(first).toBeLessThan(620); // not a fixed height
+  expect(new Set(await segs()).size).toBe(1);
   const pw = (await page.locator(".selectable").first().innerText()).trim();
   await dlg.getByRole("button", { name: "ถัดไป", exact: true }).tap();
   await dlg.locator("#export-confirm-pw").fill(pw);
   const text = await page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก").inputValue();
-  seen["backup, save step"] = await size();
+  await page.waitForTimeout(300);
+  const tallest = await box();
+  expect(tallest).toBeGreaterThanOrEqual(first);
   await dlg.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
-  seen["restore, file"] = await size();
+  expect(await box()).toBe(tallest);
+  expect(new Set(await segs()).size).toBe(1);
   await dlg.getByRole("radio", { name: "ข้อความ" }).tap();
-  seen["restore, text"] = await size();
   await pasteBox(page).fill(text);
-  seen["restore, encrypted text"] = await size();
+  expect(await box()).toBe(tallest);
   await dlg.locator("#import-pw-text").fill(pw);
   await nextBtn(page).tap();
   await expect(page.getByRole("dialog", { name: "ยืนยันการนำเข้าข้อมูล" })).toBeVisible();
-  seen["import confirm"] = await size();
-  for (const [name, value] of Object.entries(seen)) expect(value, name).toBe(first);
+  expect(await box()).toBe(tallest);
   assertNoErrors(page);
 });

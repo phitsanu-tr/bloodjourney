@@ -22,9 +22,13 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.448";
-// One size for every step of the backup/restore dialogs and the import confirm dialog, so the window never changes size between pages.
-const BACKUP_BOX_H = "min(620px, calc(92vh / var(--ui-zoom, 1)))";
+const APP_VERSION = "1.0.449";
+// The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
+const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
+const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
+// Backup/restore window and the import confirm dialog: the height follows the content, and a session remembers the tallest page it has shown (hubMinH below)
+// so the window does not change size from page to page; the confirm dialog takes the same height.
+const BACKUP_BOX_MAX_H = "calc(92vh / var(--ui-zoom, 1))";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -453,6 +457,9 @@ function AppInner() {
   showBackupRestoreRef.current = showBackupRestore;
   const [backupRestoreTab, setBackupRestoreTab] = useState("export");
   const backupDialogRef = useRef(null);
+  const hubBoxRef = useRef(null);
+  const [hubMinH, setHubMinH] = useState(0);
+  const hubMinHRef = useRef(0);
   const exportTabIdx = backupRestoreTab === "export" ? 0 : -1;
   const importTabIdx = backupRestoreTab === "import" ? 0 : -1;
   // Password-protected backup (design 3 of backup-encrypt-designs.html).
@@ -1992,6 +1999,18 @@ function AppInner() {
     if (!canEncryptBackup()) { setExportProtect(false); return; }
     if (!exportGenPw && !exportPw) setExportGenPw(generateBackupPassword());
   }, [showBackupRestore]);
+  // Remember the tallest the window has been while it is open; it never shrinks back, so pages keep one size.
+  useEffect(() => {
+    if (!showBackupRestore || typeof ResizeObserver === "undefined") return undefined;
+    const el = hubBoxRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => {
+      const h = el.offsetHeight;
+      if (h > hubMinHRef.current + 1) { hubMinHRef.current = h; setHubMinH(h); }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showBackupRestore]);
   const generateExportPassword = () => {
     setExportProtect(true);
     setExportGenPw(generateBackupPassword());
@@ -2617,6 +2636,8 @@ function AppInner() {
     resetBackupProtection();
     setImportSource("file");
     setImportPicked(null);
+    hubMinHRef.current = 0;
+    setHubMinH(0);
     // The generated password is already there on the first frame (not after an effect), so the own-password fields never flash.
     if (canEncryptBackup()) setExportGenPw(generateBackupPassword());
     setBackupRestoreTab(tab);
@@ -6771,7 +6792,7 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" inert={!!pendingImport} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, height: BACKUP_BOX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div ref={hubBoxRef} style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <DialogX onClick={closeBackupRestore} style={{ width: 32, height: 28, justifyContent: "center" }} />
@@ -6780,30 +6801,12 @@ function AppInner() {
             {/* Column that is at least as tall as the scroll area, so each page's main button can sit at the bottom of the window. */}
             <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
-            <div style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4, marginBottom: 16 }}>
-              <button
-                type="button"
-                onClick={() => switchBackupRestoreTab("export")}
-                style={{
-                  position: "relative", flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
-                  background: backupRestoreTab === "export" ? "#F3E7E4" : "transparent",
-                  color: backupRestoreTab === "export" ? "#8A2F28" : "#7A6360",
-                  fontSize: 14, fontWeight: backupRestoreTab === "export" ? 600 : 400,
-                  boxShadow: "none",
-                }}>
-                <span aria-hidden="true" style={{ position: "absolute", inset: "-1px 0" }} />สำรองข้อมูล
+            <div style={{ ...SEG_BOX, marginBottom: 16 }}>
+              <button type="button" onClick={() => switchBackupRestoreTab("export")} style={segBtn(backupRestoreTab === "export")}>
+                <span aria-hidden="true" style={{ position: "absolute", inset: "-2px 0" }} />สำรองข้อมูล
               </button>
-              <button
-                type="button"
-                onClick={() => switchBackupRestoreTab("import")}
-                style={{
-                  position: "relative", flex: 1, border: "none", padding: "10px 0", borderRadius: 9, fontFamily: "inherit", cursor: "pointer",
-                  background: backupRestoreTab === "import" ? "#F3E7E4" : "transparent",
-                  color: backupRestoreTab === "import" ? "#8A2F28" : "#7A6360",
-                  fontSize: 14, fontWeight: backupRestoreTab === "import" ? 600 : 400,
-                  boxShadow: "none",
-                }}>
-                <span aria-hidden="true" style={{ position: "absolute", inset: "-1px 0" }} />กู้คืนข้อมูล
+              <button type="button" onClick={() => switchBackupRestoreTab("import")} style={segBtn(backupRestoreTab === "import")}>
+                <span aria-hidden="true" style={{ position: "absolute", inset: "-2px 0" }} />กู้คืนข้อมูล
               </button>
             </div>
 
@@ -6821,7 +6824,7 @@ function AppInner() {
                 pointerEvents: backupRestoreTab === "export" ? "auto" : "none",
                 // The password fields make this tab much taller; don't make the
                 // import tab as tall while it's hidden.
-                display: backupRestoreTab !== "export" && exportProtect ? "none" : "flex", flexDirection: "column",
+                display: "flex", flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "export"}>
                 {!exportProtect ? (
                   <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
@@ -6831,13 +6834,13 @@ function AppInner() {
                 ) : exportStep === 1 ? (
                   <>
                     <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรองข้อมูล</div>
-                    <div role="radiogroup" aria-labelledby="export-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px" }}>
+                    <div role="radiogroup" aria-labelledby="export-mode-label" style={{ ...SEG_BOX, margin: "0 0 12px" }}>
                       {[["auto", "แอปสุ่มให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
                         const on = (k === "auto") === !!exportGenPw;
                         return (
                           <button key={k} type="button" role="radio" aria-checked={on} tabIndex={exportTabIdx} onClick={() => { if (!on) { if (k === "auto") generateExportPassword(); else chooseOwnExportPassword(); } }}
-                            style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>
-                            {label}
+                            style={segBtn(on)}>
+                            <span aria-hidden="true" style={{ position: "absolute", inset: "-2px 0" }} />{label}
                           </button>
                         );
                       })}
@@ -6962,13 +6965,13 @@ function AppInner() {
               }} aria-hidden={backupRestoreTab !== "import"}>
                 <>
                 <div id="import-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>นำเข้าข้อมูลสำรองจาก</div>
-                <div role="radiogroup" aria-labelledby="import-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px", flexShrink: 0 }}>
+                <div role="radiogroup" aria-labelledby="import-mode-label" style={{ ...SEG_BOX, margin: "0 0 12px", flexShrink: 0 }}>
                   {[["file", "ไฟล์"], ["text", "ข้อความ"]].map(([k, label]) => {
                     const on = importSource === k;
                     return (
                       <button key={k} type="button" role="radio" aria-checked={on} tabIndex={importTabIdx} onClick={() => { if (k !== importSource) { setImportSource(k); setImportLockPw(""); setImportLockError(""); } }}
-                        style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>
-                        {label}
+                        style={segBtn(on)}>
+                        <span aria-hidden="true" style={{ position: "absolute", inset: "-2px 0" }} />{label}
                       </button>
                     );
                   })}
@@ -7033,7 +7036,7 @@ function AppInner() {
 
       {pendingImport && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" data-own-motion onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 51, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: BACKUP_BOX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, minHeight: hubMinH || undefined, maxHeight: BACKUP_BOX_MAX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
               <DialogX onClick={cancelImport} />
