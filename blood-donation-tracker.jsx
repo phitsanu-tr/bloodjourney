@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.447";
+const APP_VERSION = "1.0.448";
 // One size for every step of the backup/restore dialogs and the import confirm dialog, so the window never changes size between pages.
 const BACKUP_BOX_H = "min(620px, calc(92vh / var(--ui-zoom, 1)))";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
@@ -441,6 +441,8 @@ function AppInner() {
   const [eligibilityType, setEligibilityType] = useState(null); // type shown on ?tab=eligibility; null = last donated // >0: open the knowledge tab at "เตรียมตัวก่อนบริจาค"
   const [importing, setImporting] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const pendingImportRef = useRef(null);
+  pendingImportRef.current = pendingImport;
   const [pasteImportText, setPasteImportText] = useState("");
   const [pasteImportError, setPasteImportError] = useState("");
   const [exportJsonText, setExportJsonText] = useState("");
@@ -1014,6 +1016,8 @@ function AppInner() {
       if (showClearProfileRef.current) { setShowClearProfile(false); return; }
       // The delete-all confirm sits on top of Settings: Escape closes only it.
       if (showResetRef.current) { setShowReset(false); return; }
+      // The import confirm sits on top of the backup/restore window: Escape closes only it.
+      if (pendingImportRef.current) { setPendingImport(null); return; }
       // Privacy policy / FAQ sit on top of settings or profile: Escape closes only that page.
       if (upperPageRef.current) { setShowPrivacy(false); setShowFaq(false); return; }
       setShowProfile(false);
@@ -1407,6 +1411,7 @@ function AppInner() {
   usePageHistoryLayer(showProfile || showSettings, () => { setShowSettings(false); closeProfileRef.current(); });
   usePageHistoryLayer(upperPageOpen, () => { setShowPrivacy(false); setShowFaq(false); });
   // The backup/restore dialog is its own layer on top of Settings: the phone's back button closes just it.
+  usePageHistoryLayer(!!pendingImport, () => { setPendingImport(null); setImportConfirmError(""); });
   usePageHistoryLayer(showBackupRestore, () => { setShowBackupRestore(false); resetBackupProtection(); backupOpenedFromHomeRef.current = false; });
 
   // sanitizeNameInput can remove characters from the middle of what the
@@ -2538,12 +2543,8 @@ function AppInner() {
       cycleKept,
       settingsFill,
     });
-    // The confirm-import dialog below renders after (later in the JSX tree
-    // than) the backup/restore hub, so at equal z-index it painted on top
-    // and blocked taps on "นำเข้า"/"ยกเลิก" — close the hub whenever the
-    // confirm dialog is about to take over, from either entry point (file
-    // picker or paste-text).
-    setShowBackupRestore(false);
+    // The confirm dialog opens over the backup/restore window (same size, no motion of its own, higher z-index), which stays
+    // mounted underneath, so the window just swaps its content instead of closing and reopening (v1.0.448).
   };
 
   // Shortcut for the paste-import textarea: read the clipboard directly
@@ -2710,11 +2711,7 @@ function AppInner() {
   const cancelImport = () => {
     setImportConfirmError("");
     setPendingImport(null);
-    // The confirm dialog only ever appears after processImportedText closed
-    // the backup/restore hub (see there) — on cancel, reopen it on the same
-    // tab so the user lands back where they were instead of having to dig
-    // back in through Settings.
-    setShowBackupRestore(true);
+    // The backup/restore window is still open underneath, with the file / pasted text where the user left it.
   };
 
   const confirmImport = async () => {
@@ -2787,9 +2784,14 @@ function AppInner() {
       startIn ? `ยอดบริจาคที่ผ่านมา ${startIn.total} ครั้ง` : "",
     ].filter(Boolean).join(" และ");
     showToast("success", added ? `นำเข้าสำเร็จ — ${added}` : "นำเข้าสำเร็จ");
-    setShowBackupRestore(false);
     setPasteImportText("");
     setPendingImport(null);
+    // Close the backup window only after the confirm dialog's history entry has been popped, so both entries go away
+    // (closing both in the same tick would leave one behind).
+    let closed = false;
+    const closeHub = () => { if (closed) return; closed = true; window.removeEventListener("popstate", closeHub); setShowBackupRestore(false); };
+    window.addEventListener("popstate", closeHub);
+    setTimeout(closeHub, 400);
     setImportSaving(false);
   };
 
@@ -6767,106 +6769,8 @@ function AppInner() {
         </div>
       )}
 
-      {pendingImport && (
-        <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: BACKUP_BOX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexShrink: 0, padding: "22px 22px 10px" }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
-              <DialogX onClick={cancelImport} />
-            </div>
-            <FadeScroll style={{ padding: "0 22px" }}>
-            {/* Design I4 of import-confirm-designs.html: one row per kind of
-                data (records / carried-over count / profile / reminder cycles),
-                each with a badge for what happens to it -- "+N", "เติม N",
-                "คงเดิม" (this device already has a value, it isn't overwritten)
-                or "—" (nothing in the file). Smaller settings (backup reminder
-                gap, home blur, seen achievements) come in silently. */}
-            {(() => {
-              const pi = pendingImport;
-              const PROFILE_LABELS = { nickname: "ชื่อเล่น", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" };
-              const filled = Object.keys(pi.profileFieldsToFill || {}).map((k) => PROFILE_LABELS[k]).filter(Boolean);
-              const kept = (pi.profileFieldsKept || []).map((k) => PROFILE_LABELS[k]).filter(Boolean);
-              const cycleFillTypes = Object.keys(pi.cycleFill || {});
-              const cycleKept = pi.cycleKept || [];
-              const badge = (kind, text) => (
-                <span style={{ flexShrink: 0, fontSize: 11, padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap", fontWeight: kind === "none" ? 400 : 600,
-                  background: kind === "add" ? "#E6F1E7" : kind === "keep" ? "#F3EAE8" : "transparent", color: kind === "add" ? "#2F6B3A" : kind === "keep" ? "#7A6360" : "#7A6360" }}>{text}</span>
-              );
-              const rows = [
-                {
-                  Icon: List, title: "รายการบริจาค",
-                  sub: pi.totalInFile > 0
-                    ? [`ในไฟล์ ${pi.totalInFile}`, pi.duplicateCount > 0 ? `มีอยู่แล้ว ${pi.duplicateCount}` : "", pi.invalidCount > 0 ? `วันที่ไม่ถูกต้อง ${pi.invalidCount}` : ""].filter(Boolean).join(" · ")
-                    : "ไม่มีในไฟล์",
-                  badge: pi.incoming.length > 0 ? badge("add", `+${pi.incoming.length}`) : badge("none", "—"),
-                },
-                {
-                  Icon: Trophy, title: "ยอดบริจาคที่ผ่านมา",
-                  sub: pi.startingToImport
-                    ? DONATION_TYPES.filter((t) => pi.startingToImport.counts[t] > 0).map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.startingToImport.counts[t]}`).join(" · ")
-                    : pi.startingKept ? `เครื่องนี้ ${pi.startingKept.mine} · ในไฟล์ ${pi.startingKept.file}` : "ไม่มีในไฟล์",
-                  badge: pi.startingToImport ? badge("add", `+${pi.startingToImport.total}`) : pi.startingKept ? badge("keep", "คงเดิม") : badge("none", "—"),
-                },
-                {
-                  Icon: User, title: "โปรไฟล์",
-                  sub: [filled.length ? `เติม ${filled.join(", ")}` : "", kept.length ? `คงเดิม ${kept.join(", ")}` : ""].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
-                  badge: filled.length ? badge("add", `เติม ${filled.length}`) : kept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
-                },
-                {
-                  Icon: Bell, title: "รอบการเตือน",
-                  sub: [
-                    cycleFillTypes.length ? cycleFillTypes.map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.cycleFill[t]} วัน`).join(", ") : "",
-                    cycleKept.length ? `คงเดิม ${cycleKept.map((c) => `${DONATION_TYPE_LABELS[c.type]} (เครื่องนี้ ${c.mine} · ในไฟล์ ${c.file} วัน)`).join(", ")}` : "",
-                  ].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
-                  badge: cycleFillTypes.length ? badge("add", "ตั้งค่า") : cycleKept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
-                },
-              ];
-              return (
-                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px", margin: "0 0 8px" }}>
-                  {rows.map(({ Icon, title, sub, badge: b }, idx) => (
-                    <div key={title} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < rows.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", color: "#9A3B33", flexShrink: 0 }}><Icon size={16} /></span>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
-                        <span style={{ display: "block", fontSize: 12, color: "#7A6360", marginTop: 1, lineHeight: 1.5 }}>{sub}</span>
-                      </span>
-                      {b}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-            {pendingImport.invalidCount > 0 && (
-              <div role="alert" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#B3261E", margin: "0 0 8px" }}>
-                <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />ข้าม {pendingImport.invalidCount} รายการที่วันที่ไม่ถูกต้อง
-              </div>
-            )}
-            {!importHasSomething(pendingImport) && (
-              <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "0 0 8px" }}>
-                {pendingImport.invalidCount > 0 && pendingImport.duplicateCount === 0
-                  ? "ไม่มีอะไรใหม่ให้นำเข้า — ทุกรายการมีข้อมูลไม่ถูกต้อง"
-                  : "ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
-              </p>
-            )}
-            <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
-            {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
-            </FadeScroll>
-            <div style={{ display: "flex", gap: 10, flexShrink: 0, padding: "12px 22px 22px" }}>
-              <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ย้อนกลับ</button>
-              <button
-                onClick={confirmImport}
-                disabled={importSaving || !importHasSomething(pendingImport)}
-                className="btn-primary"
-                style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                {importSaving ? "กำลังนำเข้า..." : "นำเข้า"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showBackupRestore && (
-        <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
+        <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" inert={!!pendingImport} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, height: BACKUP_BOX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
@@ -7123,6 +7027,104 @@ function AppInner() {
             </div>
             </div>
             </FadeScroll>
+          </div>
+        </div>
+      )}
+
+      {pendingImport && (
+        <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" data-own-motion onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 51, padding: 20 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: BACKUP_BOX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexShrink: 0, padding: "22px 22px 10px" }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
+              <DialogX onClick={cancelImport} />
+            </div>
+            <FadeScroll style={{ padding: "0 22px" }}>
+            {/* Design I4 of import-confirm-designs.html: one row per kind of
+                data (records / carried-over count / profile / reminder cycles),
+                each with a badge for what happens to it -- "+N", "เติม N",
+                "คงเดิม" (this device already has a value, it isn't overwritten)
+                or "—" (nothing in the file). Smaller settings (backup reminder
+                gap, home blur, seen achievements) come in silently. */}
+            {(() => {
+              const pi = pendingImport;
+              const PROFILE_LABELS = { nickname: "ชื่อเล่น", birthYear: "ปีเกิด", gender: "เพศ", height: "ส่วนสูง", donorId: "เลขผู้บริจาค", bloodRh: "Rh", remindPauseUntil: "การพักการเตือน", weight: "น้ำหนัก", bloodType: "หมู่โลหิต", donorType: "ประเภทผู้บริจาค" };
+              const filled = Object.keys(pi.profileFieldsToFill || {}).map((k) => PROFILE_LABELS[k]).filter(Boolean);
+              const kept = (pi.profileFieldsKept || []).map((k) => PROFILE_LABELS[k]).filter(Boolean);
+              const cycleFillTypes = Object.keys(pi.cycleFill || {});
+              const cycleKept = pi.cycleKept || [];
+              const badge = (kind, text) => (
+                <span style={{ flexShrink: 0, fontSize: 11, padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap", fontWeight: kind === "none" ? 400 : 600,
+                  background: kind === "add" ? "#E6F1E7" : kind === "keep" ? "#F3EAE8" : "transparent", color: kind === "add" ? "#2F6B3A" : kind === "keep" ? "#7A6360" : "#7A6360" }}>{text}</span>
+              );
+              const rows = [
+                {
+                  Icon: List, title: "รายการบริจาค",
+                  sub: pi.totalInFile > 0
+                    ? [`ในไฟล์ ${pi.totalInFile}`, pi.duplicateCount > 0 ? `มีอยู่แล้ว ${pi.duplicateCount}` : "", pi.invalidCount > 0 ? `วันที่ไม่ถูกต้อง ${pi.invalidCount}` : ""].filter(Boolean).join(" · ")
+                    : "ไม่มีในไฟล์",
+                  badge: pi.incoming.length > 0 ? badge("add", `+${pi.incoming.length}`) : badge("none", "—"),
+                },
+                {
+                  Icon: Trophy, title: "ยอดบริจาคที่ผ่านมา",
+                  sub: pi.startingToImport
+                    ? DONATION_TYPES.filter((t) => pi.startingToImport.counts[t] > 0).map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.startingToImport.counts[t]}`).join(" · ")
+                    : pi.startingKept ? `เครื่องนี้ ${pi.startingKept.mine} · ในไฟล์ ${pi.startingKept.file}` : "ไม่มีในไฟล์",
+                  badge: pi.startingToImport ? badge("add", `+${pi.startingToImport.total}`) : pi.startingKept ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+                {
+                  Icon: User, title: "โปรไฟล์",
+                  sub: [filled.length ? `เติม ${filled.join(", ")}` : "", kept.length ? `คงเดิม ${kept.join(", ")}` : ""].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
+                  badge: filled.length ? badge("add", `เติม ${filled.length}`) : kept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+                {
+                  Icon: Bell, title: "รอบการเตือน",
+                  sub: [
+                    cycleFillTypes.length ? cycleFillTypes.map((t) => `${DONATION_TYPE_LABELS[t]} ${pi.cycleFill[t]} วัน`).join(", ") : "",
+                    cycleKept.length ? `คงเดิม ${cycleKept.map((c) => `${DONATION_TYPE_LABELS[c.type]} (เครื่องนี้ ${c.mine} · ในไฟล์ ${c.file} วัน)`).join(", ")}` : "",
+                  ].filter(Boolean).join(" · ") || "ไม่มีอะไรเปลี่ยน",
+                  badge: cycleFillTypes.length ? badge("add", "ตั้งค่า") : cycleKept.length ? badge("keep", "คงเดิม") : badge("none", "—"),
+                },
+              ];
+              return (
+                <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 12, padding: "0 12px", margin: "0 0 8px" }}>
+                  {rows.map(({ Icon, title, sub, badge: b }, idx) => (
+                    <div key={title} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < rows.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                      <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", color: "#9A3B33", flexShrink: 0 }}><Icon size={16} /></span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
+                        <span style={{ display: "block", fontSize: 12, color: "#7A6360", marginTop: 1, lineHeight: 1.5 }}>{sub}</span>
+                      </span>
+                      {b}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            {pendingImport.invalidCount > 0 && (
+              <div role="alert" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#B3261E", margin: "0 0 8px" }}>
+                <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />ข้าม {pendingImport.invalidCount} รายการที่วันที่ไม่ถูกต้อง
+              </div>
+            )}
+            {!importHasSomething(pendingImport) && (
+              <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "0 0 8px" }}>
+                {pendingImport.invalidCount > 0 && pendingImport.duplicateCount === 0
+                  ? "ไม่มีอะไรใหม่ให้นำเข้า — ทุกรายการมีข้อมูลไม่ถูกต้อง"
+                  : "ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
+              </p>
+            )}
+            <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
+            {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
+            </FadeScroll>
+            <div style={{ display: "flex", gap: 10, flexShrink: 0, padding: "12px 22px 22px" }}>
+              <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ย้อนกลับ</button>
+              <button
+                onClick={confirmImport}
+                disabled={importSaving || !importHasSomething(pendingImport)}
+                className="btn-primary"
+                style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                {importSaving ? "กำลังนำเข้า..." : "นำเข้า"}
+              </button>
+            </div>
           </div>
         </div>
       )}
