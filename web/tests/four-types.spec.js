@@ -112,6 +112,7 @@ test("backup: all four types survive an export and import (old 'component' reads
   await seed(page, { donations: all, profile: { startingCountPlatelet: 3 } });
   await page.getByLabel("ตั้งค่า").tap();
   await page.getByRole("button", { name: "สำรอง/กู้คืนข้อมูล" }).tap();
+  await page.getByRole("button", { name: "ตัวเลือกอื่น" }).tap();
   await page.getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
   await page.locator("[role=alertdialog] input[type=checkbox]").check();
   await page.locator("[role=alertdialog]").getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();

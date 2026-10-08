@@ -24,6 +24,7 @@ async function exportEncrypted(page) {
 
 // Export as plain JSON through the "unencrypted" warning dialog.
 async function exportPlain(page) {
+  await page.getByRole("button", { name: "ตัวเลือกอื่น" }).tap();
   await page.getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
   await page.locator("[role=alertdialog] input[type=checkbox]").check();
   await page.locator("[role=alertdialog]").getByRole("button", { name: "ส่งออกแบบไม่เข้ารหัส" }).tap();
