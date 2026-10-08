@@ -212,3 +212,19 @@ test("backup export: both modes end with ถัดไป; own password needs a m
   await expect(dlg.getByRole("button", { name: "ถัดไป" })).toBeEnabled();
   assertNoErrors(page);
 });
+
+test("backup hub: the other tab's content never shows through (restore card on the backup tab, backup fields on the restore tab)", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: two });
+  const dlg = await openHub(page);
+  await expect(dlg.getByText("เลือกไฟล์สำรอง")).toBeHidden();
+  await dlg.getByRole("radio", { name: "ตั้งเอง" }).tap();
+  await expect(dlg.getByText("เลือกไฟล์สำรอง")).toBeHidden();
+  await dlg.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  await expect(dlg.getByText("เลือกไฟล์สำรอง")).toBeVisible();
+  await expect(dlg.getByText("รหัสผ่านของคุณ")).toBeHidden();
+  await expect(dlg.locator("#export-pw")).toBeHidden();
+  await dlg.getByRole("button", { name: "สำรองข้อมูล", exact: true }).tap();
+  await expect(dlg.getByText("เลือกไฟล์สำรอง")).toBeHidden();
+  assertNoErrors(page);
+});
