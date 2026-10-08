@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.430";
+const APP_VERSION = "1.0.431";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3772,11 +3772,15 @@ function AppInner() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative", flexShrink: 0 }}>
-              <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
-                <User size={19} color="#9A3B33" />
+              {/* Icon + small label (no label before: owner picked this over a hamburger, 1.0.431). aria-label stays the longer
+                  "โปรไฟล์ของฉัน" and contains the visible word, so voice control ("แตะ โปรไฟล์") still matches. */}
+              <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, minWidth: 44, minHeight: 44, padding: "6px 8px", margin: "-6px -4px" }}>
+                <User size={19} color="#9A3B33" aria-hidden="true" />
+                <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1.2, color: "#9A3B33" }}>โปรไฟล์</span>
               </button>
-              <button onClick={() => setShowSettings(true)} aria-label="ตั้งค่า" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
-                <Settings size={19} color="#9A3B33" />
+              <button onClick={() => setShowSettings(true)} aria-label="ตั้งค่า" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, minWidth: 44, minHeight: 44, padding: "6px 8px", margin: "-6px -4px" }}>
+                <Settings size={19} color="#9A3B33" aria-hidden="true" />
+                <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1.2, color: "#9A3B33" }}>ตั้งค่า</span>
               </button>
             </div>
           </div>
