@@ -11,7 +11,7 @@ test("faq: headings, question buttons named without +/-, answers point at real s
   await expect(page.getByRole("heading", { level: 3, name: "ถ้าเปลี่ยนเครื่อง ลง LINE ใหม่ หรือล้างแคช ข้อมูลจะหายไหม" })).toBeVisible();
   await q.click();
   await expect(q).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByText(/ตั้งค่า → สำรอง\/กู้คืนข้อมูล/)).toBeVisible();
+  await expect(page.getByText(/ตั้งค่า > สำรอง\/กู้คืนข้อมูล/)).toBeVisible();
   // the rows the answers name exist in Settings (close the FAQ page the deep link opened first)
   await page.getByRole("dialog", { name: "คำถามที่พบบ่อย" }).getByRole("button", { name: "ย้อนกลับ", exact: true }).click();
   await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();

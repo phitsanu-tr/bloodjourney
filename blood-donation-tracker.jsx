@@ -9,7 +9,7 @@ import { isNativeApp, isLineInAppBrowser, openInExternalBrowser } from "./lib/en
 import { DEFAULT_CARD_SIZE, CARD_SIZES, buildRecordShareCardDataUrl, buildShareCardDataUrl, encodeShareToken } from "./lib/shareCard.js";
 import { nativeSaveAndShare, dataUrlToBase64, buildIcsForReminder, icsContentToBase64, buildGoogleCalendarUrl } from "./lib/calendarFiles.js";
 import { ELIGIBILITY_RULES, PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, APP_FAQ_ITEMS } from "./lib/content.js";
-import { AlertTriangle, Droplet, ShieldCheck, User, Settings, Pencil, EyeOff, Cake, Weight, Plus, ChevronRight, Check, HeartPulse, BellOff, Info, CheckCircle2, GlassWater, Pill, X, ChevronDown, Trophy, Upload, Lock, Download, Calendar, Award, SlidersHorizontal, MoreVertical, Trash2, Clock, BarChart3, Share2, Home, BookOpen, Users, PersonStanding, Ruler, CreditCard, ChevronLeft, Camera, Image as ImageIcon, Copy, AlertCircle, HelpCircle, Mail, MapPin, StickyNote, List, Bell, Dices, Eye, Unlock } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Droplet, ShieldCheck, User, Settings, Pencil, EyeOff, Cake, Weight, Plus, ChevronRight, Check, HeartPulse, BellOff, Info, CheckCircle2, GlassWater, Pill, X, ChevronDown, Trophy, Upload, Lock, Download, Calendar, Award, SlidersHorizontal, MoreVertical, Trash2, Clock, BarChart3, Share2, Home, BookOpen, Users, PersonStanding, Ruler, CreditCard, ChevronLeft, Camera, Image as ImageIcon, Copy, AlertCircle, HelpCircle, Mail, MapPin, StickyNote, List, Bell, Dices, Eye, Unlock } from "lucide-react";
 import { FieldError, keepTail, SR_ONLY, DialogX, HorizontalRuler, SegDividers, FadeScroll, ModalMetaLine, BackupMsg } from "./components/ui.jsx";
 import { TypeIcon, AchievementIcon, EligibilityCheckRow } from "./components/icons.jsx";
 import { HistoryRow, HIST_MENU_ITEM } from "./components/history.jsx";
@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.429";
+const APP_VERSION = "1.0.430";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -387,12 +387,16 @@ function AppInner() {
   const [blurInfoPills, setBlurInfoPills] = useState(true);
   // "ขนาดตัวอักษร: ใหญ่" -- the whole app at 1.15x (CSS zoom on <html>, see .text-large). A per-device
   // preference: saved in uiMeta, not carried in backups.
+  // v1.0.430 adds "ใหญ่มาก" (1.3x, .text-xl). The two flags are never both true; textLarge keeps its old meaning so
+  // saved settings from before still load.
   const [textLarge, setTextLarge] = useState(false);
+  const [textXL, setTextXL] = useState(false);
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("text-large", textLarge);
-    root.style.setProperty("--ui-zoom", textLarge ? "1.15" : "1");
-  }, [textLarge]);
+    root.classList.toggle("text-large", textLarge && !textXL);
+    root.classList.toggle("text-xl", textXL);
+    root.style.setProperty("--ui-zoom", textXL ? "1.3" : textLarge ? "1.15" : "1");
+  }, [textLarge, textXL]);
   // Tap the hidden-info chip on Home to peek for 5 seconds; it re-hides itself.
   const [peekPills, setPeekPills] = useState(false);
   useEffect(() => {
@@ -598,6 +602,15 @@ function AppInner() {
   const PTR_THRESHOLD = 70;
   const PTR_MAX = 110;
   const [ptrState, setPtrState] = useState("pull"); // "pull" | "ready" | "load"
+  // What a screen reader hears about a refresh: nothing while idle (the pull hint is only a visual cue), "กำลังโหลด…" while
+  // it loads, then "อัปเดตแล้ว" for a moment.
+  const [ptrSaid, setPtrSaid] = useState("");
+  useEffect(() => {
+    if (ptrState === "load") { setPtrSaid("กำลังโหลด…"); return undefined; }
+    setPtrSaid((said) => (said ? "อัปเดตแล้ว" : ""));
+    const t = setTimeout(() => setPtrSaid(""), 1500);
+    return () => clearTimeout(t);
+  }, [ptrState]);
   const ptrShellRef = useRef(null);
   const ptrIndRef = useRef(null);
   const ptrBlockRef = useRef(false);
@@ -816,6 +829,7 @@ function AppInner() {
           setDismissedCareFor(typeof u.dismissedCareFor === "string" ? u.dismissedCareFor : null);
           if (typeof u.blurInfoPills === "boolean") setBlurInfoPills(u.blurInfoPills);
           if (typeof u.textLarge === "boolean") setTextLarge(u.textLarge);
+          if (typeof u.textXL === "boolean") setTextXL(u.textXL);
           if (u.dismissedReminders && typeof u.dismissedReminders === "object") {
             setDismissedReminders(u.dismissedReminders);
           } else if (typeof u.dismissedReminderKey === "string" && typeof u.dismissedReminderDate === "string") {
@@ -1184,7 +1198,7 @@ function AppInner() {
   const persistUiMeta = (patch) => {
     uiMetaRef.current = {
       seenAchievements, backupSnoozeCount, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap,
-      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills, textLarge, dismissedCareFor,
+      dismissedEligibilityAge, dismissedEligibilityWeight, dismissedReminders, blurInfoPills, textLarge, textXL, dismissedCareFor,
       ...uiMetaRef.current, ...patch,
     };
     uiMetaWriteQueueRef.current = uiMetaWriteQueueRef.current
@@ -1868,6 +1882,7 @@ function AppInner() {
       setDismissedReminders({});
       setBlurInfoPills(true);
       setTextLarge(false);
+      setTextXL(false);
       setDismissedCareFor(null);
       uiMetaRef.current = {}; // otherwise the next setting change would write the old values back
       setShowReset(false);
@@ -3515,7 +3530,13 @@ function AppInner() {
         /* Text size "ใหญ่": everything 1.15x. Media queries still see the real screen width, so the
            narrow-screen rules above are repeated for the width that is left after zooming (349 x 1.15). */
         html.text-large { zoom: 1.15; }
+        html.text-xl { zoom: 1.3; }
         @media (max-width: 401px) { html.text-large .hero-status:not(.hero-status-new) { min-height: 124px; } html.text-large .hero-liters-name { display: none; } }
+        /* "ใหญ่มาก" (1.3x): the same narrow-screen rules for the width that is left (349 x 1.3). */
+        @media (max-width: 454px) { html.text-xl .hero-status:not(.hero-status-new) { min-height: 124px; } html.text-xl .hero-liters-name { display: none; } html.text-xl .cal-overlay { padding: 8px !important; } html.text-xl .cal-box { padding: 16px 12px !important; } }
+        /* Very narrow pages (browser zoom 200% on a phone is ~195px wide): the app header keeps both icons in view. */
+        .hdr-left { min-width: 0; }
+        @media (max-width: 260px) { .hdr-sub { display: none; } .hdr-bar { padding-left: 10px !important; padding-right: 10px !important; } .hdr-left { gap: 6px !important; } }
         /* Home type scale (T7): only 11 / 12 / 14 / 16 / 18 / 24 / 38px, and one line
            height for every home text that doesn't set its own (Mitr's "normal" is ~1.57). */
         .app-shell.home-scale { line-height: 1.4; }
@@ -3731,7 +3752,7 @@ function AppInner() {
               still guaranteeing 60px (13+34+13, matching the 34px logo)
               when there's no notch to clear. Keep this in sync with the
               app-shell's compensating top padding above if it changes. */}
-          <div style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", position: "relative", overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
+          <div className="hdr-bar" style={{ width: "100%", maxWidth: 420, background: "#FBF6F5", boxSizing: "border-box", position: "relative", overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60, padding: "13px 20px", paddingTop: "calc(13px + env(safe-area-inset-top))" }}>
             {/* The header is an opaque fixed bar sitting above the app's
                 background layer, so it blocks the top-right glow there. Redraw
                 that same glow here (identical size/offset -- both this bar and
@@ -3741,16 +3762,16 @@ function AppInner() {
                 redraw two droplets for the same reason, back when the
                 background was droplets; those clashed with the glow.) */}
             <div aria-hidden="true" style={{ position: "absolute", width: 320, height: 320, right: -120, top: -110, borderRadius: "50%", pointerEvents: "none", background: "radial-gradient(circle, rgba(214,120,108,0.22) 0%, rgba(214,120,108,0) 70%)" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 9, position: "relative" }}>
+            <div className="hdr-left" style={{ display: "flex", alignItems: "center", gap: 9, position: "relative" }}>
               <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg, #B24A40 0%, #8A2F28 100%)", boxShadow: "0 5px 12px -4px rgba(122,42,35,0.55)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
                 <Droplet size={17} color="#FFF7F5" />
               </div>
               <div>
                 <h1 style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25, margin: 0 }}>Blood Journey</h1>
-                <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
+                <div className="hdr-sub" style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.25 }}>บันทึกบริจาคโลหิต</div>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative", flexShrink: 0 }}>
               <button onClick={openProfile} aria-label="โปรไฟล์ของฉัน" style={{ background: "none", border: "none", cursor: "pointer", padding: 12, margin: -6 }}>
                 <User size={19} color="#9A3B33" />
               </button>
@@ -3763,7 +3784,7 @@ function AppInner() {
       )}
 
       {phase === "app" && (
-        <div ref={ptrIndRef} role="status" aria-live="polite"
+        <div ref={ptrIndRef} aria-hidden="true"
           style={{ position: "fixed", left: "50%", top: "calc(60px + env(safe-area-inset-top))", transform: "translate(-50%, 0)", zIndex: 39, opacity: 0, pointerEvents: "none",
             display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#7A6360", whiteSpace: "nowrap" }}>
           {ptrState === "load" ? (
@@ -3779,6 +3800,7 @@ function AppInner() {
           <span>{ptrState === "load" ? "กำลังโหลด…" : ptrState === "ready" ? "ปล่อยเพื่อรีเฟรช" : "ดึงลงเพื่อรีเฟรช"}</span>
         </div>
       )}
+      {phase === "app" && <div role="status" aria-live="polite" style={SR_ONLY}>{ptrSaid}</div>}
       {phase === "app" && (
         <div ref={ptrShellRef} role="main" className={tab === "knowledge" ? "app-shell selectable" : tab === "home" ? "app-shell home-scale" : "app-shell"} style={{ maxWidth: 420, margin: "0 auto", padding: "calc(60px + env(safe-area-inset-top) + 24px) 20px calc(88px + env(safe-area-inset-bottom))" }}>
           {tab === "home" && (
@@ -3911,7 +3933,7 @@ function AppInner() {
                             style={{ display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: "rgba(255,247,245,0.16)", animation: "fadeSwap 0.4s ease" }}>
                             <TypeIcon type={activeCountdownType} size={11} />
                             <span className="hero-liters-name">{DONATION_TYPE_LABELS[activeCountdownType]}</span>
-                            ≈ {activeTypeLiters} ลิตร
+                            ประมาณ {activeTypeLiters} ลิตร
                           </span>
                         )}
                       </div>
@@ -4855,7 +4877,7 @@ function AppInner() {
                           {full <= 10 && frac > 0.05 && drop(frac, "f")}
                           {full > 10 && <span style={{ fontSize: 12, color: "#7A6360" }}>+{full - 10}</span>}
                         </div>
-                        <div style={{ fontSize: 12, color: "#7A6360", marginTop: 6 }}>เลือดในร่างกายประมาณ {bodyL.toFixed(1)} ลิตร · โลหิตรวมครั้งละ {DONATION_TYPE_ML.whole} มล. ≈ {Math.round(DONATION_TYPE_ML.whole / 1000 / bodyL * 100)}% (คำนวณจากเพศ ส่วนสูง น้ำหนัก)</div>
+                        <div style={{ fontSize: 12, color: "#7A6360", marginTop: 6 }}>เลือดในร่างกายประมาณ {bodyL.toFixed(1)} ลิตร · โลหิตรวมครั้งละ {DONATION_TYPE_ML.whole} มล. ประมาณ {Math.round(DONATION_TYPE_ML.whole / 1000 / bodyL * 100)}% (คำนวณจากเพศ ส่วนสูง น้ำหนัก)</div>
                       </div>
                     );
                   })()}
@@ -4869,7 +4891,7 @@ function AppInner() {
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
                           {recordedTypes.map((t) => (
                             <span key={t} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#7A6360", whiteSpace: "nowrap" }}>
-                              <TypeIcon type={t} size={10} color="#7A6360" style={{ flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]} 1 ครั้ง ≈ {t === "whole" ? 3 : 1} คน
+                              <TypeIcon type={t} size={10} color="#7A6360" style={{ flexShrink: 0 }} /> {DONATION_TYPE_LABELS[t]} 1 ครั้ง ประมาณ {t === "whole" ? 3 : 1} คน
                             </span>
                           ))}
                         </div>
@@ -4959,7 +4981,7 @@ function AppInner() {
                           color: stats.thisYearCount >= stats.lastYearCount ? "#2B7530" : "#9C5515",
                           background: stats.thisYearCount >= stats.lastYearCount ? "#E7F3E8" : "#FDF0E6",
                         }}>
-                          {stats.thisYearCount >= stats.lastYearCount ? "▲" : "▼"} {stats.thisYearCount >= stats.lastYearCount ? "+" : ""}{stats.thisYearCount - stats.lastYearCount} จากปี {buddhistYear(new Date()) - 1}
+                          {stats.thisYearCount >= stats.lastYearCount ? <TrendingUp size={12} aria-hidden="true" /> : <TrendingDown size={12} aria-hidden="true" />} {stats.thisYearCount >= stats.lastYearCount ? `+${stats.thisYearCount - stats.lastYearCount}` : `−${stats.lastYearCount - stats.thisYearCount}`} จากปี {buddhistYear(new Date()) - 1}
                         </div>
                         <div style={{ fontSize: 12, color: "#7A6360", marginTop: 5 }}>ปีก่อน: {stats.lastYearCount} ครั้ง</div>
                       </div>
@@ -5632,7 +5654,7 @@ function AppInner() {
                     : hint.color !== "#9C5515" ? null
                     : { ...hint, text: hint.text.startsWith("นอกเกณฑ์") ? "นอกเกณฑ์" : hint.text.startsWith("ต่ำกว่าเกณฑ์") ? "ต่ำกว่าเกณฑ์" : hint.text };
                   const saved = profileSavedKey === r.key && profileOpenChoice !== r.key
-                    ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2B7530", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
+                    ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2B7530", whiteSpace: "nowrap" }}><Check size={11} strokeWidth={3} aria-hidden="true" style={{ verticalAlign: "-1px", marginRight: 3 }} />บันทึกแล้ว</span>
                     : r.kind === "action" ? <ChevronRight size={16} color="#7A6360" aria-hidden="true" style={{ flexShrink: 0 }} />
                     : r.kind === "id" && donorId && profileInline.donorId === donorId ? (
                       <button type="button" onClick={(e) => { e.preventDefault(); copyDonorId(); }} aria-label="คัดลอกเลขประจำตัวผู้บริจาค"
@@ -5874,7 +5896,7 @@ function AppInner() {
                     ไปที่{" "}
                     <button onClick={() => { setProfileOpenChoice(null); setShowProfile(false); setShowSettings(true); }}
                       style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 12, lineHeight: 1.7, color: "#9A3B33", textDecoration: "underline" }}>
-                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />ตั้งค่า → ลบข้อมูลทั้งหมด
+                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />ตั้งค่า &gt; ลบข้อมูลทั้งหมด
                     </button>
                   </div>
                   <div aria-hidden="true" style={{ width: 40, height: 1, background: "#EEDEDA", margin: "16px auto 0" }} />
@@ -6294,12 +6316,12 @@ function AppInner() {
                 <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.5, marginTop: 2 }}>ขยายตัวอักษรและปุ่มทั้งแอป</div>
               </div>
               <div role="radiogroup" aria-labelledby="text-size-label" style={{ display: "flex", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4, gap: 4 }}>
-                {[[false, "ปกติ", 14], [true, "ใหญ่", 16]].map(([large, label, size]) => {
-                  const on = textLarge === large;
+                {[["normal", "ปกติ", 14], ["large", "ใหญ่", 16], ["xl", "ใหญ่มาก", 16]].map(([size, label, fs]) => {
+                  const on = size === "xl" ? textXL : size === "large" ? textLarge && !textXL : !textLarge && !textXL;
                   return (
                     <button key={label} type="button" role="radio" aria-checked={on}
-                      onClick={() => { if (!on) { setTextLarge(large); persistUiMeta({ textLarge: large }); } }}
-                      style={{ position: "relative", flex: 1, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: size,
+                      onClick={() => { if (!on) { setTextLarge(size === "large"); setTextXL(size === "xl"); persistUiMeta({ textLarge: size === "large", textXL: size === "xl" }); } }}
+                      style={{ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: fs, whiteSpace: "nowrap",
                         background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}><span aria-hidden="true" style={{ position: "absolute", inset: "-2px 0" }} />{label}</button>
                   );
                 })}
@@ -6485,15 +6507,15 @@ function AppInner() {
                 two columns (one on very narrow phones, so no item wraps) with its mark in a soft tinted circle. */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {[
-                { key: "gone", title: "ลบออก", mark: "✕", color: "#B3261E", tint: "#FBEAE8", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
-                { key: "stay", title: "เก็บไว้", mark: "✓", color: "#2B7530", tint: "#EAF4EE", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] }
+                { key: "gone", title: "ลบออก", mark: "x", color: "#B3261E", tint: "#FBEAE8", items: ["ชื่อ-นามสกุล", "รูปโปรไฟล์", "ปีเกิด", "เพศ", "ส่วนสูง", "น้ำหนัก", "หมู่โลหิต / Rh", "ประเภทผู้บริจาค", "เลขประจำตัว"] },
+                { key: "stay", title: "เก็บไว้", mark: "check", color: "#2B7530", tint: "#EAF4EE", items: ["ประวัติการบริจาค", "สถิติทั้งหมด", "ยอดสะสมที่ยกมา"] }
               ].map(col => (
                 <div key={col.key} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "10px 12px 11px" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: col.color, marginBottom: 6 }}>{col.title}</div>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))", columnGap: 10, rowGap: 3, fontSize: 14, lineHeight: 1.55, color: "#3A2C29" }}>
                     {col.items.map(t => (
                       <li key={t} style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-                        <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: col.tint || "#FBEAE8", color: col.color, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{col.mark}</span>
+                        <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", background: col.tint || "#FBEAE8", color: col.color, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{col.mark === "check" ? <Check size={10} strokeWidth={3.2} /> : <X size={10} strokeWidth={3.2} />}</span>
                         <span style={{ minWidth: 0 }}>{t}</span>
                       </li>
                     ))}
