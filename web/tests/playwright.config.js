@@ -7,8 +7,16 @@ export default defineConfig({
   testMatch: /.*\.spec\.js/,
   timeout: 60_000,
   retries: 0,
-  workers: 1,
+  // One worker by default. BJ_WORKERS=4 runs files in parallel (each test has its own browser context, so localStorage is
+  // not shared) -- not tried across the whole suite yet, so watch for timing-sensitive tests (animations, back button).
+  workers: Number(process.env.BJ_WORKERS) || 1,
   reporter: [["list"], ["html", { open: "never" }]],
+  // BJ_WEBKIT=1 also runs everything in WebKit (iPhone Safari / LINE on iOS use it): needs `npx playwright install webkit`
+  // once on the machine. Off by default because the cloud sandbox only ships Chromium.
+  projects: [
+    { name: "chromium" },
+    ...(process.env.BJ_WEBKIT ? [{ name: "webkit", use: { browserName: "webkit" } }] : []),
+  ],
   use: {
     baseURL: "http://localhost:4173",
     screenshot: "only-on-failure",

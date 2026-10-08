@@ -26,3 +26,9 @@ npm test
   และไม่ครอบคลุม LIFF / backend แจ้งเตือนผ่าน LINE / หน้าแชร์การ์ด / ปฏิทิน
 - ข้อความที่ตรวจเป็นข้อความจริงในแอป ถ้าเปลี่ยนคำ ต้องแก้เคสที่ตรวจคำนั้นตาม
 - ไม่แตะ `web/package.json`: ชุดทดสอบมี `package.json` ของตัวเองในโฟลเดอร์นี้
+
+## Unit tests, lint, parallel/WebKit runs (v1.0.423)
+- `npm run unit` -- fast `node --test` checks of the app's exported helpers (dates, litres, share links); see `unit/_load.mjs`.
+- `npm run lint` -- react-hooks rules only; `npm run lint -- --no-inline-config` shows what the `eslint-disable` comments hide.
+- `BJ_WORKERS=4 npx playwright test` runs in parallel; `BJ_WEBKIT=1 npx playwright test` adds WebKit (install it first: `npx playwright install webkit`).
+- A file filter such as `npx playwright test home` is matched against the whole path (`/home/...` matches everything): use `home.spec`.

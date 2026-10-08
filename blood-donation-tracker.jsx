@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.422";
+const APP_VERSION = "1.0.423";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -341,8 +341,13 @@ function toBuddhistDateTime(d) {
   // leaving a lone "น." (or the clock) on its own line.
   return `${toBuddhistDate(date)} เวลา\u00A0${hh}:${mm}\u00A0น.`;
 }
-function daysBetween(a, b) {
-  return Math.round((b.setHours(0,0,0,0) - a.setHours(0,0,0,0)) / 86400000);
+// Whole calendar days from a to b. Works on copies: it used to call setHours on the dates passed in, which silently
+// changed the caller's Date objects (harmless only while every caller handed in a fresh one).
+export function daysBetween(a, b) {
+  const from = new Date(a), to = new Date(b);
+  from.setHours(0, 0, 0, 0);
+  to.setHours(0, 0, 0, 0);
+  return Math.round((to - from) / 86400000);
 }
 // Local-timezone "YYYY-MM-DD" for a given date (or now) — for anything that
 // means "today"/"this calendar day" in the user's own timezone. Deliberately
@@ -1582,7 +1587,6 @@ function HorizontalRuler({ min, max, step = 1, decimals = 0, majorEvery, midEver
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => { el.removeEventListener("wheel", onWheel); clearTimeout(settleTimer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const pick = (i) => {
     i = Math.max(0, Math.min(count - 1, i));
@@ -2708,7 +2712,7 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
   const FONT = "'Mitr', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
-  const liters = (estVolumeMl / 1000).toFixed(estVolumeMl % 1000 === 0 ? 0 : 1);
+  const liters = formatLiters(estVolumeMl); // same function as the dashboard (a second formula here showed 0.3 for 350 ml, the dashboard 0.4)
   const content = { totalCount, achievement, liters, bloodType: bloodCardLabel(bloodType, bloodRh), nickname };
 
   if (W > H) {
@@ -3461,7 +3465,6 @@ function AppInner() {
       checkStorageHealth();
     }, 30000);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // load({ soft: true }) is the pull-to-refresh path: re-reads everything
@@ -3647,7 +3650,6 @@ function AppInner() {
       clearTimeout(timeoutId);
       if (!soft) setPhase("error");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const loadRef = useRef(load);
   loadRef.current = load;
@@ -3916,7 +3918,6 @@ function AppInner() {
       window.removeEventListener("touchend", onEnd);
       window.removeEventListener("touchcancel", onEnd);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const giveConsent = async () => {

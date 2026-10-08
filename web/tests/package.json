@@ -2,6 +2,14 @@
   "name": "bloodjourney-e2e",
   "private": true,
   "type": "module",
-  "scripts": { "test": "playwright test" },
-  "devDependencies": { "@playwright/test": "1.56.0" }
+  "scripts": {
+    "test": "playwright test",
+    "unit": "node --test \"unit/*.test.mjs\"",
+    "lint": "cd ../.. && web/tests/node_modules/.bin/eslint -c web/tests/eslint.config.js blood-donation-tracker.jsx"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0"
+  }
 }
