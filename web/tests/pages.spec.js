@@ -138,3 +138,27 @@ test("pages slide in from the right with no dimmed/blurred backdrop, and slide o
   await expect(page.locator(".page-exit-clone")).toHaveCount(0);
   assertNoErrors(page);
 });
+
+test("backup/restore opens over Settings (Settings stays underneath) and the back button closes only the backup dialog", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", "2026-06-01")] });
+  const backup = page.getByRole("dialog", { name: "สำรอง/กู้คืนข้อมูล" });
+  await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
+  await settings(page).getByRole("button", { name: /^สำรอง\/กู้คืนข้อมูล/ }).click();
+  await expect(backup).toBeVisible();
+  await expect(settings(page)).toHaveCount(1);
+  expect(await settings(page).evaluate((el) => el.hasAttribute("inert"))).toBe(true);
+  await page.goBack();
+  await expect(backup).toHaveCount(0);
+  await expect(settings(page)).toBeVisible();
+  expect(await settings(page).evaluate((el) => el.hasAttribute("inert"))).toBe(false);
+  // the ✕ path: settings is still the page underneath, and one more back press closes it
+  await settings(page).getByRole("button", { name: /^สำรอง\/กู้คืนข้อมูล/ }).click();
+  await backup.getByRole("button", { name: "ปิด" }).click();
+  await expect(backup).toHaveCount(0);
+  await expect(settings(page)).toBeVisible();
+  await page.goBack();
+  await expect(page.locator("[role=dialog]")).toHaveCount(0);
+  await expect(page.getByTestId("hero-card")).toBeVisible();
+  assertNoErrors(page);
+});
