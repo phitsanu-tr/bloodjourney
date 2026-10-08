@@ -400,10 +400,10 @@ export function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLab
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={`ระบุ${ariaLabelPrefix}`}
+    <div className="cal-overlay" role="dialog" aria-modal="true" aria-label={`ระบุ${ariaLabelPrefix}`}
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
+      <div className="cal-box" style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(122,42,35,0.22)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>ระบุ{ariaLabelPrefix}</div>
           <DialogX onClick={onClose} />
