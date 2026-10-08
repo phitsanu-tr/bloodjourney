@@ -30,3 +30,25 @@ test("faq: Settings has a row that opens the FAQ; answers are 14px", async ({ pa
   expect(await page.getByText(/^ใช้งานได้ฟรี/).evaluate((e) => getComputedStyle(e).fontSize)).toBe("14px");
   assertNoErrors(page);
 });
+
+test("faq + settings: the report channel reads the same (LINE menu button, no 'coming soon'); medal answer says all types count", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: [rec("a", "2026-06-01")] });
+  for (const [w, h] of [[390, 780], [320, 640]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click();
+    const settings = page.getByRole("dialog", { name: "ตั้งค่า" });
+    await expect(settings.getByText("ส่งความคิดเห็น / แจ้งปัญหา")).toBeVisible();
+    await expect(settings.getByText('ผ่านปุ่ม "แจ้งปัญหา" ในเมนู LINE')).toBeVisible();
+    await expect(settings.getByText("เร็วๆ นี้")).toHaveCount(0);
+    // it is plain text, not a control, and the hint stays on one line at 320
+    const hint = settings.getByText('ผ่านปุ่ม "แจ้งปัญหา" ในเมนู LINE');
+    expect(await hint.evaluate((el) => !el.closest("button, a, [role=button]") && el.getBoundingClientRect().height < 20)).toBe(true);
+    await settings.getByRole("button", { name: "ย้อนกลับ" }).click();
+  }
+  await page.goto("/?tab=faq");
+  const q = page.getByRole("button", { name: "เข็มที่ระลึกและเหรียญกาชาดสมนาคุณนับจากอะไร", exact: true });
+  await q.click();
+  await expect(page.getByText(/ทุกประเภทการบริจาครวมกัน/)).toBeVisible();
+  assertNoErrors(page);
+});
