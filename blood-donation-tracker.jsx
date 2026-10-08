@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.454";
+const APP_VERSION = "1.0.455";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -6916,7 +6916,7 @@ function AppInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 2, margin: "0 0 10px" }}>
                       <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(1)} aria-label="ย้อนกลับไปแก้รหัสผ่าน"
                         style={{ width: 44, height: 44, margin: "-6px 0 -6px -12px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={20} /></button>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29" }}>{exportGenPw ? "ยืนยันว่าจดรหัสถูก" : "บันทึกไฟล์สำรอง"}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{exportGenPw ? "ยืนยันว่าจดรหัสถูก" : "บันทึกไฟล์สำรอง"}</div>
                     </div>
                     {exportGenPw && (
                       <div style={{ marginBottom: 12 }}>
@@ -6924,7 +6924,7 @@ function AppInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2B7530" : "#E3C8C3"}`, borderRadius: 10, padding: "0 12px", minHeight: 44 }}>
                       <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportConfirmPw(e.target.value)}
-                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัสให้ตรง ตัวเล็กใหญ่ต้องตรงกัน"
+                        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} placeholder="พิมพ์รหัส"
                         style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
                       {exportTypedOk && <Check size={17} color="#2B7530" aria-label="รหัสตรงกัน" />}
                     </div>
@@ -6943,7 +6943,7 @@ function AppInner() {
                       placeholder={exportEncrypting ? "กำลังเข้ารหัส…" : "ข้อความเข้ารหัสจะแสดงที่นี่"}
                       onFocus={(e) => e.target.select()}
                       aria-label="ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก"
-                      style={{ width: "100%", height: 76, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                      style={{ width: "100%", height: 76, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 12, fontFamily: "monospace", color: "#7A6360", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                     />
                     <BackupMsg msg={exportMsg} at="pre" />
                     <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
