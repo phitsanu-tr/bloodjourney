@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.442";
+const APP_VERSION = "1.0.443";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6911,7 +6911,7 @@ function AppInner() {
 
                     {/* Both modes live in one grid cell (like the two tabs above), so the dialog keeps the same height when you switch. */}
                     <div style={{ display: "grid" }}>
-                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "visible" : "hidden" }} aria-hidden={!exportGenPw}>
+                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "inherit" : "hidden" }} aria-hidden={!exportGenPw}>
                     <div style={{ background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
                       <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
@@ -6928,7 +6928,7 @@ function AppInner() {
                     </div>
                     <div style={{ margin: "-4px 0 12px" }}><BackupMsg msg={exportMsg} at="pw" /></div>
                     </div>
-                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "hidden" : "visible" }} aria-hidden={!!exportGenPw}>
+                    <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "hidden" : "inherit" }} aria-hidden={!!exportGenPw}>
                       <div style={{ marginBottom: 4 }}>
                     <label htmlFor="export-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>ตั้งรหัสผ่าน (8 ตัวขึ้นไป)</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
@@ -7085,7 +7085,7 @@ function AppInner() {
                 </div>
                 {/* Both sources share one grid cell so the tab keeps its height when you switch (same trick as the export tab). */}
                 <div style={{ display: "grid", flex: 1 }}>
-                <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "visible" : "hidden" }} aria-hidden={importSource !== "file"}>
+                <div style={{ gridArea: "1 / 1", visibility: importSource === "file" ? "inherit" : "hidden" }} aria-hidden={importSource !== "file"}>
                   <button onClick={triggerImport} disabled={importing} tabIndex={importSource === "file" ? importTabIdx : -1}
                     style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "16px 14px", fontFamily: "inherit", color: "#3A2C29", cursor: importing ? "not-allowed" : "pointer", opacity: importing ? 0.6 : 1 }}>
                     <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Upload size={19} /></span>
@@ -7096,7 +7096,7 @@ function AppInner() {
                   </button>
                   {importMsg && importMsg.at === "file" && <div style={{ margin: "10px 0 0" }}><BackupMsg msg={importMsg} at="file" /></div>}
                 </div>
-                <div style={{ gridArea: "1 / 1", visibility: importSource === "text" ? "visible" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "text"}>
+                <div style={{ gridArea: "1 / 1", visibility: importSource === "text" ? "inherit" : "hidden", display: "flex", flexDirection: "column" }} aria-hidden={importSource !== "text"}>
                 <textarea
                   value={pasteImportText}
                   onChange={(e) => { setPasteImportText(e.target.value); if (pasteImportError) setPasteImportError(""); setImportMsg(null); }}
