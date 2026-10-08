@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.421";
+const APP_VERSION = "1.0.422";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2877,9 +2877,36 @@ function initialTabFromUrl() {
   }
 }
 
+let _pageLayerSeq = 0;
+// One browser-history entry for a full-screen page layer. The phone's back button pops the newest entry: only the
+// layer whose entry was popped closes (every layer hears the popstate, so each checks whether its own marker is
+// still the current entry).
+function usePageHistoryLayer(open, onClose) {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!open || typeof window === "undefined" || !window.history?.pushState) return undefined;
+    const marker = `bj-page-${Date.now()}-${++_pageLayerSeq}`;
+    try { window.history.pushState({ ...(window.history.state || {}), bjPage: marker }, ""); } catch (e) { return undefined; }
+    let popped = false;
+    const onPop = () => {
+      if (window.history.state?.bjPage === marker) return;
+      popped = true;
+      closeRef.current();
+    };
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      if (!popped && window.history.state?.bjPage === marker) window.history.back();
+    };
+  }, [open]);
+}
+
 function AppInner() {
   const [phase, setPhase] = useState("loading"); // loading | consent | app | error
-  const [tab, setTab] = useState(initialTabFromUrl); // home | dashboard | missions | knowledge | eligibility | faq
+  // ?tab=faq still deep-links (LINE rich menu), but the FAQ is a full-screen page now, not a tab: it opens over the home tab.
+  const [tab, setTab] = useState(() => { const t = initialTabFromUrl(); return t === "faq" ? "home" : t; }); // home | dashboard | missions | knowledge | eligibility
+  const [showFaq, setShowFaq] = useState(() => initialTabFromUrl() === "faq");
   const [nickname, setNickname] = useState("");
   const [photo, setPhoto] = useState("");
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
@@ -2981,6 +3008,12 @@ function AppInner() {
   const [formGroupChoice, setFormGroupChoice] = useState("");
   const lastTypeIdxRef = useRef(0); // where the type pill fades out from after being cleared
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const faqOpen = showFaq && phase === "app";
+  // Privacy policy and FAQ are pages stacked over settings / profile (v1.0.422): the page underneath stays put (inert),
+  // so opening slides the new page over it and ← slides it away to reveal the page you came from.
+  const upperPageOpen = showPrivacy || faqOpen;
+  const upperPageRef = useRef(false);
+  upperPageRef.current = upperPageOpen;
   const [showSettings, setShowSettings] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showClearProfile, setShowClearProfile] = useState(false);
@@ -3330,7 +3363,7 @@ function AppInner() {
   // restore the exact scroll position it was at once the last one closes.
   const scrollLockYRef = useRef(0);
   const anyModalOpen = showStorageDegradedModal || showProfile || showForm || showOnboardingChoice
-    || showStartingCountQuickEntry || showSettings || showPrivacy || showReset
+    || showStartingCountQuickEntry || showSettings || showPrivacy || faqOpen || showReset
     || !!confirmDeleteId || confirmDeleteStartingCount || !!pendingImport
     || showBackupRestore || showShareCard || showFilterSheet || !!viewDonationId
     || viewStartingCount || editingStartingCount;
@@ -3773,6 +3806,8 @@ function AppInner() {
       if (showClearProfileRef.current) { setShowClearProfile(false); return; }
       // The delete-all confirm sits on top of Settings: Escape closes only it.
       if (showResetRef.current) { setShowReset(false); return; }
+      // Privacy policy / FAQ sit on top of settings or profile: Escape closes only that page.
+      if (upperPageRef.current) { setShowPrivacy(false); setShowFaq(false); return; }
       setShowProfile(false);
       setProfileOpenChoice(null);
       setShowForm(false);
@@ -4176,26 +4211,13 @@ function AppInner() {
     profileOpenerRef.current?.focus?.();
   };
 
-  // The phone's back button (Android, LINE) closes the full-screen profile /
-  // settings pages and the privacy page opened from them, instead of leaving
-  // the app. One history entry covers the whole group, so moving between them
-  // (profile -> settings, privacy -> back to settings) doesn't touch history;
-  // closing with ← drops the entry again.
+  // The phone's back button (Android, LINE) closes the full-screen pages instead of leaving the app, one layer per
+  // press: the privacy policy / FAQ page first (if open), then settings / profile. Each layer owns one history
+  // entry; moving between profile <-> settings doesn't touch history, and closing a layer with ← drops its entry again.
   const closeProfileRef = useRef(closeProfile);
   closeProfileRef.current = closeProfile;
-  const pageOverlayOpen = showProfile || showSettings || showPrivacy;
-  useEffect(() => {
-    if (!pageOverlayOpen || typeof window === "undefined" || !window.history?.pushState) return undefined;
-    const marker = `bj-page-${Date.now()}`;
-    try { window.history.pushState({ ...(window.history.state || {}), bjPage: marker }, ""); } catch (e) { return undefined; }
-    let popped = false;
-    const onPop = () => { popped = true; setShowSettings(false); setShowPrivacy(false); closeProfileRef.current(); };
-    window.addEventListener("popstate", onPop);
-    return () => {
-      window.removeEventListener("popstate", onPop);
-      if (!popped && window.history.state?.bjPage === marker) window.history.back();
-    };
-  }, [pageOverlayOpen]);
+  usePageHistoryLayer(showProfile || showSettings, () => { setShowSettings(false); closeProfileRef.current(); });
+  usePageHistoryLayer(upperPageOpen, () => { setShowPrivacy(false); setShowFaq(false); });
 
   // sanitizeNameInput can remove characters from the middle of what the
   // user just typed/pasted, which — left to React's default controlled-
@@ -5406,7 +5428,6 @@ function AppInner() {
   // Settings when opened from the Settings rows, or straight back to the
   // home tab when opened from the home "ยังไม่ได้สำรองข้อมูล" banner.
   const backupOpenedFromHomeRef = useRef(false);
-  const privacyFromProfileRef = useRef(false); // privacy opened from the profile footer → closing returns there, not to settings
   const openBackupRestore = (tab, { fromHome = false } = {}) => {
     backupOpenedFromHomeRef.current = fromHome;
     setImportMsg(null);
@@ -8137,43 +8158,6 @@ function AppInner() {
             </>
           )}
 
-          {tab === "faq" && (
-            <>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#3A2C29", margin: "0 0 4px" }}>คำถามที่พบบ่อย</h2>
-              <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 18px", lineHeight: 1.6 }}>
-                คำถามที่พบบ่อยเกี่ยวกับการใช้งานแอปนี้
-              </p>
-
-              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "0 15px", marginBottom: 18 }}>
-                {APP_FAQ_ITEMS.map((item, i) => {
-                  const isOpen = openFaqIndex === i;
-                  return (
-                    <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
-                      <h3 style={{ margin: 0 }}>
-                      <button
-                        onClick={() => setOpenFaqIndex(isOpen ? null : i)}
-                        aria-expanded={isOpen}
-                        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
-                      >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, textWrap: "balance" }}>{item.q}</span>
-                        <span aria-hidden="true" style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
-                      </button>
-                      </h3>
-                      {isOpen && (
-                        <div style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
-                          {item.a}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
-                ไม่พบคำตอบที่ต้องการ? แจ้งผ่านปุ่ม "แจ้งปัญหา" ในริชเมนูของ LINE Official Account ได้เลย
-              </p>
-            </>
-          )}
 
         </div>
       )}
@@ -8397,7 +8381,7 @@ function AppInner() {
               row opens the one-field sheet below, so the page itself has no text
               inputs. Full-screen page with ← like ตั้งค่า (v1.0.403), which both
               open from the header icons; the phone's back button closes it. */}
-          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
+          <div role="dialog" aria-modal="true" aria-label="โปรไฟล์ของฉัน" data-own-motion data-page-motion inert={upperPageOpen} style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
             <div ref={profileBoxRef} tabIndex={-1} style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden", outline: "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
                 <button onClick={closeProfile} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
@@ -8744,7 +8728,7 @@ function AppInner() {
                 </div>
               )}
 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", columnGap: 12, rowGap: 2, fontSize: 12, color: "#7A6360", marginTop: 6, padding: "10px 0" }}>
-                <button type="button" onClick={() => { privacyFromProfileRef.current = true; setProfileOpenChoice(null); setShowProfile(false); setShowPrivacy(true); }}
+                <button type="button" onClick={() => { setProfileOpenChoice(null); setShowPrivacy(true); }}
                   style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: "inherit", color: "#9A3B33", textDecoration: "underline" }}>
                   <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -6px" }} />อ่านนโยบายความเป็นส่วนตัว
                 </button>
@@ -9141,7 +9125,7 @@ function AppInner() {
       )}
 
       {showSettings && (
-        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
+        <div role="dialog" aria-modal="true" aria-label="ตั้งค่า" data-own-motion data-page-motion inert={upperPageOpen} style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
           {/* Full-screen page (v1.0.403): the settings list is about two screens long, so a
             centered box left only ~600px to read; ← and the phone's back button close it. */}
           <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -9220,10 +9204,10 @@ function AppInner() {
                 <span>เวอร์ชันแอป</span>
                 <span style={{ color: "#7A6360", fontSize: 12 }}>{APP_VERSION}</span>
               </div>
-              <button onClick={() => { setShowSettings(false); setShowPrivacy(true); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
+              <button onClick={() => setShowPrivacy(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
                 <Info size={16} color="#9A3B33" /> ความเป็นส่วนตัว
               </button>
-              <button onClick={() => { setShowSettings(false); setTab("faq"); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
+              <button onClick={() => setShowFaq(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
                 <HelpCircle size={16} color="#9A3B33" /> คำถามที่พบบ่อย
               </button>
               {/* Not a button: the report channel is the LINE rich menu (same words as the FAQ), so this row only says where. */}
@@ -9245,7 +9229,7 @@ function AppInner() {
           {/* Full-screen page (v1.0.418), like settings and profile: the policy is long, so a centered box left little to read. */}
           <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
-              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else if (phase === "app") setShowSettings(true); }} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
+              <button onClick={() => setShowPrivacy(false)} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>นโยบายความเป็นส่วนตัว</h2>
             </div>
             <p style={{ fontSize: 11, color: "#7A6360", margin: "10px 20px 0", flexShrink: 0 }}>
@@ -9264,6 +9248,52 @@ function AppInner() {
               ))}
               <p style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.7, margin: "4px 2px 0" }}>
                 ให้ความยินยอมเมื่อ: {new Date().toLocaleDateString("th-TH")}
+              </p>
+            </FadeScroll>
+          </div>
+        </div>
+      )}
+
+      {faqOpen && (
+        <div role="dialog" aria-modal="true" aria-label="คำถามที่พบบ่อย" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
+          {/* Full-screen page like settings / privacy (v1.0.422): used to be a tab that settings switched to underneath. */}
+          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
+              <button onClick={() => setShowFaq(false)} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>คำถามที่พบบ่อย</h2>
+            </div>
+            <FadeScroll style={{ padding: "12px 20px calc(24px + env(safe-area-inset-bottom))" }}>
+              <p style={{ fontSize: 12, color: "#7A6360", margin: "0 0 14px", lineHeight: 1.6 }}>
+                คำถามที่พบบ่อยเกี่ยวกับการใช้งานแอปนี้
+              </p>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "0 15px", marginBottom: 18 }}>
+                {APP_FAQ_ITEMS.map((item, i) => {
+                  const isOpen = openFaqIndex === i;
+                  return (
+                    <div key={i} style={{ borderBottom: i < APP_FAQ_ITEMS.length - 1 ? "1px solid #F3E7E4" : "none" }}>
+                      <h3 style={{ margin: 0 }}>
+                      <button
+                        onClick={() => setOpenFaqIndex(isOpen ? null : i)}
+                        aria-expanded={isOpen}
+                        style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "13px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+                      >
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", lineHeight: 1.5, textWrap: "balance" }}>{item.q}</span>
+                        <span aria-hidden="true" style={{ fontSize: 16, color: "#9A3B33", flexShrink: 0, lineHeight: 1 }}>{isOpen ? "−" : "+"}</span>
+                      </button>
+                      </h3>
+                      {isOpen && (
+                        <div style={{ fontSize: 14, color: "#5C4A46", lineHeight: 1.7, padding: "0 0 14px" }}>
+                          {item.a}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.6 }}>
+                ไม่พบคำตอบที่ต้องการ? แจ้งผ่านปุ่ม "แจ้งปัญหา" ในริชเมนูของ LINE Official Account ได้เลย
               </p>
             </FadeScroll>
           </div>
