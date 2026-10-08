@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.439";
+const APP_VERSION = "1.0.440";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6963,10 +6963,6 @@ function AppInner() {
                     <div style={{ minHeight: 24 }}>{exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}</div>
                       </div>
                     </div>
-                    </div>
-                    <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", margin: "0 0 14px", fontSize: 13, lineHeight: 1.6, color: "#7A2A24" }}>
-                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
-                      <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b><br />แอปไม่เก็บรหัสไว้ ถ้าลืม <span style={{ whiteSpace: "nowrap" }}>ผู้พัฒนา</span>ก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</div>
                     </div>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
