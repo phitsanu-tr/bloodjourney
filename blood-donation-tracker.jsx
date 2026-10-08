@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.446";
+const APP_VERSION = "1.0.447";
 // One size for every step of the backup/restore dialogs and the import confirm dialog, so the window never changes size between pages.
 const BACKUP_BOX_H = "min(620px, calc(92vh / var(--ui-zoom, 1)))";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
@@ -6852,7 +6852,7 @@ function AppInner() {
             {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
             </FadeScroll>
             <div style={{ display: "flex", gap: 10, flexShrink: 0, padding: "12px 22px 22px" }}>
-              <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+              <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ย้อนกลับ</button>
               <button
                 onClick={confirmImport}
                 disabled={importSaving || !importHasSomething(pendingImport)}
