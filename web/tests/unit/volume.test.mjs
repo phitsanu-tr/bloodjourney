@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { app, APP_SOURCE } from "./_load.mjs";
+import { app, SOURCE_FILES } from "./_load.mjs";
 
 test("estimateVolumeMl adds each type's volume per donation", () => {
   assert.equal(app.estimateVolumeMl({ whole: 2 }), 700);
@@ -20,7 +20,7 @@ test("formatLiters rounds to one decimal, half up, with no trailing .0", () => {
 // The share card once had its own formula ((ml / 1000).toFixed(1)) that disagreed with the dashboard for 86 volumes (350 ml:
 // card 0.3, dashboard 0.4). There must be one formula: guard against a second one being typed in again.
 test("the share card gets its litres from formatLiters, not a second formula", () => {
-  const src = fs.readFileSync(APP_SOURCE, "utf8");
+  const src = SOURCE_FILES.map((f) => fs.readFileSync(f, "utf8")).join("\n");
   assert.match(src, /const liters = formatLiters\(estVolumeMl\)/);
   assert.doesNotMatch(src, /estVolumeMl\s*\/\s*1000/);
   assert.doesNotMatch(src, /\(ml\s*\/\s*1000\)\.toFixed/);
