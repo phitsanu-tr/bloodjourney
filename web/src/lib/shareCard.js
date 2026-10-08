@@ -713,14 +713,24 @@ export function drawLandscapeRecordCard(ctx, W, H, FONT, { order, dateStr, timeS
   ctx.globalAlpha = 1;
 }
 
+// A canvas never fetches a font by itself: text drawn in a Mitr weight / script that no screen has used yet would come out in
+// the system font. Ask for every face the cards use (Thai + digits/Latin in the three weights) and wait until they are in.
+async function ensureCardFonts() {
+  if (typeof document === "undefined" || !document.fonts) return;
+  try {
+    if (document.fonts.load) {
+      await Promise.all(["400", "600", "700"].flatMap((w) => [document.fonts.load(`${w} 24px Mitr`, "ก"), document.fonts.load(`${w} 24px Mitr`, "0A")]));
+    }
+    if (document.fonts.ready) await document.fonts.ready;
+  } catch (e) {}
+}
+
 // Draws a shareable card for a single donation record (date, sequence
 // number, type, location) — same canvas-only approach as buildShareCardDataUrl
 // below, kept as a separate function so the achievement-card flow is untouched.
 export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel, location, bloodType, bloodRh, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
-  if (document.fonts && document.fonts.ready) {
-    try { await document.fonts.ready; } catch (e) {}
-  }
+  await ensureCardFonts();
   const W = width || 1080, H = height || 1350;
   const canvas = document.createElement("canvas");
   canvas.width = W;
@@ -746,9 +756,7 @@ export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typ
 // PNG data URL, sized to whichever social-media preset was requested.
 export async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, bloodType, bloodRh, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
-  if (document.fonts && document.fonts.ready) {
-    try { await document.fonts.ready; } catch (e) {}
-  }
+  await ensureCardFonts();
   const W = width || 1080, H = height || 1350;
   const canvas = document.createElement("canvas");
   canvas.width = W;
