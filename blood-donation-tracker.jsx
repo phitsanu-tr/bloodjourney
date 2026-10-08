@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.449";
+const APP_VERSION = "1.0.450";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -2026,7 +2026,7 @@ function AppInner() {
     setExportMsg(null);
     try {
       await navigator.clipboard.writeText(exportGenPw);
-      showToast("success", "คัดลอกรหัสผ่านแล้ว — เก็บไว้ในที่ปลอดภัย เช่นตัวจัดการรหัสผ่านของมือถือ");
+      showToast("success", "คัดลอกรหัสผ่านแล้ว");
     } catch (e) {
       setExportMsg({ kind: "note", at: "pw", text: "คัดลอกไม่ได้ จดหรือแคปหน้าจอรหัสนี้ไว้" });
     }
@@ -2103,7 +2103,7 @@ function AppInner() {
       if (isLineInAppBrowser) {
         // LINE no-ops this click instead of throwing, so success here can't
         // actually be confirmed — tell the user plainly instead of claiming it worked.
-        showToast("success", "ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ ให้กด \"คัดลอกข้อมูลสำรอง\" แล้ววางเก็บเองแทน");
+        showToast("success", "ไฟล์ไม่ขึ้น? กด \"คัดลอกข้อมูลสำรอง\" แทน");
       } else {
         showToast("success", "เริ่มดาวน์โหลดไฟล์แล้ว");
         // Only outside LINE -- inside LINE this click can be a silent no-op,
@@ -2124,7 +2124,7 @@ function AppInner() {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(exportOutText);
-        showToast("success", "คัดลอกข้อมูลแล้ว — วางเก็บไว้ในไฟล์ข้อความหรือโน้ตของคุณได้เลย");
+        showToast("success", "คัดลอกข้อมูลสำรองแล้ว");
         markBackedUp();
         return;
       }
@@ -2140,7 +2140,7 @@ function AppInner() {
         el.setSelectionRange(0, el.value.length);
         const ok = document.execCommand && document.execCommand("copy");
         if (ok) {
-          showToast("success", "คัดลอกข้อมูลแล้ว — วางเก็บไว้ในไฟล์ข้อความหรือโน้ตของคุณได้เลย");
+          showToast("success", "คัดลอกข้อมูลสำรองแล้ว");
           markBackedUp();
           return;
         }
