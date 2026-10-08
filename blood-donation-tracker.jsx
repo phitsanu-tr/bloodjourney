@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.437";
+const APP_VERSION = "1.0.438";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6894,13 +6894,13 @@ function AppInner() {
                   </div>
                 ) : exportStep === 1 ? (
                   <>
-                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "2px 2px 0" }}>ตั้งรหัสผ่านให้ไฟล์สำรอง</div>
-                    <div role="radiogroup" aria-labelledby="export-mode-label" style={{ display: "flex", background: "#F3EAE8", borderRadius: 12, padding: 3, margin: "6px 0 12px" }}>
+                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรอง</div>
+                    <div role="radiogroup" aria-labelledby="export-mode-label" style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 14, padding: 4, margin: "0 0 12px" }}>
                       {[["auto", "แอปสุ่มให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
                         const on = (k === "auto") === !!exportGenPw;
                         return (
                           <button key={k} type="button" role="radio" aria-checked={on} tabIndex={exportTabIdx} onClick={() => { if (!on) { if (k === "auto") generateExportPassword(); else chooseOwnExportPassword(); } }}
-                            style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 9, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#FFFFFF" : "transparent", color: on ? "#9A3B33" : "#7A6360", fontWeight: on ? 600 : 400, boxShadow: on ? "0 1px 3px rgba(80,30,25,0.18)" : "none" }}>
+                            style={{ flex: 1, minHeight: 44, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 14, cursor: "pointer", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 }}>
                             {label}
                           </button>
                         );
@@ -6909,9 +6909,9 @@ function AppInner() {
 
                     {exportGenPw ? (
                       <>
-                    <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+                    <div style={{ background: "#FFFFFF", border: "1px solid #E3CFCB", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสของคุณ</div>
-                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
                           style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
@@ -6959,7 +6959,10 @@ function AppInner() {
                     {exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}
                       </div>
                     )}
-                    <p role="note" style={{ margin: "0 2px 14px", fontSize: 12, lineHeight: 1.6, color: "#6E5A56" }}><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b> แอปไม่เก็บรหัสไว้ ถ้าลืม ผู้พัฒนาก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</p>
+                    <div role="note" style={{ display: "flex", gap: 9, background: "rgba(179,38,30,0.06)", borderRadius: 12, padding: "10px 12px", margin: "0 0 14px", fontSize: 13, lineHeight: 1.6, color: "#5A3F3B" }}>
+                      <AlertTriangle size={16} color="#B3261E" aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
+                      <div><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b> แอปไม่เก็บรหัสไว้ ถ้าลืม ผู้พัฒนาก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</div>
+                    </div>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
                       {exportGenPw ? "จดไว้แล้ว ไปต่อ" : "ต่อไป"}
