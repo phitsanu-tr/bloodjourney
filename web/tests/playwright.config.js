@@ -16,7 +16,8 @@ export default defineConfig({
     hasTouch: true,
     isMobile: true,
     viewport: { width: 390, height: 780 },
-    // The app loads Mitr from Google Fonts; tests don't need it.
+    // Mitr is served from /fonts now; this blocks Google Fonts so a regression to a third-party font fails the tests
+    // (fonts.spec.js) instead of silently going to the network.
     launchOptions: { args: ["--host-resolver-rules=MAP fonts.googleapis.com 127.0.0.1, MAP fonts.gstatic.com 127.0.0.1"] },
   },
   webServer: {
