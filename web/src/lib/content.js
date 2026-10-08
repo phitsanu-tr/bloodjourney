@@ -6,7 +6,7 @@ import { Cake, Scale, HeartPulse, Info, ShieldCheck, Syringe, Beef, User, Drople
 // PRIVACY_POLICY_CONTACT_EMAIL should be reviewed/replaced with whatever
 // contact channel is actually appropriate before this goes to real users —
 // currently set to the developer's own address as a placeholder.
-export const PRIVACY_POLICY_EFFECTIVE_DATE = "29 กันยายน 2569";
+export const PRIVACY_POLICY_EFFECTIVE_DATE = "8 ตุลาคม 2569";
 
 export const PRIVACY_POLICY_CONTACT_EMAIL = "phitsanu.trs@gmail.com";
 
