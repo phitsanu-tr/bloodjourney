@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.419";
+const APP_VERSION = "1.0.420";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1311,7 +1311,7 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 and in the day numbers below, and the whole header row sits
                 on a light rounded card so it reads as a distinct "table
                 head" instead of blending into the day grid underneath. */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, background: "#FBF6F5", borderRadius: 10, padding: "6px 0", marginBottom: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 0, background: "#FBF6F5", borderRadius: 10, padding: "6px 0", marginBottom: 8 }}>
               {THAI_WEEKDAYS_SHORT.map((w, i) => {
                 const isWeekend = i === 5 || i === 6;
                 return (
@@ -1328,26 +1328,25 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
               key={`${viewYear}-${viewMonth}`}
               ref={gridRef}
               className={slideDir === 1 ? "calendar-slide-next" : slideDir === -1 ? "calendar-slide-prev" : undefined}
-              style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}
+              style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 0 }}
             >
               {cells.map((cell, i) => {
-                // A leading gap (before day 1) is still a plain blank -- but
-                // it still needs the same aspect-ratio square as a real day
-                // button, otherwise a row made entirely of blanks has
-                // nothing to size it and CSS grid collapses that row's
-                // height to near zero instead of matching the other rows.
-                if (cell === null) return <div key={`e${i}`} style={{ aspectRatio: "1" }} aria-hidden="true" />;
+                // Every cell is a 44px-tall row slot with no gap between them (v1.0.420: the tap area is the whole
+                // slot, the visible circle inside is 38px). A leading blank needs the same height as a real day
+                // button, otherwise a row made entirely of blanks collapses to near zero instead of matching the others.
+                const cellBox = { height: 44 };
+                if (cell === null) return <div key={`e${i}`} style={cellBox} aria-hidden="true" />;
                 const { day: d, overflow } = cell;
                 // Trailing padding is filled with the next month's leading
                 // days instead, muted and non-interactive -- purely to keep
                 // the grid visually filled, not a real navigation shortcut.
                 if (overflow && i === cells.length - 1) {
-                  return <div key="today-cell" style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center" }}>{todayBtn({ width: "100%" })}</div>;
+                  return <div key="today-cell" style={{ ...cellBox, display: "flex", alignItems: "center", justifyContent: "center" }}>{todayBtn({ width: "100%" })}</div>;
                 }
                 if (overflow) {
                   return (
                     <div key={`n${i}`} aria-hidden="true"
-                      style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#EADEDB", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
+                      style={{ ...cellBox, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#EADEDB", fontFamily: "'Mitr', 'Inter', sans-serif" }}>
                       {d}
                     </div>
                   );
@@ -1356,14 +1355,14 @@ function DateCalendarDialog({ value, maxDate, onConfirm, onClose, ariaLabelPrefi
                 return (
                   <button key={d} type="button" onClick={() => pick(d)} disabled={isFuture(d)}
                     style={{
-                      aspectRatio: "1", borderRadius: "50%", border: "none",
-                      background: isSelected(d) ? "#9A3B33" : "transparent",
+                      height: 44, border: "none", padding: 0, background: "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
                       color: isFuture(d) ? "#D9C7C3" : isSelected(d) ? "#FFF7F5" : isToday(d) ? "#9A3B33" : isWeekend ? "#9A3B33" : "#3A2C29",
                       fontWeight: isSelected(d) || isToday(d) ? 700 : 400,
                       fontSize: 14, cursor: isFuture(d) ? "default" : "pointer",
                       fontFamily: "'Mitr', 'Inter', sans-serif",
                     }}>
-                    {d}
+                    <span style={{ width: "min(38px, 100%)", aspectRatio: "1", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: isSelected(d) ? "#9A3B33" : "transparent" }}>{d}</span>
                   </button>
                 );
               })}

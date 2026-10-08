@@ -31,9 +31,25 @@ test("tap areas: form, settings, backup, share, profile and consent controls are
   await page.getByRole("button", { name: "บันทึกบริจาคโลหิต" }).first().click();
   await page.locator("[role=dialog]").last().waitFor(); await page.waitForTimeout(400);
   expect(await small(page), "form").toEqual([]);
-  // the date picker's month arrows and month/year header (the day cells themselves are a grid, left as they are)
+  // the date picker's month arrows and month/year header
   await page.locator("[role=dialog]").last().getByText("ระบุวันที่", { exact: true }).first().click(); await page.waitForTimeout(400);
   expect((await small(page)).filter((x) => /^เดือน|\d{4}$/.test(x.n)), "date picker").toEqual([]);
+  // the day cells: 44px tall with no gaps between them (~43px wide at 390 -- 7 columns in the dialog), the visible
+  // circle is 38px, and at 320 the grid still stays inside the dialog
+  const days = () => page.evaluate(() => {
+    const d = [...document.querySelectorAll("[role=dialog]")].pop(), box = d.firstElementChild.getBoundingClientRect();
+    const cells = [...d.querySelectorAll("button")].filter((b) => /^\d{1,2}$/.test(b.textContent.trim())).map((b) => b.getBoundingClientRect());
+    return { n: cells.length, minW: Math.min(...cells.map((r) => r.width)), minH: Math.min(...cells.map((r) => r.height)), out: cells.filter((r) => r.right > box.right || r.left < box.left).length };
+  });
+  const d390 = await days();
+  expect(d390.n).toBeGreaterThanOrEqual(28);
+  expect(d390.minH).toBeGreaterThanOrEqual(44);
+  expect(d390.minW).toBeGreaterThanOrEqual(42.5);
+  await page.setViewportSize({ width: 320, height: 640 }); await page.waitForTimeout(300);
+  const d320 = await days();
+  expect(d320.minH).toBeGreaterThanOrEqual(44);
+  expect(d320.out, "day cells outside the dialog at 320").toBe(0);
+  await page.setViewportSize({ width: 390, height: 780 }); await page.waitForTimeout(300);
   await page.keyboard.press("Escape"); await page.waitForTimeout(300);
 
   await page.getByRole("button", { name: "ตั้งค่า", exact: true }).click(); await page.waitForTimeout(500);
