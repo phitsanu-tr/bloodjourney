@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.435";
+const APP_VERSION = "1.0.436";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6894,9 +6894,9 @@ function AppInner() {
                   </div>
                 ) : exportStep === 1 ? (
                   <>
-                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "2px 2px 0" }}>รหัสผ่านของไฟล์สำรอง</div>
+                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "2px 2px 0" }}>ตั้งรหัสผ่านให้ไฟล์สำรอง</div>
                     <div role="radiogroup" aria-labelledby="export-mode-label" style={{ display: "flex", background: "#F3EAE8", borderRadius: 12, padding: 3, margin: "6px 0 12px" }}>
-                      {[["auto", "แอปตั้งให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
+                      {[["auto", "แอปสุ่มให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
                         const on = (k === "auto") === !!exportGenPw;
                         return (
                           <button key={k} type="button" role="radio" aria-checked={on} tabIndex={exportTabIdx} onClick={() => { if (!on) { if (k === "auto") generateExportPassword(); else chooseOwnExportPassword(); } }}
@@ -6910,7 +6910,7 @@ function AppInner() {
                     {exportGenPw ? (
                       <>
                     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-                      <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านที่แอปสร้างให้</div>
+                      <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสของคุณ</div>
                       <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", borderRadius: 10, padding: "10px 12px", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
@@ -6927,7 +6927,7 @@ function AppInner() {
                       </>
                     ) : (
                       <div style={{ marginBottom: 4 }}>
-                    <label htmlFor="export-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)</label>
+                    <label htmlFor="export-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>ตั้งรหัสผ่าน (8 ตัวขึ้นไป)</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: "0 4px 0 12px", minHeight: 46 }}>
                       <input id="export-pw" type={exportShowPw ? "text" : "password"} value={exportPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportPw(e.target.value)}
@@ -6959,10 +6959,10 @@ function AppInner() {
                     {exportPw2.length > 0 && exportPw2 !== exportPw && <FieldError>รหัสผ่านไม่ตรงกัน</FieldError>}
                       </div>
                     )}
-                    <p role="note" style={{ margin: "0 2px 14px", fontSize: 12, lineHeight: 1.6, color: "#6E5A56" }}><b style={{ color: "#3A2C29" }}>ลืมรหัส = เปิดไฟล์ไม่ได้</b> แอปไม่เก็บรหัสนี้ไว้ที่ไหน ผู้พัฒนาก็กู้ให้ไม่ได้ จดหรือคัดลอกเก็บไว้ก่อนไปต่อ</p>
+                    <p role="note" style={{ margin: "0 2px 14px", fontSize: 12, lineHeight: 1.6, color: "#6E5A56" }}><b style={{ color: "#3A2C29" }}>ไฟล์นี้เปิดได้ด้วยรหัสนี้เท่านั้น</b> แอปไม่เก็บรหัสไว้ ถ้าลืม ผู้พัฒนาก็กู้คืนให้ไม่ได้ จดไว้หรือกดคัดลอกก่อนไปต่อ</p>
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
                       style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
-                      {exportGenPw ? "ต่อไป: ยืนยันรหัส" : "ต่อไป"}
+                      {exportGenPw ? "จดไว้แล้ว ไปต่อ" : "ต่อไป"}
                     </button>
                   </>
                 ) : (
