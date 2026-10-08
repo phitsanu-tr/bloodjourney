@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.452";
+const APP_VERSION = "1.0.453";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -6851,7 +6851,7 @@ function AppInner() {
                     <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "inherit" : "hidden" }} aria-hidden={!exportGenPw}>
                     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
                       <div style={{ fontSize: 14, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
-                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
+                      <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 16, letterSpacing: "0.03em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
                           style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#F3EAE8", color: "#9A3B33", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}>
