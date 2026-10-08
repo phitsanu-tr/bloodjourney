@@ -1,7 +1,7 @@
 {
   "name": "bloodjourney-web",
   "private": true,
-  "version": "1.0.429",
+  "version": "1.0.430",
   "type": "module",
   "scripts": {
     "sync": "cp ../blood-donation-tracker.jsx src/App.jsx",
