@@ -57,6 +57,50 @@ test("settings -> privacy keeps one history entry; back closes everything", asyn
   assertNoErrors(page);
 });
 
+test("privacy policy is a full-screen page; ← returns to where it was opened from", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("input[type=checkbox]").waitFor();
+  await page.getByText("อ่านนโยบายความเป็นส่วนตัวฉบับเต็ม").tap();
+  const pv = page.getByRole("dialog", { name: "นโยบายความเป็นส่วนตัว" });
+  await expect(pv).toBeVisible();
+  const box = await pv.evaluate((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height, getComputedStyle(el).backgroundColor, el.hasAttribute("data-page-motion")]; });
+  expect(box).toEqual([390, 780, "rgba(0, 0, 0, 0)", true]);
+  await expect(pv.getByRole("heading", { name: "นโยบายความเป็นส่วนตัว" })).toBeVisible();
+  await pv.getByRole("button", { name: "ย้อนกลับ" }).click();
+  await expect(pv).toHaveCount(0);
+  await expect(page.locator("input[type=checkbox]")).toBeVisible();
+
+  await page.locator("input[type=checkbox]").tap(); await page.getByText("ยินยอมและเริ่มใช้งาน").tap();
+  await expect(page.getByTestId("hero-card")).toBeVisible();
+  await page.getByRole("button", { name: "โปรไฟล์ของฉัน", exact: true }).click();
+  await profile(page).getByRole("button", { name: "อ่านนโยบายความเป็นส่วนตัว" }).click();
+  await expect(pv).toBeVisible();
+  await pv.getByRole("button", { name: "ย้อนกลับ" }).click();
+  await expect(profile(page)).toBeVisible();
+  await page.goBack();
+  await expect(page.locator("[role=dialog]")).toHaveCount(0);
+});
+
+test("share card says the Rh next to the blood group, only when it is known", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__cardText = [];
+    const f = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (t, ...r) { window.__cardText.push(String(t)); return f.call(this, t, ...r); };
+  });
+  await startFresh(page);
+  for (const [rh, want] of [["+", "หมู่โลหิต O Rh+"], ["-", "หมู่โลหิต O Rh−"], ["", "หมู่โลหิต O"], ["unknown", "หมู่โลหิต O"]]) {
+    await seed(page, { donations: [rec("a", "2026-03-01"), rec("b", "2026-06-01")], profile: { nickname: "แพรว", bloodType: "O", bloodRh: rh } });
+    await page.evaluate(() => { window.__cardText = []; });
+    await page.locator("nav button[aria-label^='ภารกิจ']").click();
+    await page.getByRole("button", { name: "แชร์การให้ที่ยิ่งใหญ่ของคุณ" }).click();
+    await expect.poll(() => page.evaluate(() => window.__cardText.some((t) => t.startsWith("🩸")))).toBe(true);
+    const lines = await page.evaluate(() => window.__cardText.filter((t) => t.includes("หมู่โลหิต")));
+    expect(lines.some((t) => t.includes(want) && (want.includes("Rh") || !t.includes("Rh")))).toBe(true);
+    await page.evaluate(() => { window.__cardText = []; });
+  }
+  assertNoErrors(page);
+});
+
 test("pages slide in from the right with no dimmed/blurred backdrop, and slide out on close", async ({ page }) => {
   await startFresh(page);
   await seed(page, { donations: [rec("a", "2026-06-01")] });
