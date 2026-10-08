@@ -6,6 +6,14 @@
 // requiring network on first load. It only falls back to the cache when the
 // network is truly unavailable, so a previously-visited page still opens.
 const CACHE_NAME = "bloodjourney-shell-v1";
+// Every same-origin GET is cached so a visited page still opens offline, and each release brings new hashed file names.
+// Without a limit the old releases' files would pile up forever: keep only the newest entries (cache.put moves a
+// re-fetched file to the end, so the files of the current release are always among the newest).
+const MAX_CACHE_ENTRIES = 80;
+async function trimCache(cache) {
+  const keys = await cache.keys();
+  for (let i = 0; i < keys.length - MAX_CACHE_ENTRIES; i++) await cache.delete(keys[i]);
+}
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -30,7 +38,7 @@ self.addEventListener("fetch", (event) => {
     fetch(req)
       .then((res) => {
         const copy = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy).then(() => trimCache(cache))).catch(() => {});
         return res;
       })
       .catch(() => caches.match(req))

@@ -174,8 +174,11 @@ export function encodeSharePayload(payload) {
   } else {
     const order = Number(payload.order) || 0;
     out.push((order >> 8) & 0xff, order & 0xff);
-    const dateMs = payload.date ? parseLocalDate(payload.date).getTime() : NaN;
-    const days = Number.isFinite(dateMs) ? Math.max(0, Math.min(0xffff, Math.round((dateMs - SHARE_LINK_EPOCH_MS) / 86400000))) : 0;
+    // Days since the epoch of the donation's calendar date (its local year/month/day taken as a UTC day), so the
+    // number does not depend on the sender's timezone; links made before this read the same for Thai senders.
+    const local = payload.date ? parseLocalDate(payload.date) : null;
+    const dayMs = local && !Number.isNaN(local.getTime()) ? Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()) : NaN;
+    const days = Number.isFinite(dayMs) ? Math.max(0, Math.min(0xffff, Math.round((dayMs - SHARE_LINK_EPOCH_MS) / 86400000))) : 0;
     out.push((days >> 8) & 0xff, days & 0xff);
     let mins = 0xffff;
     if (payload.timeStr && /^\d{1,2}:\d{2}$/.test(payload.timeStr)) {
@@ -213,7 +216,9 @@ export function decodeSharePayload(bytes) {
   const [location, off] = readLenStr(bytes, 10);
   const [nickname, off2] = readLenStr(bytes, off);
   const bloodRh = bytes.length >= off2 + 1 ? RH_FROM_CODE[bytes[off2]] || "" : "";
-  const dateObj = new Date(SHARE_LINK_EPOCH_MS + days * 86400000);
+  // The stored day is a calendar date: build it as a local date so a viewer west of UTC does not see the day before.
+  const utcDay = new Date(SHARE_LINK_EPOCH_MS + days * 86400000);
+  const dateObj = new Date(utcDay.getUTCFullYear(), utcDay.getUTCMonth(), utcDay.getUTCDate());
   const timeStr = minsOfDay === 0xffff ? "" : `${String(Math.floor(minsOfDay / 60)).padStart(2, "0")}:${String(minsOfDay % 60).padStart(2, "0")}`;
   return { kind, sizeIdx, order, dateObj, timeStr, type: DONATION_TYPES[flagBit3 | ((flags >> 4) & 1) << 1], location, bloodType, bloodRh, nickname, ts };
 }

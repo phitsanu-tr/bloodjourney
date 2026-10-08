@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { initialTabFromUrl, usePageHistoryLayer, useEffectOn, useMenuEscape, menuOpensUp } from "./lib/hooks.js";
 import { thaiYearNow, startOfToday, todayLocalStr, toBuddhistDate, dateToLocalStr, daysBetween, parseLocalDate, buddhistYear, toBuddhistDateFull, toBuddhistDateTimeFull } from "./lib/dates.js";
-import { MAX_AGE, MIN_AGE, DONATION_TYPES, TYPE_INTERVAL_DAYS, STARTING_COUNT_CAP_MARGIN, emptyByType, DEFAULT_CYCLE_BY_TYPE, DEFAULT_BACKUP_REMINDER_GAP, MAX_CYCLE_DAYS, MIN_CYCLE_DAYS, MAX_BACKUP_REMINDER_GAP, MIN_BACKUP_REMINDER_GAP, IMPORT_UNSUPPORTED_MESSAGE, HISTORY_PAGE_SIZE, startingCountsFromProfile, normalizeDonationType, startingCountFields, sanitizeNameInput, capitalizeLowerWords, DEFAULT_DONATION_TYPE, uid, MAX_LOCATION_LEN, MAX_NOTE_LEN, TYPE_REQUIRED_MESSAGE, DONATION_TYPE_LABELS, MIN_HEIGHT, MAX_HEIGHT, BLOOD_TYPES, isRemindPaused, estimateVolumeMl, formatLiters, DONATION_TYPE_ML, MIN_WEIGHT, DONATION_TYPE_TINT, estimateBloodVolumeL, YEAR_CHART_VISIBLE_COUNT, GENDERS, ABO_ONLY, BLOOD_RH, remindPauseUntilFor, REMIND_PAUSE_OPTIONS, COMPONENT_GROUP_LABEL, COMPONENT_TYPES, TYPE_CYCLE_NOTE, importHasSomething } from "./lib/donations.js";
+import { MAX_AGE, MIN_AGE, DONATION_TYPES, TYPE_INTERVAL_DAYS, STARTING_COUNT_CAP_MARGIN, emptyByType, DEFAULT_CYCLE_BY_TYPE, DEFAULT_BACKUP_REMINDER_GAP, MAX_CYCLE_DAYS, MIN_CYCLE_DAYS, MAX_BACKUP_REMINDER_GAP, MIN_BACKUP_REMINDER_GAP, IMPORT_UNSUPPORTED_MESSAGE, HISTORY_PAGE_SIZE, startingCountsFromProfile, normalizeDonationType, startingCountFields, sanitizeNameInput, capitalizeLowerWords, DEFAULT_DONATION_TYPE, uid, MAX_LOCATION_LEN, MAX_NOTE_LEN, TYPE_REQUIRED_MESSAGE, DONATION_TYPE_LABELS, MIN_HEIGHT, MAX_HEIGHT, BLOOD_TYPES, isRemindPaused, estimateVolumeMl, formatLiters, DONATION_TYPE_ML, MIN_WEIGHT, DONATION_TYPE_TINT, estimateBloodVolumeL, YEAR_CHART_VISIBLE_COUNT, GENDERS, ABO_ONLY, BLOOD_RH, remindPauseUntilFor, REMIND_PAUSE_OPTIONS, COMPONENT_GROUP_LABEL, COMPONENT_TYPES, TYPE_CYCLE_NOTE, importHasSomething, nextEligibleFrom } from "./lib/donations.js";
 import { DEFAULT_DONOR_TYPE, buildAchievements, DONOR_TYPES } from "./lib/achievements.js";
 import { storage } from "./lib/storage.js";
 import { backupPasswordStrength, encryptBackupText, canEncryptBackup, generateBackupPassphrase, readEncryptedBackup, decryptBackupText } from "./lib/backup.js";
@@ -16,13 +16,13 @@ import { HistoryRow, HIST_MENU_ITEM } from "./components/history.jsx";
 import { YearAreaChart } from "./components/YearAreaChart.jsx";
 import { KnowledgePage, DonationTypeChips } from "./components/knowledge.jsx";
 import { DateField, TimeHourMinuteSelect } from "./components/pickers.jsx";
-export { DONATION_TYPES, DEFAULT_CYCLE_BY_TYPE, normalizeDonationType, DONATION_TYPE_LABELS, DONATION_TYPE_ML, estimateVolumeMl, formatLiters } from "./lib/donations.js";
-export { toBuddhistDate, daysBetween, dateToLocalStr } from "./lib/dates.js";
+export { DONATION_TYPES, DEFAULT_CYCLE_BY_TYPE, normalizeDonationType, DONATION_TYPE_LABELS, DONATION_TYPE_ML, estimateVolumeMl, formatLiters, nextEligibleFrom } from "./lib/donations.js";
+export { toBuddhistDate, daysBetween, dateToLocalStr, parseLocalDate } from "./lib/dates.js";
 export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.425";
+const APP_VERSION = "1.0.426";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -119,12 +119,6 @@ function AppInner() {
   const photoCameraInputRef = useRef(null);
   const photoGalleryInputRef = useRef(null);
   const profileOpenerRef = useRef(null);
-  // Bumped every time the profile modal is (re)opened. A photo pick made
-  // inside the modal captures the token at selection time; if the modal
-  // gets closed and reopened (a fresh profileDraft) before the async
-  // resize resolves, the token no longer matches and the stale pick is
-  // dropped instead of silently merging into the new, unrelated draft.
-  const profileEditSessionRef = useRef(0);
   const nicknameFirstInputRef = useRef(null);
   const nicknameLastInputRef = useRef(null);
   const [birthYear, setBirthYear] = useState(""); // พ.ศ. (number) or ""
@@ -184,8 +178,6 @@ function AppInner() {
   // createdAt === updatedAt (i.e. "never edited yet") — see load().
   const [startingCountCreatedAt, setStartingCountCreatedAt] = useState("");
   const [showProfile, setShowProfile] = useState(false);
-  const [profileDraft, setProfileDraft] = useState({ nicknameFirst: "", nicknameLast: "", age: "", weight: "", bloodType: "", donorType: DEFAULT_DONOR_TYPE, photo: null });
-  const [profileError, setProfileError] = useState("");
   // Profile box with inline editing (design 1 from
   // profile-inline-edit-designs.html): each row's value is typed straight
   // into the row (borderless, the row tints while editing) and saved on its
@@ -438,7 +430,6 @@ function AppInner() {
   // render — otherwise the 30s auto-rotate above (which re-renders the whole
   // app) would make this "as of" timestamp silently tick forward on its own,
   // even though nothing about the cumulative stats actually changed.
-  const [dashboardLoadedAt] = useState(() => new Date());
   const [seenAchievements, setSeenAchievements] = useState([]);
   const [knowledgeJump, setKnowledgeJump] = useState(0);
   const [eligibilityType, setEligibilityType] = useState(null); // type shown on ?tab=eligibility; null = last donated // >0: open the knowledge tab at "เตรียมตัวก่อนบริจาค"
@@ -446,12 +437,9 @@ function AppInner() {
   const [pendingImport, setPendingImport] = useState(null);
   const [pasteImportText, setPasteImportText] = useState("");
   const [pasteImportError, setPasteImportError] = useState("");
-  const [showExportPreview, setShowExportPreview] = useState(false);
   const [exportJsonText, setExportJsonText] = useState("");
   // The unified "สำรอง/กู้คืนข้อมูล" hub (replaces separate export/import
-  // entry points in Settings with one tabbed dialog). showExportPreview above
-  // still gates the auto-select-textarea effect below and is kept true
-  // whenever this hub's export tab is open.
+  // entry points in Settings with one tabbed dialog).
   const [showBackupRestore, setShowBackupRestore] = useState(false);
   const showBackupRestoreRef = useRef(false);
   showBackupRestoreRef.current = showBackupRestore;
@@ -1027,7 +1015,6 @@ function AppInner() {
       // state no longer exists, so it threw a ReferenceError on every Escape
       // and silently skipped every close call below it.)
       setPendingImport(null);
-      setShowExportPreview(false);
       closeShareCard();
       // The photo menu and a history record's "⋮" action menu are small
       // popups whose only other dismissal is a non-focusable click-outside
@@ -1328,15 +1315,7 @@ function AppInner() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    // Lock in whether this pick started from inside the profile modal (draft
-    // mode) right now, at selection time — not by re-reading showProfile
-    // after the async resize below, which can have changed (e.g. the modal
-    // was opened or closed while the resize was still in flight) and would
-    // otherwise send the photo down the wrong path (immediate persist vs draft).
-    // The profile page no longer has a whole-form draft (each field saves on
-    // its own), so a new photo is saved straight away from anywhere.
-    const editingInModal = false;
-    const editSession = profileEditSessionRef.current;
+    // The profile page has no whole-form draft (each field saves on its own), so a new photo is saved straight away.
     setShowPhotoMenu(false);
     setPhotoError("");
     if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || "")) {
@@ -1346,17 +1325,8 @@ function AppInner() {
     setPhotoBusy(true);
     try {
       const dataUrl = await resizeImageToDataUrl(file);
-      if (editingInModal) {
-        // If the modal was closed and reopened (a fresh draft) while this
-        // resize was in flight, the session token has moved on — drop the
-        // stale pick instead of merging it into the new, unrelated draft.
-        if (editSession === profileEditSessionRef.current) {
-          setProfileDraft(f => ({ ...f, photo: dataUrl }));
-        }
-      } else {
-        await persistPhoto(dataUrl);
-        showToast("success", "อัปเดตรูปโปรไฟล์แล้ว");
-      }
+      await persistPhoto(dataUrl);
+      showToast("success", "อัปเดตรูปโปรไฟล์แล้ว");
     } catch (err) {
       console.error("[BloodJourney] photo upload failed:", file && file.type, err);
       setPhotoError("อัปโหลดรูปไม่สำเร็จ ลองเลือกไฟล์ JPG หรือ PNG");
@@ -1393,7 +1363,6 @@ function AppInner() {
     setProfileOpenChoice(null);
     setShowPhotoMenu(false);
     profileOpenerRef.current = document.activeElement;
-    profileEditSessionRef.current += 1;
     setShowProfile(true);
   };
 
@@ -1596,7 +1565,7 @@ function AppInner() {
     for (const t of DONATION_TYPES) {
       const d = quickTypeOn[t] && quickEntryForm[t].date;
       if (!d) continue;
-      const key = String(new Date(d).setHours(0, 0, 0, 0));
+      const key = String(new Date(parseLocalDate(d)).setHours(0, 0, 0, 0));
       if (seen[key]) { dup.add(t); dup.add(seen[key]); } else seen[key] = t;
     }
     return dup;
@@ -1629,7 +1598,7 @@ function AppInner() {
       }
       // One message for every unusable date (empty, unparsable, after today). The calendar picker can only
       // produce the first, so the other two are just a safety net.
-      const d = f.date ? new Date(f.date) : null;
+      const d = f.date ? parseLocalDate(f.date) : null;
       if (!d || Number.isNaN(d.getTime()) || d.setHours(0,0,0,0) > startOfToday().getTime()) {
         setQuickStartingCountError("ระบุวันที่บริจาค (ครั้งล่าสุด)");
         setQuickErrorField(`${key}-date`);
@@ -1660,7 +1629,7 @@ function AppInner() {
           type: t, loggedAt: nowIso, createdAt: nowIso,
         };
       });
-      const nextDonations = [...donations, ...newRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const nextDonations = [...donations, ...newRecords].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
 
       const prevDonations = donations;
       await saveDonations(nextDonations, { strict: true });
@@ -1688,7 +1657,7 @@ function AppInner() {
   const submitDonation = async () => {
     // One message for every unusable date (empty, unparsable, or after today). The calendar picker cannot
     // produce the latter two (no typing, future days disabled), so this is only a safety net.
-    const selected = form.date ? new Date(form.date) : null;
+    const selected = form.date ? parseLocalDate(form.date) : null;
     if (!selected || Number.isNaN(selected.getTime()) || selected.setHours(0,0,0,0) > startOfToday().getTime()) {
       setFormError("ระบุวันที่บริจาค");
       formDateFieldRef.current?.focus();
@@ -1727,13 +1696,13 @@ function AppInner() {
         const record = { id: uid(), date: form.date, time: cleanedTime, location: cleanedLocation, note: cleanedNote, type: form.type || DEFAULT_DONATION_TYPE, loggedAt: nowIso, createdAt: nowIso };
         next = [...donations, record];
       }
-      next = [...next].sort((a, b) => new Date(b.date) - new Date(a.date));
+      next = [...next].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
       await saveDonations(next, { strict: true });
       if (editingId) showToast("success", "แก้ไขรายการแล้ว");
       else {
         // Same order as the history cards (donationOrderMap): by date, then by when it was logged.
         const order = startingCountNum + 1 + next.filter((d) => {
-          const diff = new Date(d.date) - new Date(form.date);
+          const diff = parseLocalDate(d.date) - parseLocalDate(form.date);
           return diff < 0 || (diff === 0 && d.loggedAt && new Date(d.loggedAt) < new Date(nowIso));
         }).length;
         showToast("success", `บันทึกการบริจาคครั้งที่ ${order} แล้ว`);
@@ -2036,7 +2005,6 @@ function AppInner() {
       const payload = { nickname, age, birthYear, birthYearApprox, gender, height, donorId, bloodRh, remindPauseUntil, weight, bloodType, donorType, schemaVersion: 2, ...startingCountFields(startingCounts), startingCountCreatedAt, startingCountUpdatedAt, donations, cycleByType: effectiveCycleByType, backupReminderGap: effectiveBackupReminderGap, blurInfoPills, seenAchievements, exportedAt: new Date().toISOString() };
       const jsonText = JSON.stringify(payload, null, 2);
       setExportJsonText(jsonText);
-      setShowExportPreview(true);
     } catch (e) {
       setExportMsg({ kind: "err", at: "pre", text: "เตรียมไฟล์ไม่สำเร็จ ลองอีกครั้ง" });
     }
@@ -2445,7 +2413,7 @@ function AppInner() {
       const sanitizeImportedDonation = (d) => {
         if (!d || !d.date) return { kind: "invalid" };
         if (existingIds.has(d.id)) return { kind: "duplicate" };
-        const parsedDate = new Date(d.date);
+        const parsedDate = new Date(parseLocalDate(d.date));
         if (Number.isNaN(parsedDate.getTime())) return { kind: "invalid" };
         if (parsedDate.setHours(0, 0, 0, 0) > todayTime) return { kind: "invalid" };
         return {
@@ -2575,7 +2543,6 @@ function AppInner() {
     // confirm dialog is about to take over, from either entry point (file
     // picker or paste-text).
     setShowBackupRestore(false);
-    setShowExportPreview(false);
   };
 
   // Shortcut for the paste-import textarea: read the clipboard directly
@@ -2656,7 +2623,6 @@ function AppInner() {
 
   const closeBackupRestore = () => {
     setShowBackupRestore(false);
-    setShowExportPreview(false);
     resetBackupProtection();
     if (!backupOpenedFromHomeRef.current) setShowSettings(true);
     backupOpenedFromHomeRef.current = false;
@@ -2718,7 +2684,7 @@ function AppInner() {
 
   const confirmImport = async () => {
     if (!pendingImport) return;
-    const merged = [...donations, ...pendingImport.incoming].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const merged = [...donations, ...pendingImport.incoming].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
     setImportConfirmError("");
     setImportSaving(true);
     const prevDonations = donations;
@@ -2787,7 +2753,6 @@ function AppInner() {
     ].filter(Boolean).join(" และ");
     showToast("success", added ? `นำเข้าสำเร็จ — ${added}` : "นำเข้าสำเร็จ");
     setShowBackupRestore(false);
-    setShowExportPreview(false);
     setPasteImportText("");
     setPendingImport(null);
     setImportSaving(false);
@@ -2802,7 +2767,7 @@ function AppInner() {
   // auto-rotate/relative-time timers below even while idle on another tab —
   // cost grows with years of history for no reason since it only actually
   // needs to change when donations itself changes.
-  const sorted = useMemo(() => [...donations].sort((a,b) => new Date(b.date) - new Date(a.date)), [donations]);
+  const sorted = useMemo(() => [...donations].sort((a,b) => parseLocalDate(b.date) - parseLocalDate(a.date)), [donations]);
   const last = sorted[0];
   // After-donation care card (design 5 of profile-gender-height-designs.html):
   // on home for the day of the latest donation and the two days after.
@@ -2849,7 +2814,7 @@ function AppInner() {
   const activeCycleDays = effectiveCycleByType[activeCountdownType];
   const activeTypeTotalCount = totalBy[activeCountdownType];
   const effectiveLastDateStr = activeLastRecord ? activeLastRecord.date : null;
-  const nextEligible = effectiveLastDateStr ? new Date(parseLocalDate(effectiveLastDateStr).getTime() + activeCycleDays * 86400000) : null;
+  const nextEligible = effectiveLastDateStr ? nextEligibleFrom(effectiveLastDateStr, activeCycleDays) : null;
   const daysLeft = nextEligible ? daysBetween(new Date(), new Date(nextEligible)) : 0;
   const isEligible = !nextEligible || daysLeft <= 0;
   const remindPaused = isRemindPaused(remindPauseUntil);
@@ -2863,7 +2828,7 @@ function AppInner() {
   const comparableDaysBy = Object.fromEntries(DONATION_TYPES.map((t) => {
     const l = lastBy[t];
     if (!l) return [t, Infinity];
-    const left = daysBetween(new Date(), new Date(new Date(parseLocalDate(l.date).getTime() + effectiveCycleByType[t] * 86400000)));
+    const left = daysBetween(new Date(), nextEligibleFrom(l.date, effectiveCycleByType[t]));
     return [t, left <= 0 ? 0 : left];
   }));
   const soonestDonationType = recordedTypes.reduce((best, t) => (comparableDaysBy[t] < comparableDaysBy[best] ? t : best), recordedTypes[0] || "whole");
@@ -2874,7 +2839,7 @@ function AppInner() {
   const dashboardShownCycleDays = effectiveCycleByType[dashboardShownType];
   const dashboardShownTotalCount = totalBy[dashboardShownType];
   const dashboardShownLastDateStr = dashboardShownRecord ? dashboardShownRecord.date : null;
-  const dashboardShownNextEligible = dashboardShownLastDateStr ? new Date(new Date(dashboardShownLastDateStr).getTime() + dashboardShownCycleDays * 86400000) : null;
+  const dashboardShownNextEligible = dashboardShownLastDateStr ? nextEligibleFrom(dashboardShownLastDateStr, dashboardShownCycleDays) : null;
   const dashboardShownDaysLeft = dashboardShownNextEligible ? daysBetween(new Date(), new Date(dashboardShownNextEligible)) : 0;
   const dashboardShownIsEligible = !dashboardShownNextEligible || dashboardShownDaysLeft <= 0;
   // The dashboard card opens on the soonest type and stays there until a pill is
@@ -3052,7 +3017,7 @@ function AppInner() {
           : { status: "fail", detail: `ส่วนสูง ${height} ซม. ต่ำกว่าเกณฑ์ (ต้องมากกว่า ${minH} ซม.)` }) });
   }
   const eligLast = lastBy[eligType];
-  const eligNext = eligLast ? new Date(parseLocalDate(eligLast.date).getTime() + effectiveCycleByType[eligType] * 86400000) : null;
+  const eligNext = eligLast ? nextEligibleFrom(eligLast.date, effectiveCycleByType[eligType]) : null;
   eligChecks.push({ label: "ระยะห่างจากการบริจาคครั้งก่อน", ...(!eligNext
     ? { status: "pass", detail: `ยังไม่มีประวัติบริจาค${DONATION_TYPE_LABELS[eligType]}ในแอป ถือว่าเว้นระยะครบแล้ว` }
     : Date.now() >= eligNext.getTime()
@@ -3065,7 +3030,7 @@ function AppInner() {
   const pinAchievements = useMemo(() => achievements.filter(a => a.kind === "pin"), [achievements]);
 
   const stats = useMemo(() => {
-    const chronological = [...donations].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const chronological = [...donations].sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
     const yearMap = {};
     chronological.forEach(d => {
       const y = buddhistYear(d.date);
@@ -3082,7 +3047,7 @@ function AppInner() {
 
     let totalGapDays = 0, gapCount = 0;
     for (let i = 1; i < chronological.length; i++) {
-      totalGapDays += daysBetween(new Date(chronological[i-1].date), new Date(chronological[i].date));
+      totalGapDays += daysBetween(parseLocalDate(chronological[i-1].date), parseLocalDate(chronological[i].date));
       gapCount++;
     }
     const avgGap = gapCount ? Math.round(totalGapDays / gapCount) : null;
@@ -3094,7 +3059,7 @@ function AppInner() {
     const computeAvgGap = (arr) => {
       let total = 0, count = 0;
       for (let i = 1; i < arr.length; i++) {
-        total += daysBetween(new Date(arr[i-1].date), new Date(arr[i].date));
+        total += daysBetween(parseLocalDate(arr[i-1].date), parseLocalDate(arr[i].date));
         count++;
       }
       return count ? Math.round(total / count) : null;
@@ -3107,7 +3072,7 @@ function AppInner() {
     // for what counts as "a break" (any cutoff feels arbitrary), we just
     // also surface the single most recent gap alongside the average so the
     // donor can see both the long-run figure and where they stand today.
-    const lastGapOf = (arr) => arr.length >= 2 ? daysBetween(new Date(arr[arr.length - 2].date), new Date(arr[arr.length - 1].date)) : null;
+    const lastGapOf = (arr) => arr.length >= 2 ? daysBetween(parseLocalDate(arr[arr.length - 2].date), parseLocalDate(arr[arr.length - 1].date)) : null;
     const chronologicalBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, chronological.filter((d) => normalizeDonationType(d.type) === t)]));
     const avgGapBy = Object.fromEntries(DONATION_TYPES.map((t) => [t, computeAvgGap(chronologicalBy[t])]));
     const lastGap = lastGapOf(chronological);
@@ -3220,7 +3185,7 @@ function AppInner() {
   // without the user explicitly asking for it again.
   const donationOrderMap = useMemo(() => {
     const ascending = [...donations].sort((a, b) => {
-      const dateDiff = new Date(a.date) - new Date(b.date);
+      const dateDiff = parseLocalDate(a.date) - parseLocalDate(b.date);
       if (dateDiff !== 0) return dateDiff;
       const aLogged = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
       const bLogged = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
@@ -3307,11 +3272,11 @@ function AppInner() {
   // record without changing its date never blocks itself).
   const sameDateConflict = useMemo(() => {
     if (!form.date) return false;
-    const target = new Date(form.date);
+    const target = parseLocalDate(form.date);
     if (Number.isNaN(target.getTime())) return false;
     return donations.some(d => {
       if (editingId && d.id === editingId) return false;
-      return daysBetween(new Date(d.date), new Date(target)) === 0;
+      return daysBetween(parseLocalDate(d.date), new Date(target)) === 0;
     });
   }, [form.date, donations, editingId]);
 
@@ -3336,7 +3301,7 @@ function AppInner() {
 
   const closeGapWarning = useMemo(() => {
     if (!form.date) return null;
-    const target = new Date(form.date);
+    const target = parseLocalDate(form.date);
     if (Number.isNaN(target.getTime())) return null;
     if (!form.type) return null;
     const formType = form.type;
@@ -3345,7 +3310,7 @@ function AppInner() {
     donations.forEach(d => {
       if (editingId && d.id === editingId) return;
       if (normalizeDonationType(d.type) !== formType) return;
-      const diff = Math.abs(daysBetween(new Date(d.date), new Date(target)));
+      const diff = Math.abs(daysBetween(parseLocalDate(d.date), new Date(target)));
       if (closest === null || diff < closest) closest = diff;
     });
     if (closest !== null && closest > 0 && closest < relevantCycleDays) {
@@ -3710,7 +3675,7 @@ function AppInner() {
               <li>ข้อมูลวันที่บริจาคถือเป็น <b>ข้อมูลสุขภาพ</b> ซึ่งเป็นข้อมูลอ่อนไหวตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA)</li>
               <li>เก็บเฉพาะสิ่งที่คุณกรอกเอง — วันที่, สถานที่ (ถ้าระบุ), บันทึกช่วยจำ และข้อมูลโปรไฟล์ที่เลือกกรอก (เช่น ปีเกิด เพศ ส่วนสูง น้ำหนัก หมู่โลหิต เลขประจำตัวผู้บริจาค)</li>
               <li>ใช้เพื่อคำนวณจำนวนครั้งและวันครบกำหนดบริจาคครั้งถัดไปเท่านั้น ไม่แชร์ให้บุคคลหรือหน่วยงานอื่น</li>
-              <li>เมื่อเปิดผ่าน LINE แอปขอสิทธิ์เพียงยืนยันบริบทการเปิดแอป (openid) และเมื่อคุณเลือกสร้างการ์ดแชร์หรือเพิ่มลงปฏิทิน ข้อมูลเท่าที่จำเป็นจะถูกเข้ารหัสส่งผ่านลิงก์ชั่วคราวเพื่อเปิดในเบราว์เซอร์ภายนอกเท่านั้น</li>
+              <li>เมื่อเปิดผ่าน LINE แอปขอสิทธิ์เพียงยืนยันบริบทการเปิดแอป (openid) และเมื่อคุณเลือกสร้างการ์ดแชร์หรือเพิ่มลงปฏิทิน ข้อมูลเท่าที่จำเป็นจะถูกเข้ารหัสแนบไปกับลิงก์ชั่วคราว (หมดอายุใน 5 นาที) เพื่อเปิดในเบราว์เซอร์ภายนอกเท่านั้น ไม่ควรส่งต่อลิงก์นี้ให้ผู้อื่น</li>
               <li>คุณลบข้อมูลทั้งหมด หรือส่งออกข้อมูลเป็นไฟล์ได้ตลอดเวลาในหน้าตั้งค่า</li>
             </ul>
             <button type="button" onClick={() => setShowPrivacy(true)} style={{ position: "relative", display: "inline-block", marginTop: 4, background: "none", border: "none", padding: 0, fontSize: 12, color: "#9A3B33", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
@@ -5559,12 +5524,6 @@ function AppInner() {
           if (changed) flashSaved(key);
         }, 420);
         const closeBloodSoon = (changed) => closeRowSoon("blood", changed);
-        const chipGrid = (cols) => ({ display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 8 });
-        const chip = (on) => ({ minHeight: 40, minWidth: 0, padding: "0 6px", whiteSpace: "nowrap", borderRadius: 20, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-          border: `1px solid ${on ? "#9A3B33" : "#E3C8C3"}`, background: on ? "#9A3B33" : "#FFFFFF", color: on ? "#FFF7F5" : "#3A2C29" });
-        const trail = (key, icon) => profileSavedKey === key
-          ? <span role="status" style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#2B7530", whiteSpace: "nowrap" }}>✓ บันทึกแล้ว</span>
-          : icon;
         return (
           <>
           {/* Profile (design 3 from profile-box-rows-designs.html): small red group
