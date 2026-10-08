@@ -686,7 +686,8 @@ export function drawLandscapeRecordCard(ctx, W, H, FONT, { order, dateStr, timeS
   drawRoundedPill(ctx, textX + Math.min(ctx.measureText(typeLabel).width / 2 + 34, maxTextWidth / 2), H * 0.34 + 95, typeLabel, `600 26px ${FONT}`, "rgba(255,247,245,0.18)", "#FFF7F5");
   ctx.textAlign = "left";
 
-  let lineY = H * 0.34 + 170;
+  // The pill spans H*0.34+95 .. +157; the place line sits 52px below its bottom edge (it used to touch it).
+  let lineY = H * 0.34 + 209;
   if (location) {
     ctx.globalAlpha = 0.85;
     fillCanvasTextFit(ctx, location, textX, lineY, maxTextWidth, 400, 26, FONT, 16);
