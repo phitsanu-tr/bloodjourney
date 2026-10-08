@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.417";
+const APP_VERSION = "1.0.418";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2085,6 +2085,15 @@ function base64UrlToBytes(str) {
 const BLOOD_TYPE_CODES = { A: 0, B: 1, AB: 2, O: 3 };
 const BLOOD_TYPE_FROM_CODE = ["A", "B", "AB", "O", ""];
 
+// Rh rides as one trailing byte (1 = +, 2 = −; absent in older links), because the flags byte is full.
+const RH_TO_CODE = { "+": 1, "-": 2 };
+const RH_FROM_CODE = ["", "+", "-"];
+// What a share card says after "หมู่โลหิต": the group, plus Rh only when it is known (same as the profile pill).
+function bloodCardLabel(bloodType, bloodRh) {
+  if (!bloodType || bloodType === "ไม่ทราบ") return "";
+  return bloodRh === "+" || bloodRh === "-" ? `${bloodType} Rh${bloodRh === "+" ? "+" : "−"}` : bloodType;
+}
+
 function pushLenStr(out, str) {
   let bytes = Array.from(new TextEncoder().encode(str || ""));
   if (bytes.length > 255) bytes = bytes.slice(0, 255); // realistically only a pasted-in location could hit this
@@ -2117,6 +2126,7 @@ function encodeSharePayload(payload) {
     pushLenStr(out, payload.nickname);
     const vol50 = Math.max(0, Math.min(0xffff, Math.round((Number(payload.estVolumeMl) || 0) / 50)));
     out.push((vol50 >> 8) & 0xff, vol50 & 0xff);
+    out.push(RH_TO_CODE[payload.bloodRh] || 0);
   } else {
     const order = Number(payload.order) || 0;
     out.push((order >> 8) & 0xff, order & 0xff);
@@ -2131,6 +2141,7 @@ function encodeSharePayload(payload) {
     out.push((mins >> 8) & 0xff, mins & 0xff);
     pushLenStr(out, payload.location);
     pushLenStr(out, payload.nickname);
+    out.push(RH_TO_CODE[payload.bloodRh] || 0);
   }
   return new Uint8Array(out);
 }
@@ -2149,16 +2160,18 @@ function decodeSharePayload(bytes) {
     const totalCount = (bytes[4] << 8) | bytes[5];
     const [nickname, off] = readLenStr(bytes, 8);
     const estVolumeMl = bytes.length >= off + 2 ? ((bytes[off] << 8) | bytes[off + 1]) * 50 : totalCount * 350;
-    return { kind, sizeIdx, totalCount, estVolumeMl, tier: bytes[6], threshold: bytes[7], akind: flagBit3 ? "m" : "p", isMonk, bloodType, nickname, ts };
+    const bloodRh = bytes.length >= off + 3 ? RH_FROM_CODE[bytes[off + 2]] || "" : "";
+    return { kind, sizeIdx, totalCount, estVolumeMl, tier: bytes[6], threshold: bytes[7], akind: flagBit3 ? "m" : "p", isMonk, bloodType, bloodRh, nickname, ts };
   }
   const order = (bytes[4] << 8) | bytes[5];
   const days = (bytes[6] << 8) | bytes[7];
   const minsOfDay = (bytes[8] << 8) | bytes[9];
   const [location, off] = readLenStr(bytes, 10);
-  const [nickname] = readLenStr(bytes, off);
+  const [nickname, off2] = readLenStr(bytes, off);
+  const bloodRh = bytes.length >= off2 + 1 ? RH_FROM_CODE[bytes[off2]] || "" : "";
   const dateObj = new Date(SHARE_LINK_EPOCH_MS + days * 86400000);
   const timeStr = minsOfDay === 0xffff ? "" : `${String(Math.floor(minsOfDay / 60)).padStart(2, "0")}:${String(minsOfDay % 60).padStart(2, "0")}`;
-  return { kind, sizeIdx, order, dateObj, timeStr, type: DONATION_TYPES[flagBit3 | ((flags >> 4) & 1) << 1], location, bloodType, nickname, ts };
+  return { kind, sizeIdx, order, dateObj, timeStr, type: DONATION_TYPES[flagBit3 | ((flags >> 4) & 1) << 1], location, bloodType, bloodRh, nickname, ts };
 }
 
 // Packs `payload` (see openShareCardInExternalBrowser for its shape) into
@@ -2654,7 +2667,7 @@ function drawLandscapeRecordCard(ctx, W, H, FONT, { order, dateStr, timeStr, typ
 // Draws a shareable card for a single donation record (date, sequence
 // number, type, location) — same canvas-only approach as buildShareCardDataUrl
 // below, kept as a separate function so the achievement-card flow is untouched.
-export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel, location, bloodType, nickname, width, height }) {
+export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typeLabel, location, bloodType, bloodRh, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
   if (document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
@@ -2668,7 +2681,7 @@ export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typ
   const FONT = "'Mitr', 'Inter', sans-serif";
 
   drawShareCardBackground(ctx, W, H);
-  const content = { order, dateStr, timeStr, typeLabel, location, bloodType, nickname };
+  const content = { order, dateStr, timeStr, typeLabel, location, bloodType: bloodCardLabel(bloodType, bloodRh), nickname };
 
   if (W > H) {
     drawLandscapeRecordCard(ctx, W, H, FONT, content);
@@ -2682,7 +2695,7 @@ export async function buildRecordShareCardDataUrl({ order, dateStr, timeStr, typ
 // Draws a shareable "achievement card" entirely with the Canvas 2D API (no
 // external library needed — safe to run inside any sandbox) and returns a
 // PNG data URL, sized to whichever social-media preset was requested.
-export async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, bloodType, nickname, width, height }) {
+export async function buildShareCardDataUrl({ totalCount, achievement, estVolumeMl, bloodType, bloodRh, nickname, width, height }) {
   if (typeof document === "undefined") throw new Error("no document");
   if (document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
@@ -2697,7 +2710,7 @@ export async function buildShareCardDataUrl({ totalCount, achievement, estVolume
 
   drawShareCardBackground(ctx, W, H);
   const liters = (estVolumeMl / 1000).toFixed(estVolumeMl % 1000 === 0 ? 0 : 1);
-  const content = { totalCount, achievement, liters, bloodType, nickname };
+  const content = { totalCount, achievement, liters, bloodType: bloodCardLabel(bloodType, bloodRh), nickname };
 
   if (W > H) {
     drawLandscapeShareCard(ctx, W, H, FONT, content);
@@ -4939,6 +4952,7 @@ function AppInner() {
       },
       estVolumeMl,
       bloodType,
+      bloodRh,
       nickname,
     });
     setShareRecordData(null);
@@ -4959,6 +4973,7 @@ function AppInner() {
       typeLabel: DONATION_TYPE_LABELS[normalizeDonationType(d.type)],
       location: d.location || "",
       bloodType,
+      bloodRh,
       nickname,
     });
     setShareData(null);
@@ -5094,6 +5109,7 @@ function AppInner() {
           type: normalizeDonationType(shareRecordData.type),
           location: shareRecordData.location || "",
           bloodType: shareRecordData.bloodType || "",
+          bloodRh: shareRecordData.bloodRh || "",
           nickname: shareRecordData.nickname || "",
         };
       } else if (shareData) {
@@ -5109,6 +5125,7 @@ function AppInner() {
           threshold: shareData.achievement?.threshold ?? 0,
           isMonk: !!shareData.achievement?.isMonk,
           bloodType: shareData.bloodType || "",
+          bloodRh: shareData.bloodRh || "",
           nickname: shareData.nickname || "",
         };
       } else {
@@ -9221,16 +9238,17 @@ function AppInner() {
       )}
 
       {showPrivacy && (
-        <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" onClick={(e) => { if (e.target === e.currentTarget) { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); } }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, maxHeight: "calc(85vh / var(--ui-zoom, 1))", borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 22px 4px", flexShrink: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>นโยบายความเป็นส่วนตัว</div>
-              <DialogX onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else setShowSettings(true); }} style={{ width: 32, height: 28, justifyContent: "center" }} />
+        <div role="dialog" aria-modal="true" aria-label="นโยบายความเป็นส่วนตัว" data-own-motion data-page-motion style={{ position: "fixed", inset: 0, overflow: "hidden", display: "flex", justifyContent: "center", zIndex: 50 }}>
+          {/* Full-screen page (v1.0.418), like settings and profile: the policy is long, so a centered box left little to read. */}
+          <div className="selectable" style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, padding: "calc(env(safe-area-inset-top) + 8px) 12px 8px", borderBottom: "1px solid #EEDEDA" }}>
+              <button onClick={() => { setShowPrivacy(false); if (privacyFromProfileRef.current) { privacyFromProfileRef.current = false; setShowProfile(true); } else if (phase === "app") setShowSettings(true); }} aria-label="ย้อนกลับ" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={22} /></button>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#3A2C29" }}>นโยบายความเป็นส่วนตัว</h2>
             </div>
-            <p style={{ fontSize: 11, color: "#7A6360", margin: "0 22px 12px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#7A6360", margin: "10px 20px 0", flexShrink: 0 }}>
               มีผลบังคับใช้: {PRIVACY_POLICY_EFFECTIVE_DATE} · เวอร์ชันแอป {APP_VERSION}
             </p>
-            <FadeScroll style={{ padding: "0 22px 22px" }}>
+            <FadeScroll style={{ padding: "12px 20px calc(24px + env(safe-area-inset-bottom))" }}>
               {PRIVACY_POLICY_SECTIONS.map((sec, i) => (
                 <div key={i} style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#3A2C29", margin: "0 0 5px" }}>{sec.heading}</div>
