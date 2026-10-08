@@ -255,3 +255,32 @@ test("restore by file: an encrypted file asks for its password on the same page,
   await expect.poll(async () => (await stored(page, "donations"))?.length).toBe(2);
   assertNoErrors(page);
 });
+
+test("backup hub and the import confirm dialog keep exactly the same window size on every page", async ({ page }) => {
+  await startFresh(page);
+  await seed(page, { donations: two });
+  const dlg = await openHub(page);
+  const size = () => page.locator("[role=dialog]").last().evaluate((el) => { const b = el.firstElementChild.getBoundingClientRect(); return `${Math.round(b.width)}x${Math.round(b.height)}`; });
+  const first = await size();
+  const seen = { "backup, app password": await size() };
+  await dlg.getByRole("radio", { name: "ตั้งเอง" }).tap();
+  seen["backup, own password"] = await size();
+  await dlg.getByRole("radio", { name: "แอปสุ่มให้" }).tap();
+  const pw = (await page.locator(".selectable").first().innerText()).trim();
+  await dlg.getByRole("button", { name: "ถัดไป", exact: true }).tap();
+  await dlg.locator("#export-confirm-pw").fill(pw);
+  const text = await page.getByLabel("ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก").inputValue();
+  seen["backup, save step"] = await size();
+  await dlg.getByRole("button", { name: "กู้คืนข้อมูล" }).tap();
+  seen["restore, file"] = await size();
+  await dlg.getByRole("radio", { name: "ข้อความ" }).tap();
+  seen["restore, text"] = await size();
+  await pasteBox(page).fill(text);
+  seen["restore, encrypted text"] = await size();
+  await dlg.locator("#import-pw-text").fill(pw);
+  await nextBtn(page).tap();
+  await expect(page.getByRole("dialog", { name: "ยืนยันการนำเข้าข้อมูล" })).toBeVisible();
+  seen["import confirm"] = await size();
+  for (const [name, value] of Object.entries(seen)) expect(value, name).toBe(first);
+  assertNoErrors(page);
+});
