@@ -22,7 +22,9 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.445";
+const APP_VERSION = "1.0.446";
+// One size for every step of the backup/restore dialogs and the import confirm dialog, so the window never changes size between pages.
+const BACKUP_BOX_H = "min(620px, calc(92vh / var(--ui-zoom, 1)))";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -6767,11 +6769,12 @@ function AppInner() {
 
       {pendingImport && (
         <div role="dialog" aria-modal="true" aria-label="ยืนยันการนำเข้าข้อมูล" onClick={(e) => { if (e.target === e.currentTarget) cancelImport(); }} style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 380, borderRadius: 18, padding: 22 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, height: BACKUP_BOX_H, borderRadius: 18, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>ยืนยันการนำเข้าข้อมูล</div>
               <DialogX onClick={cancelImport} />
             </div>
+            <FadeScroll style={{ padding: "0 22px" }}>
             {/* Design I4 of import-confirm-designs.html: one row per kind of
                 data (records / carried-over count / profile / reminder cycles),
                 each with a badge for what happens to it -- "+N", "เติม N",
@@ -6847,7 +6850,8 @@ function AppInner() {
             )}
             <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
             {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+            </FadeScroll>
+            <div style={{ display: "flex", gap: 10, flexShrink: 0, padding: "12px 22px 22px" }}>
               <button onClick={cancelImport} disabled={importSaving} className="btn-ghost" style={{ flex: 1, padding: "11px 0", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
               <button
                 onClick={confirmImport}
@@ -6863,12 +6867,14 @@ function AppInner() {
 
       {showBackupRestore && (
         <div role="dialog" aria-modal="true" aria-label="สำรอง/กู้คืนข้อมูล" style={{ position: "fixed", inset: 0, background: "rgba(36,26,24,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}>
-          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, maxHeight: "calc(92vh / var(--ui-zoom, 1))" , display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#FBF6F5", width: "100%", maxWidth: 420, borderRadius: 18, height: BACKUP_BOX_H, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, padding: "22px 22px 10px" }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>สำรอง/กู้คืนข้อมูล</div>
               <DialogX onClick={closeBackupRestore} style={{ width: 32, height: 28, justifyContent: "center" }} />
             </div>
             <FadeScroll scrollRef={backupDialogRef} style={{ padding: "0 22px 22px" }}>
+            {/* Column that is at least as tall as the scroll area, so each page's main button can sit at the bottom of the window. */}
+            <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
             <div style={{ display: "flex", background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4, marginBottom: 16 }}>
               <button
@@ -6904,14 +6910,14 @@ function AppInner() {
                 whichever panel is taller — the dialog's height stays exactly
                 the same no matter which tab is active, with no hand-tuned
                 min-height number to keep in sync as the content changes. */}
-            <div style={{ display: "grid" }}>
+            <div style={{ display: "grid", flex: 1 }}>
               <div style={{
                 gridArea: "1 / 1",
                 visibility: backupRestoreTab === "export" ? "visible" : "hidden",
                 pointerEvents: backupRestoreTab === "export" ? "auto" : "none",
                 // The password fields make this tab much taller; don't make the
                 // import tab as tall while it's hidden.
-                display: backupRestoreTab !== "export" && exportProtect ? "none" : undefined,
+                display: backupRestoreTab !== "export" && exportProtect ? "none" : "flex", flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "export"}>
                 {!exportProtect ? (
                   <div role="note" style={{ display: "flex", gap: 9, background: "#FDECEA", borderRadius: 12, padding: "10px 12px", fontSize: 12, lineHeight: 1.55, color: "#7A2A24", marginBottom: 12 }}>
@@ -6990,8 +6996,9 @@ function AppInner() {
                       </div>
                     </div>
                     </div>
+                    <div aria-hidden="true" style={{ height: 14, flexShrink: 0 }} />
                     <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(2)} disabled={!exportEffectivePw} className="btn-primary"
-                      style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
+                      style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportEffectivePw ? "pointer" : "not-allowed", opacity: exportEffectivePw ? 1 : 0.4 }}>
                       ถัดไป
                     </button>
                   </>
@@ -7106,13 +7113,14 @@ function AppInner() {
                   )}
                 </div>
                 <button onClick={confirmPasteImport} disabled={importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)} tabIndex={importSource === "text" ? importTabIdx : -1} className="btn-primary"
-                  style={{ width: "100%", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? 0.4 : 1 }}>
+                  style={{ width: "100%", marginTop: "auto", padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? "not-allowed" : "pointer", opacity: (importing || importLockBusy || !pasteImportText.trim() || (pasteEnc && !importLockPw)) ? 0.4 : 1 }}>
                   {importLockBusy ? "กำลังปลดล็อก…" : importing ? "กำลังตรวจสอบ..." : "ถัดไป"}
                 </button>
                 </div>
                 </div>
                 </>
               </div>
+            </div>
             </div>
             </FadeScroll>
           </div>
