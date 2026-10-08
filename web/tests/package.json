@@ -5,11 +5,13 @@
   "scripts": {
     "test": "playwright test",
     "unit": "node --test \"unit/*.test.mjs\"",
-    "lint": "cd ../.. && web/tests/node_modules/.bin/eslint -c web/tests/eslint.config.js blood-donation-tracker.jsx"
+    "lint": "cd ../.. && web/tests/node_modules/.bin/eslint -c web/tests/eslint.config.js blood-donation-tracker.jsx web/src/lib web/src/components"
   },
   "devDependencies": {
     "@playwright/test": "1.56.0",
     "eslint": "^9.39.5",
-    "eslint-plugin-react-hooks": "^5.2.0"
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0"
   }
 }
