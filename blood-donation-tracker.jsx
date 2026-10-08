@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.451";
+const APP_VERSION = "1.0.452";
 // The app's segmented control (same look as the text-size switch in Settings): white box, selected pill #F3E7E4, 40px high with a 44px tap area.
 const SEG_BOX = { display: "flex", gap: 4, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 12, padding: 4 };
 const segBtn = (on) => ({ position: "relative", flex: 1, minWidth: 0, height: 40, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: "inherit", fontSize: 14, whiteSpace: "nowrap", background: on ? "#F3E7E4" : "transparent", color: on ? "#8A2F28" : "#7A6360", fontWeight: on ? 600 : 400 });
@@ -6833,7 +6833,7 @@ function AppInner() {
                   </div>
                 ) : exportStep === 1 ? (
                   <>
-                    <div id="export-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรองข้อมูล</div>
+                    <div id="export-mode-label" style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>ตั้งรหัสผ่านให้ไฟล์สำรองข้อมูล</div>
                     <div role="radiogroup" aria-labelledby="export-mode-label" style={{ ...SEG_BOX, margin: "0 0 12px" }}>
                       {[["auto", "แอปสุ่มให้"], ["own", "ตั้งเอง"]].map(([k, label]) => {
                         const on = (k === "auto") === !!exportGenPw;
@@ -6850,7 +6850,7 @@ function AppInner() {
                     <div style={{ display: "grid" }}>
                     <div style={{ gridArea: "1 / 1", visibility: exportGenPw ? "inherit" : "hidden" }} aria-hidden={!exportGenPw}>
                     <div style={{ background: "#FFFFFF", border: "1px solid #EEDEDA", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-                      <div style={{ fontSize: 12, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
+                      <div style={{ fontSize: 14, color: "#7A6360", marginBottom: 6 }}>รหัสผ่านของคุณ</div>
                       <div className="selectable" style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: "clamp(16px, 5.4vw, 20px)", letterSpacing: "0.06em", fontWeight: 600, lineHeight: 1.6, color: "#3A2C29", background: "#FDF6F4", border: "1px solid #EBD6D2", borderRadius: 10, padding: "10px 8px", minHeight: "calc(1.6em + 22px)", textAlign: "center", wordBreak: "break-word", userSelect: "all" }}>{exportGenPw}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                         <button type="button" tabIndex={exportTabIdx} onClick={copyGeneratedPassword}
@@ -6887,7 +6887,7 @@ function AppInner() {
                             <span key={n} style={{ flex: 1, height: 5, borderRadius: 3, background: exportStrength.level >= n ? (exportStrength.level === 3 ? "#2B7530" : "#D9A03A") : "#EEDEDA" }} />
                           ))}
                         </div>
-                        {exportStrength.label && <div style={{ fontSize: 12, flexShrink: 0, color: exportStrength.level === 3 ? "#2B7530" : "#9C5515" }}>{exportStrength.label}</div>}
+                        {exportStrength.label && <div style={{ fontSize: 14, flexShrink: 0, color: exportStrength.level === 3 ? "#2B7530" : "#9C5515" }}>{exportStrength.label}</div>}
                       </div>
                     )}
                     </div>
@@ -6926,12 +6926,12 @@ function AppInner() {
                         style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, fontFamily: "inherit", color: "#3A2C29" }} />
                       {exportTypedOk && <Check size={17} color="#2B7530" aria-label="รหัสตรงกัน" />}
                     </div>
-                    <div aria-live="polite" style={{ fontSize: 12, margin: "6px 2px 0", color: exportTypedOk ? "#2B7530" : "#7A6360" }}>
+                    <div aria-live="polite" style={{ fontSize: 14, margin: "6px 2px 0", color: exportTypedOk ? "#2B7530" : "#7A6360" }}>
                       {exportTypedOk ? "ตรงกันแล้ว ดาวน์โหลดได้เลย" : "พิมพ์ให้ตรง เพื่อให้แน่ใจว่าจดถูก ตัวเล็กใหญ่ต้องตรงกัน"}
                     </div>
                       </div>
                     )}
-                    <p style={{ fontSize: 12, color: "#6E5A56", lineHeight: 1.6, margin: "0 2px 10px" }}>เก็บไฟล์ไว้ในที่ที่ปลอดภัย เช่น ไดรฟ์หรืออีเมลของคุณเอง และเก็บรหัสผ่านแยกไว้อีกที่</p>
+                    <p style={{ fontSize: 14, color: "#6E5A56", lineHeight: 1.6, margin: "0 2px 10px" }}>เก็บไฟล์ไว้ในที่ที่ปลอดภัย เช่น ไดรฟ์หรืออีเมลของคุณเอง และเก็บรหัสผ่านแยกไว้อีกที่</p>
                     <textarea
                       ref={exportTextareaRef}
                       readOnly
@@ -6940,7 +6940,7 @@ function AppInner() {
                       placeholder={exportEncrypting ? "กำลังเข้ารหัส…" : "ข้อความเข้ารหัสจะแสดงที่นี่"}
                       onFocus={(e) => e.target.select()}
                       aria-label="ข้อมูลสำรองที่เข้ารหัสแล้ว สำหรับคัดลอก"
-                      style={{ width: "100%", height: 76, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 11, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
+                      style={{ width: "100%", height: 76, borderRadius: 10, border: "1px solid #E3C8C3", padding: 10, fontSize: 12, fontFamily: "monospace", color: "#3A2C29", background: "#FFFFFF", marginBottom: 14, resize: "vertical" }}
                     />
                     <BackupMsg msg={exportMsg} at="pre" />
                     <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "11px 0", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
@@ -6951,7 +6951,7 @@ function AppInner() {
                       <StickyNote size={16} /> คัดลอกข้อมูลสำรอง
                     </button>
                     <BackupMsg msg={exportMsg} at="post" />
-                    <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "12px 2px 0" }}>หากดาวน์โหลดไม่ได้ ให้คัดลอกข้อมูลสำรองแทน</p>
+                    <p style={{ fontSize: 14, color: "#7A6360", lineHeight: 1.7, margin: "12px 2px 0" }}>หากดาวน์โหลดไม่ได้ ให้คัดลอกข้อมูลสำรองแทน</p>
                   </>
                 )}
               </div>
@@ -6964,7 +6964,7 @@ function AppInner() {
                 flexDirection: "column",
               }} aria-hidden={backupRestoreTab !== "import"}>
                 <>
-                <div id="import-mode-label" style={{ fontSize: 13, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>นำเข้าข้อมูลสำรองจาก</div>
+                <div id="import-mode-label" style={{ fontSize: 14, fontWeight: 600, color: "#3A2C29", margin: "14px 2px 8px" }}>นำเข้าข้อมูลสำรองจาก</div>
                 <div role="radiogroup" aria-labelledby="import-mode-label" style={{ ...SEG_BOX, margin: "0 0 12px", flexShrink: 0 }}>
                   {[["file", "ไฟล์"], ["text", "ข้อความ"]].map(([k, label]) => {
                     const on = importSource === k;
@@ -6984,7 +6984,7 @@ function AppInner() {
                     <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#F3E7E4", color: "#9A3B33", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{importPickedEnc ? <Lock size={19} /> : importPicked ? <Check size={19} /> : <Upload size={19} />}</span>
                     <span style={{ minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 14, fontWeight: 600, wordBreak: "break-all" }}>{importing ? "กำลังอ่านไฟล์..." : importPicked ? importPicked.name : "เลือกไฟล์สำรอง"}</span>
-                      <span style={{ display: "block", fontSize: 12, color: "#7A6360" }}>{importPicked ? (importPickedEnc ? "ไฟล์นี้เข้ารหัสอยู่ · แตะเพื่อเลือกไฟล์อื่น" : "แตะเพื่อเลือกไฟล์อื่น") : "ไฟล์ที่ดาวน์โหลดจากแอปนี้"}</span>
+                      <span style={{ display: "block", fontSize: 14, color: "#7A6360" }}>{importPicked ? (importPickedEnc ? "ไฟล์นี้เข้ารหัสอยู่ · แตะเพื่อเลือกไฟล์อื่น" : "แตะเพื่อเลือกไฟล์อื่น") : "ไฟล์ที่ดาวน์โหลดจากแอปนี้"}</span>
                     </span>
                   </button>
                   {importPickedEnc && importPwField("import-pw-file", "รหัสผ่านของไฟล์", importSource === "file" ? importTabIdx : -1)}
@@ -7009,7 +7009,7 @@ function AppInner() {
                 {importMsg && importMsg.at === "paste" && <div style={{ margin: "0 0 8px" }}><BackupMsg msg={importMsg} at="paste" /></div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <button type="button" onClick={pasteFromClipboard} tabIndex={importSource === "text" ? importTabIdx : -1}
-                    style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 10, padding: "0 12px", color: "#9A3B33", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 44, background: "#FFFFFF", border: "1px solid #E3C8C3", borderRadius: 10, padding: "0 12px", color: "#9A3B33", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                     <StickyNote size={14} /> วางจากคลิปบอร์ด
                   </button>
                   {pasteImportText.length > 0 && (
@@ -7095,7 +7095,7 @@ function AppInner() {
                       <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 10, background: "#F3EAE8", display: "flex", alignItems: "center", justifyContent: "center", color: "#9A3B33", flexShrink: 0 }}><Icon size={16} /></span>
                       <span style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#3A2C29" }}>{title}</span>
-                        <span style={{ display: "block", fontSize: 12, color: "#7A6360", marginTop: 1, lineHeight: 1.5 }}>{sub}</span>
+                        <span style={{ display: "block", fontSize: 14, color: "#7A6360", marginTop: 1, lineHeight: 1.5 }}>{sub}</span>
                       </span>
                       {b}
                     </div>
@@ -7109,13 +7109,13 @@ function AppInner() {
               </div>
             )}
             {!importHasSomething(pendingImport) && (
-              <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "0 0 8px" }}>
+              <p style={{ fontSize: 14, color: "#7A6360", lineHeight: 1.7, margin: "0 0 8px" }}>
                 {pendingImport.invalidCount > 0 && pendingImport.duplicateCount === 0
                   ? "ไม่มีอะไรใหม่ให้นำเข้า — ทุกรายการมีข้อมูลไม่ถูกต้อง"
                   : "ไม่มีอะไรใหม่ให้นำเข้า — ข้อมูลนี้มีอยู่ในเครื่องแล้วทั้งหมด"}
               </p>
             )}
-            <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
+            <p style={{ fontSize: 14, color: "#7A6360", lineHeight: 1.6, margin: "0 0 4px" }}>ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะไม่ถูกเขียนทับ · รูปโปรไฟล์ไม่รวมในไฟล์สำรอง</p>
             {importConfirmError && <FieldError>{importConfirmError}</FieldError>}
             </FadeScroll>
             <div style={{ display: "flex", gap: 10, flexShrink: 0, padding: "12px 22px 22px" }}>
