@@ -60,7 +60,7 @@ const isNativeApp = (() => {
 const isLineInAppBrowser = !isNativeApp && typeof navigator !== "undefined" && (navigator.userAgent.includes("Line/") || navigator.userAgent.includes("LIFF/"));
 
 const THAI_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APP_VERSION = "1.0.420";
+const APP_VERSION = "1.0.421";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -1942,7 +1942,7 @@ const APP_FAQ_ITEMS = [
   },
   {
     q: "เข็มที่ระลึกและเหรียญกาชาดสมนาคุณนับจากอะไร",
-    a: "นับจากจำนวนครั้งสะสมที่คุณบันทึกไว้ในแอป อ้างอิงเกณฑ์จากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย แต่สิทธิ์ที่ได้รับจริงควรยืนยันกับเจ้าหน้าที่ ณ จุดบริจาคอีกครั้ง เพราะแอปไม่มีการเชื่อมต่อกับระบบของสภากาชาดไทย",
+    a: "แอปนับจากทุกรายการที่คุณบันทึกไว้ (ทุกประเภทการบริจาครวมกัน) บวกยอดสะสมที่ยกมา อ้างอิงเกณฑ์จากศูนย์บริการโลหิตแห่งชาติ สภากาชาดไทย แต่สิทธิ์ที่ได้รับจริงควรยืนยันกับเจ้าหน้าที่ ณ จุดบริจาคอีกครั้ง เพราะแอปไม่มีการเชื่อมต่อกับระบบของสภากาชาดไทย",
   },
   {
     q: "ลืมบันทึกบางครั้งไปแล้ว ย้อนกลับมาเพิ่มทีหลังได้ไหม",
@@ -9226,9 +9226,13 @@ function AppInner() {
               <button onClick={() => { setShowSettings(false); setTab("faq"); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px", background: "none", border: "none", borderBottom: "1px solid #F3E7E4", cursor: "pointer", fontSize: 14, color: "#3A2C29", fontFamily: "inherit" }}>
                 <HelpCircle size={16} color="#9A3B33" /> คำถามที่พบบ่อย
               </button>
-              <div title="ช่องทางนี้ยังไม่เปิดให้ใช้งานในตอนนี้" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 8px", fontSize: 14, color: "#80726F", cursor: "default" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Mail size={16} color="#9A8582" /> ส่งความคิดเห็น / แจ้งปัญหา</span>
-                <span style={{ fontSize: 12, background: "#F3E7E4", color: "#7A6360", padding: "2px 7px", borderRadius: 20 }}>เร็วๆ นี้</span>
+              {/* Not a button: the report channel is the LINE rich menu (same words as the FAQ), so this row only says where. */}
+              <div style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 8px" }}>
+                <Mail size={16} color="#9A3B33" aria-hidden="true" style={{ marginTop: 3, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 14, color: "#3A2C29" }}>ส่งความคิดเห็น / แจ้งปัญหา</div>
+                  <div style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.5, marginTop: 1 }}>ผ่านปุ่ม "แจ้งปัญหา" ในเมนู LINE</div>
+                </div>
               </div>
             </div>
             </FadeScroll>
