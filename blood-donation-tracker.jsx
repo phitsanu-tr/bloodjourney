@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.436";
+const APP_VERSION = "1.0.437";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -2036,7 +2036,7 @@ function AppInner() {
         showToast("success", "เปิดเมนูบันทึก/แชร์ไฟล์แล้ว");
         markBackedUp();
       } catch (e) {
-        setExportMsg({ kind: "err", at: "mid", text: 'บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด "คัดลอกข้อความ"' });
+        setExportMsg({ kind: "err", at: "mid", text: 'บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง หรือกด "คัดลอกข้อมูลสำรอง"' });
       }
       return;
     }
@@ -2075,7 +2075,7 @@ function AppInner() {
       if (isLineInAppBrowser) {
         // LINE no-ops this click instead of throwing, so success here can't
         // actually be confirmed — tell the user plainly instead of claiming it worked.
-        showToast("success", "ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ ให้กด \"คัดลอกข้อความ\" แล้ววางเก็บเองแทน");
+        showToast("success", "ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ ให้กด \"คัดลอกข้อมูลสำรอง\" แล้ววางเก็บเองแทน");
       } else {
         showToast("success", "เริ่มดาวน์โหลดไฟล์แล้ว");
         // Only outside LINE -- inside LINE this click can be a silent no-op,
@@ -2083,7 +2083,7 @@ function AppInner() {
         markBackedUp();
       }
     } catch (e) {
-      setExportMsg({ kind: "note", at: "mid", text: 'ดาวน์โหลดไม่ได้ในหน้านี้ ใช้ "คัดลอกข้อความ" แทน' });
+      setExportMsg({ kind: "note", at: "mid", text: 'ดาวน์โหลดไม่ได้ในหน้านี้ ใช้ "คัดลอกข้อมูลสำรอง" แทน' });
     }
   };
 
@@ -6970,11 +6970,11 @@ function AppInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 2, margin: "0 0 10px" }}>
                       <button type="button" tabIndex={exportTabIdx} onClick={() => setExportStep(1)} aria-label="ย้อนกลับไปแก้รหัสผ่าน"
                         style={{ width: 44, height: 44, margin: "-6px 0 -6px -12px", display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#3A2C29", padding: 0 }}><ChevronLeft size={20} /></button>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29" }}>{exportGenPw ? "ยืนยันรหัสผ่าน" : "บันทึกไฟล์"}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: "#3A2C29" }}>{exportGenPw ? "ยืนยันว่าจดรหัสถูก" : "บันทึกไฟล์สำรอง"}</div>
                     </div>
                     {exportGenPw && (
                       <div style={{ marginBottom: 12 }}>
-                    <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่คัดลอกหรือจดไว้อีกครั้ง</label>
+                    <label htmlFor="export-confirm-pw" style={{ display: "block", fontSize: 12, color: "#7A6360", marginBottom: 4 }}>พิมพ์รหัสที่จดไว้อีกครั้ง</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFFFF", border: `1px solid ${exportTypedOk ? "#2B7530" : "#E3C8C3"}`, borderRadius: 12, padding: "0 12px", minHeight: 46 }}>
                       <input id="export-confirm-pw" type="text" value={exportConfirmPw} tabIndex={exportTabIdx}
                         onChange={(e) => setExportConfirmPw(e.target.value)}
@@ -6983,10 +6983,11 @@ function AppInner() {
                       {exportTypedOk && <Check size={17} color="#2B7530" aria-label="รหัสตรงกัน" />}
                     </div>
                     <div aria-live="polite" style={{ fontSize: 12, margin: "6px 2px 0", color: exportTypedOk ? "#2B7530" : "#7A6360" }}>
-                      {exportTypedOk ? "ตรงกันแล้ว" : "พิมพ์ให้ตรงกับรหัสที่แอปสร้างให้ เพื่อให้แน่ใจว่าจดถูก"}
+                      {exportTypedOk ? "ตรงกันแล้ว ดาวน์โหลดได้เลย" : "พิมพ์ให้ตรง เพื่อให้แน่ใจว่าจดถูก ตัวเล็กใหญ่ต้องตรงกัน"}
                     </div>
                       </div>
                     )}
+                    <p style={{ fontSize: 12, color: "#6E5A56", lineHeight: 1.6, margin: "0 2px 10px" }}>เก็บไฟล์ไว้ในที่ที่ปลอดภัย เช่น ไดรฟ์หรืออีเมลของคุณเอง และเก็บรหัสผ่านแยกไว้อีกที่</p>
                     <textarea
                       ref={exportTextareaRef}
                       readOnly
@@ -6999,14 +7000,14 @@ function AppInner() {
                     />
                     <BackupMsg msg={exportMsg} at="pre" />
                     <button onClick={downloadExportFile} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 0", borderRadius: 14, border: "none", fontSize: 14, fontWeight: 600, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.4, marginBottom: 10 }}>
-                      <Download size={17} /> {exportEncrypting ? "กำลังเข้ารหัส…" : "ดาวน์โหลดไฟล์"}
+                      <Download size={17} /> {exportEncrypting ? "กำลังเข้ารหัส…" : "ดาวน์โหลดไฟล์สำรอง"}
                     </button>
                     <BackupMsg msg={exportMsg} at="mid" />
                     <button onClick={copyExportText} disabled={!exportReady} tabIndex={exportTabIdx} className="btn-ghost" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 0", borderRadius: 14, fontSize: 14, cursor: exportReady ? "pointer" : "not-allowed", opacity: exportReady ? 1 : 0.5 }}>
-                      <StickyNote size={16} /> คัดลอกข้อความ
+                      <StickyNote size={16} /> คัดลอกข้อมูลสำรอง
                     </button>
                     <BackupMsg msg={exportMsg} at="post" />
-                    <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "12px 2px 0" }}>ถ้าดาวน์โหลดไม่ได้ ให้คัดลอกข้อความไปวางเก็บไว้ในโน้ตของคุณแทน ไฟล์ไม่รวมรูปโปรไฟล์ ต้องอัปโหลดรูปใหม่หลังนำเข้า ส่วนรอบบริจาคและระยะแจ้งเตือนที่ตั้งไว้อยู่ในไฟล์นี้ด้วย</p>
+                    <p style={{ fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "12px 2px 0" }}>หากดาวน์โหลดไม่ได้ ให้คัดลอกข้อมูลสำรองแทน</p>
                   </>
                 )}
               </div>
@@ -7069,7 +7070,7 @@ function AppInner() {
                 </button>
                 {importMsg && importMsg.at === "file" && <div style={{ flexShrink: 0, margin: "-2px 0 8px" }}><BackupMsg msg={importMsg} at="file" /></div>}
                 <p style={{ flexShrink: 0, fontSize: 12, color: "#7A6360", lineHeight: 1.7, margin: "0 0 10px" }}>
-                  หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อความ" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
+                  หรือวางข้อความที่คัดลอกไว้จากปุ่ม "คัดลอกข้อมูลสำรอง" ของแอปนี้ที่นี่ แล้วกด "นำเข้า"
                 </p>
                 {/* flex:1 lets this textarea grow to fill whatever vertical
                     space is left over after the equal-height grid trick
