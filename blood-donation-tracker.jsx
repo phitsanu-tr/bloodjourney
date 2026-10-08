@@ -22,7 +22,7 @@ export { buildIcsForReminder } from "./lib/calendarFiles.js";
 export { deriveAchievementText } from "./lib/achievements.js";
 export { CARD_SIZES, DEFAULT_CARD_SIZE, encodeShareToken, decodeShareToken, buildRecordShareCardDataUrl, buildShareCardDataUrl } from "./lib/shareCard.js";
 
-const APP_VERSION = "1.0.426";
+const APP_VERSION = "1.0.427";
 // v2 (v1.0.112): profile gained birth year, gender, height, donor ID and Rh,
 // used for after-donation advice and a blood-volume estimate.
 const CONSENT_VERSION = "v2";
@@ -3504,6 +3504,9 @@ function AppInner() {
         @keyframes scrimIn { from { --scrim-a: 0; } to { --scrim-a: 0.3; } }
         /* Hero status area: tallest state is "paused" (3 lines + link); 320px wraps one line more. See web/tests/hero-height.spec.js */
         .hero-status { min-height: 92px; }
+        /* Date picker on narrow phones: smaller margins give the 7 day columns more room (cells ~34 -> ~40px at 320px). */
+        @media (max-width: 349px) { .cal-overlay { padding: 8px !important; } .cal-box { padding: 16px 12px !important; } }
+        @media (max-width: 401px) { html.text-large .cal-overlay { padding: 8px !important; } html.text-large .cal-box { padding: 16px 12px !important; } }
         @media (max-width: 349px) { .hero-status { min-height: 124px; } }
         /* Brand-new user: the welcome has only one short line here, so the reserved height left a big empty
            band at the bottom of the card. The card grows once, on the first record; no state toggles back. */
@@ -3827,7 +3830,7 @@ function AppInner() {
                         style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, lineHeight: 1, background: "#F3EAE8", color: "#9A3B33", padding: "3px 10px 3px 3px", borderRadius: 20, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                         <span aria-hidden="true" style={{ position: "absolute", inset: "-11px -1px" }} />
                         <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><EyeOff size={9} /></span>
-                        ซ่อนข้อมูลส่วนตัว · แตะดู
+                        <span><span style={{ whiteSpace: "nowrap" }}>ซ่อนข้อมูลส่วนตัว</span> · <span style={{ whiteSpace: "nowrap" }}>แตะดู</span></span>
                       </button>
                     </div>
                   ) : (bloodType || age !== "" || weight !== "") ? (
@@ -5206,7 +5209,7 @@ function AppInner() {
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: unlocked ? "#3A2C29" : "#5E4A47", marginBottom: 3 }}>{keepTail(a.title)}</div>
                         <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, textWrap: "balance" }}>
-                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <>อีก {a.threshold - totalCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <><span style={{ whiteSpace: "nowrap" }}>อีก {a.threshold - totalCount} ครั้ง</span><wbr /><span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
                         </div>
                       </div>
                     );
@@ -5249,7 +5252,7 @@ function AppInner() {
                         </div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: unlocked ? "#3A2C29" : "#5E4A47", marginBottom: 3, lineHeight: 1.35 }}>{keepTail(a.title)}</div>
                         <div style={{ fontSize: 11, color: "#7A6360", lineHeight: 1.5, textWrap: "balance" }}>
-                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <>อีก {a.threshold - totalCount} ครั้ง<span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
+                          {unlocked ? <><span style={SR_ONLY}>ปลดล็อกแล้ว · </span>{a.desc}</> : <><span style={{ whiteSpace: "nowrap" }}>อีก {a.threshold - totalCount} ครั้ง</span><wbr /><span style={{ whiteSpace: "nowrap" }}>จะปลดล็อก</span></>}
                         </div>
                       </div>
                     );
@@ -5737,7 +5740,7 @@ function AppInner() {
                                         if (committed[r.key] !== "") commitProfile(r.key === "birthYear" ? { birthYear: "", birthYearApprox: false } : { [r.key]: "" }, r.key);
                                       }}
                                       style={{ position: "relative", background: "none", border: "none", padding: 0, fontSize: 12, fontWeight: 600, color: "#9A3B33", cursor: "pointer", fontFamily: "inherit", visibility: canClear ? "visible" : "hidden" }}>
-                                      <span aria-hidden="true" style={{ position: "absolute", inset: "-12px -8px" }} />
+                                      <span aria-hidden="true" style={{ position: "absolute", inset: "-13px -8px" }} />
                                       ล้างค่า
                                     </button>
                                   </div>
